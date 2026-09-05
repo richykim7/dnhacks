@@ -1,0 +1,304 @@
+{
+  "models": {
+    "arithmetic-example-A": {
+      "macro": {
+        "at_k": {
+          "2": {
+            "precision": 0.5,
+            "precision_eligible_queries": 1,
+            "recall": 0.5,
+            "recall_eligible_queries": 1
+          }
+        },
+        "auroc": 0.75,
+        "auroc_eligible_queries": 1,
+        "average_precision": 0.8333333333333333,
+        "average_precision_eligible_queries": 1,
+        "query_count": 1
+      },
+      "metadata": {
+        "budget_tag": "four-invented-scores",
+        "origin": "synthetic"
+      },
+      "overall": {
+        "at_k": {
+          "2": {
+            "eligible_candidates": 4,
+            "hit_ids": [
+              "example-0"
+            ],
+            "hits": 1,
+            "missed_ids": [
+              "example-2"
+            ],
+            "precision": 0.5,
+            "precision_denominator": 2,
+            "recall": 0.5,
+            "requested_k": 2,
+            "selected_count": 2,
+            "selected_ids": [
+              "example-0",
+              "example-1"
+            ],
+            "unobserved_ids": [
+              "example-1"
+            ]
+          }
+        },
+        "auroc": 0.75,
+        "auroc_eligible": true,
+        "average_precision": 0.8333333333333333,
+        "average_precision_eligible": true,
+        "candidate_count": 4,
+        "observed_count": 2,
+        "observed_rate": 0.5,
+        "unobserved_count": 2
+      },
+      "queries": {
+        "synthetic-query": {
+          "at_k": {
+            "2": {
+              "eligible_candidates": 4,
+              "hit_ids": [
+                "example-0"
+              ],
+              "hits": 1,
+              "missed_ids": [
+                "example-2"
+              ],
+              "precision": 0.5,
+              "precision_denominator": 2,
+              "recall": 0.5,
+              "requested_k": 2,
+              "selected_count": 2,
+              "selected_ids": [
+                "example-0",
+                "example-1"
+              ],
+              "unobserved_ids": [
+                "example-1"
+              ]
+            }
+          },
+          "auroc": 0.75,
+          "auroc_eligible": true,
+          "average_precision": 0.8333333333333333,
+          "average_precision_eligible": true,
+          "candidate_count": 4,
+          "observed_count": 2,
+          "observed_rate": 0.5,
+          "unobserved_count": 2
+        }
+      },
+      "ranking": [
+        {
+          "candidate_id": "example-0",
+          "observed": true,
+          "outcome_evidence_ids": [
+            "fictional-outcome-0"
+          ],
+          "query_id": "synthetic-query",
+          "score": 0.9,
+          "source": "synthetic-query",
+          "target": "synthetic-target-0"
+        },
+        {
+          "candidate_id": "example-1",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "synthetic-query",
+          "score": 0.8,
+          "source": "synthetic-query",
+          "target": "synthetic-target-1"
+        },
+        {
+          "candidate_id": "example-2",
+          "observed": true,
+          "outcome_evidence_ids": [
+            "fictional-outcome-2"
+          ],
+          "query_id": "synthetic-query",
+          "score": 0.7,
+          "source": "synthetic-query",
+          "target": "synthetic-target-2"
+        },
+        {
+          "candidate_id": "example-3",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "synthetic-query",
+          "score": 0.6,
+          "source": "synthetic-query",
+          "target": "synthetic-target-3"
+        }
+      ]
+    },
+    "arithmetic-example-B": {
+      "macro": {
+        "at_k": {
+          "2": {
+            "precision": 0.5,
+            "precision_eligible_queries": 1,
+            "recall": 0.5,
+            "recall_eligible_queries": 1
+          }
+        },
+        "auroc": 0.25,
+        "auroc_eligible_queries": 1,
+        "average_precision": 0.5,
+        "average_precision_eligible_queries": 1,
+        "query_count": 1
+      },
+      "metadata": {
+        "budget_tag": "four-invented-scores",
+        "origin": "synthetic"
+      },
+      "overall": {
+        "at_k": {
+          "2": {
+            "eligible_candidates": 4,
+            "hit_ids": [
+              "example-2"
+            ],
+            "hits": 1,
+            "missed_ids": [
+              "example-0"
+            ],
+            "precision": 0.5,
+            "precision_denominator": 2,
+            "recall": 0.5,
+            "requested_k": 2,
+            "selected_count": 2,
+            "selected_ids": [
+              "example-3",
+              "example-2"
+            ],
+            "unobserved_ids": [
+              "example-3"
+            ]
+          }
+        },
+        "auroc": 0.25,
+        "auroc_eligible": true,
+        "average_precision": 0.5,
+        "average_precision_eligible": true,
+        "candidate_count": 4,
+        "observed_count": 2,
+        "observed_rate": 0.5,
+        "unobserved_count": 2
+      },
+      "queries": {
+        "synthetic-query": {
+          "at_k": {
+            "2": {
+              "eligible_candidates": 4,
+              "hit_ids": [
+                "example-2"
+              ],
+              "hits": 1,
+              "missed_ids": [
+                "example-0"
+              ],
+              "precision": 0.5,
+              "precision_denominator": 2,
+              "recall": 0.5,
+              "requested_k": 2,
+              "selected_count": 2,
+              "selected_ids": [
+                "example-3",
+                "example-2"
+              ],
+              "unobserved_ids": [
+                "example-3"
+              ]
+            }
+          },
+          "auroc": 0.25,
+          "auroc_eligible": true,
+          "average_precision": 0.5,
+          "average_precision_eligible": true,
+          "candidate_count": 4,
+          "observed_count": 2,
+          "observed_rate": 0.5,
+          "unobserved_count": 2
+        }
+      },
+      "ranking": [
+        {
+          "candidate_id": "example-3",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "synthetic-query",
+          "score": 0.9,
+          "source": "synthetic-query",
+          "target": "synthetic-target-3"
+        },
+        {
+          "candidate_id": "example-2",
+          "observed": true,
+          "outcome_evidence_ids": [
+            "fictional-outcome-2"
+          ],
+          "query_id": "synthetic-query",
+          "score": 0.8,
+          "source": "synthetic-query",
+          "target": "synthetic-target-2"
+        },
+        {
+          "candidate_id": "example-1",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "synthetic-query",
+          "score": 0.7,
+          "source": "synthetic-query",
+          "target": "synthetic-target-1"
+        },
+        {
+          "candidate_id": "example-0",
+          "observed": true,
+          "outcome_evidence_ids": [
+            "fictional-outcome-0"
+          ],
+          "query_id": "synthetic-query",
+          "score": 0.6,
+          "source": "synthetic-query",
+          "target": "synthetic-target-0"
+        }
+      ]
+    }
+  },
+  "protocol": {
+    "auroc": "positive-negative pair concordance; ties receive half credit; null without both classes",
+    "average_precision": "score-threshold grouped, non-interpolated; null without positives",
+    "budget_match": {
+      "status": "declared_matched",
+      "tags": {
+        "arithmetic-example-A": "four-invented-scores",
+        "arithmetic-example-B": "four-invented-scores"
+      },
+      "verified": false
+    },
+    "candidate_count": 4,
+    "candidate_set_sha256": "fbb616c2f58a3310196e74d228551ad85a527f0bcacb39511081d80f1984eb03",
+    "comparison": "identical complete candidate and outcome rows for every model",
+    "context": {
+      "cutoff": "2020-01-01",
+      "horizon": "2021-01-01"
+    },
+    "ks": [
+      2
+    ],
+    "macro": "equal query weights, excluding undefined values with eligibility counts",
+    "outcome_meaning": "recorded by the horizon; unobserved does not mean disproved",
+    "outcome_set_sha256": "97ea733be2a21d1cf070f3433a5048182ac2cee1b48df2d42cfb2d309adcf99f",
+    "precision_at_k": "hits / min(k, eligible candidates); denominator reported per query",
+    "query_count": 1,
+    "ranking_ties": "descending score, then ascending candidate_id"
+  },
+  "provenance": {
+    "dataset_id": "synthetic-arithmetic-example",
+    "description": "Invented arithmetic fixture; not biomedical evidence or measured model performance.",
+    "origin": "synthetic"
+  },
+  "schema_version": "forecast-evaluation/v1"
+}
