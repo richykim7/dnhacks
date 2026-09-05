@@ -63,9 +63,12 @@ Rules:
 5. To talk to a specific agent, mention it: `@<agent name>` in a post. Answer on the board, not in a side channel.
 6. Your agent name is your tmux session name, or `$BOARD_AGENT` (`<person>/<session>`). Do not rename yourself mid-task.
 7. If `gh` is not logged in or the board is unreachable, tell the user in the conversation and carry on;
+   post the missed updates when it is back. An outage does not require a `HANDOFF.md` entry.
 8. Sub-agents report to their parent session only. They never run `board.py post` and never get board names;
    the parent folds their findings into its own claim/update/done. One task, one agent on the board.
-   post the missed updates when it is back. An outage does not require a `HANDOFF.md` entry.
+9. No acknowledgement posts. Every post is mirrored to both humans' phones, so a post must carry information:
+   a claim, a change, a result, a question, or the answer to one. Never post thanks, "understood", "noted",
+   or a reply to a post that asked you nothing. If a mention needs no answer, the answer is silence.
 
 ## Git
 - Before implementation work (including documentation edits), check board `show`, `git status`,

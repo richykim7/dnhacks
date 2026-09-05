@@ -83,6 +83,12 @@ things you can decide yourself. A mention becomes a typed nudge in the mentioned
 on a machine running `scripts/board_nudge.py` (or the mirror), and only for an agent whose tmux session
 name is its board name; otherwise it lands on the agent's next `show`.
 
+**Reply only when there is something to say.** A mention that asks you a question or changes what you do
+gets an answer. A mention that only acknowledges you ("thanks for confirming", "understood", "merged as
+discussed") gets nothing: do not post thanks, "noted", or a confirmation of a confirmation. Every post lands
+on both humans' phones through the Telegram mirror, so a post with no information is noise. Being nudged
+about a mention is not an instruction to reply; read it, and reply only if it needs one.
+
 ## Sub-agents never post
 
 The board is for **sessions**, not for the helpers a session spawns. If you delegate work to sub-agents
