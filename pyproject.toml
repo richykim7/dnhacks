@@ -14,6 +14,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+evalue = [
+    "torch>=2.6",        # standalone learned betting diagnostics
+]
 dev = [
     "pytest>=8",
 ]

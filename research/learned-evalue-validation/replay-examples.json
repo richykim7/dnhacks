@@ -1,0 +1,2510 @@
+[
+  {
+    "scenario": "null",
+    "repetition": 0,
+    "method": "identity",
+    "seed": 130363,
+    "seconds": 0.13278035097755492,
+    "result": {
+      "e_value": 0.00011021535371917903,
+      "status": "ok",
+      "reason": "standalone diagnostic; final wealth",
+      "per_batch": [
+        1.403107766384711,
+        0.7284364516282701,
+        0.7907717264229968,
+        1.0500877905773345,
+        2.166855515228671,
+        0.03327207135902454,
+        0.144223725305592,
+        0.2523266802988668,
+        0.026142153879807502,
+        1.8933531028845323
+      ],
+      "log_wealth_path": [
+        0.0,
+        0.3386896095637165,
+        0.021834720604470115,
+        -0.2129112208526388,
+        -0.1640374501046823,
+        0.6092395952052823,
+        -2.7937973366215285,
+        -4.730186873734528,
+        -6.107217554349606,
+        -9.751423730679857,
+        -9.113074345005055
+      ],
+      "n_pairs": 96,
+      "n_batches": 12,
+      "n_scored": 10,
+      "config": {
+        "batch_pairs": 8,
+        "burn_in": 2,
+        "hidden": [
+          16,
+          16
+        ],
+        "lr": 0.005,
+        "patience": 5,
+        "max_epochs": 20,
+        "weight_decay": 0.01,
+        "tanh_clip": 4.0,
+        "seed": 130363,
+        "encoder": null,
+        "max_missing_fraction": 0.2
+      },
+      "metadata": {
+        "null": "equal distributions of independent units in independent groups",
+        "diagnostic_only": true,
+        "sampling": {
+          "mode": "synthetic",
+          "source": "generated normal features",
+          "assumptions": "independent iid units",
+          "unit_namespace": "",
+          "input_scale": "features",
+          "aggregation": "reject"
+        },
+        "artifact": "identity:predeclared-features",
+        "missing_genes": [],
+        "input_rows": [
+          96,
+          96
+        ],
+        "independent_units": [
+          96,
+          96
+        ],
+        "input_sha256": [
+          "5acdf53af407a337100f8a7203105ce369b15c91364620f895175975ea4f2fec",
+          "25da5be95c2018c61bc03045c0f55eff275e6e67f9c134a7f5636b81328590a8"
+        ],
+        "genes": [
+          "synthetic-0",
+          "synthetic-1",
+          "synthetic-2",
+          "synthetic-3",
+          "synthetic-4",
+          "synthetic-5",
+          "synthetic-6",
+          "synthetic-7"
+        ],
+        "dropped_units": [],
+        "unused_a": [],
+        "unused_b": [],
+        "pair_order": [
+          [
+            "synthetic-a-68",
+            "synthetic-b-8"
+          ],
+          [
+            "synthetic-a-8",
+            "synthetic-b-30"
+          ],
+          [
+            "synthetic-a-30",
+            "synthetic-b-50"
+          ],
+          [
+            "synthetic-a-14",
+            "synthetic-b-24"
+          ],
+          [
+            "synthetic-a-22",
+            "synthetic-b-69"
+          ],
+          [
+            "synthetic-a-93",
+            "synthetic-b-76"
+          ],
+          [
+            "synthetic-a-81",
+            "synthetic-b-64"
+          ],
+          [
+            "synthetic-a-2",
+            "synthetic-b-4"
+          ],
+          [
+            "synthetic-a-63",
+            "synthetic-b-7"
+          ],
+          [
+            "synthetic-a-73",
+            "synthetic-b-65"
+          ],
+          [
+            "synthetic-a-3",
+            "synthetic-b-21"
+          ],
+          [
+            "synthetic-a-42",
+            "synthetic-b-15"
+          ],
+          [
+            "synthetic-a-76",
+            "synthetic-b-62"
+          ],
+          [
+            "synthetic-a-17",
+            "synthetic-b-12"
+          ],
+          [
+            "synthetic-a-0",
+            "synthetic-b-17"
+          ],
+          [
+            "synthetic-a-24",
+            "synthetic-b-71"
+          ],
+          [
+            "synthetic-a-37",
+            "synthetic-b-13"
+          ],
+          [
+            "synthetic-a-47",
+            "synthetic-b-73"
+          ],
+          [
+            "synthetic-a-5",
+            "synthetic-b-91"
+          ],
+          [
+            "synthetic-a-18",
+            "synthetic-b-32"
+          ],
+          [
+            "synthetic-a-41",
+            "synthetic-b-63"
+          ],
+          [
+            "synthetic-a-49",
+            "synthetic-b-75"
+          ],
+          [
+            "synthetic-a-71",
+            "synthetic-b-79"
+          ],
+          [
+            "synthetic-a-15",
+            "synthetic-b-74"
+          ],
+          [
+            "synthetic-a-55",
+            "synthetic-b-82"
+          ],
+          [
+            "synthetic-a-58",
+            "synthetic-b-66"
+          ],
+          [
+            "synthetic-a-35",
+            "synthetic-b-34"
+          ],
+          [
+            "synthetic-a-94",
+            "synthetic-b-49"
+          ],
+          [
+            "synthetic-a-95",
+            "synthetic-b-68"
+          ],
+          [
+            "synthetic-a-16",
+            "synthetic-b-9"
+          ],
+          [
+            "synthetic-a-13",
+            "synthetic-b-87"
+          ],
+          [
+            "synthetic-a-72",
+            "synthetic-b-39"
+          ],
+          [
+            "synthetic-a-83",
+            "synthetic-b-59"
+          ],
+          [
+            "synthetic-a-80",
+            "synthetic-b-89"
+          ],
+          [
+            "synthetic-a-32",
+            "synthetic-b-95"
+          ],
+          [
+            "synthetic-a-29",
+            "synthetic-b-61"
+          ],
+          [
+            "synthetic-a-74",
+            "synthetic-b-52"
+          ],
+          [
+            "synthetic-a-87",
+            "synthetic-b-83"
+          ],
+          [
+            "synthetic-a-9",
+            "synthetic-b-6"
+          ],
+          [
+            "synthetic-a-25",
+            "synthetic-b-36"
+          ],
+          [
+            "synthetic-a-92",
+            "synthetic-b-10"
+          ],
+          [
+            "synthetic-a-43",
+            "synthetic-b-70"
+          ],
+          [
+            "synthetic-a-91",
+            "synthetic-b-14"
+          ],
+          [
+            "synthetic-a-20",
+            "synthetic-b-77"
+          ],
+          [
+            "synthetic-a-90",
+            "synthetic-b-2"
+          ],
+          [
+            "synthetic-a-45",
+            "synthetic-b-84"
+          ],
+          [
+            "synthetic-a-48",
+            "synthetic-b-40"
+          ],
+          [
+            "synthetic-a-33",
+            "synthetic-b-35"
+          ],
+          [
+            "synthetic-a-70",
+            "synthetic-b-38"
+          ],
+          [
+            "synthetic-a-46",
+            "synthetic-b-58"
+          ],
+          [
+            "synthetic-a-11",
+            "synthetic-b-93"
+          ],
+          [
+            "synthetic-a-4",
+            "synthetic-b-45"
+          ],
+          [
+            "synthetic-a-51",
+            "synthetic-b-48"
+          ],
+          [
+            "synthetic-a-10",
+            "synthetic-b-29"
+          ],
+          [
+            "synthetic-a-78",
+            "synthetic-b-90"
+          ],
+          [
+            "synthetic-a-53",
+            "synthetic-b-44"
+          ],
+          [
+            "synthetic-a-61",
+            "synthetic-b-37"
+          ],
+          [
+            "synthetic-a-44",
+            "synthetic-b-57"
+          ],
+          [
+            "synthetic-a-84",
+            "synthetic-b-25"
+          ],
+          [
+            "synthetic-a-6",
+            "synthetic-b-80"
+          ],
+          [
+            "synthetic-a-26",
+            "synthetic-b-56"
+          ],
+          [
+            "synthetic-a-82",
+            "synthetic-b-72"
+          ],
+          [
+            "synthetic-a-38",
+            "synthetic-b-0"
+          ],
+          [
+            "synthetic-a-31",
+            "synthetic-b-88"
+          ],
+          [
+            "synthetic-a-36",
+            "synthetic-b-47"
+          ],
+          [
+            "synthetic-a-79",
+            "synthetic-b-51"
+          ],
+          [
+            "synthetic-a-75",
+            "synthetic-b-46"
+          ],
+          [
+            "synthetic-a-27",
+            "synthetic-b-85"
+          ],
+          [
+            "synthetic-a-7",
+            "synthetic-b-5"
+          ],
+          [
+            "synthetic-a-39",
+            "synthetic-b-16"
+          ],
+          [
+            "synthetic-a-69",
+            "synthetic-b-11"
+          ],
+          [
+            "synthetic-a-88",
+            "synthetic-b-22"
+          ],
+          [
+            "synthetic-a-64",
+            "synthetic-b-19"
+          ],
+          [
+            "synthetic-a-65",
+            "synthetic-b-20"
+          ],
+          [
+            "synthetic-a-77",
+            "synthetic-b-33"
+          ],
+          [
+            "synthetic-a-34",
+            "synthetic-b-78"
+          ],
+          [
+            "synthetic-a-62",
+            "synthetic-b-94"
+          ],
+          [
+            "synthetic-a-66",
+            "synthetic-b-81"
+          ],
+          [
+            "synthetic-a-21",
+            "synthetic-b-43"
+          ],
+          [
+            "synthetic-a-1",
+            "synthetic-b-27"
+          ],
+          [
+            "synthetic-a-28",
+            "synthetic-b-28"
+          ],
+          [
+            "synthetic-a-85",
+            "synthetic-b-42"
+          ],
+          [
+            "synthetic-a-12",
+            "synthetic-b-23"
+          ],
+          [
+            "synthetic-a-59",
+            "synthetic-b-60"
+          ],
+          [
+            "synthetic-a-86",
+            "synthetic-b-54"
+          ],
+          [
+            "synthetic-a-19",
+            "synthetic-b-41"
+          ],
+          [
+            "synthetic-a-52",
+            "synthetic-b-1"
+          ],
+          [
+            "synthetic-a-89",
+            "synthetic-b-53"
+          ],
+          [
+            "synthetic-a-54",
+            "synthetic-b-31"
+          ],
+          [
+            "synthetic-a-60",
+            "synthetic-b-3"
+          ],
+          [
+            "synthetic-a-23",
+            "synthetic-b-18"
+          ],
+          [
+            "synthetic-a-56",
+            "synthetic-b-92"
+          ],
+          [
+            "synthetic-a-40",
+            "synthetic-b-67"
+          ],
+          [
+            "synthetic-a-67",
+            "synthetic-b-26"
+          ],
+          [
+            "synthetic-a-50",
+            "synthetic-b-55"
+          ],
+          [
+            "synthetic-a-57",
+            "synthetic-b-86"
+          ]
+        ],
+        "software": {
+          "python": "3.12.3",
+          "numpy": "2.5.2",
+          "torch": "2.14.0+cu130"
+        },
+        "training_updates": [
+          {
+            "before_scoring_batch": 3,
+            "training_batches": [
+              1
+            ],
+            "validation_batch": 2,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 4,
+            "training_batches": [
+              1,
+              2
+            ],
+            "validation_batch": 3,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 5,
+            "training_batches": [
+              1,
+              2,
+              3
+            ],
+            "validation_batch": 4,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 6,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "validation_batch": 5,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 7,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "validation_batch": 6,
+            "epochs": 20
+          },
+          {
+            "before_scoring_batch": 8,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "validation_batch": 7,
+            "epochs": 14
+          },
+          {
+            "before_scoring_batch": 9,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "validation_batch": 8,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 10,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "validation_batch": 9,
+            "epochs": 7
+          },
+          {
+            "before_scoring_batch": 11,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "validation_batch": 10,
+            "epochs": 14
+          },
+          {
+            "before_scoring_batch": 12,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "validation_batch": 11,
+            "epochs": 8
+          }
+        ],
+        "scored_pairs": 80,
+        "log_final_wealth": -9.113074345005055,
+        "scored_batch_numbers": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "mean_shift",
+    "repetition": 0,
+    "method": "identity",
+    "seed": 196613,
+    "seconds": 0.14369237492792308,
+    "result": {
+      "e_value": 4.1968845345380645e-07,
+      "status": "ok",
+      "reason": "standalone diagnostic; final wealth",
+      "per_batch": [
+        0.29064243081206687,
+        1.4278972315548462,
+        0.8705275049268849,
+        0.002033545119658615,
+        0.20164639031072867,
+        0.4195282145878822,
+        23.972480994651693,
+        1.2060701499597806,
+        0.0008716716299823722,
+        0.2679443802763882
+      ],
+      "log_wealth_path": [
+        0.0,
+        -1.235661527451307,
+        -0.8794586328219284,
+        -1.0181145563955212,
+        -7.216089201081333,
+        -8.81732885966936,
+        -9.685953357347094,
+        -6.509046810099636,
+        -6.321679546023799,
+        -13.366777322120935,
+        -14.683753178412983
+      ],
+      "n_pairs": 96,
+      "n_batches": 12,
+      "n_scored": 10,
+      "config": {
+        "batch_pairs": 8,
+        "burn_in": 2,
+        "hidden": [
+          16,
+          16
+        ],
+        "lr": 0.005,
+        "patience": 5,
+        "max_epochs": 20,
+        "weight_decay": 0.01,
+        "tanh_clip": 4.0,
+        "seed": 196613,
+        "encoder": null,
+        "max_missing_fraction": 0.2
+      },
+      "metadata": {
+        "null": "equal distributions of independent units in independent groups",
+        "diagnostic_only": true,
+        "sampling": {
+          "mode": "synthetic",
+          "source": "generated normal features",
+          "assumptions": "independent iid units",
+          "unit_namespace": "",
+          "input_scale": "features",
+          "aggregation": "reject"
+        },
+        "artifact": "identity:predeclared-features",
+        "missing_genes": [],
+        "input_rows": [
+          96,
+          96
+        ],
+        "independent_units": [
+          96,
+          96
+        ],
+        "input_sha256": [
+          "8f709ce6b29e5133021e128bb2648a12bce2804fd4620ed4cc2f59230d8cddd7",
+          "2dad5519eda5bd38abb0398381b732f3c7d9d18202a141958f4efbfdc4f7f184"
+        ],
+        "genes": [
+          "synthetic-0",
+          "synthetic-1",
+          "synthetic-2",
+          "synthetic-3",
+          "synthetic-4",
+          "synthetic-5",
+          "synthetic-6",
+          "synthetic-7"
+        ],
+        "dropped_units": [],
+        "unused_a": [],
+        "unused_b": [],
+        "pair_order": [
+          [
+            "synthetic-a-89",
+            "synthetic-b-67"
+          ],
+          [
+            "synthetic-a-3",
+            "synthetic-b-51"
+          ],
+          [
+            "synthetic-a-56",
+            "synthetic-b-46"
+          ],
+          [
+            "synthetic-a-1",
+            "synthetic-b-32"
+          ],
+          [
+            "synthetic-a-38",
+            "synthetic-b-69"
+          ],
+          [
+            "synthetic-a-40",
+            "synthetic-b-22"
+          ],
+          [
+            "synthetic-a-81",
+            "synthetic-b-24"
+          ],
+          [
+            "synthetic-a-7",
+            "synthetic-b-13"
+          ],
+          [
+            "synthetic-a-39",
+            "synthetic-b-84"
+          ],
+          [
+            "synthetic-a-41",
+            "synthetic-b-21"
+          ],
+          [
+            "synthetic-a-6",
+            "synthetic-b-33"
+          ],
+          [
+            "synthetic-a-52",
+            "synthetic-b-8"
+          ],
+          [
+            "synthetic-a-15",
+            "synthetic-b-60"
+          ],
+          [
+            "synthetic-a-49",
+            "synthetic-b-2"
+          ],
+          [
+            "synthetic-a-35",
+            "synthetic-b-29"
+          ],
+          [
+            "synthetic-a-69",
+            "synthetic-b-81"
+          ],
+          [
+            "synthetic-a-12",
+            "synthetic-b-93"
+          ],
+          [
+            "synthetic-a-17",
+            "synthetic-b-94"
+          ],
+          [
+            "synthetic-a-80",
+            "synthetic-b-42"
+          ],
+          [
+            "synthetic-a-45",
+            "synthetic-b-65"
+          ],
+          [
+            "synthetic-a-18",
+            "synthetic-b-54"
+          ],
+          [
+            "synthetic-a-29",
+            "synthetic-b-19"
+          ],
+          [
+            "synthetic-a-46",
+            "synthetic-b-26"
+          ],
+          [
+            "synthetic-a-83",
+            "synthetic-b-27"
+          ],
+          [
+            "synthetic-a-31",
+            "synthetic-b-12"
+          ],
+          [
+            "synthetic-a-59",
+            "synthetic-b-0"
+          ],
+          [
+            "synthetic-a-93",
+            "synthetic-b-91"
+          ],
+          [
+            "synthetic-a-42",
+            "synthetic-b-76"
+          ],
+          [
+            "synthetic-a-95",
+            "synthetic-b-30"
+          ],
+          [
+            "synthetic-a-34",
+            "synthetic-b-72"
+          ],
+          [
+            "synthetic-a-48",
+            "synthetic-b-66"
+          ],
+          [
+            "synthetic-a-27",
+            "synthetic-b-11"
+          ],
+          [
+            "synthetic-a-24",
+            "synthetic-b-39"
+          ],
+          [
+            "synthetic-a-64",
+            "synthetic-b-55"
+          ],
+          [
+            "synthetic-a-4",
+            "synthetic-b-74"
+          ],
+          [
+            "synthetic-a-21",
+            "synthetic-b-82"
+          ],
+          [
+            "synthetic-a-61",
+            "synthetic-b-92"
+          ],
+          [
+            "synthetic-a-28",
+            "synthetic-b-77"
+          ],
+          [
+            "synthetic-a-67",
+            "synthetic-b-35"
+          ],
+          [
+            "synthetic-a-73",
+            "synthetic-b-40"
+          ],
+          [
+            "synthetic-a-33",
+            "synthetic-b-17"
+          ],
+          [
+            "synthetic-a-91",
+            "synthetic-b-70"
+          ],
+          [
+            "synthetic-a-92",
+            "synthetic-b-31"
+          ],
+          [
+            "synthetic-a-57",
+            "synthetic-b-1"
+          ],
+          [
+            "synthetic-a-32",
+            "synthetic-b-7"
+          ],
+          [
+            "synthetic-a-78",
+            "synthetic-b-5"
+          ],
+          [
+            "synthetic-a-76",
+            "synthetic-b-52"
+          ],
+          [
+            "synthetic-a-70",
+            "synthetic-b-44"
+          ],
+          [
+            "synthetic-a-25",
+            "synthetic-b-45"
+          ],
+          [
+            "synthetic-a-5",
+            "synthetic-b-87"
+          ],
+          [
+            "synthetic-a-50",
+            "synthetic-b-41"
+          ],
+          [
+            "synthetic-a-14",
+            "synthetic-b-89"
+          ],
+          [
+            "synthetic-a-51",
+            "synthetic-b-75"
+          ],
+          [
+            "synthetic-a-23",
+            "synthetic-b-83"
+          ],
+          [
+            "synthetic-a-84",
+            "synthetic-b-16"
+          ],
+          [
+            "synthetic-a-77",
+            "synthetic-b-63"
+          ],
+          [
+            "synthetic-a-55",
+            "synthetic-b-85"
+          ],
+          [
+            "synthetic-a-8",
+            "synthetic-b-56"
+          ],
+          [
+            "synthetic-a-44",
+            "synthetic-b-28"
+          ],
+          [
+            "synthetic-a-74",
+            "synthetic-b-58"
+          ],
+          [
+            "synthetic-a-53",
+            "synthetic-b-73"
+          ],
+          [
+            "synthetic-a-26",
+            "synthetic-b-18"
+          ],
+          [
+            "synthetic-a-82",
+            "synthetic-b-53"
+          ],
+          [
+            "synthetic-a-54",
+            "synthetic-b-48"
+          ],
+          [
+            "synthetic-a-2",
+            "synthetic-b-68"
+          ],
+          [
+            "synthetic-a-20",
+            "synthetic-b-20"
+          ],
+          [
+            "synthetic-a-9",
+            "synthetic-b-64"
+          ],
+          [
+            "synthetic-a-36",
+            "synthetic-b-47"
+          ],
+          [
+            "synthetic-a-62",
+            "synthetic-b-49"
+          ],
+          [
+            "synthetic-a-68",
+            "synthetic-b-61"
+          ],
+          [
+            "synthetic-a-66",
+            "synthetic-b-59"
+          ],
+          [
+            "synthetic-a-11",
+            "synthetic-b-15"
+          ],
+          [
+            "synthetic-a-72",
+            "synthetic-b-25"
+          ],
+          [
+            "synthetic-a-16",
+            "synthetic-b-4"
+          ],
+          [
+            "synthetic-a-19",
+            "synthetic-b-9"
+          ],
+          [
+            "synthetic-a-94",
+            "synthetic-b-71"
+          ],
+          [
+            "synthetic-a-22",
+            "synthetic-b-3"
+          ],
+          [
+            "synthetic-a-63",
+            "synthetic-b-10"
+          ],
+          [
+            "synthetic-a-37",
+            "synthetic-b-14"
+          ],
+          [
+            "synthetic-a-87",
+            "synthetic-b-57"
+          ],
+          [
+            "synthetic-a-43",
+            "synthetic-b-79"
+          ],
+          [
+            "synthetic-a-60",
+            "synthetic-b-6"
+          ],
+          [
+            "synthetic-a-79",
+            "synthetic-b-86"
+          ],
+          [
+            "synthetic-a-88",
+            "synthetic-b-88"
+          ],
+          [
+            "synthetic-a-58",
+            "synthetic-b-43"
+          ],
+          [
+            "synthetic-a-86",
+            "synthetic-b-50"
+          ],
+          [
+            "synthetic-a-71",
+            "synthetic-b-80"
+          ],
+          [
+            "synthetic-a-47",
+            "synthetic-b-23"
+          ],
+          [
+            "synthetic-a-75",
+            "synthetic-b-36"
+          ],
+          [
+            "synthetic-a-30",
+            "synthetic-b-38"
+          ],
+          [
+            "synthetic-a-85",
+            "synthetic-b-37"
+          ],
+          [
+            "synthetic-a-10",
+            "synthetic-b-62"
+          ],
+          [
+            "synthetic-a-13",
+            "synthetic-b-34"
+          ],
+          [
+            "synthetic-a-90",
+            "synthetic-b-95"
+          ],
+          [
+            "synthetic-a-65",
+            "synthetic-b-78"
+          ],
+          [
+            "synthetic-a-0",
+            "synthetic-b-90"
+          ]
+        ],
+        "software": {
+          "python": "3.12.3",
+          "numpy": "2.5.2",
+          "torch": "2.14.0+cu130"
+        },
+        "training_updates": [
+          {
+            "before_scoring_batch": 3,
+            "training_batches": [
+              1
+            ],
+            "validation_batch": 2,
+            "epochs": 20
+          },
+          {
+            "before_scoring_batch": 4,
+            "training_batches": [
+              1,
+              2
+            ],
+            "validation_batch": 3,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 5,
+            "training_batches": [
+              1,
+              2,
+              3
+            ],
+            "validation_batch": 4,
+            "epochs": 20
+          },
+          {
+            "before_scoring_batch": 6,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "validation_batch": 5,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 7,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "validation_batch": 6,
+            "epochs": 17
+          },
+          {
+            "before_scoring_batch": 8,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "validation_batch": 7,
+            "epochs": 17
+          },
+          {
+            "before_scoring_batch": 9,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "validation_batch": 8,
+            "epochs": 12
+          },
+          {
+            "before_scoring_batch": 10,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "validation_batch": 9,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 11,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "validation_batch": 10,
+            "epochs": 20
+          },
+          {
+            "before_scoring_batch": 12,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "validation_batch": 11,
+            "epochs": 5
+          }
+        ],
+        "scored_pairs": 80,
+        "log_final_wealth": -14.683753178412983,
+        "scored_batch_numbers": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "variance_shift",
+    "repetition": 0,
+    "method": "identity",
+    "seed": 1196616,
+    "seconds": 0.1273441498633474,
+    "result": {
+      "e_value": 44548749268.23904,
+      "status": "ok",
+      "reason": "standalone diagnostic; final wealth",
+      "per_batch": [
+        1.3992140021875106,
+        1.8399774348837816,
+        26.372173762793473,
+        2.2197765484000915,
+        10.086069783156955,
+        1.0057207563030572,
+        120.57240531340615,
+        40.228301555016124,
+        38.560851425895606,
+        155.79663393883365
+      ],
+      "log_wealth_path": [
+        0.0,
+        0.3359106519531365,
+        0.9456639598487129,
+        4.217973389990295,
+        5.01537992693471,
+        7.326535169379204,
+        7.332239624297207,
+        12.124490070745612,
+        15.819060837447113,
+        19.471298387492773,
+        24.519849915682123
+      ],
+      "n_pairs": 96,
+      "n_batches": 12,
+      "n_scored": 10,
+      "config": {
+        "batch_pairs": 8,
+        "burn_in": 2,
+        "hidden": [
+          16,
+          16
+        ],
+        "lr": 0.005,
+        "patience": 5,
+        "max_epochs": 20,
+        "weight_decay": 0.01,
+        "tanh_clip": 4.0,
+        "seed": 1196616,
+        "encoder": null,
+        "max_missing_fraction": 0.2
+      },
+      "metadata": {
+        "null": "equal distributions of independent units in independent groups",
+        "diagnostic_only": true,
+        "sampling": {
+          "mode": "synthetic",
+          "source": "generated normal features",
+          "assumptions": "independent iid units",
+          "unit_namespace": "",
+          "input_scale": "features",
+          "aggregation": "reject"
+        },
+        "artifact": "identity:predeclared-features",
+        "missing_genes": [],
+        "input_rows": [
+          96,
+          96
+        ],
+        "independent_units": [
+          96,
+          96
+        ],
+        "input_sha256": [
+          "f8b27abb9dc9bcaec63b1bc2e9a4afec103b40d4650b2eaddbce73b36dfd4b4e",
+          "0044314bf0d86fcb81a78a13c2aec6dfa3070a312bc36fa919350318efec9c4b"
+        ],
+        "genes": [
+          "synthetic-0",
+          "synthetic-1",
+          "synthetic-2",
+          "synthetic-3",
+          "synthetic-4",
+          "synthetic-5",
+          "synthetic-6",
+          "synthetic-7"
+        ],
+        "dropped_units": [],
+        "unused_a": [],
+        "unused_b": [],
+        "pair_order": [
+          [
+            "synthetic-a-70",
+            "synthetic-b-38"
+          ],
+          [
+            "synthetic-a-91",
+            "synthetic-b-51"
+          ],
+          [
+            "synthetic-a-51",
+            "synthetic-b-22"
+          ],
+          [
+            "synthetic-a-87",
+            "synthetic-b-29"
+          ],
+          [
+            "synthetic-a-58",
+            "synthetic-b-49"
+          ],
+          [
+            "synthetic-a-42",
+            "synthetic-b-84"
+          ],
+          [
+            "synthetic-a-80",
+            "synthetic-b-41"
+          ],
+          [
+            "synthetic-a-82",
+            "synthetic-b-88"
+          ],
+          [
+            "synthetic-a-76",
+            "synthetic-b-57"
+          ],
+          [
+            "synthetic-a-4",
+            "synthetic-b-83"
+          ],
+          [
+            "synthetic-a-92",
+            "synthetic-b-36"
+          ],
+          [
+            "synthetic-a-79",
+            "synthetic-b-85"
+          ],
+          [
+            "synthetic-a-3",
+            "synthetic-b-73"
+          ],
+          [
+            "synthetic-a-38",
+            "synthetic-b-95"
+          ],
+          [
+            "synthetic-a-12",
+            "synthetic-b-13"
+          ],
+          [
+            "synthetic-a-18",
+            "synthetic-b-30"
+          ],
+          [
+            "synthetic-a-64",
+            "synthetic-b-82"
+          ],
+          [
+            "synthetic-a-32",
+            "synthetic-b-74"
+          ],
+          [
+            "synthetic-a-61",
+            "synthetic-b-72"
+          ],
+          [
+            "synthetic-a-60",
+            "synthetic-b-81"
+          ],
+          [
+            "synthetic-a-29",
+            "synthetic-b-6"
+          ],
+          [
+            "synthetic-a-73",
+            "synthetic-b-3"
+          ],
+          [
+            "synthetic-a-54",
+            "synthetic-b-31"
+          ],
+          [
+            "synthetic-a-53",
+            "synthetic-b-70"
+          ],
+          [
+            "synthetic-a-71",
+            "synthetic-b-92"
+          ],
+          [
+            "synthetic-a-1",
+            "synthetic-b-45"
+          ],
+          [
+            "synthetic-a-37",
+            "synthetic-b-0"
+          ],
+          [
+            "synthetic-a-47",
+            "synthetic-b-35"
+          ],
+          [
+            "synthetic-a-59",
+            "synthetic-b-69"
+          ],
+          [
+            "synthetic-a-26",
+            "synthetic-b-71"
+          ],
+          [
+            "synthetic-a-6",
+            "synthetic-b-7"
+          ],
+          [
+            "synthetic-a-2",
+            "synthetic-b-53"
+          ],
+          [
+            "synthetic-a-62",
+            "synthetic-b-75"
+          ],
+          [
+            "synthetic-a-93",
+            "synthetic-b-23"
+          ],
+          [
+            "synthetic-a-74",
+            "synthetic-b-21"
+          ],
+          [
+            "synthetic-a-21",
+            "synthetic-b-43"
+          ],
+          [
+            "synthetic-a-56",
+            "synthetic-b-40"
+          ],
+          [
+            "synthetic-a-17",
+            "synthetic-b-16"
+          ],
+          [
+            "synthetic-a-86",
+            "synthetic-b-37"
+          ],
+          [
+            "synthetic-a-34",
+            "synthetic-b-26"
+          ],
+          [
+            "synthetic-a-68",
+            "synthetic-b-76"
+          ],
+          [
+            "synthetic-a-50",
+            "synthetic-b-48"
+          ],
+          [
+            "synthetic-a-69",
+            "synthetic-b-9"
+          ],
+          [
+            "synthetic-a-39",
+            "synthetic-b-50"
+          ],
+          [
+            "synthetic-a-19",
+            "synthetic-b-63"
+          ],
+          [
+            "synthetic-a-49",
+            "synthetic-b-94"
+          ],
+          [
+            "synthetic-a-63",
+            "synthetic-b-42"
+          ],
+          [
+            "synthetic-a-36",
+            "synthetic-b-34"
+          ],
+          [
+            "synthetic-a-35",
+            "synthetic-b-44"
+          ],
+          [
+            "synthetic-a-81",
+            "synthetic-b-39"
+          ],
+          [
+            "synthetic-a-45",
+            "synthetic-b-56"
+          ],
+          [
+            "synthetic-a-65",
+            "synthetic-b-33"
+          ],
+          [
+            "synthetic-a-0",
+            "synthetic-b-64"
+          ],
+          [
+            "synthetic-a-5",
+            "synthetic-b-67"
+          ],
+          [
+            "synthetic-a-14",
+            "synthetic-b-47"
+          ],
+          [
+            "synthetic-a-89",
+            "synthetic-b-4"
+          ],
+          [
+            "synthetic-a-52",
+            "synthetic-b-78"
+          ],
+          [
+            "synthetic-a-57",
+            "synthetic-b-32"
+          ],
+          [
+            "synthetic-a-67",
+            "synthetic-b-60"
+          ],
+          [
+            "synthetic-a-22",
+            "synthetic-b-2"
+          ],
+          [
+            "synthetic-a-15",
+            "synthetic-b-25"
+          ],
+          [
+            "synthetic-a-7",
+            "synthetic-b-80"
+          ],
+          [
+            "synthetic-a-30",
+            "synthetic-b-58"
+          ],
+          [
+            "synthetic-a-16",
+            "synthetic-b-28"
+          ],
+          [
+            "synthetic-a-33",
+            "synthetic-b-59"
+          ],
+          [
+            "synthetic-a-43",
+            "synthetic-b-89"
+          ],
+          [
+            "synthetic-a-84",
+            "synthetic-b-52"
+          ],
+          [
+            "synthetic-a-25",
+            "synthetic-b-79"
+          ],
+          [
+            "synthetic-a-48",
+            "synthetic-b-11"
+          ],
+          [
+            "synthetic-a-44",
+            "synthetic-b-61"
+          ],
+          [
+            "synthetic-a-27",
+            "synthetic-b-87"
+          ],
+          [
+            "synthetic-a-90",
+            "synthetic-b-5"
+          ],
+          [
+            "synthetic-a-23",
+            "synthetic-b-77"
+          ],
+          [
+            "synthetic-a-31",
+            "synthetic-b-12"
+          ],
+          [
+            "synthetic-a-75",
+            "synthetic-b-8"
+          ],
+          [
+            "synthetic-a-72",
+            "synthetic-b-15"
+          ],
+          [
+            "synthetic-a-11",
+            "synthetic-b-46"
+          ],
+          [
+            "synthetic-a-85",
+            "synthetic-b-14"
+          ],
+          [
+            "synthetic-a-13",
+            "synthetic-b-86"
+          ],
+          [
+            "synthetic-a-40",
+            "synthetic-b-54"
+          ],
+          [
+            "synthetic-a-66",
+            "synthetic-b-17"
+          ],
+          [
+            "synthetic-a-78",
+            "synthetic-b-91"
+          ],
+          [
+            "synthetic-a-24",
+            "synthetic-b-65"
+          ],
+          [
+            "synthetic-a-77",
+            "synthetic-b-93"
+          ],
+          [
+            "synthetic-a-9",
+            "synthetic-b-55"
+          ],
+          [
+            "synthetic-a-41",
+            "synthetic-b-18"
+          ],
+          [
+            "synthetic-a-88",
+            "synthetic-b-24"
+          ],
+          [
+            "synthetic-a-55",
+            "synthetic-b-20"
+          ],
+          [
+            "synthetic-a-94",
+            "synthetic-b-62"
+          ],
+          [
+            "synthetic-a-10",
+            "synthetic-b-10"
+          ],
+          [
+            "synthetic-a-83",
+            "synthetic-b-27"
+          ],
+          [
+            "synthetic-a-95",
+            "synthetic-b-1"
+          ],
+          [
+            "synthetic-a-20",
+            "synthetic-b-66"
+          ],
+          [
+            "synthetic-a-46",
+            "synthetic-b-68"
+          ],
+          [
+            "synthetic-a-8",
+            "synthetic-b-90"
+          ],
+          [
+            "synthetic-a-28",
+            "synthetic-b-19"
+          ]
+        ],
+        "software": {
+          "python": "3.12.3",
+          "numpy": "2.5.2",
+          "torch": "2.14.0+cu130"
+        },
+        "training_updates": [
+          {
+            "before_scoring_batch": 3,
+            "training_batches": [
+              1
+            ],
+            "validation_batch": 2,
+            "epochs": 20
+          },
+          {
+            "before_scoring_batch": 4,
+            "training_batches": [
+              1,
+              2
+            ],
+            "validation_batch": 3,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 5,
+            "training_batches": [
+              1,
+              2,
+              3
+            ],
+            "validation_batch": 4,
+            "epochs": 20
+          },
+          {
+            "before_scoring_batch": 6,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "validation_batch": 5,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 7,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "validation_batch": 6,
+            "epochs": 18
+          },
+          {
+            "before_scoring_batch": 8,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "validation_batch": 7,
+            "epochs": 11
+          },
+          {
+            "before_scoring_batch": 9,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "validation_batch": 8,
+            "epochs": 6
+          },
+          {
+            "before_scoring_batch": 10,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "validation_batch": 9,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 11,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "validation_batch": 10,
+            "epochs": 13
+          },
+          {
+            "before_scoring_batch": 12,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "validation_batch": 11,
+            "epochs": 20
+          }
+        ],
+        "scored_pairs": 80,
+        "log_final_wealth": 24.519849915682123,
+        "scored_batch_numbers": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "discarded_signal",
+    "repetition": 0,
+    "method": "identity",
+    "seed": 2196619,
+    "seconds": 0.1387270879931748,
+    "result": {
+      "e_value": 0.07398403266129266,
+      "status": "ok",
+      "reason": "standalone diagnostic; final wealth",
+      "per_batch": [
+        14.62496415382068,
+        0.00041679461298919717,
+        4.162025238948113,
+        0.24449878003301195,
+        0.33524160160334643,
+        0.0025776543605838063,
+        66.07580667241868,
+        4.163986395781511,
+        1.2567146483271674,
+        39.91798810907979
+      ],
+      "log_wealth_path": [
+        0.0,
+        2.682729942094108,
+        -5.100187050204559,
+        -3.6741852581121197,
+        -5.082730217831811,
+        -6.175634026111817,
+        -12.136509482263797,
+        -7.945706813411816,
+        -6.519233929767814,
+        -6.2907330360122,
+        -2.6039059839081053
+      ],
+      "n_pairs": 96,
+      "n_batches": 12,
+      "n_scored": 10,
+      "config": {
+        "batch_pairs": 8,
+        "burn_in": 2,
+        "hidden": [
+          16,
+          16
+        ],
+        "lr": 0.005,
+        "patience": 5,
+        "max_epochs": 20,
+        "weight_decay": 0.01,
+        "tanh_clip": 4.0,
+        "seed": 2196619,
+        "encoder": null,
+        "max_missing_fraction": 0.2
+      },
+      "metadata": {
+        "null": "equal distributions of independent units in independent groups",
+        "diagnostic_only": true,
+        "sampling": {
+          "mode": "synthetic",
+          "source": "generated normal features",
+          "assumptions": "independent iid units",
+          "unit_namespace": "",
+          "input_scale": "features",
+          "aggregation": "reject"
+        },
+        "artifact": "identity:predeclared-features",
+        "missing_genes": [],
+        "input_rows": [
+          96,
+          96
+        ],
+        "independent_units": [
+          96,
+          96
+        ],
+        "input_sha256": [
+          "333717040118a56ff4fe3faec4ef67081748e3c6a99b433a5a8c618a4115713d",
+          "019821b9b1f29e0bb9e47779aaa603025bb389b649a18dd529038aacb4764067"
+        ],
+        "genes": [
+          "synthetic-0",
+          "synthetic-1",
+          "synthetic-2",
+          "synthetic-3",
+          "synthetic-4",
+          "synthetic-5",
+          "synthetic-6",
+          "synthetic-7"
+        ],
+        "dropped_units": [],
+        "unused_a": [],
+        "unused_b": [],
+        "pair_order": [
+          [
+            "synthetic-a-93",
+            "synthetic-b-14"
+          ],
+          [
+            "synthetic-a-5",
+            "synthetic-b-35"
+          ],
+          [
+            "synthetic-a-49",
+            "synthetic-b-26"
+          ],
+          [
+            "synthetic-a-30",
+            "synthetic-b-43"
+          ],
+          [
+            "synthetic-a-72",
+            "synthetic-b-44"
+          ],
+          [
+            "synthetic-a-59",
+            "synthetic-b-95"
+          ],
+          [
+            "synthetic-a-92",
+            "synthetic-b-62"
+          ],
+          [
+            "synthetic-a-80",
+            "synthetic-b-87"
+          ],
+          [
+            "synthetic-a-88",
+            "synthetic-b-69"
+          ],
+          [
+            "synthetic-a-26",
+            "synthetic-b-92"
+          ],
+          [
+            "synthetic-a-17",
+            "synthetic-b-79"
+          ],
+          [
+            "synthetic-a-13",
+            "synthetic-b-72"
+          ],
+          [
+            "synthetic-a-95",
+            "synthetic-b-54"
+          ],
+          [
+            "synthetic-a-62",
+            "synthetic-b-82"
+          ],
+          [
+            "synthetic-a-81",
+            "synthetic-b-25"
+          ],
+          [
+            "synthetic-a-34",
+            "synthetic-b-29"
+          ],
+          [
+            "synthetic-a-71",
+            "synthetic-b-15"
+          ],
+          [
+            "synthetic-a-18",
+            "synthetic-b-84"
+          ],
+          [
+            "synthetic-a-50",
+            "synthetic-b-49"
+          ],
+          [
+            "synthetic-a-66",
+            "synthetic-b-76"
+          ],
+          [
+            "synthetic-a-23",
+            "synthetic-b-81"
+          ],
+          [
+            "synthetic-a-87",
+            "synthetic-b-12"
+          ],
+          [
+            "synthetic-a-12",
+            "synthetic-b-22"
+          ],
+          [
+            "synthetic-a-27",
+            "synthetic-b-9"
+          ],
+          [
+            "synthetic-a-0",
+            "synthetic-b-0"
+          ],
+          [
+            "synthetic-a-65",
+            "synthetic-b-33"
+          ],
+          [
+            "synthetic-a-20",
+            "synthetic-b-36"
+          ],
+          [
+            "synthetic-a-16",
+            "synthetic-b-67"
+          ],
+          [
+            "synthetic-a-84",
+            "synthetic-b-68"
+          ],
+          [
+            "synthetic-a-41",
+            "synthetic-b-78"
+          ],
+          [
+            "synthetic-a-15",
+            "synthetic-b-28"
+          ],
+          [
+            "synthetic-a-6",
+            "synthetic-b-90"
+          ],
+          [
+            "synthetic-a-74",
+            "synthetic-b-45"
+          ],
+          [
+            "synthetic-a-55",
+            "synthetic-b-30"
+          ],
+          [
+            "synthetic-a-46",
+            "synthetic-b-65"
+          ],
+          [
+            "synthetic-a-58",
+            "synthetic-b-13"
+          ],
+          [
+            "synthetic-a-19",
+            "synthetic-b-93"
+          ],
+          [
+            "synthetic-a-61",
+            "synthetic-b-60"
+          ],
+          [
+            "synthetic-a-24",
+            "synthetic-b-17"
+          ],
+          [
+            "synthetic-a-78",
+            "synthetic-b-66"
+          ],
+          [
+            "synthetic-a-21",
+            "synthetic-b-57"
+          ],
+          [
+            "synthetic-a-85",
+            "synthetic-b-47"
+          ],
+          [
+            "synthetic-a-68",
+            "synthetic-b-34"
+          ],
+          [
+            "synthetic-a-69",
+            "synthetic-b-75"
+          ],
+          [
+            "synthetic-a-94",
+            "synthetic-b-19"
+          ],
+          [
+            "synthetic-a-52",
+            "synthetic-b-6"
+          ],
+          [
+            "synthetic-a-9",
+            "synthetic-b-21"
+          ],
+          [
+            "synthetic-a-4",
+            "synthetic-b-32"
+          ],
+          [
+            "synthetic-a-32",
+            "synthetic-b-42"
+          ],
+          [
+            "synthetic-a-56",
+            "synthetic-b-46"
+          ],
+          [
+            "synthetic-a-40",
+            "synthetic-b-11"
+          ],
+          [
+            "synthetic-a-83",
+            "synthetic-b-53"
+          ],
+          [
+            "synthetic-a-42",
+            "synthetic-b-38"
+          ],
+          [
+            "synthetic-a-57",
+            "synthetic-b-39"
+          ],
+          [
+            "synthetic-a-51",
+            "synthetic-b-55"
+          ],
+          [
+            "synthetic-a-63",
+            "synthetic-b-3"
+          ],
+          [
+            "synthetic-a-91",
+            "synthetic-b-94"
+          ],
+          [
+            "synthetic-a-8",
+            "synthetic-b-50"
+          ],
+          [
+            "synthetic-a-3",
+            "synthetic-b-52"
+          ],
+          [
+            "synthetic-a-47",
+            "synthetic-b-64"
+          ],
+          [
+            "synthetic-a-70",
+            "synthetic-b-10"
+          ],
+          [
+            "synthetic-a-11",
+            "synthetic-b-40"
+          ],
+          [
+            "synthetic-a-36",
+            "synthetic-b-61"
+          ],
+          [
+            "synthetic-a-37",
+            "synthetic-b-24"
+          ],
+          [
+            "synthetic-a-1",
+            "synthetic-b-73"
+          ],
+          [
+            "synthetic-a-31",
+            "synthetic-b-16"
+          ],
+          [
+            "synthetic-a-33",
+            "synthetic-b-1"
+          ],
+          [
+            "synthetic-a-48",
+            "synthetic-b-4"
+          ],
+          [
+            "synthetic-a-76",
+            "synthetic-b-7"
+          ],
+          [
+            "synthetic-a-89",
+            "synthetic-b-80"
+          ],
+          [
+            "synthetic-a-75",
+            "synthetic-b-31"
+          ],
+          [
+            "synthetic-a-79",
+            "synthetic-b-41"
+          ],
+          [
+            "synthetic-a-86",
+            "synthetic-b-37"
+          ],
+          [
+            "synthetic-a-7",
+            "synthetic-b-74"
+          ],
+          [
+            "synthetic-a-25",
+            "synthetic-b-88"
+          ],
+          [
+            "synthetic-a-90",
+            "synthetic-b-20"
+          ],
+          [
+            "synthetic-a-77",
+            "synthetic-b-48"
+          ],
+          [
+            "synthetic-a-45",
+            "synthetic-b-70"
+          ],
+          [
+            "synthetic-a-14",
+            "synthetic-b-85"
+          ],
+          [
+            "synthetic-a-28",
+            "synthetic-b-89"
+          ],
+          [
+            "synthetic-a-29",
+            "synthetic-b-77"
+          ],
+          [
+            "synthetic-a-54",
+            "synthetic-b-83"
+          ],
+          [
+            "synthetic-a-38",
+            "synthetic-b-58"
+          ],
+          [
+            "synthetic-a-10",
+            "synthetic-b-23"
+          ],
+          [
+            "synthetic-a-64",
+            "synthetic-b-51"
+          ],
+          [
+            "synthetic-a-43",
+            "synthetic-b-71"
+          ],
+          [
+            "synthetic-a-44",
+            "synthetic-b-91"
+          ],
+          [
+            "synthetic-a-82",
+            "synthetic-b-63"
+          ],
+          [
+            "synthetic-a-53",
+            "synthetic-b-27"
+          ],
+          [
+            "synthetic-a-22",
+            "synthetic-b-86"
+          ],
+          [
+            "synthetic-a-67",
+            "synthetic-b-18"
+          ],
+          [
+            "synthetic-a-39",
+            "synthetic-b-8"
+          ],
+          [
+            "synthetic-a-2",
+            "synthetic-b-5"
+          ],
+          [
+            "synthetic-a-73",
+            "synthetic-b-2"
+          ],
+          [
+            "synthetic-a-60",
+            "synthetic-b-56"
+          ],
+          [
+            "synthetic-a-35",
+            "synthetic-b-59"
+          ]
+        ],
+        "software": {
+          "python": "3.12.3",
+          "numpy": "2.5.2",
+          "torch": "2.14.0+cu130"
+        },
+        "training_updates": [
+          {
+            "before_scoring_batch": 3,
+            "training_batches": [
+              1
+            ],
+            "validation_batch": 2,
+            "epochs": 20
+          },
+          {
+            "before_scoring_batch": 4,
+            "training_batches": [
+              1,
+              2
+            ],
+            "validation_batch": 3,
+            "epochs": 20
+          },
+          {
+            "before_scoring_batch": 5,
+            "training_batches": [
+              1,
+              2,
+              3
+            ],
+            "validation_batch": 4,
+            "epochs": 8
+          },
+          {
+            "before_scoring_batch": 6,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "validation_batch": 5,
+            "epochs": 20
+          },
+          {
+            "before_scoring_batch": 7,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "validation_batch": 6,
+            "epochs": 12
+          },
+          {
+            "before_scoring_batch": 8,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "validation_batch": 7,
+            "epochs": 5
+          },
+          {
+            "before_scoring_batch": 9,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "validation_batch": 8,
+            "epochs": 16
+          },
+          {
+            "before_scoring_batch": 10,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "validation_batch": 9,
+            "epochs": 15
+          },
+          {
+            "before_scoring_batch": 11,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "validation_batch": 10,
+            "epochs": 8
+          },
+          {
+            "before_scoring_batch": 12,
+            "training_batches": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "validation_batch": 11,
+            "epochs": 14
+          }
+        ],
+        "scored_pairs": 80,
+        "log_final_wealth": -2.6039059839081053,
+        "scored_batch_numbers": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      }
+    }
+  }
+]

@@ -663,6 +663,9 @@ dependencies = [
 dev = [
     { name = "pytest" },
 ]
+evalue = [
+    { name = "torch" },
+]
 litmap = [
     { name = "matplotlib" },
     { name = "pymupdf" },
@@ -686,8 +689,9 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "requests", specifier = ">=2.32" },
     { name = "sentence-transformers", marker = "extra == 'llm'", specifier = ">=3.0" },
+    { name = "torch", marker = "extra == 'evalue'", specifier = ">=2.6" },
 ]
-provides-extras = ["dev", "llm", "litmap"]
+provides-extras = ["evalue", "dev", "llm", "litmap"]
 
 [[package]]
 name = "duckdb"
