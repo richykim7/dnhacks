@@ -37,6 +37,16 @@ export default function Structures({
     setBusy(true);
     setError("");
     setAtoms(0);
+    if (structure.format === "pdb" && !/^(ATOM  |HETATM)/m.test(structure.text)) {
+      viewer.current?.spin(false);
+      viewer.current?.clear();
+      viewer.current?.render();
+      setError(
+        "No atoms could be read from this structure. Choose a valid PDB or mmCIF file.",
+      );
+      setBusy(false);
+      return;
+    }
     import("3dmol")
       .then((m) => {
         if (disposed || !host.current) return;
