@@ -20,6 +20,7 @@ Fill in exact commands as soon as they exist. Every agent runs the full gate lis
 5. Never leave uncommitted work behind when you stop.
 
 ## Working alongside other agents (two people, many sessions, Claude Code and Codex)
+**Using the board is mandatory for every task. Full instructions: `BOARD.md`. Read it once, follow it always.**
 The shared channel is ONE pinned GitHub issue, "Board" (label `board`), in this repo. `scripts/board.py` wraps it;
 it needs only `gh`, logged in as the person running you. Humans read the same issue and a Telegram group that
 mirrors it. Human one-pager: `COORDINATION.md`.
