@@ -72,7 +72,9 @@ experiment's hypothesis.
 
 ### 3.2 Payoffs, training, and scoring
 
-Use projection-swap: g maps a single sample to a scalar. Choose one consistent sign convention for
+Use DAVT-Projection: T1(x, y) = x and T2(x, y) = y, with g mapping a single sample to a scalar.
+The resulting payoff is antisymmetric under exchange; this is distinct from the paper's
+DAVT-Swap variant, whose network takes paired inputs. Choose one consistent sign convention for
 training and scoring:
 
     h(x, y) = tanh(clip(g(x) - g(y), -4, 4))
