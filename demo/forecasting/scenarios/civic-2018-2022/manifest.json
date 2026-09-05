@@ -1,0 +1,31 @@
+{
+  "scenario_id": "civic-2018-01-01-2022-03-01",
+  "files_sha256": {
+    "historical.json": "bbb41512b7b56a8ee81b87165ca41c0bcebb09d914f0dfde4cce60c433f9f3ce",
+    "outcomes.json": "738b102f8565fd4627b770ec2c1e4fcdc953f969ad73784a0687591e2fcca030"
+  },
+  "sources": [
+    {
+      "available_at": "2018-01-01",
+      "bytes": 2537871,
+      "sha256": "8895ce10b7c119856c3cbd38d8cf08fb597dbd294b06e22eaf50c35ba0db05d3",
+      "url": "https://civicdb.org/downloads/01-Jan-2018/01-Jan-2018-ClinicalEvidenceSummaries.tsv"
+    },
+    {
+      "available_at": "2022-03-01",
+      "bytes": 4466632,
+      "sha256": "121486e06d1133cc20c669b223a32e5c7e0f30a12be1ef05b7dee93b419f1537",
+      "url": "https://civicdb.org/downloads/01-Mar-2022/01-Mar-2022-ClinicalEvidenceSummaries.tsv"
+    }
+  ],
+  "license": "CC0-1.0",
+  "license_url": "https://docs.civicdb.org/en/latest/about.html",
+  "counts": {
+    "nodes": 71,
+    "claims": 131,
+    "evidence": 216,
+    "candidates": 683
+  },
+  "observed_by_horizon": 24,
+  "usage": "Scorers read historical.json only. outcomes.json and this audit manifest are evaluation/reveal inputs."
+}
