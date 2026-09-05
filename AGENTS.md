@@ -35,6 +35,8 @@ The wider local Python suite requires its local vocabulary datasets; report miss
 3. Never read credential files.
 4. No stale docs: if you change behaviour, fix the doc that describes it in the same commit.
 5. Never leave uncommitted work behind when you stop.
+6. `plans/backlog.md` contains deferred ideas, not autonomous assignments. Implement or delegate an item
+   only after the user explicitly requests that item; general autonomy/continuation is not approval.
 
 ## Working alongside other agents (two people, many sessions, Claude Code and Codex)
 **Using the board is mandatory for every task. Full instructions: `BOARD.md`. Read it once, follow it always.**
