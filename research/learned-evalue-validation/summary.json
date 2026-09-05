@@ -1,0 +1,755 @@
+{
+  "description": "Initial synthetic diagnostic evaluation; not a real-cohort validation or a proof.",
+  "reports": {
+    "null": {
+      "schema": 1,
+      "diagnostic_only": true,
+      "data": "synthetic; no real-cohort power claim",
+      "configuration": {
+        "repetitions": 200,
+        "pairs": 96,
+        "epochs": 20,
+        "permutations": 999,
+        "seed": 130363,
+        "alpha": 0.05,
+        "scenarios": [
+          "null"
+        ],
+        "output": "data/processed/evalue-null.json",
+        "artifacts": "data/processed/evalue-synthetic"
+      },
+      "training_seeds": [
+        271828,
+        314159
+      ],
+      "scenarios": {
+        "null": {
+          "identity": {
+            "final_rejections": 1,
+            "final_rate": 0.005,
+            "final_ci95": [
+              0.0008831687156009814,
+              0.02777370439789293
+            ],
+            "crossing_rejections": 4,
+            "crossing_rate": 0.02,
+            "crossing_ci95": [
+              0.0078044264163494685,
+              0.050287086905826436
+            ],
+            "quantiles": {
+              "q00": 1.5220051470659033e-20,
+              "q50": 0.0007424867539319523,
+              "q90": 0.18292338618406903,
+              "q99": 2.5058609177934907,
+              "q100": 66.58180807697998
+            }
+          },
+          "pca": {
+            "final_rejections": 2,
+            "final_rate": 0.01,
+            "final_ci95": [
+              0.0027466581335444384,
+              0.0357217617161768
+            ],
+            "crossing_rejections": 2,
+            "crossing_rate": 0.01,
+            "crossing_ci95": [
+              0.0027466581335444384,
+              0.0357217617161768
+            ],
+            "quantiles": {
+              "q00": 3.8773626437949314e-14,
+              "q50": 0.004206409076269442,
+              "q90": 0.27354353972538864,
+              "q99": 7.842451609093887,
+              "q100": 40.41585154927371
+            }
+          },
+          "autoencoder": {
+            "final_rejections": 0,
+            "final_rate": 0.0,
+            "final_ci95": [
+              1.734723475976807e-18,
+              0.018845326377266575
+            ],
+            "crossing_rejections": 2,
+            "crossing_rate": 0.01,
+            "crossing_ci95": [
+              0.0027466581335444384,
+              0.0357217617161768
+            ],
+            "quantiles": {
+              "q00": 9.828612035296811e-05,
+              "q50": 0.29822408276953444,
+              "q90": 1.2140820334336633,
+              "q99": 6.6678798065555345,
+              "q100": 8.029309677856038
+            }
+          },
+          "scalar": {
+            "final_rejections": 0,
+            "final_rate": 0.0,
+            "final_ci95": [
+              1.734723475976807e-18,
+              0.018845326377266575
+            ],
+            "crossing_rejections": 1,
+            "crossing_rate": 0.005,
+            "crossing_ci95": [
+              0.0008831687156009814,
+              0.02777370439789293
+            ],
+            "quantiles": {
+              "q00": 2.1484696306966037e-06,
+              "q50": 0.20582848296052056,
+              "q90": 1.1230938713597316,
+              "q99": 6.69169280771235,
+              "q100": 7.775322148360383
+            }
+          },
+          "fixed_projection": {
+            "final_rejections": 0,
+            "final_rate": 0.0,
+            "final_ci95": [
+              1.734723475976807e-18,
+              0.018845326377266575
+            ],
+            "crossing_rejections": 3,
+            "crossing_rate": 0.015,
+            "crossing_ci95": [
+              0.00511423779325831,
+              0.04316572879269026
+            ],
+            "quantiles": {
+              "q00": 1.3212446205907734e-11,
+              "q50": 0.005553731882205102,
+              "q90": 0.5204359336534181,
+              "q99": 4.209539809876359,
+              "q100": 6.8411262338819405
+            }
+          },
+          "permutation_p": {
+            "final_rejections": 10,
+            "final_rate": 0.05,
+            "final_ci95": [
+              0.02738264560076393,
+              0.08957814813877599
+            ],
+            "crossing_rejections": 10,
+            "crossing_rate": 0.05,
+            "crossing_ci95": [
+              0.02738264560076393,
+              0.08957814813877599
+            ],
+            "quantiles": {
+              "q00": 0.002,
+              "q50": 0.547,
+              "q90": 0.9244,
+              "q99": 0.99105,
+              "q100": 1.0
+            }
+          },
+          "permutation_calibrated_e": {
+            "final_rejections": 1,
+            "final_rate": 0.005,
+            "final_ci95": [
+              0.0008831687156009814,
+              0.02777370439789293
+            ],
+            "crossing_rejections": 1,
+            "crossing_rate": 0.005,
+            "crossing_ci95": [
+              0.0008831687156009814,
+              0.02777370439789293
+            ],
+            "quantiles": {
+              "q00": 0.0,
+              "q50": 0.35209906996102625,
+              "q90": 1.6734849902103381,
+              "q99": 7.802397252073001,
+              "q100": 21.360679774997898
+            }
+          },
+          "INVALID_label_memorization": {
+            "final_rejections": 200,
+            "final_rate": 1.0,
+            "final_ci95": [
+              0.9811546736227335,
+              1
+            ],
+            "crossing_rejections": 200,
+            "crossing_rate": 1.0,
+            "crossing_ci95": [
+              0.9811546736227335,
+              1
+            ],
+            "quantiles": {
+              "q00": 1.1769186424853677e+24,
+              "q50": 1.1769186424853677e+24,
+              "q90": 1.1769186424853677e+24,
+              "q99": 1.1769186424853677e+24,
+              "q100": 1.1769186424853677e+24
+            }
+          }
+        }
+      },
+      "seconds": 106.88169890921563,
+      "limitations": [
+        "Null simulation does not prove validity.",
+        "Fixed mean-distance permutation statistic is not an omnibus characteristic-kernel test.",
+        "All methods receive the same total pairs; DAVT reserves two burn-in batches.",
+        "Fixed projection omits the shifted coordinate in discarded_signal.",
+        "Wealth has heavy tails; rejection intervals and quantiles do not certify its expectation.",
+        "These are synthetic benchmarks, not evidence of biological utility."
+      ],
+      "full_report_sha256": "68452bf732606fdaf9fca2d06e13c4a30d585bb1aa9cdb3d962a7631dc0571cd"
+    },
+    "alternatives": {
+      "schema": 1,
+      "diagnostic_only": true,
+      "data": "synthetic; no real-cohort power claim",
+      "configuration": {
+        "repetitions": 50,
+        "pairs": 96,
+        "epochs": 20,
+        "permutations": 999,
+        "seed": 196613,
+        "alpha": 0.05,
+        "scenarios": [
+          "mean_shift",
+          "variance_shift",
+          "discarded_signal"
+        ],
+        "output": "data/processed/evalue-alternatives.json",
+        "artifacts": "data/processed/evalue-synthetic-alternatives"
+      },
+      "training_seeds": [
+        271828,
+        314159
+      ],
+      "scenarios": {
+        "mean_shift": {
+          "identity": {
+            "final_rejections": 27,
+            "final_rate": 0.54,
+            "final_ci95": [
+              0.40398871399157477,
+              0.6703034780777566
+            ],
+            "crossing_rejections": 44,
+            "crossing_rate": 0.88,
+            "crossing_ci95": [
+              0.7619518261679701,
+              0.9438239984906773
+            ],
+            "quantiles": {
+              "q00": 4.044000599705285e-10,
+              "q50": 68.66292770888036,
+              "q90": 8794511.63608138,
+              "q99": 331191130.5241641,
+              "q100": 490111375.7617144
+            }
+          },
+          "pca": {
+            "final_rejections": 5,
+            "final_rate": 0.1,
+            "final_ci95": [
+              0.04347576493189041,
+              0.21360231437479654
+            ],
+            "crossing_rejections": 13,
+            "crossing_rate": 0.26,
+            "crossing_ci95": [
+              0.15871527493552393,
+              0.39553157264848837
+            ],
+            "quantiles": {
+              "q00": 4.0249784669574225e-14,
+              "q50": 0.018002874757258983,
+              "q90": 9.111496056309164,
+              "q99": 227.0983369699971,
+              "q100": 297.8568398028468
+            }
+          },
+          "autoencoder": {
+            "final_rejections": 35,
+            "final_rate": 0.7,
+            "final_ci95": [
+              0.562496495355466,
+              0.8089644649911906
+            ],
+            "crossing_rejections": 42,
+            "crossing_rate": 0.84,
+            "crossing_ci95": [
+              0.7148578393696501,
+              0.916625793219666
+            ],
+            "quantiles": {
+              "q00": 0.01258843692475554,
+              "q50": 310.143021362139,
+              "q90": 291988.3675611426,
+              "q99": 528018421.57628083,
+              "q100": 1032592143.2146018
+            }
+          },
+          "scalar": {
+            "final_rejections": 44,
+            "final_rate": 0.88,
+            "final_ci95": [
+              0.7619518261679701,
+              0.9438239984906773
+            ],
+            "crossing_rejections": 48,
+            "crossing_rate": 0.96,
+            "crossing_ci95": [
+              0.8653990931249297,
+              0.9889611156723802
+            ],
+            "quantiles": {
+              "q00": 0.00504117948658573,
+              "q50": 39291.976908037745,
+              "q90": 5272486.777912281,
+              "q99": 3174260174.853507,
+              "q100": 6190776060.046573
+            }
+          },
+          "fixed_projection": {
+            "final_rejections": 43,
+            "final_rate": 0.86,
+            "final_ci95": [
+              0.7381380628941446,
+              0.9304916657298371
+            ],
+            "crossing_rejections": 49,
+            "crossing_rate": 0.98,
+            "crossing_ci95": [
+              0.8950455641036219,
+              0.9964607407283539
+            ],
+            "quantiles": {
+              "q00": 0.00027247453093803457,
+              "q50": 36367.123725524754,
+              "q90": 9707716.36634818,
+              "q99": 151041055969.661,
+              "q100": 222132239283.93896
+            }
+          },
+          "permutation_p": {
+            "final_rejections": 50,
+            "final_rate": 1.0,
+            "final_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "crossing_rejections": 50,
+            "crossing_rate": 1.0,
+            "crossing_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "quantiles": {
+              "q00": 0.001,
+              "q50": 0.001,
+              "q90": 0.001,
+              "q99": 0.001,
+              "q100": 0.001
+            }
+          },
+          "permutation_calibrated_e": {
+            "final_rejections": 50,
+            "final_rate": 1.0,
+            "final_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "crossing_rejections": 50,
+            "crossing_rate": 1.0,
+            "crossing_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "quantiles": {
+              "q00": 30.622776601683796,
+              "q50": 30.622776601683796,
+              "q90": 30.622776601683796,
+              "q99": 30.622776601683796,
+              "q100": 30.622776601683796
+            }
+          },
+          "INVALID_label_memorization": {
+            "final_rejections": 50,
+            "final_rate": 1.0,
+            "final_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "crossing_rejections": 50,
+            "crossing_rate": 1.0,
+            "crossing_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "quantiles": {
+              "q00": 1.1769186424853677e+24,
+              "q50": 1.1769186424853677e+24,
+              "q90": 1.1769186424853677e+24,
+              "q99": 1.1769186424853677e+24,
+              "q100": 1.1769186424853677e+24
+            }
+          }
+        },
+        "variance_shift": {
+          "identity": {
+            "final_rejections": 10,
+            "final_rate": 0.2,
+            "final_ci95": [
+              0.1124375001577611,
+              0.3303710593222542
+            ],
+            "crossing_rejections": 21,
+            "crossing_rate": 0.42,
+            "crossing_ci95": [
+              0.2937500335471198,
+              0.5576655823142176
+            ],
+            "quantiles": {
+              "q00": 3.975913015320036e-10,
+              "q50": 0.08744216360378512,
+              "q90": 7961.421454548008,
+              "q99": 22721222472.88032,
+              "q100": 44548749268.23904
+            }
+          },
+          "pca": {
+            "final_rejections": 16,
+            "final_rate": 0.32,
+            "final_ci95": [
+              0.20758216260656845,
+              0.45810297308144077
+            ],
+            "crossing_rejections": 24,
+            "crossing_rate": 0.48,
+            "crossing_ci95": [
+              0.34797135286578046,
+              0.6148825510995539
+            ],
+            "quantiles": {
+              "q00": 6.668985629202902e-11,
+              "q50": 1.2339436603853624,
+              "q90": 1167.7328875331366,
+              "q99": 1959485.976973824,
+              "q100": 3816363.8444318827
+            }
+          },
+          "autoencoder": {
+            "final_rejections": 20,
+            "final_rate": 0.4,
+            "final_ci95": [
+              0.27608389730256544,
+              0.5381856225241064
+            ],
+            "crossing_rejections": 29,
+            "crossing_rate": 0.58,
+            "crossing_ci95": [
+              0.4423344176857823,
+              0.7062499664528802
+            ],
+            "quantiles": {
+              "q00": 1.375341753024195e-06,
+              "q50": 3.8340229181787393,
+              "q90": 333.8841802535982,
+              "q99": 1606.383431302055,
+              "q100": 1635.0040463962755
+            }
+          },
+          "scalar": {
+            "final_rejections": 48,
+            "final_rate": 0.96,
+            "final_ci95": [
+              0.8653990931249297,
+              0.9889611156723802
+            ],
+            "crossing_rejections": 49,
+            "crossing_rate": 0.98,
+            "crossing_ci95": [
+              0.8950455641036219,
+              0.9964607407283539
+            ],
+            "quantiles": {
+              "q00": 9.45231659277415,
+              "q50": 21596.224621018562,
+              "q90": 862077.9396722257,
+              "q99": 181257723.7120218,
+              "q100": 274777076.92730886
+            }
+          },
+          "fixed_projection": {
+            "final_rejections": 38,
+            "final_rate": 0.76,
+            "final_ci95": [
+              0.6258731624205708,
+              0.8570260860300828
+            ],
+            "crossing_rejections": 45,
+            "crossing_rate": 0.9,
+            "crossing_ci95": [
+              0.7863976856252035,
+              0.9565242350681096
+            ],
+            "quantiles": {
+              "q00": 6.40215703125497e-05,
+              "q50": 2174.8171057528743,
+              "q90": 29924766.716562346,
+              "q99": 172975261713.27036,
+              "q100": 339088225864.83765
+            }
+          },
+          "permutation_p": {
+            "final_rejections": 2,
+            "final_rate": 0.04,
+            "final_ci95": [
+              0.011038884327619805,
+              0.1346009068750702
+            ],
+            "crossing_rejections": 2,
+            "crossing_rate": 0.04,
+            "crossing_ci95": [
+              0.011038884327619805,
+              0.1346009068750702
+            ],
+            "quantiles": {
+              "q00": 0.01,
+              "q50": 0.502,
+              "q90": 0.9408,
+              "q99": 0.97404,
+              "q100": 0.976
+            }
+          },
+          "permutation_calibrated_e": {
+            "final_rejections": 0,
+            "final_rate": 0.0,
+            "final_ci95": [
+              6.938893903907228e-18,
+              0.07134759913335872
+            ],
+            "crossing_rejections": 0,
+            "crossing_rate": 0.0,
+            "crossing_ci95": [
+              6.938893903907228e-18,
+              0.07134759913335872
+            ],
+            "quantiles": {
+              "q00": 0.012220412723644936,
+              "q50": 0.41140199346031137,
+              "q90": 1.942302993769352,
+              "q99": 6.3602014596707575,
+              "q100": 9.0
+            }
+          },
+          "INVALID_label_memorization": {
+            "final_rejections": 50,
+            "final_rate": 1.0,
+            "final_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "crossing_rejections": 50,
+            "crossing_rate": 1.0,
+            "crossing_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "quantiles": {
+              "q00": 1.1769186424853677e+24,
+              "q50": 1.1769186424853677e+24,
+              "q90": 1.1769186424853677e+24,
+              "q99": 1.1769186424853677e+24,
+              "q100": 1.1769186424853677e+24
+            }
+          }
+        },
+        "discarded_signal": {
+          "identity": {
+            "final_rejections": 43,
+            "final_rate": 0.86,
+            "final_ci95": [
+              0.7381380628941446,
+              0.9304916657298371
+            ],
+            "crossing_rejections": 48,
+            "crossing_rate": 0.96,
+            "crossing_ci95": [
+              0.8653990931249297,
+              0.9889611156723802
+            ],
+            "quantiles": {
+              "q00": 9.817069487640398e-06,
+              "q50": 229786.871554908,
+              "q90": 15503063513.510048,
+              "q99": 15112443006599.463,
+              "q100": 29256955931705.26
+            }
+          },
+          "pca": {
+            "final_rejections": 40,
+            "final_rate": 0.8,
+            "final_ci95": [
+              0.6696289406777459,
+              0.887562499842239
+            ],
+            "crossing_rejections": 48,
+            "crossing_rate": 0.96,
+            "crossing_ci95": [
+              0.8653990931249297,
+              0.9889611156723802
+            ],
+            "quantiles": {
+              "q00": 1.2412744607326075e-05,
+              "q50": 55372.52173918889,
+              "q90": 416080612.3039903,
+              "q99": 47076744378.58937,
+              "q100": 91388343071.61455
+            }
+          },
+          "autoencoder": {
+            "final_rejections": 49,
+            "final_rate": 0.98,
+            "final_ci95": [
+              0.8950455641036219,
+              0.9964607407283539
+            ],
+            "crossing_rejections": 50,
+            "crossing_rate": 1.0,
+            "crossing_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "quantiles": {
+              "q00": 0.20356342939519023,
+              "q50": 11486958.774882939,
+              "q90": 4281161232.64237,
+              "q99": 137708529479.24493,
+              "q100": 213537658252.2727
+            }
+          },
+          "scalar": {
+            "final_rejections": 0,
+            "final_rate": 0.0,
+            "final_ci95": [
+              6.938893903907228e-18,
+              0.07134759913335872
+            ],
+            "crossing_rejections": 0,
+            "crossing_rate": 0.0,
+            "crossing_ci95": [
+              6.938893903907228e-18,
+              0.07134759913335872
+            ],
+            "quantiles": {
+              "q00": 1.7540470080586647e-05,
+              "q50": 0.2060603208530464,
+              "q90": 1.3673285647880586,
+              "q99": 2.1521333350131133,
+              "q100": 2.2268833980623595
+            }
+          },
+          "fixed_projection": {
+            "final_rejections": 0,
+            "final_rate": 0.0,
+            "final_ci95": [
+              6.938893903907228e-18,
+              0.07134759913335872
+            ],
+            "crossing_rejections": 3,
+            "crossing_rate": 0.06,
+            "crossing_ci95": [
+              0.02061497034897397,
+              0.16217091688838173
+            ],
+            "quantiles": {
+              "q00": 4.912568633510925e-10,
+              "q50": 0.0021827883236086847,
+              "q90": 0.6189495578175863,
+              "q99": 1.332595916016181,
+              "q100": 1.412260507261328
+            }
+          },
+          "permutation_p": {
+            "final_rejections": 50,
+            "final_rate": 1.0,
+            "final_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "crossing_rejections": 50,
+            "crossing_rate": 1.0,
+            "crossing_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "quantiles": {
+              "q00": 0.001,
+              "q50": 0.001,
+              "q90": 0.001,
+              "q99": 0.001,
+              "q100": 0.001
+            }
+          },
+          "permutation_calibrated_e": {
+            "final_rejections": 50,
+            "final_rate": 1.0,
+            "final_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "crossing_rejections": 50,
+            "crossing_rate": 1.0,
+            "crossing_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "quantiles": {
+              "q00": 30.622776601683796,
+              "q50": 30.622776601683796,
+              "q90": 30.622776601683796,
+              "q99": 30.622776601683796,
+              "q100": 30.622776601683796
+            }
+          },
+          "INVALID_label_memorization": {
+            "final_rejections": 50,
+            "final_rate": 1.0,
+            "final_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "crossing_rejections": 50,
+            "crossing_rate": 1.0,
+            "crossing_ci95": [
+              0.9286524008666414,
+              1
+            ],
+            "quantiles": {
+              "q00": 1.1769186424853677e+24,
+              "q50": 1.1769186424853677e+24,
+              "q90": 1.1769186424853677e+24,
+              "q99": 1.1769186424853677e+24,
+              "q100": 1.1769186424853677e+24
+            }
+          }
+        }
+      },
+      "seconds": 94.2956334259361,
+      "limitations": [
+        "Null simulation does not prove validity.",
+        "Fixed mean-distance permutation statistic is not an omnibus characteristic-kernel test.",
+        "All methods receive the same total pairs; DAVT reserves two burn-in batches.",
+        "Fixed projection omits the shifted coordinate in discarded_signal.",
+        "Wealth has heavy tails; rejection intervals and quantiles do not certify its expectation.",
+        "These are synthetic benchmarks, not evidence of biological utility."
+      ],
+      "full_report_sha256": "30ce725bf9f029858b40af2755a68be210194d7109b6ffbe9da81d58107ec797"
+    }
+  }
+}

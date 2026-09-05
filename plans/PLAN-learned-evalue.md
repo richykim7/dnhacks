@@ -1,7 +1,12 @@
 # Plan: learned betting e-values for expression experiments
 
-Status: implementation proposal. No learned bettor or new verification interface is implemented by
-this document. Coordinate implementation ownership on the Board before editing shared interfaces.
+Status: standalone diagnostics implemented; real-cohort evaluation and verification/UI integration
+remain future work. Coordinate ownership on the Board before editing shared interfaces.
+
+Confirmed initial scope: standalone diagnostics, with existing verification decisions unchanged.
+Real expression inputs require donor identifiers and documented sampling assumptions. Synthetic or
+already aggregated inputs use an explicit independent-row mode; independence cannot be inferred
+from a matrix or from unique identifiers alone. Verification integration is a later reviewed phase.
 
 ## 1. Repository baseline and scope
 
@@ -11,12 +16,20 @@ The integration points in this repository are:
 - `src/dnhacksbio/falsifier.py`: per-experiment soundness checks, including the primary null test.
 - `src/dnhacksbio/explorer/explorer.py`: experiment execution, RESULT parsing and submission.
 - `src/dnhacksbio/explorer/verifyqueue.py`: conversion to `ToolResult` and verification writeback.
-- `src/dnhacksbio/webui/data.py` and `src/dnhacksbio/webui/static/`: presentation of experiment results.
+- `src/dnhacksbio/webui/data.py`: experiment result retrieval for presentation.
+- `frontend/src/`: the current React presentation layer for any later diagnostic visualization.
 - `pyproject.toml`: package dependencies and test configuration.
 
-Implement the proposed modules from the definitions below. Existing modules remain the source of
-truth for their current interfaces. All new paths in this plan are proposed deliverables, not assumed
-existing implementations.
+Existing modules remain the source of truth for their current interfaces. Paths outside the
+implemented scope below remain proposed deliverables.
+
+The first implementation is `src/dnhacksbio/learned_evalue.py`, `expr_encoder.py`, and `evalues.py`,
+with `scripts/train_expr_encoder.py`, `scripts/evalue_harness.py`, tracked regression tests and
+`skills/learned-evalue/SKILL.md`. The executable API extends the sketch below with a required
+`SamplingContract` and replay metadata; encoder artifacts use non-pickle NPZ, and identity features
+are supported explicitly. Install with `uv sync --extra dev --extra evalue`.
+Initial synthetic results and remaining limitations are recorded in
+`research/learned-evalue-validation/README.md`; no real-cohort evaluation is claimed.
 
 The first deliverable is a standalone two-sample test with reproducible artifacts and validation.
 Gate integration follows only after the null hypothesis and evidence-selection rules are specified.
@@ -108,6 +121,11 @@ manifest with the artifact. Do not fit PCA, scaling, or feature selection on fut
 For initial validation, keep encoder training, hyperparameter tuning, and final evaluation units
 separate. Treat any transductive alternative as a separate construction requiring justification.
 
+A frozen lossy encoder preserves null validity but can hide alternatives. Include a benchmark with
+signal outside the retained features; do not inherit a universal consistency claim from the paper.
+Donor aggregation must follow a predeclared, group-compatible measurement protocol: unequal replicate
+counts can change aggregate distributions even when individual measurements have the same law.
+
 ## 4. Proposed implementation
 
 ### 4.1 Learned bettor
@@ -126,7 +144,7 @@ class LearnedEConfig:
     weight_decay: float = 1e-2
     tanh_clip: float = 4.0
     seed: int = 0
-    encoder: str = "data/processed/expr_encoder.pt"
+    encoder: str | None = None  # TPM input requires an explicitly supplied frozen NPZ artifact
 
 @dataclass
 class LearnedE:
@@ -140,7 +158,7 @@ class LearnedE:
     n_scored: int
     config: LearnedEConfig
 
-def learned_two_sample_e(Xa, Xb, *, genes, unit_a=None, unit_b=None,
+def learned_two_sample_e(Xa, Xb, *, genes, sampling, unit_a=None, unit_b=None,
                          config=LearnedEConfig()) -> LearnedE:
     ...
 ```
