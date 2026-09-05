@@ -1,0 +1,2127 @@
+Deep anytime-valid hypothesis testing
+Pandeva, Forré, Ramdas, Shekhar. AISTATS 2024, PMLR 238:622–630.
+Source: https://proceedings.mlr.press/v238/pandeva24a.html
+Full PDF text including appendices; see README.md for extraction limitations.
+
+
+================ PDF PAGE 01 / 22 ================
+
+Deep anytime-valid hypothesis testing
+Teodora Pandeva
+Patrick Forr´e
+Aaditya Ramdas
+University of Amsterdam
+University of Amsterdam
+Carnegie Mellon University
+Shubhanshu Shekhar
+Carnegie Mellon University
+Abstract
+We propose a general framework for con-
+structing powerful, sequential hypothesis
+tests for a large class of nonparametric test-
+ing problems. The null hypothesis for these
+problems is defined in an abstract form
+using the action of two known operators
+on the data distribution. This abstraction
+allows for a unified treatment of several
+classical tasks, such as two-sample test-
+ing, independence testing, and conditional-
+independence testing, as well as modern
+problems, such as testing for adversarial ro-
+bustness of machine learning (ML) models.
+Our proposed framework has the following
+advantages over classical batch tests: 1) it
+continuously monitors online data streams
+and efficiently aggregates evidence against
+the null, 2) it provides tight control over
+the type I error without the need for mul-
+tiple testing correction, 3) it adapts the
+sample size requirement to the unknown
+hardness of the problem.
+We develop a
+principled approach of leveraging the rep-
+resentation capability of ML models within
+the testing-by-betting framework, a game-
+theoretic approach for designing sequential
+tests. Empirical results on synthetic and
+real-world datasets demonstrate that tests
+instantiated using our general framework
+are competitive against specialized base-
+lines on several tasks.
+Proceedings of the 27th International Conference on Artifi-
+cial Intelligence and Statistics (AISTATS) 2024, Valencia,
+Spain.
+PMLR: Volume 238.
+Copyright 2024 by the au-
+thor(s).
+1
+INTRODUCTION
+We consider an abstract class of nonparametric hy-
+pothesis testing problems characterized by the ac-
+tion of two known operators (denoted by T1 and T2)
+on the data generating distribution. Under the null,
+it is assumed that the transformed distributions re-
+sulting from the action of these two operators are
+the same, while under the alternative, it is assumed
+that the two transformed distributions are different.
+Formally, suppose the observations Z1, Z2, . . . are
+Z-valued observations drawn i.i.d.
+from PZ, and
+Ti : Z →W (for some space W possibly different
+from Z) for i = 1, 2 denote a pair of operators acting
+on the observation space. Then, we want to test
+H0 : T1(Z)
+d= T2(Z)
+vs.
+H1 : T1(Z)
+d̸
+= T2(Z). (1)
+This abstract formulation allows for a unified treat-
+ment of several classical and modern problems rang-
+ing from two-sample and independence testing, to
+certifying adversarial robustness and group fairness
+of machine learning models (details in Section 2).
+In this paper, we propose a deep learning-based
+strategy for designing powerful sequential tests
+for (1).
+Compared to classical batch tests, well-
+designed sequential tests have several benefits: they
+are valid under optional continuation, can consoli-
+date evidence from possibly dependent experiments,
+and are computationally cheaper than permutation
+tests.
+Our results further enhance these advan-
+tages by presenting a principled approach to harness
+the representational power of deep neural networks
+(DNNs) in the context of sequential testing. As a
+result, our tests are particularly well-suited for han-
+dling complex data types, such as images and videos.
+Contributions.
+Our main contribution is a uni-
+fied data-driven strategy for designing powerful se-
+
+
+================ PDF PAGE 02 / 22 ================
+
+Deep anytime-valid hypothesis testing
+quential tests for (1). Since this abstract formulation
+models a large class of practical applications, our
+approach effectively yields new sequential tests for
+all these problems in one shot. This contrasts with
+some recent works in this area that propose special-
+ized sequential tests for these individual problems.
+Our design strategy is guided by the principle of
+“testing by betting” (Shafer, 2021). This principle
+translates the task of designing sequential tests into
+that of increasing the wealth of a fictitious bettor
+in repeated betting games that are fair under the
+null.
+Some recent works using this principle (de-
+tails in Section 3) decouple this task (of setting
+up and betting on fair games) into separate betting
+and payoff-design problems, mainly due to analyti-
+cal tractability. Our work is motivated by the ob-
+servation that this decoupling is unnecessary, and we
+instead develop a class of tests based on joint learn-
+ing of both the payoff and the bets using deep learn-
+ing models. In other words, unlike related sequen-
+tial tests, the deep learning models in our framework
+are trained to directly optimize the growth rate of
+the wealth of the bettor, without the separation into
+betting and payoff design.
+Building on this basic idea, we develop a general se-
+quential test for the abstract testing problem in Sec-
+tion 4 and its extension to randomization hypothesis
+testing in Section 5. This test relies on incremen-
+tally updated DNN (or more generally, any machine
+learning) models on batches of observations.
+We
+show in Proposition 4.3 that this test provides tight
+non-asymptotic type-I-error control under the null,
+and is consistent (i.e., rejects the null almost surely)
+against arbitrary fixed alternatives, under very mild
+conditions on the learning algorithm.
+Finally, in Section 6, we instantiate and empirically
+evaluate our general test for several important ap-
+plications, such as two-sample testing, conditional
+independence testing, group invariance testing and
+certifying adversarial robustness. Our empirical re-
+sults show that the proposed framework offers tests
+that are competitive and often superior to state-of-
+the-art tests tailored to the specific tasks.
+2
+MOTIVATING APPLICATIONS
+We now illustrate the utility of studying the abstract
+testing problem (1), by showing that it models sev-
+eral important applications in a unified manner.
+Example 2.1 (Paired Two-sample testing). Given
+a stream of paired observations: {(Xt, Yt) : t ≥1}
+drawn i.i.d.
+from a distribution PX × PY on a
+product space X × X, our goal is to decide be-
+tween the null, H0 : PX = PY , against the alter-
+native H1 : PX̸ = PY . This is a nonparametric test-
+ing problem with a composite null and a compos-
+ite alternative. The null hypothesis class, however,
+has an interesting symmetry: the joint distribution
+of (X, Y ) is the same as the joint distribution of
+(Y, X). We can formally state this as H0 : (X, Y )
+d=
+Tswap((X, Y )), where Tswap : X × X →X × X, and
+Tswap((x, y)) = (y, x).
+Example 2.2 (Conditional independence testing).
+Given observations {(Ut, Vt, Wt) : t ≥1} drawn i.i.d.
+from PUV W , we want to test whether U ⊥⊥V |W or
+not. This problem is fundamentally impossible with-
+out further assumptions (Shah and Peters, 2020),
+and a common structural assumption is that the
+conditional PU|W is known (the model-X assump-
+tion (Candes et al., 2018)).
+We can now reframe
+this problem as follows:
+• Given (U, V, W), generate a new eU ∼PU|W (·|W),
+and let Z denote
+�(U, V, W), (eU, V, W)
+�
+.
+• Let T1 and T2 denote the coordinate projections:
+T1(Z) = (U, V, W) and T2(Z) = (eU, V, W).
+With
+these
+definitions,
+conditional
+indepen-
+dence (CI) testing falls under the abstract frame-
+work defined in (1).
+Testing for invariance under group actions, such as
+rotations, is another instantiation of (1).
+Example 2.3 (Rotation invariance testing). Given
+a stream of observations {(Xt, Yt) : t ≥1}, where the
+Xt’s denote images of the (handwritten) digit “6”,
+while dataset Yt’s are images that, at a glance, rep-
+resent the digit “9”. However, these may essentially
+be the digit “6” but rotated. We aim to determine
+the statistical relationship between Xt and T180(Yt):
+the 180 degree rotations of Yt. Essentially, we want
+to decide whether (Yt)t≥1 are merely rotated ver-
+sions of “6”, or truly represent the digit “9”. Us-
+ing the swap operator from Example 2.1, we define
+two distinct operators: T1 = (T180, Tid) ◦Tswap, and
+T2 = (Tid, T180), with Tid being the identity map-
+ping. Then, the above-defined test is equivalent to
+testing H0 : T1(Z)
+d= T2(Z), where Z = (X, Y ).
+Our general framework is not restricted to simple op-
+erators with closed-form expressions as in the exam-
+ples above. In fact, the operators involved can even
+be general function approximators, such as large
+neural networks.
+
+
+================ PDF PAGE 03 / 22 ================
+
+Teodora Pandeva, Patrick Forr´e, Aaditya Ramdas, Shubhanshu Shekhar
+Example 2.4 (Adversarial Examples). We now
+consider the problem of certifying the robustness of
+a trained machine learning model h to adversarial
+perturbations (Szegedy et al., 2014). In particular,
+let Tadv denote the adversarial attack that maps an
+input X to its adversarially perturbed version e
+X.
+Furthermore, let Th denote the output of a specific
+layer (for example, a bottleneck layer) of the model.
+Then, our goal is to decide if the distributions of
+Y = Th(X) and eY = Th( e
+X) are equal or not. In
+other words, the null states that the distribution of
+X after applying Th and Th ◦Tadv is the same.
+Further examples of
+(1), such as tests for group
+fairness and independence, are available in Section 8.
+3
+RELATED WORK
+The abstract testing problem studied in this paper
+is motivated by the general task of testing for in-
+variance to the action of finite groups, stated as the
+randomization hypothesis by Lehmann and Romano
+(2022, Definition 17.2.1). In fact, the ideas we de-
+velop can also be extended to deal with the formula-
+tion of Lehmann and Romano (2022) (See Section 5).
+From a methodological perspective, our techniques
+are related to the growing body of recent work
+on safe anytime-valid inference (SAVI), surveyed
+by Ramdas et al. (2022). Our design strategy fol-
+lows the principle of testing by betting (Shafer, 2021),
+which states that the evidence against a null can be
+precisely characterized in terms of the gain in wealth
+of a (fictitious) bettor, who repeatedly bets on the
+observations in betting games with odds that are
+fair (or sub-fair) under H0. This principle has been
+used by several authors, such as Shekhar and Ram-
+das (2023); Podkopaev et al. (2023); Podkopaev and
+Ramdas (2023); Shaer et al. (2023), to transform dif-
+ferent hypothesis testing problems into that of de-
+signing relevant betting strategies and payoff func-
+tions.
+For example, Shekhar and Ramdas (2023)
+considered the two-sample testing problem (Exam-
+ple 2.1), and defined the wealth process of the bettor
+as follows for t ≥1:
+Wt = Wt−1 ×
+�1 + λt
+�gt(Xt) −gt(Yt)
+��
+,
+for some [−1/2, 1/2]-valued payoff functions (gt)t≥1,
+and for bets λt ∈[−1, 1] and W0 = 1. By construc-
+tion, the process (Wt)t≥0 satisfies the requirement
+of fair payoffs under the null, as it is a non-negative
+martingale. The term λt is a predictable bet, whose
+absolute value denotes the fraction of the accumu-
+lated wealth that is placed at stake in round t.
+Hence, the approach of Shekhar and Ramdas (2023),
+reduces the problem of two-sample testing into that
+of developing appropriate strategies for selecting
+(gt)t≥1 (the prediction strategy) and (λt)t≥1 (the
+betting strategy).
+There exist off-the-shelf betting
+strategies in the literature on online learning, such
+as the online Newton step (ONS) strategy (Hazan
+et al., 2007), that ensure exponential growth of
+the wealth process for arbitrary (gt)t≥1 under the
+alternative.
+For the prediction strategy, Shekhar
+and Ramdas (2023) suggested selecting (gt)t≥1 that
+approximate the witness function (g∗) associated
+with statistical distance metrics with variational rep-
+resentations (such as Kolmogorov-Smirnov metric,
+kernel MMD, f-divergence, etc). A similar approach
+was followed by Podkopaev et al. (2023) and Shaer
+et al. (2023) for the problems of independence and
+conditional independence testing.
+Machine learning models (classifiers or regressors)
+have proven highly effective in developing tests for
+complex data structures; see (Kim et al., 2021) and
+references therein for more details. Even within the
+SAVI framework, some prior works such as Pod-
+kopaev and Ramdas (2023); Pandeva et al. (2022);
+Lh´eritier and Cazals (2018) propose two-sample and
+independence tests based on classifiers. Unlike these
+works, our approach is geared towards a general class
+of problems modeled by (1) and uses models trained
+directly to optimize the statistical test performance.
+4
+METHODOLOGY
+We study the testing problem described in (1), un-
+der the assumption that we observe a stream of
+datapoints arriving in mini-batches (Bt)t≥1, where
+Bt = {Z(t−1)b+1, . . . , Ztb} denotes the t-th mini-
+batch consisting of b i.i.d. observations. Our objec-
+tive is to design a procedure to continuously monitor
+the stream, aggregate evidence against the null, and
+stop and reject the null as soon as sufficient evidence
+is collected. Formally, such procedures are called se-
+quential tests of power one, following Darling and
+Robbins (1968), and we state their definition below.
+Definition
+4.1.
+Given
+a
+significance
+level
+α ∈(0, 1),
+and
+a
+stream
+of
+mini-batches,
+{Bt : t ≥1}, consisting of i.i.d.
+samples drawn
+from a distribution PZ, consider the testing prob-
+lem introduced in (1).
+A level-α sequential test
+of power one for this problem is a stopping time,
+γ, adapted to the natural filtration (Ft)t≥0, with
+Ft = σ(B1, . . . , Bt), satisfying
+PH0 (γ < ∞) ≤α, and PH1 (γ < ∞) = 1.
+
+
+================ PDF PAGE 04 / 22 ================
+
+Deep anytime-valid hypothesis testing
+In other words, γ denotes a data-driven stopping
+rule at which the data-analyst stops collecting more
+data, and rejects the null. It is required that if the
+null holds, the probability that the test stops, i.e. it
+rejects the null, is bounded by α. In contrast, if the
+alternative is true this probability should be 1 which
+guarantees the consistency of the test.
+4.1
+Oracle Sequential Test
+We begin by formulating an ‘oracle’ sequential test
+for (1), that assumes full knowledge of the true dis-
+tribution PZ. While this test is impractical, it pro-
+vides the template for designing our practical data-
+driven sequential test.
+Let G = {gθ : θ ∈Θ} denote a class of machine
+learning models parameterized by Θ. For example,
+G might represent a class of deep learning models,
+with the parameter set Θ specifying the architecture.
+We make the following assumptions on this function
+class in this paper.
+Assumption 1. The parametrized function class
+G = {gθ : θ ∈Θ} satisfies the following properties:
+• Every g ∈G satisfies |g(x)| ≤q for all x ∈W,
+for some q ∈(0, 1/2).
+• If a function g belongs to G, then so does c · g,
+for every c ∈[−1, 1].
+It is easy to verify that both these conditions can be
+satisfied by modifying any class of neural networks
+by using an appropriate activation function to re-
+strict the output values in the required interval.
+Since DNNs satisfy the universal approximation
+property for sufficiently large choices of the architec-
+ture (Hornik, 1991; Cybenko, 1989), for two distinct
+distributions P̸ = Q on Z with P ◦T −1
+1̸
+= P ◦T −1
+2
+,
+we can infer that
+sup
+θ∈Θ
+E [egθ(Z, T1, T2)] > 0,
+(2)
+where egθ(z, T1, T2) := gθ ◦T1(z) −gθ ◦T2(z).
+In
+other words, if the class of “test-functions” G is rich
+enough, we can use it to distinguish between any
+two distinct transformed distributions P ◦T −1
+1
+and
+P ◦T −1
+2
+. We now record a simple consequence of the
+assumptions made on the function class G.
+Proposition 4.2. Under Assumption 1, the condi-
+tion (2) is equivalent to
+sup
+θ∈Θ
+E [log (1 + egθ(Z, T1, T2))] > 0.
+(3)
+This statement is proven in Section 10.1 and is fun-
+damental to the construction of the proposed test.
+In the sequel, we will drop the T1 and T2 dependence
+of eg, and simply write egθ(z) ≡egθ(z, T1, T2). Using
+the above proposition, we can define the ‘oracle’ pa-
+rameter, θ∗≡θ∗(PZ, T1, T2) as follows:
+θ∗∈arg max
+θ∈Θ
+EPZ [log (1 + egθ(Z))] .
+Thus, θ∗represents the log-optimal function in G,
+and we can use it to define an oracle sequential test
+γ∗= inf{t ≥1 : W ∗
+t ≥1/α},
+(4)
+where W ∗
+t = Qt
+l=1
+Q
+Z∈Bl (1 + egθ∗(Z)). It is easy to
+verify that γ∗is a sequential test according to Def-
+inition 4.1. In particular, it ensures the control of
+type-I error at level-α under H0, and is finite almost
+surely under the alternative.
+The test defined above is not practical, as it depends
+on the ‘oracle’ parameter θ∗, which is a function of
+PZ.
+To construct a practical test, we instead use
+predictable empirical estimates of θ∗1. This is ex-
+plained in detail in the following.
+4.2
+Practical sequential test
+For the practical test, we propose to replace (W ∗
+t )t≥0
+in (4) with a data-driven process (Wt)t≥0, that we
+refer to as the wealth process following the standard
+convention as discussed in Section 3. We set W0 = 1,
+denoting the bettor’s initial investment, and update
+Wt to Wt−1 × St for t ≥1, with St representing the
+gain (or loss) made while betting on the t-th batch
+of observations. We refer to this increment St as the
+betting score following Shafer (2021).
+Algorithm 1 provides a detailed pseudocode describ-
+ing the steps involved in the construction of our se-
+quential test. The inputs to this algorithm include
+the stream of mini-batches (Bt)t≥1, test-specific op-
+erators (T1 and T2), significance level α ∈(0, 1),
+the maximum time horizon Tmax, and a deep learn-
+ing (or any other machine learning) model initial-
+ized at θ0. The algorithm then proceeds by repeat-
+ing the following steps for all t ≥1: it observes
+the next mini-batch Bt, computes the betting score
+St by calling the ComputeScore subroutine, and up-
+dates the model to θt by calling the UpdateModel
+subroutine. The updated wealth Wt is obtained by
+using the betting score St, and the algorithm stops
+1As a warm-up, we also construct and theoretically
+analyze a practical batch test based on sample-splitting
+in Section 9 of the appendix.
+
+
+================ PDF PAGE 05 / 22 ================
+
+Teodora Pandeva, Patrick Forr´e, Aaditya Ramdas, Shubhanshu Shekhar
+and rejects the null if Wt exceeds the threshold 1/α.
+This general approach is illustrated for two-sample
+testing with paired observations in Figure 1.
+0
+20
+40
+60
+80
+100
+Paired observations under H1
+(Xt)t≥1
+(Yt)t≥1
+0
+20
+40
+60
+80
+100
+rejection threshold (1/α)
+(Wt)t≥1
+γ = 100
+t (time)
+Stopping Rule (γ)
+Figure 1: Illustration of our general strategy for the
+problem of two-sample testing with paired observa-
+tions. The top figure shows the stream of observa-
+tions under the alternative, while the bottom figure
+plots the variation of the wealth process (Wt)t≥1.
+As we can see, after an initial period (≈t ≤50),
+the wealth process grows rapidly and exceeds the re-
+quired threshold at t = 100, at which point we stop
+collecting more observations and reject the null.
+To complete the description of our scheme, we now
+present the details of the two subroutines.
+Compute Betting Score (ComputeScore).
+In
+round t ≥1, this subroutine takes the inputs:
+• Dt−1 = ∪t−1
+i=1Bi: the data observed so far.
+• The model θt−1, trained on Dt−1.
+• Bt = {Z(t−1)b+1, . . . , Ztb}: the new mini-batch.
+• T1, T2: the operators defining the null.
+Using these inputs, this subroutine computes and
+returns the next multiplicative increment, or betting
+score, (St) of the wealth process, which is defined as
+St =
+b
+Y
+j=1
+�1 + egθt−1(Z(t−1)b+j)
+�
+.
+(5)
+With
+this,
+we
+update
+the
+wealth
+process
+Wt ←Wt−1 × St. We reject the null if Wt ≥α−1,
+otherwise, we proceed to the next step:
+Model Update (UpdateModel). This subroutine
+updates and returns a model θt on the data set
+Dt = Dt−1 ∪Bt, i.e. θt maximizes the objective
+θt ∈arg max
+θ∈Θ
+t
+X
+l=1
+X
+Z∈Bl
+log(1 + egθ(Z))
+(6)
+The input training params refers to all training pa-
+rameters needed for model refinement. In particu-
+lar, this includes parameters that are required for
+the optimization (such as the learning rate for the
+optimizer) and those that set the criteria for early
+stopping to prevent model overfitting. Importantly,
+our framework is versatile enough to incorporate
+any learning and model selection process, including
+methods such as cross-validation. For implementa-
+tion details of this step see Sections 6 and 11.
+Consistency.
+The
+stopping
+time
+constructed
+by Algorithm 1 can be formally defined as
+γ = inf{t ≥1 : Wt ≥1/α}.
+As mentioned earlier, γ represents the time at
+which the data-analyst stops collecting more obser-
+vations (i.e., mini-batches), and declares the null to
+be not true.
+We now show that γ is finite under
+the null with a probability no larger than α, and
+under the alternative with probability 1 (assuming
+Tmax is large enough). In simpler terms, the follow-
+ing theoretical result confirms that the sequential
+test from Algorithm 1 is consistent while maintain-
+ing non-asymptotic type I error control.
+Proposition 4.3. Suppose the learning algorithm
+satisfies the condition
+lim inf
+t→∞
+E[log(1 + egθt(Z))|Ft]
+2c
+p
+log(t)/t
+a.s.
+> 1,
+under H1
+for a universal constant c. Then, we have
+PH0(γ < ∞) ≤α, and PH1(γ < ∞) = 1.
+In words, γ is a sequential level-α test of power one.
+The proof is provided in the appendix (Section 10.3).
+
+
+================ PDF PAGE 06 / 22 ================
+
+Deep anytime-valid hypothesis testing
+Remark 4.4. The condition required of the learn-
+ing algorithm by Proposition 4.3 for consistency of
+γ under H1 is very mild. Informally, we only require
+E[log(1+egθt(Z))|Ft] to be larger than 2c
+p
+log(tb)/tb
+for large t, and in particular, this value can even con-
+verge to 0. In practice, most models converge to a lo-
+cal optimum θ∞with E[log(1 + egθ∞(Z))] > 0, which
+is much stronger than the condition required above.
+Such strong performance guarantees on learning al-
+gorithms can lead to stronger statistical properties
+of the test (such as bounds on EH1[γ]). We leave
+such extensions to future work.
+Algorithm 1: Sequential Test
+Input: {Bt}t≥1 (batch stream), T1, T2
+(operators), Tmax (maximum rounds of
+observations), α (size of the test), θ0 (a
+trainable model).
+W0 ←1, D0 ←∅.
+Initialize the model to an arbitrary value θ0.
+for t ←1 to Tmax: do
+Observe the next batch
+Bt = {Z(t−1)b+1, . . . , Ztb} ;
+Compute the multiplicative increment:
+St ←ComputeScore (Bt, θt−1, T1, T2, σ) ;
+Update the wealth process:
+Wt ←Wt−1 × St ;
+Check for stopping condition:
+if Wt ≥1/α then
+Stop and reject the null
+Increment Data: Dt = Dt−1 ∪Bt;
+Update the model: θt ←
+UpdateModel(Dt, θt−1, training params);
+5
+EXTENSION TO
+RANDOMIZATION
+HYPOTHESIS TESTING
+The abstract problem (1) tests whether the data dis-
+tributions, after being transformed by operators T1
+and T2, are the same or not. We now study a general-
+ization of this in which T1 and T2 could be one among
+finite disjoint classes of operators. This extension is
+motivated by the so-called randomization hypoth-
+esis assumption of Lehmann and Romano (2022,
+§ 17.2.1). More formally, we consider testing prob-
+lems with null defined as
+H0 : T1(Z)
+d= T2(Z), ∀T1 ∈O1, ∀T2 ∈O2
+(7)
+for finite disjoint sets of operators O1 ⊂WZ and
+O2 ⊂WZ. This formulation is highly flexible and
+covers a wide range of complex hypotheses, from
+those testing invariance under permutations to di-
+verse group actions, as illustrated in Example 8.4.
+By using the general strategy we developed in Sec-
+tion 4, we can construct a sequential test for this
+problem, by simply modifying the training objective
+from (6) of the machine learning model as follows:
+θt ∈arg max
+θ∈θ
+t
+X
+l=1
+X
+Z∈Bt
+log (1 + ET1,T2 [egθ(Z, T1, T2)]) ,
+ET1,T2 [egθ(Z, T1, T2)] =
+P
+T1,T2 gθ ◦T1(Z) −gθ ◦T2(Z)
+|O1||O2|
+.
+Essentially, the model aims to maximize the growth
+rate by calculating the average payoffs across all op-
+erator pairs. If there is a noticeable difference in one
+of the components gθ ◦T1(Z)−gθ ◦T2(Z) it suggests
+the alternative hypothesis might hold. Similar to the
+previous section, the model can be incrementally re-
+fined with each new data batch. At the same time,
+the wealth process can be monitored with betting
+scores at time t defined as
+St =
+b
+Y
+j=1
+(1 + ET1,T2
+�
+egθt−1(Z(t−1)b+j, T1, T2)
+�
+).
+Following the same arguments as Proposition 4.3,
+we can show that the resulting sequential test for
+(7) provides finite-sample type I error control and
+consistency guarantees.
+6
+EXPERIMENTS
+In this section, we instantiate our general strategy,
+which we refer to as DAVT, to a wide range of
+tasks: two-sample testing, rotation invariance test-
+ing, robustness to adversarial attacks, and condi-
+tional independence under the model-X assumption.
+We compare DAVT to popular nonparametric base-
+lines, including sequential methods such as the two-
+sample tests: E-C2ST (Lh´eritier and Cazals, 2018;
+Pandeva et al., 2022) and Seq-IT with a batch-
+wise ONS betting strategy (Podkopaev and Ramdas,
+2023) and the conditional independence test ECRT
+(Shaer et al., 2023). In this group of baselines, we in-
+clude permutation-based nonparametric tests such as
+the MMD test (Gretton et al., 2012) and the clas-
+sifier two-sample test (S-C2ST) (Kim et al., 2021;
+Lopez-Paz and Oquab, 2017). The latter two tech-
+niques have a “non-sequential” decision rule based
+on a p-value computed on a single batch. Although
+this approach may not be entirely appropriate, in
+our experiments we apply these tests in a sequen-
+tial manner. More precisely, with each new batch
+
+
+================ PDF PAGE 07 / 22 ================
+
+Teodora Pandeva, Patrick Forr´e, Aaditya Ramdas, Shubhanshu Shekhar
+Figure 2: Power and type I error analysis for the Blob dataset. We compared three variations of our method
+(DAVT (Independence), DAVT (Swap), DAVT (Projection)) to sequential baselines (E-C2ST, Seq-IT) and
+non-sequential ones (S-C2ST, MMD Test). We fixed the batch size to be 90. DAVT (our method) with the
+projection operators (in green) and E-C2ST show the best performance, followed by Seq-IT. This order in
+performance is also confirmed by the histogram of the stopping times.
+of data, we calculate a p-value to guide our testing
+process.
+For S-C2ST, this involves retraining the
+classifier on the previously collected data. However,
+unlike the sequential tests considered, we do not in-
+corporate a stopping rule for the non-sequential S-
+C2ST and MMD tests.
+For a fair comparison,
+we implement all con-
+sidered data-driven tests using the same net ar-
+chitectures.
+Details of the selected DNNs, and
+their training procedures can be found in Sec-
+tion 11.
+The code to reproduce the experiments
+is
+provided
+at
+https://github.com/tpandeva/
+deep-anytime-testing.
+We evaluate all tests by
+monitoring the rejection rates (power and type I er-
+ror) over time from 100 independent runs, performed
+at a significance level of α = 0.05. In our empirical
+evaluation on standard benchmark datasets, DAVT
+shows competitive, if not superior, results to its spe-
+cialized counterparts.
+6.1
+Two-Sample Testing
+The two-sample testing problem can be modeled
+in several ways using distinct operators within our
+framework. For instance, in Example 2.1, we mod-
+eled it using the operators T1 := Tswap and T2 := Tid.
+Alternatively,
+the operators T1(x, y)
+=
+x and
+T2(x, y) = y also characterize the two-sample test-
+ing problem which we refer to as DAVT-Projection.
+Finally, another option is to formulate two-sample
+testing as an instance of independence testing. This
+is achieved by introducing a binary variable L and
+a variable W such that P(W|L = 1) = P(X) and
+P(W|L = 0) = P(Y ). Then, the two-sample test
+transforms into testing the independence of W and
+L, using the operator defined in Example 8.1.
+Building on this observation, we evaluate the above
+two-sample tests along with the baselines on the
+Blob dataset (Chwialkowski et al., 2015).
+This
+dataset contains two classes of data, X and Y , both
+representing nine Gaussians on a two-dimensional
+grid that differ in their variances (see Figure 7).
+The results, summarized in Figure 2, show the supe-
+rior performance of DAVT-Projection (our method)
+(shown in green), closely followed by the sequen-
+tial methods E-C2ST and Seq-IT. Conversely, other
+DAVT variants did not deliver comparable perfor-
+mance. For example, using only the swap operator
+(DAVT-Swap) results in poor test performance. One
+possible explanation of this could be the inherent
+attempt of the neural network to find correlations
+between X and Y , which contradicts the problem
+setup that X and Y are independent. We explore
+the test performance for dependent X and Y in Sec-
+tion 11.3.3. Moreover, DAVT-Independence is not
+as powerful as the top sequential methods on this
+task, but it achieves maximum power faster than
+the non-sequential methods.
+Overall, our two-sample experiment highlights the
+strengths of sequential methods over batch tests. By
+construction, well-designed sequential tests continu-
+ously monitor the data stream to accumulate evi-
+dence against the null. Thus, instead of setting a
+fixed sample size, using sequential methods allows
+for dynamically tailoring the sample size to the com-
+plexity of the task in a data-driven manner. This
+adaptability is illustrated in Figure 2, showing the
+stopping times distribution of the top three per-
+formers from the power experiment. Here, DAVT-
+Projection and E-C2ST reject the null more quickly
+than Seq-IT, indicating a more efficient use of data.
+
+
+================ PDF PAGE 08 / 22 ================
+
+Deep anytime-valid hypothesis testing
+Figure 3:
+CIT Power and Type I error control.
+DAVT-CIT (ours) increases power faster than ECRT
+while keeping a very low Type I error.
+6.2
+Conditional Independence Testing
+under Model-X Assumption
+We use the synthetic example of (Shaer et al., 2023)
+with the following data generation model.
+We
+construct mini-batches containing 100 observations
+of the random variables U, V, W for which we test
+H0 : V
+⊥⊥U|W.
+These triples come from the
+model W ∼N(0, Id) and U|W = w ∼N(a⊤w, 1),
+where
+under
+the
+alternative
+hypothesis,
+we
+use
+V |W = w, U = u ∼N((b⊤w)2 + 3w, 1),
+while
+under
+the
+null
+hypothesis
+we
+use
+V |W = w, U = u ∼N((b⊤w)2, 1).
+We
+recall
+that
+the
+model-X
+assumption
+implies
+that
+at
+testing time t, we have access to the true data
+distribution U|W.
+We
+instantiate
+our
+conditional
+independence
+test (called the DAVT-CIT) using the operators
+defined in Example 2.2, and benchmark its perfor-
+mance against the sequential method ECRT (Shaer
+et al., 2023).
+Note that we have tailored ECRT
+to fit our framework, that is, both ECRT and
+DAVT-CIT employ the same network architecture
+for model fitting and use a single sample of ˜U, at
+each step t to estimate the betting scores St.
+The type-I error and power of these two tests over
+100 trials is plotted in Figure 3. While both methods
+control type-I error at the required level α = 0.05,
+our test (DAVT-CIT) requires significantly fewer ob-
+servations (on average) to reject the null under H1.
+The histograms of the two stopping times in Figure 3
+further demonstrate the better sample efficiency of
+DAVT-CIT compared to ECRT.
+6.3
+Adversarial Attacks on ResNet50
+In this experiment, we evaluate the robustness of
+a ResNet50 model (He et al., 2016), refined on the
+Figure 4: Power analysis for testing the adversarial
+robustness of ResNet50 trained on CIFAR-10. While
+S-C2ST initially outperforms in scenarios with lim-
+ited data, DAVT-Adv (our method) and Seq-IT
+catch up and accelerate to reach maximum perfor-
+mance at a faster rate, leaving DAVT-Adv as the
+second best-performing method.
+CIFAR-10 dataset (Krizhevsky and Hinton, 2009),
+against adversarial attacks as explained in Exam-
+ple 2.4. We employ the Fast Gradient Sign Method
+(FGSM) (Goodfellow et al., 2014) for generating ad-
+versarial samples. Within this context, let X rep-
+resent the true CIFAR-10 images and Tadv(X) the
+biased ones produced with FGSM. Moreover, let the
+operator Th : X →R10 map an image to ResNet50
+last layer2. In this example, we consider ResNet50
+to be robust against FGSM adversarial attacks if
+Th(X) and Th ◦Tadv(X) have the same distribution.
+In other words, we will test:
+H0 : Th(Xt)
+d= Th ◦Tadv(X).
+We run 100 power experiments on batches of paired
+original and FGSM-altered images, with a sample
+size of 64. We compare DAVT-Adv with the two-
+sample test baselines:
+E-C2ST, Seq-IT, S-C2ST,
+and the MMD test. Figure 4 shows that of the se-
+quential methods, DAVT-Adv (ours) outperforms E-
+C2ST and Seq-IT until it reaches 60% power. After
+that, Seq-IT achieves maximum power faster, leav-
+ing our method as the second best. Nevertheless, the
+non-sequential S-C2ST initially shows greater power
+than all other methods, but this advantage declines
+with increasing sample size.
+6.4
+Rotation Invariance Testing
+Here, we consider a test similar to Example 2.3 and
+extend it to the more general setting described in
+2Any intermediate layer of the network can be con-
+sidered while defining an adversarial operator.
+
+
+================ PDF PAGE 09 / 22 ================
+
+Teodora Pandeva, Patrick Forr´e, Aaditya Ramdas, Shubhanshu Shekhar
+Section 5. More precisely, we consider that at each
+time t we are given batches of rotated images X fol-
+lowing the generative model PX = 0.5p·P90+0.5(1−
+p)·P180 +0.5p·P270 +0.5(1−p)·P360, where p is the
+mixing weight. Here the distributions P90, P180, P270
+and P360 represent the distribution of the randomly
+rotated “6” at angles in the set {90, 180, 270, 360}
+degrees. This generative model is initially unknown
+to the practitioner, who wants to determine whether
+the distribution of X is invariant to rotations of 90,
+180, or 270 degrees. Thus, by applying ideas from
+Section 5 we can form the null hypothesis:
+H0 : Ti(X)
+d= X for all i ∈{90, 180, 270}
+where the operators correspond to the specified rota-
+tions. This test can be easily adapted to our frame-
+work by specifying Z := X and defining the operator
+set O := {Ti : i ∈{90, 180, 270, 360}}.
+For constructing the two distributions, we use the
+MNIST dataset (LeCun et al., 2010). We conduct
+experiments for p = 0.3, 0.4, and 0.5 in batches of
+32 samples each. Figure 5 presents the power results
+for p = 0.3 and p = 0.4, and the type I error rate
+when p = 0.5.
+The test successfully controls the
+type I error and shows reduced power in the more
+challenging case of p = 0.4, compared to p = 0.3.
+We create a baseline test by applying S-C2ST to
+each hypothesis, each based on a single operator.
+This process involves training a different neural net
+for every hypothesis and then computing its asso-
+ciated p-value during testing. We then consolidate
+the three derived p-values using the Bonferroni cor-
+rection. Figure 5 shows the rejection rates of this
+method for p = 0.3, 0.4, 0.5 over time and highlights
+the lack of power of the method. This is a common
+effect when multiple correction procedures are used
+which vindicates the use of sequential tests.
+7
+DISCUSSION
+In this paper, we developed a unified deep learning-
+based approach for constructing sequential tests for
+an abstract class of nonparametric testing problems.
+This class of problems includes various important
+applications ranging from two-sample testing and in-
+dependence testing to certifying adversarial robust-
+ness and group fairness of machine learning models.
+Our sequential test provides tight control over the
+type-I error, and is consistent under very mild condi-
+tions on the learning algorithm. Through extensive
+empirical evaluation, we show that our general test-
+ing strategy, when instantiated to several practical
+Figure 5: Power/Type I error analysis for the ro-
+tated 6 MNIST images for different mixing propor-
+tions p = 0.3, 0.4, 0.5. DAVT(ours) shows better
+power performance than the baseline S-C2ST com-
+bined with multiple testing corrections.
+applications, performs competitively with existing
+sequential tests specifically designed for those tasks.
+Our work opens up several interesting directions for
+future work. For example, from a theoretical per-
+spective, obtaining stronger guarantees on the per-
+formance of our test, perhaps by leveraging recent
+advances in deep learning theory (Jacot et al., 2018),
+is an important question.
+On the practical front,
+some interesting topics include designing improved
+rules for computing the mini-batch betting scores
+(see Section 12 for more details), and identifying
+appropriate regularizations or modifications of the
+training objective functions to learn better joint bet-
+ting and payoff strategies. Furthermore, our experi-
+ments suggest that an important direction for future
+research is to develop principled strategies for in-
+tegrating network architecture search, operator de-
+sign, and hyperparameter tuning schemes into our
+general sequential testing framework.
+
+
+================ PDF PAGE 10 / 22 ================
+
+Deep anytime-valid hypothesis testing
+References
+E. Candes, Y. Fan, L. Janson, and J. Lv. Panning
+for Gold: ‘Model-X’ Knockoffs for High Dimen-
+sional Controlled Variable Selection. Journal of
+the Royal Statistical Society Series B: Statistical
+Methodology, 80(3):551–577, 2018.
+K. P. Chwialkowski, A. Ramdas, D. Sejdinovic, and
+A. Gretton. Fast Two-Sample Testing with An-
+alytic Representations of Probability Measures.
+Advances in Neural Information Processing Sys-
+tems, 28, 2015.
+G. Cybenko. Approximation by superpositions of a
+sigmoidal function. Mathematics of control, sig-
+nals and systems, 2(4):303–314, 1989.
+D. A. Darling and H. Robbins. Some nonparametric
+sequential tests with power one.
+Proceedings of
+the National Academy of Sciences, 61(3):804–809,
+1968.
+I. J. Goodfellow, J. Shlens, and C. Szegedy. Explain-
+ing and Harnessing Adversarial Examples. arXiv
+preprint arXiv:1412.6572, 2014.
+A. Gretton,
+K. M. Borgwardt,
+M. J. Rasch,
+B. Sch¨olkopf, and A. Smola.
+A Kernel Two-
+Sample Test. The Journal of Machine Learning
+Research, 13(1):723–773, 2012.
+P. Gr¨unwald, R. de Heide, and W. M. Koolen. Safe
+Testing. Journal of the Royal Statistical Society:
+Series B (to appear with discussion), 2023.
+E. Hazan, A. Agarwal, and S. Kale.
+Logarithmic
+regret algorithms for online convex optimization.
+Machine Learning, 69:169–192, 2007.
+K. He, X. Zhang, S. Ren, and J. Sun. Deep Residual
+Learning for Image Recognition. In Proceedings
+of the IEEE conference on computer vision and
+pattern recognition, pages 770–778, 2016.
+K. Hornik. Approximation capabilities of multilayer
+feedforward networks. Neural networks, 4(2):251–
+257, 1991.
+A. Jacot, F. Gabriel, and C. Hongler. Neural Tan-
+gent Kernel: Convergence and Generalization in
+Neural Networks. Advances in neural information
+processing systems, 31, 2018.
+I. Kim, A. Ramdas, A. Singh, and L. Wasserman.
+Classification accuracy as a proxy for two-sample
+testing. The Annals of Statistics, 49(1):411–434,
+2021.
+A. Krizhevsky and G. Hinton.
+Learning Multiple
+Layers of Features from Tiny Images.
+Master’s
+thesis, Department of Computer Science, Univer-
+sity of Toronto, 2009.
+Y. LeCun, C. Cortes, and C. Burges. MNIST hand-
+written digit database. ATT Labs [Online]. Avail-
+able: http://yann.lecun.com/exdb/mnist, 2, 2010.
+E. L. Lehmann and J. P. Romano. Testing Statistical
+Hypotheses. Springer, 4th edition, 2022.
+A. Lh´eritier and F. Cazals.
+A Sequential Non-
+Parametric Multivariate Two-Sample Test. IEEE
+Transactions on Information Theory, 64(5):3361–
+3370, 2018.
+D. Lopez-Paz and M. Oquab. Revisiting Classifier
+Two-Sample Tests.
+In International Conference
+on Learning Representations, 2017.
+T. Pandeva,
+T. Bakker,
+C. A. Naesseth,
+and
+P. Forr´e.
+E-Valuating Classifier Two-Sample
+Tests. arXiv preprint arXiv:2210.13027, 2022.
+A. Podkopaev and A. Ramdas. Sequential Predictive
+Two-Sample and Independence Testing. Advances
+in neural information processing systems, 2023.
+A. Podkopaev, P. Bl¨obaum, S. Kasiviswanathan,
+and A. Ramdas. Sequential Kernelized Indepen-
+dence Testing.
+In International Conference on
+Machine Learning, pages 27957–27993. PMLR,
+2023.
+A. Ramdas, P. Gr¨unwald, V. Vovk, and G. Shafer.
+Game-Theoretic Statistics and Safe Anytime-
+Valid Inference. arXiv preprint arXiv:2210.01948,
+2022.
+S. Shaer, G. Maman, and Y. Romano.
+Model-X
+Sequential Testing for Conditional Independence
+via Testing by Betting. In International Confer-
+ence on Artificial Intelligence and Statistics, pages
+2054–2086. PMLR, 2023.
+G. Shafer. Testing by betting: A strategy for sta-
+tistical and scientific communication. Journal of
+the Royal Statistical Society Series A: Statistics in
+Society, 184(2):407–431, 2021.
+R. D. Shah and J. Peters.
+The hardness of con-
+ditional independence testing and the generalised
+covariance measure. The Annals of Statistics, 48
+(3):1514–1538, 2020.
+S. Shekhar and A. Ramdas.
+Nonparametric two-
+sample testing by betting. IEEE Transactions on
+Information Theory, 2023.
+C. Szegedy, W. Zaremba, I. Sutskever, J. Bruna,
+D. Erhan, I. Goodfellow, and R. Fergus. Intrigu-
+ing properties of neural networks. In 2nd Inter-
+national Conference on Learning Representations,
+ICLR 2014, 2014.
+J. Ville. Etude Critique de la Notion de Collectif.
+Gauthier-Villars, Paris., 1939.
+
+
+================ PDF PAGE 11 / 22 ================
+
+Teodora Pandeva, Patrick Forr´e, Aaditya Ramdas, Shubhanshu Shekhar
+Checklist
+1. For all models and algorithms presented, check
+if you include:
+(a) A clear description of the mathematical
+setting, assumptions, algorithm, and/or
+model. [Yes, the details of our methodol-
+ogy are in Section 4]
+(b) An analysis of the properties and complex-
+ity (time, space, sample size) of any algo-
+rithm.
+[Yes, empirical evaluation of the
+sample size efficiency is provided for every
+experiment in Section 6, the other require-
+ments are not applicable because they are
+linked to the complexity of the task not the
+testing procedure.]
+(c) (Optional) Anonymized source code, with
+specification of all dependencies, including
+external libraries. [Yes, we provide a link to
+the code https://github.com/tpandeva/
+deep-anytime-testing.]
+2. For any theoretical claim, check if you include:
+(a) Statements of the full set of assumptions of
+all theoretical results. [Yes]
+(b) Complete proofs of all theoretical results.
+[Yes, the proofs are in Section 10 of the
+Appendix.]
+(c) Clear explanations of any assumptions.
+[Yes, see Remark 4.4.]
+3. For all figures and tables that present empirical
+results, check if you include:
+(a) The code, data, and instructions needed
+to reproduce the main experimental results
+(either in the supplemental material or as a
+URL). [Yes, the code is available as a URL.]
+(b) All the training details (e.g., data splits,
+hyperparameters, how they were chosen).
+[Yes it is provided in Section 11 in the ap-
+pendix]
+(c) A clear definition of the specific measure or
+statistics and error bars (e.g., with respect
+to the random seed after running experi-
+ments multiple times). [Yes, it is explained
+in Sections 6 and 11)]
+(d) A description of the computing infrastruc-
+ture used.
+(e.g., type of GPUs, internal
+cluster, or cloud provider). [Yes, available
+in the Appendix (Section 11)]
+4. If you are using existing assets (e.g., code, data,
+models) or curating/releasing new assets, check
+if you include:
+(a) Citations of the creator If your work uses
+existing assets. [Yes]
+(b) The license information of the assets, if ap-
+plicable. [Not Applicable]
+(c) New assets either in the supplemental ma-
+terial or as a URL, if applicable. [Not Ap-
+plicable]
+(d) Information
+about
+consent
+from
+data
+providers/curators. [Not Applicable]
+(e) Discussion of sensible content if applicable,
+e.g., personally identifiable information or
+offensive content. [Not Applicable]
+5. If you used crowdsourcing or conducted re-
+search with human subjects, check if you in-
+clude:
+(a) The full text of instructions given to par-
+ticipants and screenshots. [Not Applicable]
+(b) Descriptions of potential participant risks,
+with links to Institutional Review Board
+(IRB) approvals if applicable. [Not Appli-
+cable]
+(c) The estimated hourly wage paid to partic-
+ipants and the total amount spent on par-
+ticipant compensation. [Not Applicable]
+
+
+================ PDF PAGE 12 / 22 ================
+
+Deep anytime-valid hypothesis testing
+Deep anytime-valid hypothesis testing:
+Supplementary Materials
+8
+MORE EXAMPLES
+Example 8.1 (Independence Testing). Independence testing is another well-studied problem in statistics,
+where given observations {(Xi, Yi) : 1 ≤i ≤n} drawn i.i.d. from a distribution PXY on a product space
+X × Y, we want to test whether PXY = PX × PY or not. By working with two pairs of observations at a
+time, we can again describe the null as being invariant to an operator. In particular, let given Z1 = (X1, Y1)
+and Z2 = (X2, Y2), let T denote the operator that maps (Z1, Z2) to (Z′
+1, Z′
+2), with Z′
+1 = (X1, Y2) and
+Z′
+2 = (X2, Y1). Clearly, the distribution of (Z1, Z2) is the same as that of (Z′
+1, Z′
+2) under the null, while this
+invariance to T is broken under the alternative.
+Example 8.2 (Symmetry testing). In the simplest version of this problem, we consider real-valued obser-
+vations (that is, Z = R), and the operators T2 = Tid, and T1 = Tflip, where the operator Tflip simply flips
+the observations about the origin; that is, Tflip(x) = −x. The resulting null hypothesis asserts that PZ is
+symmetric about the origin. The same formulation also covers other kinds of symmetry, such as rotational
+invariance, or invariance to horizontal or vertical flips in the case of images.
+Example 8.3 (Group Fairness). Group fairness, sometimes referred to as demographic or statistical fairness,
+is a research area in machine learning that focuses on how machine learning models perform across different
+demographic groups. The main goal is to ensure that a model’s performance is consistent across predefined
+groups, avoiding situations where the model may disproportionately benefit or harm a particular group.
+A typical application in this context would be testing whether an ML model is racially biased. For example,
+suppose a trained ML recommendation model h is used to predict which candidates are most likely to succeed
+in a job. The company running this model wants to ensure that it is not racially biased. To achieve this,
+they categorize applicants into p ethnic groups and then evaluate whether the model h produces consistent
+results across all p groups. Let Y be the categorical random variable indicating the demographic group and
+X be a random vector collecting the rest of the applicant’s covariates. The associated statistical test is
+H0 : h(X) ⊥⊥Y
+Thus, by using Example 8.1, we can design a test with respect to the defined null based on our framework.
+Example 8.4 (Group invariance testing). Suppose we have a collection of images Z containing equilateral
+triangles. Each edge of these triangles is colored either blue or green. A practitioner would like to find
+out if the edges of the triangles are colored without any particular pattern, or if some hidden rule controls
+their coloring. To do this, we will examine whether the triangles remain the same when rotated 120 or 240
+degrees. We will therefore introduce a set of operators that represent the aforementioned rotations: T120
+and T240. Next, we formulate the following composite null hypothesis:
+H0 : T120(Z) = Z and T240(Z) = Z
+Thus, we want to test whether the distribution of Z remains invariant with respect to the two operators T120
+and T240.
+
+
+================ PDF PAGE 13 / 22 ================
+
+Teodora Pandeva, Patrick Forr´e, Aaditya Ramdas, Shubhanshu Shekhar
+(Ω, F, P)
+Z
+W
+ω
+Z(ω)
+T1 ◦Z(ω)
+T2 ◦Z(ω)
+Z
+T1
+T2
+t
+Figure 6: Let Z denote a Z-valued random variable on an underlying probability space (Ω, F, P).
+By
+definition, the distribution of the Z is equal to PZ = P ◦Z−1. The two black curved lines from Z to W
+denote the operators Ti for i ∈{1, 2}, used to characterize the class of null distributions. In particular, the
+distribution of the resulting W-valued random variables are P ◦(Ti ◦Z)−1 = P ◦Z−1 ◦T −1
+i
+= PZ ◦T −1
+i
+, and
+the null hypothesis of our abstract testing problem states that the two distributions, PZ ◦T −1
+1
+and PZ ◦T −1
+2
+,
+are the same.
+9
+BATCH TEST BASED ON SAMPLE-SPLITTING
+We can also construct a batch test (also called a fixed sample-size test) for the abstract testing problem (1)
+using the idea of sample splitting. In particular, let D = {Zi : 1 ≤i ≤n} denote the set of observations,
+which are then split into two equal halves, D1 = {Z1, . . . , Zn/2} and D2 = {Zn/2+1, . . . , Zn}. We use the
+first split, D1, to train an ML model (usually a DNN) with the objective of maximizing the growth rate:
+bθ ∈arg min
+θ∈Θ
+−2
+n
+X
+Zi∈D1
+log (1 + egθ(Zi)) .
+Next, we use the learned parameter on the second split to construct the test statistic
+En =
+Y
+Zi∈D2
+�1 + egbθ(Zi)
+�
+.
+We expect this statistic En to be small under the null, and thus we can use it to define a test for (1) that
+rejects the null for large values of En. Our next result analyzes the performance of such a test.
+Proposition 9.1. Suppose the learning algorithm ensures that
+lim inf
+n→∞
+E[log(1 + egbθ(Z))|D1]
+4c
+p
+log n/n
+a.s.
+> 1,
+under H1,
+where c is a universal constant. Then, the test Ψ(Zn) = 1En≥1/α, that rejects the null if En exceeds 1/α,
+satisfies the following properties:
+EH0 [Ψ(Zn)] ≤α,
+and
+lim
+n→∞EH1 [Ψ(Zn)] = 1.
+That is, Ψ is a consistent, level-α test for (1).
+The proof of this result is in Section 10.2 of the appendix.
+Note that the test statistic En is an e-variable (Gr¨unwald et al., 2023); which is a nonnegative random
+variable with an expected value no larger than 1 under the null. As a result, the test Ψ is valid under
+optional continuation.
+That is, suppose we compute En using a dataset D, and its value turns out to
+be smaller than 1/α.
+Since the test Ψ based on D is inconclusive, we may decide to collect m further
+observations, D′, and use it to compute E′
+m. We can combine the evidence from the two experiments easily
+by simply rejecting the null if En × E′
+m exceeds 1/α, without violating type-I error guarantees. This is a
+simple consequence of the fact that E[EnE′
+m] = E[EnE[E′
+m|D]] ≤E[En] ≤1.
+
+
+================ PDF PAGE 14 / 22 ================
+
+Deep anytime-valid hypothesis testing
+10
+DEFERRED PROOFS
+In this section, we present the proofs of Proposition 4.2, along with the two results analyzing the performance
+of our batch-test Ψ (Proposition 9.1), and the sequential test γ (Proposition 4.3).
+10.1
+Proof of Proposition 4.2
+We need to prove that (2) ⇐⇒(3); that is,
+A := sup
+θ∈Θ
+E [egθ(Z)] > 0
+⇐⇒
+B := sup
+θ∈Θ
+E [log (1 + egθ(Z))] > 0.
+Proof of (⇒). Consider any ϵ such that 0 < ϵ < A. Then, by the definition of supremum, there exists a
+θ ∈Θ such that E[egθ(Z)] ≥ϵ. Now, due to the second part of Assumption 1, we have
+B ≥
+sup
+c∈[−1,1]
+E [log (1 + c egθ(Z))] .
+The first part of Assumption 1 implies that |cegθ(z)| < 1 for all z ∈Z. Furthermore, for x ≤0.68, we know
+that log(1 + x) ≥x −x2/2. Using these facts, we obtain
+B ≥
+sup
+c∈[−1,1]
+E [log (1 + c egθ(Z))]
+≥
+sup
+c∈[−0.68,0.68]
+E [c egθ(Z)] −1
+2E
+h�c egθ(Z)
+�2i
+≥
+sup
+c∈[−0.68,0.68]
+cϵ −bc2
+2 ,
+where b = E
+h�egθ(Z)
+�2i
+. If b = 0, then we trivially have B ≥0.68ϵ > 0. Now, if b > 0, the function f(c) =
+cϵ −c2b/2 has two real roots at c = 0 and c = ϵ/b > 0, which implies that there exists a c ∈[0, min{0.68, ϵ/b]
+at which f(c) > 0. In other words, there exists a function g ∈G such that E[log(1 + eg(Z))] > 0, as required.
+Proof of (⇐). Consider any ϵ such that 0 < ϵ < B. Then, by the definition of supremum, there exists a
+θ ∈Θ such that E[log(1 + egθ(Z))] ≥ϵ. This implies that
+ϵ ≤E [log (1 + egθ(Z))]
+(i)
+≤log (1 + E[egθ(Z)]) .
+The inequality (i) above follows from an application of Jensen’s inequality due to the concavity of the log(·)
+function. From the above inequality, we can obtain the required result as follows:
+0 < eϵ −1 ≤E[egθ(Z)] ≤sup
+θ
+E[egθ(Z)] = A.
+10.2
+Proof of Proposition 9.1
+Type-I error control.
+The proof of the type-I error control follows from an application of Markov’s
+inequality. More specifically, the expected value of En can be expressed as follows:
+E[En] = E[E[En|D1]] = E
+"
+E
+" Y
+Zi∈D2
+�1 + egbθ(Zi)
+�
+| D1
+##
+= E
+" Y
+Zi∈D2
+�1 + E
+�
+egbθ(Zi) | D1
+��
+#
+,
+(8)
+
+
+================ PDF PAGE 15 / 22 ================
+
+Teodora Pandeva, Patrick Forr´e, Aaditya Ramdas, Shubhanshu Shekhar
+where D1 and D2 denote the two splits of the dataset D. Recall that the parameter bθ trained on the first split
+D1, and thus egbθ can be treated as a constant function in the conditional expectation above. The equality
+in (8) uses the fact that dataset D, and hence the split D2 consists of i.i.d. data-points. Finally, we have
+E
+�
+egbθ(Zi) | D1
+�
+= 0,
+under H0 for any Zi ∈D2, which implies that
+E[En] = 1,
+under H0.
+This immediately implies the type-I error guarantee of our test Ψ, since
+PH0 (Ψ(Zn) = 1) = PH0 (En ≥1/α) ≤EH0[En]
+1/α
+=
+1
+1/α = α.
+The inequality above is due to Markov’s inequality.
+Consistency.
+For proving the consistency of our test, we need some additional notation:
+vi = log
+�1 + egbθ(Zn/2+i)
+�
+, for i ∈{1, . . . , n/2},
+and
+An := E
+�
+egbθ(Z)|D1
+�
+,
+where Z ∼PZ is independent of D1. Now, observe the following
+P (Ψ(Zn) = 1) = P
+�2 log En
+n
+≥2 log(1/α)
+n
+�
+= P
+
+2
+n
+n/2
+X
+i=1
+vi ≥2 log(1/α)
+n
+
+
+= P
+
+An + 2
+n
+n/2
+X
+i=1
+(vi −An) ≥2 log(1/α)
+n
+
+.
+(9)
+Now, we introduce the event Gn = {|(2/n) Pn/2
+i=1 vi −An| ≤c
+p
+4 log n/n}, for c = 2 log(1/(1 −2q)) and
+q ∈(0, 1/2) is the upper bound on |gθ(x)| for all x, θ assumed in Section 4. Note that for each i, the random
+variable vi −An is bounded in [−c/2, c/2], with mean 0. This means that, by an application of Hoeffding’s
+inequality, we get
+P (Gc
+n) ≤2
+n2 ,
+which implies that
+∞
+X
+n=2
+P(Gc
+n) < ∞.
+(10)
+Returning to (9), we now get
+P (Ψ(Zn) = 1) ≥P
+
+
+
+
+An + 2
+n
+n/2
+X
+i=1
+(vi −An) ≥2 log(1/α)
+n
+
+
+∩Gn
+
+
+≥P
+ (
+An ≥2 log(1/α)
+n
++ 2c
+r
+log n
+n
+)
+∩Gn
+!
+.
+The second inequality above uses the fact that under the event Gn, the term (2/n)
+�Pn/2
+i=1 vi −An
+�
+is lower
+bounded by −2c
+p
+log n/n.
+For large enough values of n, the term 2 log(1/α)/n is smaller than 2c
+p
+log n/n. Using this fact, we obtain
+P(Ψ(Zn) = 1) ≥P (Hn ∩Gn) = E[1Hn 1Gn],
+with Hn :=
+(
+Bn ≥4c
+r
+log n
+n
+)
+.
+(11)
+Now, taking the limiting value of the probability of detection, we get
+1 ≥lim inf
+n→∞P (Ψ(Zn) = 1) ≥lim inf
+n→∞E[1Hn 1Gn] ≥E[lim inf
+n→∞1Hn 1Gn],
+
+
+================ PDF PAGE 16 / 22 ================
+
+Deep anytime-valid hypothesis testing
+where the last inequality follows by an application of Fatou’s Lemma.
+To
+complete
+the
+proof,
+it
+suffices
+to
+show
+that
+1Hn1Gn
+a.s.
+−→
+1,
+which
+would
+imply
+that
+limn→∞P (Ψ(Zn) = 1) = 1. We show this in two steps:
+• From (10), and an application of (the first) Borel-Cantelli Lemma, we know that
+P (Gc
+ninfinitely often) = P (∩∞
+n=1 ∪m≥n Gc
+m) = 0.
+On taking the complement of the event above, we get
+P (∪n≥1 ∩m≥n Gn) = 1,
+which implies that
+1Gn
+a.s.
+−→1.
+(12)
+• For the final step, we use the assumption about the learning algorithm made in Proposition 9.1. In
+particular, the assumption that
+lim inf
+n→∞
+An
+4c
+p
+log n/n
+a.s.
+> 1
+implies
+1Hn
+a.s.
+−→1.
+Together, (11) and (12) imply the required condition that 1Gn1Hn
+a.s.
+−→1. This completes the proof.
+10.3
+Proof of Proposition 4.3
+Type-I error control.
+The type-I error control is a consequence of the fact that the process {Wt : t ≥1}
+is a non-negative martingale with an initial value of 1. As a result, we have
+P(γ < ∞) = P (∃t ≥1 : Wt ≥1/α) ≤E[W0]
+1/α
+= α,
+due to an application of Ville’s inequality (Ville, 1939).
+Consistency.
+Recall that we use t to denote the mini-batch counter, and b to denote the size of each
+mini-batch. To prove the consistency of this test, we begin by observing that
+P(γ = ∞) = P (∩t≥1{γ > t}) ≤P (γ > t) ,
+for any arbitrary t. Taking the limit, this implies that
+P (γ = ∞) ≤lim sup
+t→∞P (γ > t) .
+To complete the proof, we will show that the RHS above is equal to 0. As in the proof of Proposition 9.1,
+we introduce the notation
+vi =
+X
+Z∈Bi
+log
+�1 + egθi−1(Z)
+�
+,
+and
+Ai = E [vi|Fi−1] = b × E[log(1 + egθi−1(Z))|Fi−1],
+where Fi−1 = σ
+�∪i−1
+j=1Bj
+�
+is the σ-algebra generated by the first i −1 batches of observations. Then, we
+have
+P (γ > t) ≤P
+�log Wt
+t
+< log(1/α)
+t
+�
+= P
+
+1
+t
+t
+X
+i=1
+vi −Ai + 1
+t
+t
+X
+i=1
+Ai < log(1/α)
+t
+!
+.
+(13)
+Now, observe that the process {vi −Ai : i ≥1} is a bounded martingale difference sequence. Hence, an
+application of Azuma’s inequality gives us
+P (Gc
+t) ≤2
+t2 ,
+with Gt :=
+(
+
+
+
+
+
+1
+t
+t
+X
+i=1
+vi −Ai
+
+
+
+
+
+ ≤cb
+r
+log t
+t
+)
+,
+
+
+================ PDF PAGE 17 / 22 ================
+
+Teodora Pandeva, Patrick Forr´e, Aaditya Ramdas, Shubhanshu Shekhar
+where we have c = 2 log(1/(1 −2q)), and q ∈(0, 1/2) is the upper bound on |gθ(x)| for all x, θ assumed
+in Section 4. Combining the above result with (13), we get
+P (γ > t) ≤P
+ (
+1
+t
+t
+X
+i=1
+Ai < log(1/α)
+t
++
+
+
+
+
+
+
+1
+t
+t
+X
+i=1
+vi −Ai
+
+
+
+
+
+
+)
+∩Gt
+!
++ P (Gc
+t)
+≤P
+ (
+1
+t
+t
+X
+i=1
+Ai < log(1/α)
+t
++ cb
+r
+log t
+t
+)
+∩Gt
+!
++ P (Gc
+t)
+≤P
+
+1
+t
+t
+X
+i=1
+Ai < 2cb
+r
+log t
+t
+!
++ 2
+t2 .
+(14)
+In the last inequality, we used the fact that for sufficiently large t, the term log(1/α)/t is smaller than
+c
+p
+log t/t, and that P(Gc
+t) ≤2/t2. By taking the limit in (14), we obtain
+P(γ = ∞) ≤lim sup
+t→∞P (γ > t) ≤lim sup
+t→∞E [1Ht] ,
+where
+Ht :=
+(
+1
+t
+t
+X
+i=1
+Ai < 2cb
+r
+log t
+t
+)
+.
+From the properties of Cesaro means, we know that
+lim inf
+n→∞
+1
+n
+n
+X
+i=1
+Ai
+a.s.
+≥lim inf
+n→∞An,
+which implies
+lim inf
+t→∞
+1
+t
+Pt
+i=1 Ai
+2cb
+p
+log t/t
+a.s.
+≥lim inf
+t→∞
+(At/b)
+2c
+p
+log t/t
+a.s.
+> 1.
+The last (strict) inequality is due to the assumption on the learning algorithm and noting that
+limt→∞
+�p
+log t/t
+�
+/
+�p
+log(t −1)/(t −1)
+�
+= 1.
+This condition implies that 1Hn
+a.s.
+−→0, which by the
+Bounded convergence theorem (or the continuity of probability) leads to
+P(τ = ∞) ≤lim sup
+t→∞E[1Ht] = 0,
+under the alternative. Hence we have proved the required statement that P(τ < ∞) = 1 under the alternative.
+
+
+================ PDF PAGE 18 / 22 ================
+
+Deep anytime-valid hypothesis testing
+Figure 7: Blob Dataset
+11
+EXPERIMENTAL DETAILS
+We implemented our and the baseline models in pytorch, and the chosen optimizer was Adam. All calcula-
+tions were performed on a local computing cluster offering 8 TitanX GPU nodes. The average time for each
+run is 6 min. Thus, the total compute time for the DNN experiments in the main paper is approximately
+6 · 33 · 100 minutes or 330 GPU hours.
+In our experiments, we draw mini-batches with consistent sample sizes and then apply Algorithm 1. We
+trained all models with early stopping coupled with a low patience threshold as a safeguard against potential
+model overfitting. In this section, we will explain the implementation and training procedure in detail for
+each experiment: two-sample testing in Section 11.3, adversarial robustness in Section 11.4, group invariance
+in Section 11.5, CIT in Section 11.6. The hyperparameters are generally selected so the resulting tests have
+small stopping times. The search space for the learning rate is: {0.0005, 0.0001, 0.005, 0.001} and for the
+patience: {2, 5, 10}.
+11.1
+Implementation of DAVT
+The training procedure with early stopping always uses the last batch as a validation set. Note that at
+the beginning of the procedure, the first batches B1 and B2 are used for training and validation. We also
+implement a variation of the loss function that is used for optimization, i.e.
+θt ∈arg max
+θ∈Θ
+t
+X
+l=1
+X
+Z∈Bl
+log (1 + σ (gθ ◦T1(Z) −gθ ◦T2(Z))) ,
+where σ : R →[−1, 1] is an monotone increasing function with σ(−x) = −σ(x).
+11.2
+Baselines
+Here, we provide an overview of the implemented baseline methods.
+• E-C2ST (Lh´eritier and Cazals, 2018; Pandeva et al., 2022) is a sequential two-sample test based on the
+M-split likelihood ratio testing where the trained DNN maximizes the data log-likelihood of the previous
+batches under the alternative.
+• Seq-IT (Podkopaev and Ramdas, 2023) extends E-C2ST by formalizing the test in the “testing by
+betting” framework and thus coupling the payoff to a betting strategy such as ONS. The ONS betting
+strategy λt is computed samplewise in the original paper. To make Seq-IT comparable to our framework,
+we update the betting strategy batch-wise, resulting in a constant λb for the entire batch.
+• S-C2ST (Lopez-Paz and Oquab, 2017; Kim et al., 2021) is a non-sequential classifier two-sample test
+that uses permutation testing for constructing the p-value.
+
+
+================ PDF PAGE 19 / 22 ================
+
+Teodora Pandeva, Patrick Forr´e, Aaditya Ramdas, Shubhanshu Shekhar
+Figure 9: Blob Experiments with lower capacity DNN.
+• MMD Test (Gretton et al., 2012) is a kernel-based test utilizing permutation testing. To adapt MMD for
+testing image data we can use the capabilities of a trained neural network to act as a feature extractor.
+We then use the extracted features to perform a kernel MMD test.
+• ECRT (Shaer et al., 2023) is the only conditional independent test on the list. It is also based on the
+“testing by betting” paradigm. The difference between DAVT-CIT and ECRT is the presence of a
+betting strategy linked to the universal portfolio optimization paradigm.
+11.3
+Two-Sample Testing
+The Blob dataset is a synthetic benchmark dataset for two sample tests. It is a challenging dataset due to
+the overlapping modes of the two classes. Figure 7 provides a visualization of the class distributions.
+All trained DNN models follow the network architecture in Table 1. The net contains three linear layers
+alternating with a LayerNorm and ReLU activation function. All models are trained for a maximum of 500
+with early stopping with respect to the loss on the validation set with patience ten and a learning rate of
+0.0005. The MMD test bandwidth is set to 0.4.
+11.3.1
+Type I Error
+Figure 8: Type I error rate for the Blob dataset.
+In this experiment, we demonstrate a scenario where
+the type I error rate on the two-sample testing with
+Blob data reaches the chosen significance level of 0.05
+(see Figure 8). For this experiment, we fixed the batch
+size to 36.
+All other training parameters remain the
+same as for the experiment showcased in Section 6.
+11.3.2
+Lower Capacity DNNs
+We also performed additional experiments where the
+chosen DNN has a lower capacity, i.e. the size of the
+hidden layers is 10 instead of 30 as in Table 1.
+The
+results presented in Figure 9 show that the tests’ ten-
+dencies and ranking in terms of their performance are
+maintained. Interestingly, the independence test performs better here than in the previous experiments.
+However, all methods need twice as many samples to achieve maximum power. This illustrates the role of
+the DNN in the performance of all tests.
+11.3.3
+Two-sample Test for Dependent X and Y
+In the main paper, we compared two different two-sample test operators, and we established that
+when the samples X and Y
+are independent, using the swap operator is not very beneficial for
+
+
+================ PDF PAGE 20 / 22 ================
+
+Deep anytime-valid hypothesis testing
+the task.
+In this experiment,
+we demonstrate the increasing power of DAVT-Swap as soon as
+the X and Y become more dependent.
+We revisit the Blob experiment where we model X1 and
+Y1 (the first dimensions of the dataset) to be dependent and have corr(X, Y )
+=
+ρ.
+We con-
+duct experiments for ρ
+=
+0.1, 0.2, 1 and we visualize the results in Figure 10.
+We can infer
+that it is easier for DAVT-Swap to reject null the stronger the dependency between X and Y .
+Figure 10: Rejection rate for the Blob two-sample test
+with swap operator. Here, ρ is the correlation between
+the first dimensions of X and Y . The stronger the de-
+pendence between X and Y the easier it is for DAVT-
+Swap to reject the null.
+11.4
+Adversarial Robustness
+The output of the trained ResNet50 is an input to
+a DNN model with the architecture shown in Ta-
+ble 2. It is similar to the one of the Blob data with
+the difference that the hidden layer size is 32. We
+trained the models for a maximum of 1000 epochs
+with a learning rate of 0.0005 with early stopping
+with patience 5. We normalize the images at the
+time of loading. The MMD test bandwidth is set
+to 1.
+11.5
+Rotated MNIST
+The DNN network used here is given in Table 3.
+The images are normalized before feeding into the
+network. We traine with l1 (λ1 = 0.005) and l2 (λ1 = 0.005) regularization on the weights. As before, our
+training procedure is with early stopping with patience 5, learning rate 0.0005, and maximum number of
+epochs 1000.
+11.6
+Conditional Independence Testing under Model-X assumption
+The trained DNN models follow the network architecture in Table 4. The network includes two linear layers
+with a dropout(p=0.3) layer and a ReLU activation function between them. All models are trained for up
+to 500 epochs using early stopping based on validation set loss with a patience of 10 and a learning rate of
+0.0005.
+
+
+================ PDF PAGE 21 / 22 ================
+
+Teodora Pandeva, Patrick Forr´e, Aaditya Ramdas, Shubhanshu Shekhar
+Layer (type)
+Output Shape
+Linear-1
+[batch size, 30]
+LayerNorm-2
+[batch size, 30]
+ReLU-3
+[batch size, 30]
+Linear-4
+[batch size, 30]
+LayerNorm-5
+[batch size, 30]
+ReLU-6
+[batch size, 30]
+Linear-7
+[batch size, output size]
+Table 1: The network architecture employed in the Blob experiments for all baselines with output size = 2
+for S-C2ST and E-C2ST.
+Layer (type)
+Output Shape
+Linear-1
+[batch size, 32]
+LayerNorm-2
+[batch size, 32]
+ReLU-3
+[batch size, 32]
+Linear-4
+[batch size, 32]
+LayerNorm-5
+[batch size, 32]
+ReLU-6
+[batch size, 32]
+Linear-7
+[batch size, output size]
+Table 2: The network architecture employed in the CIFAR-10 experiments for all baselines with output size
+= 2 for S-C2ST and E-C2ST.
+Layer (type)
+Output Shape
+Linear-1
+[batch size, 128]
+ReLU-2
+[batch size, 128]
+Dropout(p=0.5)-3
+[batch size, 128]
+Linear-4
+[batch size, 64]
+ReLU-5
+[batch size, 64]
+Dropout(p=0.5)-6
+[batch size, 64]
+Linear-7
+[batch size, output size]
+Table 3: The network architecture employed in the MNIST experiments.
+Layer (type)
+Output Shape
+Linear-1
+[batch size, 128]
+ReLU-2
+[batch size, 128]
+Dropout(p=0.3)-3
+[batch size, 128]
+Linear-4
+[batch size, output size]
+Table 4: The network architecture employed in the CIT experiments.
+
+
+================ PDF PAGE 22 / 22 ================
+
+Deep anytime-valid hypothesis testing
+12
+PRACTICAL CONSIDERATIONS
+The model training and architecture.
+Different architectures, from convolutional to recurrent models,
+can affect the performance of all data-driven tests, a discussion alluded to in Section 11.3.2. Therefore, ap-
+propriate DNN selection becomes critical to ensure the reliability and robustness of conclusions derived from
+these tests. While all the considered sequential data-driven statistical tests have a finite-sample type I error
+control, unlike most classical testing procedures, researchers must be familiar with the specific requirements
+of their statistical tests in order to select a DNN that maximizes power for a given sample size.
+There is another dimension of DNN training worth exploring. Unlike traditional batch mode training, online
+training is designed for continuous data streams, allowing DNNs to adapt and evolve in real-time. This
+procedure allows to disregard previous data batches and to update the DNN only from a single batch. This
+can make sequential testing methods even more appealing for a wide range of applications.
+Alternative computation of the betting score.
+In Section 4, we defined the betting score St in (5) by
+taking the product of (1 + egθt−1(Z)) over all Z in the mini-batch Bt. An alternative, and equally valid, way
+of defining the wealth process is by taking the average; that is,
+St = 1
+b
+ X
+Z∈Bt
+1 + egθt−1(Z)
+!
+= 1 + 1
+b
+X
+Z∈Bt
+egθt−1(Z).
+(15)
+The resulting wealth process has a smaller variance than our proposal, but this comes at the cost of power
+for very large mini-batches. This suggests that the optimal betting score construction should lie somewhere
+in between these two extremes to achieve the best bias-variance trade-off. For example, at test time, a mini-
+batch can be partitioned into sufficiently small ones for which we compute the increments using the new
+proposed updating scheme. A thorough exploration of the design of optimal betting scores is an interesting
+question for future work.
+Unpaired Data.
+In the main paper, we mostly presented scenarios where the samples of Xt and Yt are
+observed simultaneously. However, our framework is not only limited to paired data. It can also be applied
+in a more general setting when this assumption does not hold.
+This scenario has been discussed in Shekhar and Ramdas (2023). There, the authors propose to use betting
+scores that align with the proposal in the previous point. More precisely, consider a two-sample test for
+batches Bt = {Xtb+j}bt1
+j=1 ∪{Ytb+j}bt2
+j=1 consisting of bt1 + bt2 observations of X and Y . Then, we can define
+the increments as
+St = 1 + 1
+bt1
+bt1
+X
+j=1
+gθt−1(Xtb+j) −1
+bt2
+bt2
+X
+j=1
+gθt−1(Ytb+j)
+or
+St = 1 + σ(
+bt1
+X
+j=1
+gθt−1(Xtb+j) −
+bt2
+X
+j=1
+gθt−1(Ytb+j))
+where σ : R →[−1, 1] is an monotone increasing function with σ(−x) = −σ(x). While this does not quite
+match our framework, it is a way to model unpaired data.
+We can fit this problem into our formalism by considering random variable L ∈{−1, 1} and W such that
+P(W|L = 1) = P(X) and P(W|L = −1) = P(Y ). We can test whether W and L are independent instead of
+considering the classical two-sample test. If the samples Xt and Yt are somewhat dependent, we can apply
+averaging to obtain the increments (see (15)); otherwise, we can stick to our proposal.
