@@ -20,6 +20,11 @@ DNHacks 2026 team repo. Fill in the one-paragraph project description here once 
 - `tests/`: Python regression tests (some existing local tests/data are not versioned).
 
 ## Setup / Run / Test gates
+
+GPU compute: before planning training or compute-heavy benchmarks, read the local
+`gpu-ssh-handoff/README.md` and verify availability through `gpu-ssh-handoff/connect.sh`.
+Keep connection details and credentials local; never read credential files or commit that directory.
+
 Setup: `uv sync --extra dev` and `npm --prefix frontend ci` (Node 22.12+).
 Build/serve: `npm --prefix frontend run build`, then `uv run python scripts/serve_ui.py --port 8765`.
 Frontend development and environment/key handling: `docs/frontend.md`.

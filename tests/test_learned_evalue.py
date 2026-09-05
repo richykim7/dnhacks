@@ -72,6 +72,59 @@ def test_exact_null_swap_average_of_product_is_one():
     assert np.mean(wealth) == pytest.approx(1, abs=1e-12)
 
 
+def test_scored_rows_have_never_entered_training_or_validation(monkeypatch):
+    a, b = data()
+    original_fit, original_payoffs = le._fit, le._log_payoffs
+    seen, scored = set(), []
+    fitting = False
+
+    def fit(model, train_a, train_b, val_a, val_b, config):
+        nonlocal fitting
+        for x in (train_a, train_b, val_a, val_b):
+            seen.update(map(tuple, x.tolist()))
+        fitting = True
+        try:
+            return original_fit(model, train_a, train_b, val_a, val_b, config)
+        finally:
+            fitting = False
+
+    def payoff(model, x, y, clip):
+        if not fitting:
+            rows = set(map(tuple, x.tolist())) | set(map(tuple, y.tolist()))
+            assert rows.isdisjoint(seen), "scored data already influenced fitting or early stopping"
+            scored.append(rows)
+        return original_payoffs(model, x, y, clip)
+
+    monkeypatch.setattr(le, "_fit", fit)
+    monkeypatch.setattr(le, "_log_payoffs", payoff)
+    result = run(a, b)
+    assert len(scored) == result.n_scored
+
+
+def test_adaptive_wealth_is_fair_over_all_pair_orientations(monkeypatch):
+    # Condition on six unordered pairs and fix their pairing/order in advance.
+    # Under an iid common null, their independent orientations are fair coins.
+    # Enumerating all 64 orientations checks the whole adaptive learner, not
+    # just a single frozen model. It is a finite conditional audit, not a proof
+    # for every distribution or an endorsement of arbitrary dependent groups.
+    a = np.arange(1, 13, dtype=float).reshape(6, 2)
+    b = -a
+
+    class FixedPairing:
+        def permutation(self, n):
+            return np.arange(n)
+
+    monkeypatch.setattr(le.np.random, "default_rng", lambda seed: FixedPairing())
+    config = replace(CONFIG, batch_pairs=1, hidden=(), max_epochs=2, patience=1, lr=0.1)
+    wealth = []
+    for swaps in itertools.product([False, True], repeat=6):
+        mask = np.array(swaps)[:, None]
+        r = run(np.where(mask, b, a), np.where(mask, a, b), config=config)
+        wealth.append(r.e_value)
+    assert max(wealth) - min(wealth) > 0.1  # genuine adaptive bets, not all ones
+    assert np.mean(wealth) == pytest.approx(1, abs=1e-10)
+
+
 def test_insufficient_and_unused_units():
     a, b = data(11)
     r = run(a, b)

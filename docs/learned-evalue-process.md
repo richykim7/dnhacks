@@ -104,3 +104,44 @@ separate contracts and work. No real-cohort power improvement is claimed.
 - **Slide 2 — What the validation taught us:** show the null/leakage comparison and the baseline
   results; emphasize that simpler methods sometimes win and compression can hide signal; finish
   with the real-cohort evaluation still needed.
+
+## Paper-fidelity audit and GPU check (2026-09-05)
+
+Conclusion: the implementation follows the paper's **DAVT-Projection** statistical construction
+under the supported independent-unit null. It is an adaptation with explicit implementation choices,
+not a reproduction of the paper's published benchmark results. Real-expression suitability remains
+unverified because no real cohort has been evaluated.
+
+| Paper component | Repository implementation | Assessment |
+| --- | --- | --- |
+| Section 6 projection operators | A scalar network applied separately to X and Y | Matches DAVT-Projection; the plan's earlier term “projection-swap” was imprecise and is corrected |
+| Equation (5), product batch score | Sum of log pair scores, added to log wealth | Equivalent construction, with conservative finite serialization |
+| Equation (6), learning log growth | Adam minimizes negative mean log score on past training pairs | Same unregularized objective up to scaling; weight decay and optimizer resets are implementation choices that can affect power |
+| Algorithm 1, fresh scoring before reuse | Current scoring rows enter neither training nor early-stopping validation until after scoring | Direct call-order audit and future-data perturbation tests check this |
+| Section 11.1, validation and transformed payoff | Latest past batch is validation; `tanh(clip(d, -4, 4))` is odd, bounded and monotone | Preserves conditional fairness for the independent two-sample setting; not an automatic extension to every operator/null in the paper |
+| Initial batches | Two unscored training/validation batches | Follows the experimental training setup; choosing not to bet initially is valid, but Algorithm 1 itself describes scoring from the initial model |
+| Stopping rule | Continue to a fixed horizon; return final wealth and separately report crossings | Valid fixed-horizon e-value adaptation; final rejection rates are not the paper's stopped-test power metric |
+| Blob architecture and optimization | Benchmark uses 16/16 ReLU layers, no LayerNorm, 20 epochs, patience 5, learning rate 0.005 | Different from the paper's 30/30 LayerNorm/ReLU architecture and 500-epoch, patience-10, 0.0005 Blob settings; no benchmark-reproduction claim |
+| Representation learning | Separately trained frozen expression PCA/autoencoder | Repository extension; null validity requires fixed preprocessing and independent data, while information loss can reduce power |
+
+The arithmetic audit additionally enumerates all 64 orientations of six fixed unordered pairs with
+an adaptive learner. Conditional on unordered iid-null pairs, the orientations are independent fair
+coins; their average final wealth should be one. This checks adaptation together with scoring under
+that finite setup. It does not establish validity for all data distributions or justify arbitrary
+dependent samples. Another test instruments actual fitting/scoring calls to reject any scored row
+that has already entered training or validation.
+
+Audit validation: all 23 e-value tests pass; the combined repository suite has 615 passing tests
+and 12 existing skips. Frontend build, two unit tests, ten browser scenarios and document checks pass.
+
+GPU availability was checked through the local `gpu-ssh-handoff/connect.sh` launcher: the remote
+device reports **NVIDIA L40S, 46,068 MiB memory**. The earlier training and benchmarks used CPU;
+hardware availability was not checked before those runs and should have been. Pointers now exist
+in local `CLAUDE.md` and shared `AGENTS.md` so future compute planning starts with the handoff.
+
+This was a hardware/connectivity check, not a GPU training run. The remote default system Python
+does not currently import Torch; other environments were not inventoried. The current bettor and
+encoder trainer explicitly construct CPU tensors, so installing CUDA Torch alone will not move
+training to the GPU. A GPU iteration needs an isolated environment, explicit device support,
+device/replay validation and a timed smoke run before larger training. Connection information stays
+in the local handoff; it is not copied into this document.
