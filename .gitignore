@@ -30,6 +30,7 @@ corpus/
 *.pdf
 
 # Local
+/handoff/
 .data/
 .claude/settings.local.json
 docs/

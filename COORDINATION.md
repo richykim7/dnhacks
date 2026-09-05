@@ -16,10 +16,10 @@ Read it before starting and before every commit. The board plus git handles
 routine communication, including small changes, reviews, blockers, and
 unfinished work. Board posts do not require user confirmation.
 
-Write `HANDOFF.md` only after substantial, long-running work and explicit
-user confirmation that the task is done. Small tasks, including one-line
-code changes, do not get handoffs. Agents should not ask for confirmation
-just to write one. The entry format is in `AGENTS.md`.
+New handoffs stay local in ignored `handoff/`, never in Git. Completion notes
+require substantial work and explicit user confirmation that the task is done;
+small tasks do not need them. Before requested compaction, save a checkpoint
+even for unfinished work. Storage and resumption rules are in `AGENTS.md`.
 
 ```
 python3 scripts/board.py show                 # who is on what, right now
@@ -67,8 +67,8 @@ Two agents may be in the same file. The rules are only:
   `update`. Read-only reviews can finish with `done` and no PR. Full integration rules: `AGENTS.md`, Git.
 - Generated files and lockfiles are never hand-merged: take either side and
   rerun the generator.
-- `HANDOFF.md` merges by union (`.gitattributes`), so two agents appending
-  at the same time do not conflict.
+- Each session owns its own ignored `handoff/<session-slug>/latest.md`.
+  Preserve historical tracked handoffs; do not add new ones to Git.
 
 ## Ownership (advisory)
 
