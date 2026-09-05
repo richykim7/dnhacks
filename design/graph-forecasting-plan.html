@@ -1,0 +1,341 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Forecast the next edge — research and demo plan</title><style>
+:root{--paper:#f4f2e9;--ink:#18312e;--muted:#63766d;--line:#d8dfd3;--green:#16735b;--lime:#d6ef83;--card:#fffef8}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.7 system-ui,sans-serif}
+a{color:#146953;text-underline-offset:3px}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #328a68;outline-offset:4px}
+.mast{max-width:1160px;margin:auto;padding:30px 32px;display:flex;justify-content:space-between;gap:20px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+.mark{font-weight:750}.mark:before{content:'✳';font-size:23px;vertical-align:middle;margin-right:10px;color:var(--green)}
+.intro{max-width:1100px;margin:62px auto 32px;padding:0 32px}.eyebrow{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-weight:650}
+.intro h1{font:normal clamp(42px,6vw,80px)/1.03 Georgia,serif;letter-spacing:-.055em;margin:18px 0 22px}.intro p{max-width:650px;font-size:18px;color:var(--muted)}
+.instrument{max-width:1100px;margin:32px auto 65px;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 20px 70px #213b2610}
+.instrument-top{padding:18px 25px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px;font-size:12px;color:var(--muted)}
+.mode{padding:5px 10px;border-radius:30px;border:1px solid var(--line);font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+.scene{display:grid;grid-template-columns:1fr 290px;min-height:350px}.graph-wrap{position:relative;border-right:1px solid var(--line);padding:10px}.graph-wrap svg{display:block;width:100%;height:350px}
+.scene-text{padding:30px 25px}.scene-text h2{font:normal 29px/1.2 Georgia,serif;letter-spacing:-.025em;margin:12px 0}.scene-text p{font-size:14px;color:var(--muted)}
+.legend{display:flex;gap:17px;padding:0 23px 15px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}.legend span:before{content:'';display:inline-block;width:19px;border-top:2px solid #53846c;vertical-align:middle;margin-right:7px}.legend span:nth-child(2):before{border-top-style:dashed;border-color:#a5853a}
+.controls{display:flex;align-items:center;gap:9px;border-top:1px solid var(--line);padding:16px 22px;flex-wrap:wrap}.controls button{border:1px solid var(--line);background:transparent;color:var(--muted);padding:8px 16px;border-radius:30px;font-size:12px;transition:.2s}.controls button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:white}.controls .play{margin-left:auto;color:var(--ink);background:var(--lime);border-color:transparent}
+svg .edge{fill:none;stroke:#a9c3b4;stroke-width:1.5;transition:opacity .65s,stroke .65s}svg .node circle{fill:#eef4e8;stroke:#739b80;stroke-width:1.2;transition:fill .65s,stroke .65s}svg .node text{fill:var(--ink);font:12px system-ui,sans-serif}svg .node .sub{font-size:9px;fill:#728875;letter-spacing:.07em}svg .new{opacity:0;transition:opacity .7s}svg .hypothesis{stroke:#af913f;stroke-dasharray:5 5;stroke-width:2.5;opacity:0}svg .halo{fill:#d6ef8330;stroke:#9ebf7350;opacity:0;transition:opacity .6s}
+[data-stage='1'] .new,[data-stage='2'] .new,[data-stage='3'] .new{opacity:1}[data-stage='2'] .hypothesis,[data-stage='3'] .hypothesis{opacity:1}[data-stage='1'] .halo,[data-stage='2'] .halo{opacity:1}[data-stage='3'] .hypothesis{stroke:#16735b;stroke-dasharray:none}[data-stage='3'] .future circle{fill:var(--lime);stroke:var(--green)}
+.research{max-width:880px;padding:0 32px 90px;margin:auto}.research>h1{font:normal 38px/1.2 Georgia,serif;letter-spacing:-.035em;border-top:1px solid var(--line);padding-top:38px}.research h2{font:normal 30px/1.25 Georgia,serif;margin:56px 0 18px;letter-spacing:-.02em}.research h3{font-size:17px;margin:30px 0 12px}.research p{margin:14px 0}.research li{margin:8px 0}.research table{border-collapse:collapse;width:100%;font-size:13px;margin:24px 0}.research td,.research th{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.research th{background:#e8eedf;font-size:11px;text-transform:uppercase;letter-spacing:.04em}.research code{background:#e7ece0;border-radius:4px;padding:2px 4px;font-size:.86em;overflow-wrap:anywhere}.research strong{font-weight:650}.foot{border-top:1px solid var(--line);padding:25px 32px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:760px){.mast{padding:20px;letter-spacing:.06em}.intro{margin-top:38px;padding:0 22px}.instrument{margin:25px 15px 40px}.scene{grid-template-columns:1fr}.graph-wrap{border-right:0}.graph-wrap svg{height:auto;min-height:235px}.scene-text{border-top:1px solid var(--line);padding:18px 22px}.scene-text h2{font-size:25px}.scene-text p{margin-bottom:0}.instrument-top{padding:14px 18px}.instrument-top>span:first-child{max-width:100px}.controls{gap:6px;padding:12px}.controls button{padding:7px 11px}.controls .play{margin-left:0}.research{padding:0 22px 50px}.research table{display:block;overflow-x:auto;min-width:0}.research th,.research td{min-width:135px}.research h2{font-size:27px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}@media print{body{background:white;font-size:11pt}.mast,.controls{display:none}.instrument{box-shadow:none;break-inside:avoid}.intro{margin-top:10px}.research h2{break-after:avoid}.research table{font-size:9pt}a{color:inherit}.research{max-width:none}.research>h1{break-before:page}}
+</style></head><body>
+<header class="mast"><span class="mark">Scientific frontiers</span><span>Research brief · 05 September 2026</span></header>
+<section class="intro"><div class="eyebrow">A graph that learns where to look next</div><h1>Forecast the<br>next connection.</h1><p>Build a picture of what science knows. Explore the gaps. Then open the future and see which predictions held up.</p></section>
+<section class="instrument" id="instrument" data-stage="0" aria-label="Illustrative graph storyboard">
+<div class="instrument-top"><span>BIOLOGY · RESEARCH WORKSPACE</span><span class="mode">Illustrative scene · no measured forecasts</span></div>
+<div class="scene"><div class="graph-wrap"><svg viewBox="0 0 680 350" role="img" aria-label="Conceptual biological graph with staged evidence and forecast connections">
+<defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".6" fill="#ced9c6"/></pattern></defs><rect width="680" height="350" fill="url(#grid)"/>
+<ellipse class="halo" cx="264" cy="145" rx="160" ry="110"/><ellipse class="halo" cx="495" cy="215" rx="110" ry="90"/>
+<path class="edge" d="M130 160 Q200 70 277 110 M130 160 Q195 265 275 264 M277 110 Q342 133 365 187 M275 264 Q316 224 365 187"/>
+<path class="edge new" d="M277 110 Q391 45 486 99 M365 187 Q445 175 508 252 M508 252 Q569 206 576 146"/>
+<path class="edge hypothesis" d="M130 160 Q267 348 508 252"/>
+<g class="node" transform="translate(130 160)"><circle r="29"/><text y="4" text-anchor="middle">BRAF</text><text class="sub" x="0" y="49" text-anchor="middle">GENE</text></g>
+<g class="node" transform="translate(277 110)"><circle r="25"/><text y="4" text-anchor="middle">V600E</text><text class="sub" y="43" text-anchor="middle">VARIANT</text></g>
+<g class="node" transform="translate(275 264)"><circle r="7"/><text y="26" text-anchor="middle">Melanoma</text></g>
+<g class="node" transform="translate(365 187)"><circle r="8"/><text y="28" text-anchor="middle">Treatment response</text></g>
+<g class="node new" transform="translate(486 99)"><circle r="7"/><text y="-19" text-anchor="middle">Signaling pathway</text></g>
+<g class="node new future" transform="translate(508 252)"><circle r="12"/><text y="30" text-anchor="middle">Follow-up target</text></g>
+<g class="node new" transform="translate(576 146)"><circle r="6"/><text y="-18" text-anchor="middle">New evidence</text></g>
+</svg><div class="legend"><span>Evidence</span><span>Forecast</span></div></div>
+<div class="scene-text" aria-live="polite"><span class="eyebrow" id="phase">01 / Historical context</span><h2 id="scene-title">A field, as it was.</h2><p id="scene-copy">Begin with a research question and a dated body of evidence. The initial graph shows the relationships available to the investigation.</p></div></div>
+<div class="controls" aria-label="Storyboard stages"><button data-step="0" aria-pressed="true">01 Read</button><button data-step="1" aria-pressed="false">02 Connect</button><button data-step="2" aria-pressed="false">03 Forecast</button><button data-step="3" aria-pressed="false">04 Reveal</button><button class="play" id="play">Play sequence ↗</button></div>
+</section>
+<main class="research"><h1>Forecast the next edge</h1>
+<p><strong>Research and demo plan · September 5, 2026 · 16-hour hackathon MVP</strong></p>
+<p>Latest decision: use greedy provisionally. The <a href="https://github.com/richykim7/dnhacks/blob/main/design/parallel-session-plan.md">parallel session plan</a> records current teammate ownership, the next historical-data slice, and the separate research direction; it supersedes earlier uncoordinated delivery assignments.</p>
+<p>Audience: AI engineers and investors. Product beneficiary: scientists. Architecture: domain agnostic. Flagship: biology. All examples and outputs can be stubbed; measured results retain their identity. Production hardening is outside scope.</p>
+<h2>The recommendation</h2>
+<p>Build an evolving scientific graph that turns a research area into ranked, source-linked predictions of relationships that will appear in later evidence. Make the graph itself the research workspace: the model reads a neighborhood, proposes competing explanations, requests additional evidence, revises the graph, and changes its recommendations.</p>
+<p>The stage question is: <strong>“Given only what was available then, which connections would you investigate next?”</strong> The reveal opens the later record and scores predictions against established methods. A second view explains why the controller chose these branches and shows a precisely scoped selection certificate.</p>
+<p>The American excellence story is increasing the capacity of scientific teams to recognize promising directions early. A measured forecasting advantage would support that ambition; a national productivity multiplier is not an existing result.</p>
+<p>Three separate deliverables make this concrete:</p>
+<ol>
+<li>A polished graph experience with live, recorded, and fixture providers.</li>
+<li>A historical biological ranking comparison and controlled graph/scheduler ablations.</li>
+<li>A provisional greedy branch-selection objective with a standard approximation theorem and exact small-instance evaluation.</li>
+</ol>
+<p>No new end-to-end predictive advantage has been measured in this research pass.</p>
+<h2>The demo, as observable actions</h2>
+<p>Use a prepared biological investigation and a historical cutoff. Leave the exact subfield open until we inspect the available benchmark cases; cancer biology is a practical visual pilot because readable evidence is already downloaded.</p>
+<table>
+<thead>
+<tr>
+<th>Moment</th>
+<th>What the judge sees</th>
+<th>What it demonstrates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Choose a frontier</td>
+<td>A plain-language research question, cutoff year, and “Explore”</td>
+<td>One understandable task</td>
+</tr>
+<tr>
+<td>Build understanding</td>
+<td>Papers attach to typed nodes and claims; selected neighborhoods stay spatially stable</td>
+<td>The graph changes as evidence is read</td>
+</tr>
+<tr>
+<td>Explore alternatives</td>
+<td>Several proposed branches highlight different parts of the graph</td>
+<td>The controller has explicit alternatives</td>
+</tr>
+<tr>
+<td>Allocate attention</td>
+<td>Two branches are selected; overlap and uncovered evidence become visible</td>
+<td>A checkable allocation decision</td>
+</tr>
+<tr>
+<td>Revise</td>
+<td>A new source strengthens, qualifies, or redirects a claim; forecast ranks change</td>
+<td>The model consumes its updated graph</td>
+</tr>
+<tr>
+<td>Commit predictions</td>
+<td>Three recommended relationships become dashed edges with reasons</td>
+<td>A forecast exists before outcomes are opened</td>
+</tr>
+<tr>
+<td>Open the future</td>
+<td>Later evidence attaches to matched predictions; unrecovered predictions remain visible</td>
+<td>A falsifiable historical reveal</td>
+</tr>
+<tr>
+<td>Compare</td>
+<td>The same evaluation rows are scored for our system and named baselines</td>
+<td>A measurable contribution, if achieved</td>
+</tr>
+</tbody>
+</table>
+<p>This is a proposed presentation sequence, not a claim that an authentic run with this outcome already exists. A fixture can exercise every transition immediately. The measured demonstration later substitutes actual events without changing the UI.</p>
+<h2>Assets we can actually use</h2>
+<h3>Dyport: primary external forecasting comparison</h3>
+<p><a href="https://github.com/IlyaTyagin/Dyport">Dyport's repository</a> supplies yearly biological candidate-pair tables and cached scores for AGATHA, Node2Vec, ComplEx, DistMult, HolE, and TransE. We downloaded its complete 2016 score table: <strong>80,495,323 bytes; 336,710 rows; 30,619 positive and 306,091 negative labels</strong>. Files are cached locally, with hashes and access records.</p>
+<p>The benchmark dates curated biological associations using their occurrence in MEDLINE abstracts; its published evaluation uses pre-2016 information and later years. Its negatives are sampled alternatives, rather than experimentally disproved relationships. Future importance and citation-derived fields are outcomes, not forecasting inputs. <a href="https://arxiv.org/html/2312.03303v1">Dyport methods</a></p>
+<p>The score file does <strong>not</strong> contain the historical training graph. A new Dyport predictor therefore requires a small dated evidence graph for a fixed subset of benchmark subjects, or the compatible historical source package. The immediate implementation task uses the already available CIViC historical graph route below. A score table alone is enough for baseline curves, but not for reproducing graph construction.</p>
+<p>Downloaded data: <code>data/cache/graph-forecasting/dyport-2016.csv</code>. Access and metrics: <code>tasks/research/graph-forecasting/dyport-access.json</code>.</p>
+<h3>CIViC: compact graph and readable biological evidence</h3>
+<p><a href="https://docs.civicdb.org/en/latest/using/data_releases.html">CIViC provides historical releases</a>. We downloaded January 2018 and March 2022 TSVs: <strong>2,372 and 3,888 evidence rows</strong>, respectively, totaling about 7 MB. They include genes, variants, diseases, therapies, evidence statements, stable IDs, and citations. They are immediately suitable for an evidence-rich cancer graph.</p>
+<p>Two tasks must have different names: release-to-release prediction forecasts later additions to CIViC; publication-year prediction forecasts later cited associations within the selected corpus. Neither establishes the first discovery worldwide. Historical curator prose must come from the corresponding release; current summaries cannot simply be backdated. Schema and drug terminology change across releases, so prefer stable IDs and retain variant/disease context.</p>
+<p>Use CIViC to deliver the graph narrative while the Dyport predictor is prepared. Their results must have separate dataset labels and scorecards. Downloaded snapshots and hashes are recorded in <code>tasks/research/graph-forecasting/civic-access.json</code>.</p>
+<h3>PubTator3: annotated papers to grow the graph</h3>
+<p>The <a href="https://www.ncbi.nlm.nih.gov/research/pubtator3/api">official NCBI API</a> exports normalized biomedical entities and typed relations. A live export for PMID 29355051 returned HTTP 200, 14,167 bytes, publication-year metadata, and three document relations. Its actual JSON wrapper is <code>PubTator3</code>, containing documents. This gives us a tested path to paper-level evidence; select papers by date before building historical inputs. Respect the documented three-requests-per-second limit while preparing the cache.</p>
+<h3>Useful references, with clear roles</h3>
+<table>
+<thead>
+<tr>
+<th>Existing work</th>
+<th>What to reuse or compare</th>
+<th>Why it is not the whole solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/JSybrandt/agatha">AGATHA</a></td>
+<td>A directly relevant graph-based biomedical forecasting baseline; cached predictions are already in Dyport</td>
+<td>Its pretrained reproduction package is 38.5 GB and its dependencies are old; rebuilding it is outside the first critical path</td>
+</tr>
+<tr>
+<td><a href="https://github.com/Fuyi-Yang/BioVerge/">BioVerge</a></td>
+<td>Typed-triplet retrieval, paper tools, iterative agent prompts, and flat/text/graph baseline patterns</td>
+<td>Its principal test supplies the two endpoints and asks for a relation; that is narrower than recommending previously unknown pairs</td>
+</tr>
+<tr>
+<td><a href="https://ftp.ncbi.nlm.nih.gov/pub/lu/BioRED/BIORED.zip">BioRED</a></td>
+<td>Small normalized entity/relation examples for graph extraction fixtures</td>
+<td>Its article-relative novelty annotation is not a temporal discovery label</td>
+</tr>
+<tr>
+<td><a href="https://github.com/iarai/science4cast">Science4Cast</a></td>
+<td>Direct precedent for forecasting edges in an evolving scientific-concept graph</td>
+<td>Its domain is AI, not our biological flagship</td>
+</tr>
+<tr>
+<td><a href="https://github.com/materialsintelligence/mat2vec">Mat2vec</a></td>
+<td>Precedent for historical scientific recommendations from literature</td>
+<td>It is materials science and not a turnkey dated biology dataset</td>
+</tr>
+</tbody>
+</table>
+<p>BioVerge's 177-triple diabetes evaluation is also useful for a small relation-inference experiment, but its natural-language descriptions are scored with an LLM and its supplied endpoints limit the recommendation claim. <a href="https://arxiv.org/html/2511.08866v1">BioVerge paper</a></p>
+<p>Do not port a second research engine wholesale. Reuse individual asset formats, benchmark rows, and selected algorithms after checking component reuse terms. Dyport's repository did not expose an explicit license file during inspection; keep raw downloaded data local until redistribution terms are established.</p>
+<h2>A backtest that answers the user's objection</h2>
+<p><strong>Primary claim to test:</strong> graph iteration improves ranking of later-observed biological relationships under a fixed evidence and inference budget.</p>
+<ol>
+<li>Fix a subject set, candidate universe, historical cutoff, forecast horizon, and scoring rule before running our predictor. Both endpoints must be eligible at the cutoff; exclude already-observed target relationships. For a released closed-candidate benchmark, describe that conditional task explicitly.</li>
+<li>Build a physically separate input bundle containing only allowed historical evidence. Source counts, embeddings, summaries, and graph neighborhoods must be computed from that bundle.</li>
+<li>Run several graph revisions without opening later labels. The controller can read more <strong>historically available</strong> papers during this phase.</li>
+<li>Save candidate scores and the final graph version. Only then load the outcome table and compute metrics.</li>
+<li>Report aggregate results and a selected illustrative case. Keep misses and unobserved-by-horizon outcomes visible.</li>
+</ol>
+<p>Use precision@10 and average precision for the main ranking scorecard; retain AUROC for compatibility. Precision is conditional on the candidate sampling protocol, not an estimate of success among all conceivable scientific hypotheses. For within-query ranking, preserve candidate groups and define tie handling. Cluster uncertainty by subject/query rather than treating overlapping pairs as independent.</p>
+<p>The downloaded table contains 1,451 duplicate subject/object rows. Preserve all released rows when reproducing its unfiltered baseline scores; choose and freeze a common grouping/deduplication policy before our own ranking analysis. Do not compare scores computed on different rows.</p>
+<h3>Required comparisons</h3>
+<table>
+<thead>
+<tr>
+<th>Comparison</th>
+<th>Held constant</th>
+<th>Question answered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Random, popularity, common-neighbor/Adamic–Adar</td>
+<td>Same historical graph and candidate rows</td>
+<td>Is the result better than obvious graph heuristics?</td>
+</tr>
+<tr>
+<td>Cached AGATHA and graph embeddings</td>
+<td>Exact matching Dyport rows</td>
+<td>How does it compare with established biomedical systems? Training resources differ and must be disclosed</td>
+</tr>
+<tr>
+<td>Flat evidence log vs static graph plus append log vs evolving graph</td>
+<td>Same model, retrieval responses, token budget, and candidates</td>
+<td>Does graph representation and updating help?</td>
+</tr>
+<tr>
+<td>Current judge vs uniform vs top singleton coverage vs coverage selection</td>
+<td>Identical candidate branches and evidence facets</td>
+<td>Does selection avoid redundant exploration?</td>
+</tr>
+<tr>
+<td>Full adaptive system</td>
+<td>Same permitted corpus and total budget</td>
+<td>Does the combined product improve the final forecast?</td>
+</tr>
+</tbody>
+</table>
+<p>The static-graph control still receives newly retrieved evidence in a flat log. Otherwise the comparison confounds graph iteration with access to additional facts. Internal ablations share budgets; historical cached models are external references, not equal-compute replicas.</p>
+<p>A modern LLM may remember later biology even when retrieval is frozen. Include a no-retrieval diagnostic and a structural scorer using only the frozen graph. Claim “retrospective performance with historically restricted evidence,” unless stronger evidence establishes absence of model-memory leakage. The graph-only score is a cleaner test of the graph signal; it does not prove the LLM has independently foreseen a discovery.</p>
+<p>Do not reward a scheduler with unrevealed future labels during the forecasting loop. A separate simulated active-discovery experiment may reveal a label per paid action, but it answers a different question.</p>
+<h2>What we can prove about the harness</h2>
+<p>The proof should match a real control decision: <strong>which offered branches deserve the next limited batch of compute?</strong> No scheduler can ensure useful biological discovery if every candidate and test is arbitrarily wrong. An unconditional “best research harness” claim has no well-defined comparator.</p>
+<p>For one graph revision, define a finite candidate pool B, evidence facets U, nonnegative weights w, and known provenance-backed coverage C(b). Facets can be canonical source clusters or supported graph neighborhoods; freeze their definition before observing later outcomes. Define:</p>
+<p><code>F(S) = sum of w(u) over the union of C(b), for branches b in S; select at most k branches.</code></p>
+<p>This measures represented evidence coverage, not how much unknown evidence an unexecuted branch will discover. If facets refer to requested retrieval targets, call it planned coverage; realized coverage is a separate measurement.</p>
+<h3>Exact evaluation oracle at the current scale</h3>
+<p>The current code allows three proposed branches plus an adversarial branch, keeping two survivors. There are only <strong>six two-branch subsets</strong>. Keep greedy as the provisional production choice. Enumerate the alternatives in evaluation to measure its actual gap. The complete scored list supplies an exact comparison certificate. If retaining the adversary becomes mandatory, compare only subsets satisfying that same constraint; the current implementation generates an adversary but does not guarantee it survives the judge.</p>
+<p>The oracle finds the exact optimum for this graph snapshot, candidate pool, and objective; the greedy choice is compared with that value. It does not depend on an accurate LLM score. This is an application of straightforward finite optimization, not a new complexity-theory result.</p>
+<h3>Scalable theorem and instance certificate</h3>
+<p>As the provisional policy at both current and larger pool sizes, marginal-gain greedy achieves at least <code>1 − (1 − 1/k)^k</code>, hence at least <code>1 − 1/e</code>, of the best k-subset for normalized monotone submodular coverage. It requires O(k × |B|) marginal evaluations; the cost of a marginal depends on the facet representation. This is the established <a href="https://thibaut.horel.org/submodularity/papers/nemhauser1978.pdf">Nemhauser–Wolsey–Fisher theorem</a>, adapted to our explicit graph objective.</p>
+<p>Proof outline: coverage has diminishing returns. At each step, one of the optimal set's at most k branches closes at least one-kth of the remaining gap. Iterating the gap recurrence gives the bound. Freeze the graph, weights, and candidate incidence during each selection batch. Recomputing between batches does not turn the statement into a guarantee about the globally best evolving investigation.</p>
+<p>An additional directly derived certificate upper-bounds the optimum by <code>U = min(F(B), F(S) + sum of the k largest remaining marginal gains at S)</code>. Thus <code>F(S)/U</code> is a certified achieved fraction when U &gt; 0. The optimum need not include S, so the upper bound uses k, not k minus the size of S. An empty zero-value pool is handled separately.</p>
+<p>The classic <a href="https://disco.ethz.ch/alumni/pascalv/refs/ds_1998_feige.pdf">maximum-coverage hardness result</a> explains the worst-case approximation barrier when the budget is part of the general input. It does not make our four-branch instance difficult. With fixed k, exhaustive enumeration is polynomial in the candidate count.</p>
+<h3>What the research probe established</h3>
+<p>We exhaustively checked all 65,536 binary coverage families with four candidates and four facets, selecting two branches. Across 65,535 nonzero cases, greedy's worst achieved ratio was <strong>0.75</strong>, matching the k=2 bound; no proposed upper-bound certificate fell below the exact optimum. This is a finite algorithm audit, not scientific forecast accuracy or a substitute for the proof.</p>
+<p>Reproduce with <code>python research_spikes/graph_forecasting/probe.py</code>. The script also recomputes the downloaded baseline metrics. It uses installed analysis packages and makes no model calls.</p>
+<h3>Other guarantees worth keeping in reserve</h3>
+<p>Hedge or EXP3 can compete with a fixed strategy portfolio over appropriately defined independent episodes. Standard external regret does not compare counterfactual graph trajectories when each strategy changes later inputs; <a href="https://oferdekel.github.io/pdf/2012AroraDeTe.pdf">policy-regret impossibility results</a> explain this distinction. Do not add an online-learning layer until the episode/reward protocol exists.</p>
+<p>A simple round-robin schedule across m fixed, independent resumable streams finds an accepted result within m times the best stream's own work, if quanta have equal charged cost and scheduling does not change outputs. That supports a no-starvation demonstration with deliberately misleading heuristic scores. Shared mutable graph contexts and unequal uncharged tool calls invalidate the literal comparison. This is an optional standard scheduling corollary, not the MVP's principal research claim.</p>
+<p>The user's MCTS analogy needs qualification: logarithmic regret is not a blanket guarantee for arbitrary scientific tree search. <a href="https://arxiv.org/abs/2405.04407">Orseau and Munos, 2024</a> establish severe worst-case behavior for UCT variants and correct an issue in earlier lower-bound proofs. Copying a UCB formula would not establish a useful end-to-end theorem here.</p>
+<h2>Measured baseline foothold</h2>
+<p>These are our recomputations on the <strong>entire unfiltered authors' 2016 table</strong>, retaining duplicate rows. They are not our model scores or a reproduction of the paper's stratified tables.</p>
+<table>
+<thead>
+<tr>
+<th>Cached model column</th>
+<th style="text-align:right">AUROC</th>
+<th style="text-align:right">Average precision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AGATHA 2015</td>
+<td style="text-align:right">0.7354</td>
+<td style="text-align:right">0.2582</td>
+</tr>
+<tr>
+<td>DistMult without semantic types</td>
+<td style="text-align:right">0.7131</td>
+<td style="text-align:right">0.2533</td>
+</tr>
+<tr>
+<td>HolE with semantic types</td>
+<td style="text-align:right">0.7469</td>
+<td style="text-align:right">0.2443</td>
+</tr>
+<tr>
+<td>Node2Vec</td>
+<td style="text-align:right">0.7035</td>
+<td style="text-align:right">0.2319</td>
+</tr>
+</tbody>
+</table>
+<p>The different ordering of AUROC and average precision is a reason to decide the target metric in advance. All ten cached score variants were recomputed; the full results and SHA-256 are in the access record.</p>
+<h2>Architecture: the minimum that supports this demo</h2>
+<p>Reuse the Python service, DuckDB graph, existing events, and injected completion, judge, and execution hooks for fixtures. The teammate now owns a user-authorized React/TypeScript/Vite frontend rewrite; supply its scenario and evidence contracts through the Board. Keep backend changes focused on the demo.</p>
+<p>The new product seam is a small scenario record: question, cutoff, historical graph, permitted evidence, candidate set, prediction list, outcome table, and an event trace. A live source, saved run, and deterministic fixture emit the same events. One visible mode indicator distinguishes their origin.</p>
+<p>Agree on the small missing graph/forecast/reveal event set with the frontend owner before implementation; the parallel session plan supplies a concrete proposal. Reuse existing branch and experiment events instead of duplicating the trace system.</p>
+<p>Track two different notions of progress: the <strong>historical cutoff</strong> remains fixed while <strong>graph revisions</strong> advance as the agent reads. The reveal advances the historical evidence window. Predicted edges stay a distinct typed state when the model consumes the graph; a proposal does not silently become established evidence because it was written back.</p>
+<p>Current seams:</p>
+<ul>
+<li><code>litmap/graph.py</code>: canonical claims and evidence; preserve source-backed identity.</li>
+<li><code>litmap/store.py</code>: explorer-facing graph plus tested layer. Its aggregate first-year view is not a historical snapshot of every attached source.</li>
+<li><code>explorer/exploration.py</code>: ideas, evidence, provenance, feedback, and frontier state.</li>
+<li><code>explorer/explorer.py::_judge_promise</code>: branch-selection insertion point. Use full database provenance for facets, not six-item digest truncation.</li>
+<li>Frontend/API presentation: owned by the active React/Vite session; preserve useful graph/replay semantics from the existing implementation.</li>
+</ul>
+<h2>Design award direction</h2>
+<p>One primary canvas, one clear question, and a restrained evidence drawer. Start with an intentional scientific instrument: warm ivory surfaces, deep ink type, one electric accent, and generous space around the active graph. Use the bundled font; tune display scale and spacing before adding another type family.</p>
+<p>Render a selected neighborhood of roughly 40–120 nodes. Hold positions stable across revisions; added edges trace into place, source dots attach to their claims, and branch hover highlights exactly what it covers. The background graph becomes quiet while a selected mechanism is explained. Forecast edges use a different stroke pattern; the later-evidence reveal changes their status without rearranging the entire scene.</p>
+<p>Use motion to explain events: a source changes a claim, an overlapping branch loses marginal value, a new neighborhood earns attention, or a forecast matches a later paper. Avoid continuous force-layout movement while someone reads. Large-type takeaways should explain what changed and why the next action follows.</p>
+<p>The signature interaction is <strong>opening the future</strong>. After committing forecasts, the judge advances the year and watches real later evidence attach to the already-visible predictions. A missed forecast remains on screen as “not observed by this horizon.” A secondary “Why these branches?” action opens the six feasible allocations and their coverage values.</p>
+<p>The illustrative animation in this report previews the visual grammar only; it contains no measured forecast result.</p>
+<h2>Delivery milestones</h2>
+<p>The current ownership and launch-ready file boundaries are in the <a href="https://github.com/richykim7/dnhacks/blob/main/design/parallel-session-plan.md">parallel session plan</a>. These relative milestones fit the original 16-hour budget; they do not restart the clock.</p>
+<p>Run the existing frontend session plus historical-data, forecast/greedy, evaluation/replay, and policy-research lanes. The session plan assigns concrete files and prevents overlap; the first common artifact is the small scenario/event contract.</p>
+<table>
+<thead>
+<tr>
+<th>Milestone</th>
+<th>Required result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>First 60–90 minutes</td>
+<td>Agreed records, first CIViC historical packet, frontend fixture</td>
+</tr>
+<tr>
+<td>By hour 2</td>
+<td>Frozen evaluation cohort and scoring protocol; policy-lab objective and exact comparator</td>
+</tr>
+<tr>
+<td>By hour 6</td>
+<td>Complete fixture demo and one measured graph-to-forecast-to-reveal slice</td>
+</tr>
+<tr>
+<td>By hour 10</td>
+<td>Matched representation/selection comparisons; supported case selected; stop feature expansion</td>
+</tr>
+<tr>
+<td>Final hours</td>
+<td>Saved replay, frontend polish, projection rehearsal, artifact-backed scorecard</td>
+</tr>
+</tbody>
+</table>
+<p>CIViC is the immediate historical graph route. Dyport model comparisons remain a separate dataset task that requires its compatible historical inputs. A delayed Dyport reconstruction must not block the main visual slice.</p>
+<p>Use the AWS GPU only if embeddings or a graph scorer become the measured bottleneck. Baseline replay, greedy selection, graph updates, and the current evidence files do not require a GPU. Plenty of parallel compute helps corpus extraction and independent ablations immediately.</p>
+<p>Mockability is part of the architecture from the start: replay any complete scenario, replace any model/tool response, and drive every UI state deterministically. A mocked score may support the design walkthrough but does not enter the measured scoreboard.</p>
+<h2>Research status and stopping decision</h2>
+<p>Completed: primary-source comparison; exact asset downloads; PubTator API probe; baseline recomputation; finite coverage/certificate audit; source inspection and independent proof review. Not completed: a new biological forecast run, an integrated scheduler, a selected final biological case, or an end-to-end model advantage.</p>
+<p>Artifact verification: HTML structure, source links, JSON records, and embedded JavaScript syntax were checked. Browser screenshot attempts timed out, so the rendered layout and browser interactions remain visually unverified.</p>
+<p>Research stopped once the asset route, baseline route, proof assumptions, and demo architecture were supported. Remaining uncertainty is implementation and measurement: whether graph iteration improves ranking, whether evidence coverage predicts useful exploration, and whether a sufficiently strong historical case can be prepared within the first delivery gates. The next product step is a small actual forecasting slice. In parallel, a bounded research lane will investigate complementary experiments, shared evidence acquisition, and certified search with learned advice; the session plan defines proof/comparator gates and closest prior art. No new publication-level result is claimed.</p>
+</main><footer class="foot">Planning artifact · public assets verified · predictive advantage remains to be measured</footer><script>
+const states=[
+ ['01 / Historical context','A field, as it was.','Begin with a research question and a dated body of evidence. The initial graph shows the relationships available to the investigation.'],
+ ['02 / Graph revision','Evidence changes the map.','New sources expand the graph. Branches cover different neighborhoods; their overlap makes the next allocation decision visible.'],
+ ['03 / Committed forecast','A connection worth pursuing.','The model consumes the revised graph and commits a proposed connection. Dashed edges preserve the distinction between evidence and prediction.'],
+ ['04 / Later evidence','Now open the future.','In the finished demo, later records attach to earlier predictions and every forecast is scored. This illustrative sequence asserts no biological result.']
+];
+let timer=null,step=0;const root=document.getElementById('instrument'),play=document.getElementById('play');
+function show(n){step=n;root.dataset.stage=String(n);document.getElementById('phase').textContent=states[n][0];document.getElementById('scene-title').textContent=states[n][1];document.getElementById('scene-copy').textContent=states[n][2];document.querySelectorAll('[data-step]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.step)===n)));}
+function stop(){clearInterval(timer);timer=null;play.textContent='Play sequence ↗';}
+document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{stop();show(Number(b.dataset.step));}));
+play.addEventListener('click',()=>{if(timer){stop();return;}show(0);play.textContent='Pause sequence';timer=setInterval(()=>{show(step+1);if(step===3)stop();},2400);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+const initial=Number(new URLSearchParams(location.search).get('stage'));if(Number.isInteger(initial)&&initial>=0&&initial<4)show(initial);
+</script></body></html>

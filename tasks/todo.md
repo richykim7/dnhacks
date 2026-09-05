@@ -1,0 +1,53 @@
+# Graph forecasting delivery
+
+## Current brief
+
+Build an iteratively created and consumed scientific graph that recommends promising developments before later evidence is revealed. Keep the engine domain agnostic and the flagship demo biological. The original delivery window is 16 hours, with abundant parallel compute and an AWS GPU if useful. Every data/output path must support fixtures. Production hardening is outside scope.
+
+The presentation should serve scientists, express the ambition of advancing American science, and compete for the frontend design award. Historical comparisons and ablations make the forecasting claim falsifiable. Algorithmic guarantees must state an objective, assumptions, and comparator independent of LLM confidence.
+
+Latest user decision: **greedy coverage is the provisional production policy**. Investigate a more interesting exploration policy in parallel, with publication potential as a research target. Exact selection remains a small-instance oracle.
+
+## Completed planning
+
+- [x] Inspect the graph, exploration, evidence, event, and frontend code.
+- [x] Research existing scientific forecasting systems, public biological assets, and applicable algorithmic guarantees.
+- [x] Download and inspect Dyport 2016 and two historical CIViC releases; verify PubTator3 export access.
+- [x] Recompute cached baseline metrics and exhaustively audit the small coverage objective and residual bound.
+- [x] Produce the [research brief and illustrative graph](../design/graph-forecasting-plan.html).
+- [x] Pull main, read the mandatory Board/communication rules, and reconcile actual teammate ownership through Board posts.
+- [x] Define [parallel session boundaries, first shared contract, and policy research gates](../design/parallel-session-plan.md).
+
+## Next implementation tasks
+
+- [ ] Post and agree on the tiny scenario/evidence/forecast/event contract with the active frontend owner.
+- [ ] Build one CIViC historical scenario packet with cutoff-eligible candidates, source metadata, and separately stored outcomes. This is the recommended next task for this session.
+- [ ] Feed an illustrative sequence into the teammate's active frontend; retain existing frontend/API ownership.
+- [ ] Add structural graph scoring and provisional greedy selection through the current injection seam.
+- [ ] Add an evaluator and save predictions before revealing outcomes; keep CIViC and Dyport scorecards separate.
+- [ ] Compare flat evidence, static graph plus append log, and evolving graph at matched information and compute budgets.
+- [ ] Compare greedy, current judge, uniform, and top-singleton selection; use exact small-instance optimum to measure the gap.
+- [ ] Run the isolated policy lab: complementary evidence first, shared acquisition as the stronger long-term target; apply two-hour and six-hour gates.
+- [ ] Rehearse a measured replay, inspect misses and citations, and polish the graph transitions and evidence drawer.
+
+## Review — research artifacts
+
+- Dyport: downloaded 80,495,323 bytes, 336,710 rows, 30,619 positive labels, 306,091 sampled negatives, and 1,451 duplicate subject/object rows. All ten score variants were recomputed on the full unfiltered table. These are the authors' cached predictions, not our model scores or a reproduction of the paper's stratified results.
+- CIViC: January 2018 and March 2022 snapshots contain 2,372 and 3,888 evidence rows. They provide the immediate historical graph route. Predicting later database additions does not establish first discovery worldwide.
+- PubTator3: PMID 29355051 returned HTTP 200, 14,167 bytes, normalized entities, three relations, and publication-year metadata; the response contains a `PubTator3` document list.
+- The Dyport score file lacks the historical source graph. A new Dyport predictor therefore needs additional input preparation; it does not block the CIViC visual slice.
+- Finite coverage probe: 65,536 four-candidate/four-facet instances; 65,535 nonzero instances; worst greedy/optimum ratio 0.75; no invalid residual upper bounds. This checks an implementation against a scoped theorem, not biological predictive accuracy.
+- HTML structure and embedded JavaScript syntax were checked. Earlier browser screenshot attempts timed out, so rendered layout and browser interaction remain visually unverified. The graph storyboard is explicitly illustrative.
+- No new model forecasting run, integrated selector, GPU execution, or end-to-end forecasting advantage has been established.
+
+## Review — coordinated session plan
+
+- Pulled the coordination rules at main `587acb2`; read `AGENTS.md`, `BOARD.md`, and `COORDINATION.md`. Posted claims and updates as `ian/graph-plan`, and worked in an isolated task worktree.
+- Two read-only research/audit workers also used the Board and posted completion. Future implementation sessions in the plan are proposed, not already launched.
+- Confirmed that `dnhacks/s2--codex` owns the user-authorized React/TypeScript/Vite frontend and web API presentation. Removed the stale suggestion to avoid that migration.
+- Confirmed that `dnhacks/s3--codex` is publishing a cleaned learned-evalue plan, with no engine implementation claimed. Proposed e-value fields are not assumed capabilities. Runtime history remains unresolved on the Board and is not a prerequisite for the new data/selection/replay slice.
+- Updated the research brief and ledger to use greedy provisionally. Exact enumeration remains the evaluation oracle. The probe now computes the same whole-pool coverage cap described in the proof.
+- Preserved research files and source metadata for cross-machine access; raw downloads stay local. Removed stale machine-specific planning history from this shared task list. The other session's pre-existing untracked planning file was not included.
+- Validation for this planning/probe change: Python compilation, reproducible coverage and Dyport probes, report regeneration, JSON parsing, HTML/JavaScript structural checks, and diff review. No application behavior changed; the repository's full gate section was a placeholder at the audited revision.
+
+Integration status and the resulting main commit are recorded on the [Board](https://github.com/richykim7/dnhacks/issues/1).
