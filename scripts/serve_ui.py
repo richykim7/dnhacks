@@ -2,6 +2,9 @@
 
     uv run python scripts/serve_ui.py [--port 8765] [--host 127.0.0.1]
 
+Build the React workspace first: cd frontend && npm ci && npm run build.
+For development, run this server on 8766 and Vite on 5174.
+
 Reads the engine's on-disk state under data/processed (reasoning traces + KG
 DuckDB files) and serves a local dashboard: live run monitor, knowledge graph,
 and the human-review queue. Read-mostly; the only writes are project records, job
