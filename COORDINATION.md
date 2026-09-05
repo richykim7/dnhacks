@@ -12,8 +12,14 @@ Every agent, on either machine, posts there:
 - when the plan changes
 - when it is done
 
-Read it before starting and before every commit. Nothing else needs to be
-shared: the board plus git is the whole handoff.
+Read it before starting and before every commit. The board plus git handles
+routine communication, including small changes, reviews, blockers, and
+unfinished work. Board posts do not require user confirmation.
+
+Write `HANDOFF.md` only after substantial, long-running work and explicit
+user confirmation that the task is done. Small tasks, including one-line
+code changes, do not get handoffs. Agents should not ask for confirmation
+just to write one. The entry format is in `AGENTS.md`.
 
 ```
 python3 scripts/board.py show                 # who is on what, right now
