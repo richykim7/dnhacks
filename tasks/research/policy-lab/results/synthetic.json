@@ -1,0 +1,1162 @@
+{
+  "shared_setup": [
+    {
+      "name": "shared-setup-m3",
+      "actions": 10,
+      "patterns": 9,
+      "core_size": 1,
+      "budget": 6,
+      "policies": {
+        "deduplicated_coverage": {
+          "mask": 1008,
+          "actions": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "value": 6,
+          "unique_cost": 6,
+          "candidate_evaluations": 34,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0001566009595990181
+        },
+        "completion_singleton": {
+          "mask": 1008,
+          "actions": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "value": 6,
+          "unique_cost": 6,
+          "candidate_evaluations": 34,
+          "experimental_queries": 0,
+          "wall_seconds": 0.00016608089208602905
+        },
+        "deduplicated_witness": {
+          "mask": 1008,
+          "actions": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "value": 6,
+          "unique_cost": 6,
+          "candidate_evaluations": 30,
+          "experimental_queries": 0,
+          "wall_seconds": 0.00014911964535713196
+        },
+        "two_seed_witness": {
+          "mask": 15,
+          "actions": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "value": 9,
+          "unique_cost": 6,
+          "candidate_evaluations": 543,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0038038957864046097
+        },
+        "allocated_two_seed": {
+          "mask": 15,
+          "actions": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "value": 9,
+          "unique_cost": 6,
+          "candidate_evaluations": 333,
+          "experimental_queries": 0,
+          "wall_seconds": 0.00124372448772192
+        },
+        "shared_core_exact": {
+          "mask": 15,
+          "actions": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "value": 9,
+          "unique_cost": 6,
+          "candidate_evaluations": 2,
+          "experimental_queries": 0,
+          "lower": 9,
+          "upper": "9",
+          "certified_optimal": true,
+          "core_size": 1,
+          "core_profiles": 2,
+          "profiles_solved": 1,
+          "profiles_pruned": 1,
+          "dp_transitions": 27,
+          "wall_seconds": 0.00011048000305891037
+        },
+        "action_oracle": {
+          "mask": 15,
+          "actions": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "value": 9,
+          "unique_cost": 6,
+          "candidate_evaluations": 194,
+          "experimental_queries": 0,
+          "wall_seconds": 0.002492210827767849
+        },
+        "uniform_32_seeds": {
+          "mean_value": 5.4375,
+          "mean_unique_cost": 6,
+          "min_value": 3,
+          "max_value": 7,
+          "experimental_queries": 0
+        }
+      }
+    },
+    {
+      "name": "shared-setup-m4",
+      "actions": 13,
+      "patterns": 12,
+      "core_size": 1,
+      "budget": 8,
+      "policies": {
+        "deduplicated_coverage": {
+          "mask": 8160,
+          "actions": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "value": 8,
+          "unique_cost": 8,
+          "candidate_evaluations": 57,
+          "experimental_queries": 0,
+          "wall_seconds": 0.00022596120834350586
+        },
+        "completion_singleton": {
+          "mask": 8160,
+          "actions": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "value": 8,
+          "unique_cost": 8,
+          "candidate_evaluations": 57,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0002602012827992439
+        },
+        "deduplicated_witness": {
+          "mask": 8160,
+          "actions": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "value": 8,
+          "unique_cost": 8,
+          "candidate_evaluations": 52,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0002550007775425911
+        },
+        "two_seed_witness": {
+          "mask": 31,
+          "actions": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "value": 16,
+          "unique_cost": 8,
+          "candidate_evaluations": 2026,
+          "experimental_queries": 0,
+          "wall_seconds": 0.01103820651769638
+        },
+        "allocated_two_seed": {
+          "mask": 31,
+          "actions": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "value": 16,
+          "unique_cost": 8,
+          "candidate_evaluations": 804,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0029221326112747192
+        },
+        "shared_core_exact": {
+          "mask": 31,
+          "actions": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "value": 16,
+          "unique_cost": 8,
+          "candidate_evaluations": 2,
+          "experimental_queries": 0,
+          "lower": 16,
+          "upper": "16",
+          "certified_optimal": true,
+          "core_size": 1,
+          "core_profiles": 2,
+          "profiles_solved": 1,
+          "profiles_pruned": 1,
+          "dp_transitions": 48,
+          "wall_seconds": 0.0001350007951259613
+        },
+        "action_oracle": {
+          "mask": 31,
+          "actions": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "value": 16,
+          "unique_cost": 8,
+          "candidate_evaluations": 1050,
+          "experimental_queries": 0,
+          "wall_seconds": 0.022151055745780468
+        },
+        "uniform_32_seeds": {
+          "mean_value": 8.4375,
+          "mean_unique_cost": 8,
+          "min_value": 4,
+          "max_value": 13,
+          "experimental_queries": 0
+        }
+      }
+    },
+    {
+      "name": "shared-setup-m6",
+      "actions": 19,
+      "patterns": 18,
+      "core_size": 1,
+      "budget": 12,
+      "policies": {
+        "deduplicated_coverage": {
+          "mask": 524160,
+          "actions": [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "value": 12,
+          "unique_cost": 12,
+          "candidate_evaluations": 121,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0005709221586585045
+        },
+        "completion_singleton": {
+          "mask": 524160,
+          "actions": [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "value": 12,
+          "unique_cost": 12,
+          "candidate_evaluations": 121,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0006278026849031448
+        },
+        "deduplicated_witness": {
+          "mask": 524160,
+          "actions": [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "value": 12,
+          "unique_cost": 12,
+          "candidate_evaluations": 114,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0005367621779441833
+        },
+        "two_seed_witness": {
+          "mask": 127,
+          "actions": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "value": 36,
+          "unique_cost": 12,
+          "candidate_evaluations": 11976,
+          "experimental_queries": 0,
+          "wall_seconds": 0.06380619388073683
+        },
+        "allocated_two_seed": {
+          "mask": 127,
+          "actions": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "value": 36,
+          "unique_cost": 12,
+          "candidate_evaluations": 2772,
+          "experimental_queries": 0,
+          "wall_seconds": 0.010913006961345673
+        },
+        "shared_core_exact": {
+          "mask": 127,
+          "actions": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "value": 36,
+          "unique_cost": 12,
+          "candidate_evaluations": 2,
+          "experimental_queries": 0,
+          "lower": 36,
+          "upper": "36",
+          "certified_optimal": true,
+          "core_size": 1,
+          "core_profiles": 2,
+          "profiles_solved": 1,
+          "profiles_pruned": 1,
+          "dp_transitions": 108,
+          "wall_seconds": 0.00020600110292434692
+        },
+        "uniform_32_seeds": {
+          "mean_value": 17.4375,
+          "mean_unique_cost": 12,
+          "min_value": 6,
+          "max_value": 31,
+          "experimental_queries": 0
+        }
+      }
+    },
+    {
+      "name": "shared-setup-m8",
+      "actions": 25,
+      "patterns": 24,
+      "core_size": 1,
+      "budget": 16,
+      "policies": {
+        "deduplicated_coverage": {
+          "mask": 33553920,
+          "actions": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24
+          ],
+          "value": 16,
+          "unique_cost": 16,
+          "candidate_evaluations": 209,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0009004035964608192
+        },
+        "completion_singleton": {
+          "mask": 33553920,
+          "actions": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24
+          ],
+          "value": 16,
+          "unique_cost": 16,
+          "candidate_evaluations": 209,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0010524848476052284
+        },
+        "deduplicated_witness": {
+          "mask": 33553920,
+          "actions": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24
+          ],
+          "value": 16,
+          "unique_cost": 16,
+          "candidate_evaluations": 200,
+          "experimental_queries": 0,
+          "wall_seconds": 0.0010312041267752647
+        },
+        "two_seed_witness": {
+          "mask": 511,
+          "actions": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "value": 64,
+          "unique_cost": 16,
+          "candidate_evaluations": 40748,
+          "experimental_queries": 0,
+          "wall_seconds": 0.25803282763808966
+        },
+        "allocated_two_seed": {
+          "mask": 511,
+          "actions": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "value": 64,
+          "unique_cost": 16,
+          "candidate_evaluations": 6648,
+          "experimental_queries": 0,
+          "wall_seconds": 0.031723976135253906
+        },
+        "shared_core_exact": {
+          "mask": 511,
+          "actions": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "value": 64,
+          "unique_cost": 16,
+          "candidate_evaluations": 2,
+          "experimental_queries": 0,
+          "lower": 64,
+          "upper": "64",
+          "certified_optimal": true,
+          "core_size": 1,
+          "core_profiles": 2,
+          "profiles_solved": 1,
+          "profiles_pruned": 1,
+          "dp_transitions": 192,
+          "wall_seconds": 0.00030688196420669556
+        },
+        "uniform_32_seeds": {
+          "mean_value": 29,
+          "mean_unique_cost": 16,
+          "min_value": 15,
+          "max_value": 43,
+          "experimental_queries": 0
+        }
+      }
+    }
+  ],
+  "coverage_counterexample": {
+    "name": "coverage-completion-mismatch",
+    "actions": 4,
+    "patterns": 3,
+    "core_size": 0,
+    "budget": 2,
+    "policies": {
+      "deduplicated_coverage": {
+        "mask": 3,
+        "actions": [
+          0,
+          1
+        ],
+        "value": 2,
+        "unique_cost": 2,
+        "candidate_evaluations": 7,
+        "experimental_queries": 0,
+        "wall_seconds": 3.783963620662689e-05
+      },
+      "completion_singleton": {
+        "mask": 3,
+        "actions": [
+          0,
+          1
+        ],
+        "value": 2,
+        "unique_cost": 2,
+        "candidate_evaluations": 7,
+        "experimental_queries": 0,
+        "wall_seconds": 3.327988088130951e-05
+      },
+      "deduplicated_witness": {
+        "mask": 12,
+        "actions": [
+          2,
+          3
+        ],
+        "value": 100,
+        "unique_cost": 2,
+        "candidate_evaluations": 3,
+        "experimental_queries": 0,
+        "wall_seconds": 1.9360333681106567e-05
+      },
+      "two_seed_witness": {
+        "mask": 12,
+        "actions": [
+          2,
+          3
+        ],
+        "value": 100,
+        "unique_cost": 2,
+        "candidate_evaluations": 5,
+        "experimental_queries": 0,
+        "wall_seconds": 0.00011428073048591614
+      },
+      "allocated_two_seed": {
+        "mask": 12,
+        "actions": [
+          2,
+          3
+        ],
+        "value": 100,
+        "unique_cost": 2,
+        "candidate_evaluations": 10,
+        "experimental_queries": 0,
+        "wall_seconds": 9.059999138116837e-05
+      },
+      "shared_core_exact": {
+        "mask": 12,
+        "actions": [
+          2,
+          3
+        ],
+        "value": 100,
+        "unique_cost": 2,
+        "candidate_evaluations": 2,
+        "experimental_queries": 0,
+        "lower": 100,
+        "upper": "100",
+        "certified_optimal": true,
+        "core_size": 0,
+        "core_profiles": 1,
+        "profiles_solved": 1,
+        "profiles_pruned": 0,
+        "dp_transitions": 5,
+        "wall_seconds": 4.763994365930557e-05
+      },
+      "action_oracle": {
+        "mask": 12,
+        "actions": [
+          2,
+          3
+        ],
+        "value": 100,
+        "unique_cost": 2,
+        "candidate_evaluations": 11,
+        "experimental_queries": 0,
+        "wall_seconds": 5.239993333816528e-05
+      },
+      "uniform_32_seeds": {
+        "mean_value": 19.6875,
+        "mean_unique_cost": 2,
+        "min_value": 1,
+        "max_value": 100,
+        "experimental_queries": 0
+      }
+    },
+    "coverage_facet_masks": [
+      7,
+      56,
+      64,
+      128
+    ],
+    "interpretation": "Greedy is optimal for its declared coverage here; that objective omits pair completion."
+  },
+  "caching_only_control": [
+    {
+      "m": 3,
+      "completed_patterns": 3,
+      "shared_cost": 6,
+      "duplicated_cost": 12
+    },
+    {
+      "m": 4,
+      "completed_patterns": 4,
+      "shared_cost": 8,
+      "duplicated_cost": 20
+    },
+    {
+      "m": 8,
+      "completed_patterns": 8,
+      "shared_cost": 16,
+      "duplicated_cost": 72
+    },
+    {
+      "m": 16,
+      "completed_patterns": 16,
+      "shared_cost": 32,
+      "duplicated_cost": 272
+    },
+    {
+      "m": 32,
+      "completed_patterns": 32,
+      "shared_cost": 64,
+      "duplicated_cost": 1056
+    }
+  ],
+  "advice_certificates": [
+    {
+      "m": 4,
+      "helpful_core_order": {
+        "mask": 31,
+        "actions": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "value": 16,
+        "unique_cost": 8,
+        "candidate_evaluations": 2,
+        "experimental_queries": 0,
+        "lower": 16,
+        "upper": "16",
+        "certified_optimal": true,
+        "core_size": 1,
+        "core_profiles": 2,
+        "profiles_solved": 1,
+        "profiles_pruned": 1,
+        "dp_transitions": 48
+      },
+      "misleading_core_order": {
+        "mask": 8160,
+        "actions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "value": 8,
+        "unique_cost": 8,
+        "candidate_evaluations": 2,
+        "experimental_queries": 0,
+        "lower": 8,
+        "upper": "16",
+        "certified_optimal": false,
+        "core_size": 1,
+        "core_profiles": 2,
+        "profiles_solved": 1,
+        "profiles_pruned": 0,
+        "dp_transitions": 64
+      },
+      "misleading_completed": {
+        "mask": 31,
+        "actions": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "value": 16,
+        "unique_cost": 8,
+        "candidate_evaluations": 3,
+        "experimental_queries": 0,
+        "lower": 16,
+        "upper": "16",
+        "certified_optimal": true,
+        "core_size": 1,
+        "core_profiles": 2,
+        "profiles_solved": 2,
+        "profiles_pruned": 0,
+        "dp_transitions": 112
+      },
+      "caveat": "Advice orders optimization work only; experimental-query cost stays zero."
+    },
+    {
+      "m": 16,
+      "helpful_core_order": {
+        "mask": 131071,
+        "actions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "value": 256,
+        "unique_cost": 32,
+        "candidate_evaluations": 2,
+        "experimental_queries": 0,
+        "lower": 256,
+        "upper": "256",
+        "certified_optimal": true,
+        "core_size": 1,
+        "core_profiles": 2,
+        "profiles_solved": 1,
+        "profiles_pruned": 1,
+        "dp_transitions": 768
+      },
+      "misleading_core_order": {
+        "mask": 562949953290240,
+        "actions": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48
+        ],
+        "value": 32,
+        "unique_cost": 32,
+        "candidate_evaluations": 2,
+        "experimental_queries": 0,
+        "lower": 32,
+        "upper": "256",
+        "certified_optimal": false,
+        "core_size": 1,
+        "core_profiles": 2,
+        "profiles_solved": 1,
+        "profiles_pruned": 0,
+        "dp_transitions": 1024
+      },
+      "misleading_completed": {
+        "mask": 131071,
+        "actions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "value": 256,
+        "unique_cost": 32,
+        "candidate_evaluations": 3,
+        "experimental_queries": 0,
+        "lower": 256,
+        "upper": "256",
+        "certified_optimal": true,
+        "core_size": 1,
+        "core_profiles": 2,
+        "profiles_solved": 2,
+        "profiles_pruned": 0,
+        "dp_transitions": 1792
+      },
+      "caveat": "Advice orders optimization work only; experimental-query cost stays zero."
+    },
+    {
+      "m": 32,
+      "helpful_core_order": {
+        "mask": 8589934591,
+        "actions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "value": 1024,
+        "unique_cost": 64,
+        "candidate_evaluations": 2,
+        "experimental_queries": 0,
+        "lower": 1024,
+        "upper": "1024",
+        "certified_optimal": true,
+        "core_size": 1,
+        "core_profiles": 2,
+        "profiles_solved": 1,
+        "profiles_pruned": 1,
+        "dp_transitions": 3072
+      },
+      "misleading_core_order": {
+        "mask": 158456325028528675178497966080,
+        "actions": [
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          96
+        ],
+        "value": 64,
+        "unique_cost": 64,
+        "candidate_evaluations": 2,
+        "experimental_queries": 0,
+        "lower": 64,
+        "upper": "1024",
+        "certified_optimal": false,
+        "core_size": 1,
+        "core_profiles": 2,
+        "profiles_solved": 1,
+        "profiles_pruned": 0,
+        "dp_transitions": 4096
+      },
+      "misleading_completed": {
+        "mask": 8589934591,
+        "actions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "value": 1024,
+        "unique_cost": 64,
+        "candidate_evaluations": 3,
+        "experimental_queries": 0,
+        "lower": 1024,
+        "upper": "1024",
+        "certified_optimal": true,
+        "core_size": 1,
+        "core_profiles": 2,
+        "profiles_solved": 2,
+        "profiles_pruned": 0,
+        "dp_transitions": 7168
+      },
+      "caveat": "Advice orders optimization work only; experimental-query cost stays zero."
+    }
+  ],
+  "hidden_box_oracles": [
+    {
+      "boxes": 4,
+      "probes": 3,
+      "adaptive_optimum": "3/4",
+      "clairvoyant_optimum": 1,
+      "bellman_states": 4
+    },
+    {
+      "boxes": 8,
+      "probes": 3,
+      "adaptive_optimum": "3/8",
+      "clairvoyant_optimum": 1,
+      "bellman_states": 4
+    },
+    {
+      "boxes": 16,
+      "probes": 3,
+      "adaptive_optimum": "3/16",
+      "clairvoyant_optimum": 1,
+      "bellman_states": 4
+    },
+    {
+      "boxes": 64,
+      "probes": 3,
+      "adaptive_optimum": "3/64",
+      "clairvoyant_optimum": 1,
+      "bellman_states": 4
+    }
+  ],
+  "revealed_action_oracles": [
+    {
+      "roots": 4,
+      "budget": 2,
+      "adaptive_optimum": "1/4",
+      "clairvoyant_optimum": 1,
+      "bellman_states": 5,
+      "meaning": "Root acquisition and revealed-child execution each cost one."
+    },
+    {
+      "roots": 8,
+      "budget": 2,
+      "adaptive_optimum": "1/8",
+      "clairvoyant_optimum": 1,
+      "bellman_states": 5,
+      "meaning": "Root acquisition and revealed-child execution each cost one."
+    },
+    {
+      "roots": 16,
+      "budget": 2,
+      "adaptive_optimum": "1/16",
+      "clairvoyant_optimum": 1,
+      "bellman_states": 5,
+      "meaning": "Root acquisition and revealed-child execution each cost one."
+    },
+    {
+      "roots": 64,
+      "budget": 2,
+      "adaptive_optimum": "1/64",
+      "clairvoyant_optimum": 1,
+      "bellman_states": 5,
+      "meaning": "Root acquisition and revealed-child execution each cost one."
+    }
+  ]
+}

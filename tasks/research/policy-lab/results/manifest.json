@@ -1,0 +1,21 @@
+{
+  "base_commit": "22a4975191e81ad4e1d1d15609621e5c1f567b09",
+  "created_utc": "2026-09-05T23:51:32.804179+00:00",
+  "purpose": "Source/result provenance for isolated deterministic research; timings may differ on rerun.",
+  "source_sha256": {
+    "research_spikes/policy_lab/experiments.py": "a5f09ee296e255fc37ffd0f78fdfdf7d2d5bbd2bc0c4a53f2c497c85add30465",
+    "research_spikes/policy_lab/model.py": "2ed796fa467179f2ef593875549f7a048be90be934c634ddc0faf5fd1f32e4d0",
+    "research_spikes/policy_lab/present.py": "20ec349cc856c58536ea2bc760df55b5c83b09326533905415e00d221ccc2172",
+    "research_spikes/policy_lab/test_model.py": "27051c457196a3d8149d81f76365d292ea123490f17616e2087430d72095ab15",
+    "research_spikes/policy_lab/trace_audit.py": "7b29f5266929ed51dae0d8743e451080487d613439776e923161a106723ec60b"
+  },
+  "result_sha256": {
+    "biological.json": "c42722d48c708fcb8c420bfa3f14fdc941c27f141d683c3fbbc5543a8cb2d2cf",
+    "finite-audit.json": "fe6d511418e919d3870745e34e7ff503d96593eb852a55b5e3f59ffb41e652ec",
+    "synthetic.json": "d2f8b9acbe641af45bf5f1b930c9d82a59afc1a218a94cbe9fe4bc48bddd40ff",
+    "trace-audit.json": "71ed74cd4eb92938e0f2183633f8c011768c97c7fe9e9fa9bc7137703332dafc",
+    "validation.json": "462d5bf737b3a07e303c893617648d5dad7f5197207a152824f091918cde1a7f"
+  },
+  "historical_civic_sha256": "8895ce10b7c119856c3cbd38d8cf08fb597dbd294b06e22eaf50c35ba0db05d3",
+  "future_labels_read": false
+}
