@@ -44,16 +44,24 @@ Two agents may be in the same file. The rules are only:
 
 1. Say so on the board first (`check` tells you who else is there).
 2. Keep the change small and commit soon.
-3. Rebase before every commit. Whoever rebases resolves the conflict, using
+3. Sync with `origin/main` before every commit. Whoever integrates resolves conflicts, using
    the board to see what the other side meant.
 4. If a conflict is not obvious, post it and let the other agent confirm
    before pushing.
 
 ## Git
 
-- One branch per session: `<person>/<session>`. Short-lived.
-- `git pull --rebase origin main` before every commit. Push after every commit.
-- `main` is fast-forward only. No force pushes, no history rewriting.
+- Before implementation, agents check the board's branch column and local worktrees. If another agent
+  is active on the same branch, they create a unique task branch in a separate worktree from
+  `origin/main`. They never switch another agent's shared checkout. If alone, they can reuse an
+  appropriate task branch. Read-only work needs no new branch.
+- Sync with `origin/main` before every commit; rebase unpublished commits or merge main into the task
+  branch to preserve published history. Push after every commit.
+- Agents create/update PRs and automatically merge completed work after validation; you do not need
+  to approve each PR. Existing required checks/reviews still apply. Main history stays linear through
+  rebase merging. No force pushes or rewriting main.
+- Board `done` means implementation reached `main`; pushed branches and pending auto-merges get
+  `update`. Read-only reviews can finish with `done` and no PR. Full integration rules: `AGENTS.md`, Git.
 - Generated files and lockfiles are never hand-merged: take either side and
   rerun the generator.
 - `HANDOFF.md` merges by union (`.gitattributes`), so two agents appending
