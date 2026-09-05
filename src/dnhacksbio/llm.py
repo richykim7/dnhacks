@@ -61,14 +61,18 @@ os.environ.setdefault("CLAUDE_CODE_MAX_OUTPUT_TOKENS", str(MAX_OUTPUT_TOKENS))
 
 
 def _opts(model: str, system: str | None, effort: str, max_turns: int, thinking=None,
-          resume: str | None = None) -> ClaudeAgentOptions:
+          resume: str | None = None, *, tools_disabled: bool = False,
+          max_output_tokens: int | None = None, cwd: str | None = None) -> ClaudeAgentOptions:
     # `resume` re-opens an existing session by its UUID (the transcript on disk) instead of starting
     # fresh. A forked child branch is entered this way: fork_session() copies the parent transcript into a
     # new UUID, and resuming that UUID gives the child the cached ancestor context.
     return ClaudeAgentOptions(
         model=model, system_prompt=system, effort=effort, max_turns=max_turns,
         allowed_tools=[], permission_mode="bypassPermissions", setting_sources=[], thinking=thinking,
-        resume=resume)
+        resume=resume, tools=[] if tools_disabled else None,
+        strict_mcp_config=tools_disabled, cwd=cwd,
+        env=({"CLAUDE_CODE_MAX_OUTPUT_TOKENS": str(max_output_tokens)}
+             if max_output_tokens is not None else {}))
 
 
 def _block_to_dict(b) -> dict:
@@ -99,20 +103,33 @@ def _msg_to_dict(msg) -> dict:
 
 async def acomplete(prompt: str, *, model: str = OPUS, system: str | None = None,
                     effort: str = "medium", max_turns: int = 6, thinking: bool = False,
-                    capture: dict | None = None) -> str:
+                    capture: dict | None = None, tools_disabled: bool = False,
+                    max_output_tokens: int | None = None, max_attempts: int = 3,
+                    cwd: str | None = None) -> str:
     """One-shot completion. Returns the final text; records usage in the global LEDGER. Retries transient
     SDK errors.
 
     `thinking=True` turns on extended thinking so the model's reasoning is produced as thinking blocks
     rather than only the self-reported field a caller might ask it to write.
     Pass a `capture` dict to receive {text, thinking, messages}: `thinking` is the concatenated thinking
-    blocks; `messages` is the raw SDK message stream (the faithful record of the exchange)."""
+    blocks; `messages` is the raw SDK message stream (the faithful record of the exchange).
+    Controlled experiments can disable all tools/MCP servers, use an empty cwd,
+    and set per-call output and attempt ceilings without changing process-global settings.
+    `allowed_tools=[]` alone is not a tool-disable switch in the SDK."""
+    if type(max_attempts) is not int or max_attempts < 1:
+        raise ValueError("max_attempts must be a positive integer")
+    if max_output_tokens is not None and (type(max_output_tokens) is not int or max_output_tokens < 1):
+        raise ValueError("max_output_tokens must be a positive integer")
     tconf = {"type": "enabled", "budget_tokens": 8000, "display": "summarized"} if thinking else None
     last = None
-    for attempt in range(3):
+    for attempt in range(max_attempts):
+        if capture is not None:
+            capture["attempts"] = attempt + 1
         try:
             text, think, msgs = "", "", []
-            async for msg in query(prompt=prompt, options=_opts(model, system, effort, max_turns, tconf)):
+            async for msg in query(prompt=prompt, options=_opts(
+                    model, system, effort, max_turns, tconf, tools_disabled=tools_disabled,
+                    max_output_tokens=max_output_tokens, cwd=cwd)):
                 if isinstance(msg, AssistantMessage):
                     for b in msg.content:
                         if isinstance(b, TextBlock):
@@ -130,7 +147,8 @@ async def acomplete(prompt: str, *, model: str = OPUS, system: str | None = None
             last = RuntimeError("empty completion")
         except Exception as e:
             last = e
-        await asyncio.sleep(1.5 * (attempt + 1))
+        if attempt + 1 < max_attempts:
+            await asyncio.sleep(1.5 * (attempt + 1))
     raise last
 
 
