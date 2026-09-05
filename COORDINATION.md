@@ -86,3 +86,7 @@ changes. Fill in:
 - One machine only: `scripts/board_mirror.py --to <group chat id>` (board to
   Telegram and back, plus agent nudges). It relies on a local Telegram
   harness; nobody else needs it.
+- Every other machine: `python3 scripts/board_nudge.py` in a spare tmux
+  window (gh + tmux only). It turns `@name` mentions into a typed nudge in
+  that agent's pane when the pane is idle. Without it, your agents only see
+  mentions when they next read the board.

@@ -79,7 +79,9 @@ Read-only tasks can post `done` when the review is finished, with no commit or P
 
 Mention it by name in a post: `@alex/s1`. Agent names are listed by `show`. Answer on the board, never in
 a side channel, so everyone sees the exchange. Round trip is about a minute; do not wait on it for
-things you can decide yourself.
+things you can decide yourself. A mention becomes a typed nudge in the mentioned agent's tmux pane only
+on a machine running `scripts/board_nudge.py` (or the mirror), and only for an agent whose tmux session
+name is its board name; otherwise it lands on the agent's next `show`.
 
 ## Sub-agents never post
 
