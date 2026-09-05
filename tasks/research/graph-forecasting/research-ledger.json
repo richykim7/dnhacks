@@ -1,0 +1,202 @@
+{
+  "date": "2026-09-05",
+  "scope": "Domain-agnostic iterative scientific graph with biological historical forecasting, 16-hour mockable hackathon MVP, scoped branch-selection guarantees and frontend demo design.",
+  "source_classes": [
+    "original papers",
+    "author repositories",
+    "official scientific data releases",
+    "local code",
+    "executed data and algorithm probes"
+  ],
+  "sources": [
+    {
+      "title": "Dyport",
+      "author": "Ilya Tyagin and Ilya Safro",
+      "date": "2023-12-06 preprint; 2024 publication",
+      "url": "https://arxiv.org/html/2312.03303v1",
+      "claim": "Temporal biomedical association benchmark and negative sampling protocol",
+      "evidence": "Methods describe curated database and MEDLINE pair intersection, date slicing and type-matched negative candidates",
+      "confidence": "high",
+      "access": "parent read full-text HTML; metadata header contains stale conference-template fields, so use arXiv submission date"
+    },
+    {
+      "title": "Dyport repository and released predictions",
+      "author": "IlyaTyagin",
+      "date": "accessed 2026-09-05",
+      "url": "https://github.com/IlyaTyagin/Dyport",
+      "claim": "Actual per-row baseline predictions and yearly labels available",
+      "evidence": "Complete 80,495,323-byte 2016 CSV downloaded; 336,710 rows; six model families; metrics recomputed",
+      "confidence": "high",
+      "access": "local file and sha256 in dyport-access.json; underlying pre-2016 graph absent from score file"
+    },
+    {
+      "title": "CIViC data releases",
+      "author": "CIViC",
+      "date": "2018-01-01 and 2022-03-01 snapshots",
+      "url": "https://docs.civicdb.org/en/latest/using/data_releases.html",
+      "claim": "Compact historical evidence graphs and provenance available",
+      "evidence": "Complete TSV downloads parsed: 2,372 and 3,888 evidence rows",
+      "confidence": "high",
+      "access": "public downloads; schema and vocabulary changes observed; artifact metadata in civic-access.json"
+    },
+    {
+      "title": "PubTator3 API",
+      "author": "NCBI/NLM/NIH",
+      "date": "accessed 2026-09-05",
+      "url": "https://www.ncbi.nlm.nih.gov/research/pubtator3/api",
+      "claim": "Normalized entities and typed relation export can supply graph evidence",
+      "evidence": "PMID 29355051 HTTP200; 14,167-byte JSON; PubTator3 list wrapper; three relations and passage publication year",
+      "confidence": "high",
+      "access": "direct public API executed; rate limit documented as three requests per second"
+    },
+    {
+      "title": "BioVerge",
+      "author": "Fuyi Yang et al.",
+      "date": "2025-11-12",
+      "url": "https://arxiv.org/html/2511.08866v1",
+      "claim": "Useful typed graph and agent baseline scaffold but supplied endpoints limit open recommendation claim",
+      "evidence": "Paper describes historical knowledge, 177 diabetes triples, generation/evaluation modules and exact versus LLM-judged metrics",
+      "confidence": "high",
+      "access": "paper and repository read; linked full dataset not downloaded in this pass"
+    },
+    {
+      "title": "AGATHA repository",
+      "author": "Justin Sybrandt et al.",
+      "date": "2020; accessed 2026-09-05",
+      "url": "https://github.com/JSybrandt/agatha",
+      "claim": "Relevant biomedical hypothesis generation comparator; pretrained package 38.5 GB",
+      "evidence": "Official installation and 2015 predictor instructions",
+      "confidence": "high",
+      "access": "source documentation read; cached AGATHA scores used instead of model installation"
+    },
+    {
+      "title": "BioRED public archive",
+      "author": "NCBI",
+      "date": "2022; accessed 2026-09-05",
+      "url": "https://ftp.ncbi.nlm.nih.gov/pub/lu/BioRED/BIORED.zip",
+      "claim": "Small normalized relation corpus useful for fixtures",
+      "evidence": "Asset agent downloaded 2,191,684-byte archive in memory and inspected annotation files",
+      "confidence": "high",
+      "access": "worker direct archive inspection; not saved locally"
+    },
+    {
+      "title": "Science4Cast",
+      "author": "IARAI competition authors",
+      "date": "2021 benchmark; accessed 2026-09-05",
+      "url": "https://github.com/iarai/science4cast",
+      "claim": "Prior art for future semantic graph edges",
+      "evidence": "Repo describes 64k AI concepts, pre-2018 graph and 2017\u20132020 future links",
+      "confidence": "high",
+      "access": "primary repository read; non-biological methodological reference"
+    },
+    {
+      "title": "Mat2vec",
+      "author": "Tshitoyan et al.",
+      "date": "2019",
+      "url": "https://github.com/materialsintelligence/mat2vec",
+      "claim": "Scientific-literature forecasting precedent",
+      "evidence": "Author repository and paper describe historical materials recommendations",
+      "confidence": "high",
+      "access": "repo and author manuscript read; excluded as flagship after biological-domain clarification"
+    },
+    {
+      "title": "An analysis of approximations for maximizing submodular set functions\u2014I",
+      "author": "Nemhauser, Wolsey and Fisher",
+      "date": "1978",
+      "url": "https://thibaut.horel.org/submodularity/papers/nemhauser1978.pdf",
+      "claim": "Greedy coverage approximation under cardinality constraint",
+      "evidence": "Abstract and theorem give 1-((k-1)/k)^k for normalized monotone submodular objective",
+      "confidence": "high",
+      "access": "original paper PDF read; independent agent review plus finite exhaustive probe"
+    },
+    {
+      "title": "A threshold of ln n for approximating set cover",
+      "author": "Uri Feige",
+      "date": "1998",
+      "url": "https://disco.ethz.ch/alumni/pascalv/refs/ds_1998_feige.pdf",
+      "claim": "General maximum-coverage approximation barrier, not difficulty of fixed k=2",
+      "evidence": "Primary hardness result for max k-cover; report restricts asymptotic claim to general input",
+      "confidence": "high",
+      "access": "primary PDF and worker review"
+    },
+    {
+      "title": "Online Bandit Learning against an Adaptive Adversary: from Regret to Policy Regret",
+      "author": "Arora, Dekel and Tewari",
+      "date": "2012",
+      "url": "https://oferdekel.github.io/pdf/2012AroraDeTe.pdf",
+      "claim": "External regret cannot simply compare action-dependent graph trajectories",
+      "evidence": "Paper defines policy regret and impossibility for unrestricted adaptive adversaries",
+      "confidence": "high",
+      "access": "parent primary PDF read"
+    },
+    {
+      "title": "Super-Exponential Regret for UCT, AlphaGo and Variants",
+      "author": "Orseau and Munos",
+      "date": "2024-05-17 v2",
+      "url": "https://arxiv.org/abs/2405.04407",
+      "claim": "MCTS/UCT does not supply blanket useful logarithmic regret for this harness",
+      "evidence": "Paper corrects earlier lower-bound oversight and establishes severe worst cases",
+      "confidence": "high",
+      "access": "parent paper abstract read; original 2007 theory also reviewed"
+    }
+  ],
+  "gap_matrix": [
+    {
+      "claim": "Historical data can be accessed immediately",
+      "status": "verified",
+      "next": "Use downloaded Dyport and CIViC files"
+    },
+    {
+      "claim": "Historical graph for Dyport prediction is prepared",
+      "status": "not established",
+      "next": "Prepare a dated subject-level corpus or compatible training graph in first two implementation hours"
+    },
+    {
+      "claim": "Dynamic graph improves forecast quality",
+      "status": "untested",
+      "next": "Matched-evidence flat/static/dynamic ablation"
+    },
+    {
+      "claim": "Coverage scheduler improves discovery",
+      "status": "untested",
+      "next": "Same-candidate selection ablation with separate coverage and forecasting metrics"
+    },
+    {
+      "claim": "Current small batch has exact optimum certificate",
+      "status": "mathematically established; not integrated",
+      "next": "Use exact enumeration as evaluation oracle; greedy remains provisional production policy."
+    },
+    {
+      "claim": "Scalable greedy coverage bound applies",
+      "status": "conditional on fixed facets, candidates, weights and cardinality budget",
+      "next": "Freeze objective each epoch; no global adaptive claim"
+    },
+    {
+      "claim": "Current LLM cannot know future biology",
+      "status": "not established",
+      "next": "No-retrieval diagnostic and structural historical scorer; limit claim"
+    },
+    {
+      "claim": "Mockable graph UI serves demo",
+      "status": "illustrative storyboard delivered; app integration pending",
+      "next": "Use one scenario/event contract for fixture/replay/live"
+    }
+  ],
+  "searches_performed": [
+    "Science4Cast and scientific concept forecasting",
+    "mat2vec historical materials predictions",
+    "PubTator3 API and biological relation export",
+    "CIViC historical releases",
+    "AGATHA and MOLIERE temporal hypothesis evaluation",
+    "Dyport baseline score assets",
+    "BioVerge historical agent benchmark",
+    "BioRED annotation archives",
+    "THBKG and OpenBioLink protocol alternatives",
+    "submodular maximum coverage approximation and hardness",
+    "Hedge/EXP3 and policy regret",
+    "UCT lower bounds and corrected proofs",
+    "universal scheduling/dovetailing"
+  ],
+  "stop_reason": "Accessible biological evidence and comparator assets verified, theorem scope independently reviewed, demo architecture specified. Remaining important questions require integration and actual forecasts rather than more broad literature search.",
+  "latest_decision": "Greedy provisional; historical CIViC scenario packet next; active frontend owner retained; bounded policy research for complementary and shared evidence. See design/parallel-session-plan.md."
+}

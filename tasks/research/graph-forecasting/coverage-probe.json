@@ -1,0 +1,26 @@
+{
+  "purpose": "Finite coverage/certificate audit; not scientific prediction accuracy.",
+  "candidate_branches": 4,
+  "evidence_facets": 4,
+  "selected_branches": 2,
+  "instances_including_zero": 65536,
+  "nonzero_instances_checked": 65535,
+  "worst_greedy_to_optimum_ratio": 0.75,
+  "theoretical_k2_lower_bound": 0.75,
+  "worst_case": {
+    "candidate_facet_bitmasks": [
+      0,
+      3,
+      5,
+      10
+    ],
+    "greedy_indices": [
+      1,
+      2
+    ],
+    "greedy_value": 3,
+    "optimal_value": 4
+  },
+  "invalid_upper_bounds": 0,
+  "current_repo_feasible_subsets": 6
+}
