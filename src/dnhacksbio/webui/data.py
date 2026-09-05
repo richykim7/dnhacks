@@ -303,6 +303,16 @@ def investigations(include_all: bool = False, project: str | None = None) -> lis
         t["has_forks"] = t["n_branches"] > 0
         t["root_run"] = root_row
         t["last_action"] = (root_row or t["runs"][0]).get("last_action", "")
+        # The question lives on the launch job, not on the corpus definition.
+        # Surface it so the UI need not use an opaque filesystem run id as its title.
+        t["goal"] = ""
+        job_ref = _job_for_run(t["root"])
+        if job_ref:
+            from . import jobs as _jobs
+            try:
+                t["goal"] = _jobs.get_job(*job_ref).get("goal", "")
+            except (FileNotFoundError, ValueError):
+                pass
         out.append(t)
     out.sort(key=lambda t: t["updated_at"], reverse=True)
     return out
@@ -1140,6 +1150,7 @@ def run_tree(run_id: str) -> dict:
                             verdict_by_entry[int(r["explore_entry"])] = r
             except duckdb.Error as exc:
                 # A swallowed query error is indistinguishable from "this run has no verdicts". Say it.
+                unreadable = f"{type(exc).__name__}: {exc}"
                 print(f"[run_tree] {run_id}: query failed — {type(exc).__name__}: {exc}", flush=True)
             finally:
                 con.close()
@@ -1153,6 +1164,8 @@ def run_tree(run_id: str) -> dict:
         try:
             res = json.loads(e.get("result") or "{}")
         except ValueError:
+            res = {}
+        if not isinstance(res, dict):
             res = {}
         fan = fans_by_entry.get(eid)
         sub, ver = sub_by_entry.get(eid), verdict_by_entry.get(eid)
@@ -1170,6 +1183,8 @@ def run_tree(run_id: str) -> dict:
         node = {
             "entry_id": eid, "run_id": e.get("run_id"), "kind": e.get("kind"),
             "title": e.get("title"),
+            "body": e.get("body"), "code": e.get("code"),
+            "result": res, "provenance": prov, "output": e.get("result") or "",
             "status": e.get("status"), "stage": stage,
             "subject": prov.get("subject"), "object": prov.get("object"),
             "method": prov.get("method"), "expected_sign": prov.get("expected_sign"),

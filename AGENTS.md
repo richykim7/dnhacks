@@ -13,10 +13,21 @@ This applies to every agent, every session, every task. No exceptions.
 DNHacks 2026 team repo. Fill in the one-paragraph project description here once the team agrees on it.
 
 ## Layout
-Fill in as the code lands. Keep this list short and current; one line per top-level directory.
+- `src/`: Python discovery engine, literature graph, and local web API.
+- `frontend/`: React/TypeScript research workspace, Vite build, and browser tests.
+- `scripts/`: local launchers, data workflows, and coordination board.
+- `docs/`: operational documentation, including `docs/frontend.md`.
+- `tests/`: Python regression tests (some existing local tests/data are not versioned).
 
 ## Setup / Run / Test gates
-Fill in exact commands as soon as they exist. Every agent runs the full gate list before every commit.
+Setup: `uv sync --extra dev` and `npm --prefix frontend ci` (Node 22.12+).
+Build/serve: `npm --prefix frontend run build`, then `uv run python scripts/serve_ui.py --port 8765`.
+Frontend development and environment/key handling: `docs/frontend.md`.
+
+Before every commit: `npm --prefix frontend run build`, `npm --prefix frontend run test`,
+`npm --prefix frontend run e2e`, `uv run pytest tests`, and `git diff --check`.
+The browser suite needs an empty-data Python server on port 8766; see `docs/frontend.md`.
+The wider local Python suite requires its local vocabulary datasets; report missing-data skips/failures explicitly.
 
 ## Rules that must not be broken
 1. Never force-push, never rewrite history on `main`.

@@ -36,3 +36,19 @@ docs/
 tests/
 gpu-ssh-handoff/
 CLAUDE.md
+
+# Frontend build and local secrets
+.env
+.env.*
+!.env.example
+node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+!docs/
+docs/*
+!docs/frontend.md
+!tests/
+tests/*
+!tests/test_frontend_server.py
+*.tsbuildinfo

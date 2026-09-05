@@ -6,7 +6,8 @@ run internals and writes review decisions, so it is not meant to face a network.
 
 Routes
   GET  /                         -> the SPA shell
-  GET  /static/<file>            -> css/js
+  GET  /assets/<file>            -> built React assets
+  GET  /static/<file>            -> retained static assets
   GET  /api/runs                 -> flat run summaries (lineage-annotated)
   GET  /api/investigations       -> runs grouped into fork trees (root + branches)
   GET  /api/runs/<id>            -> full parsed run (steps, tallies, tests)
@@ -46,6 +47,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -54,6 +56,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 from . import architecture, assistant, attachments, data, jobs, projects
 
 STATIC = Path(__file__).resolve().parent / "static"
+FRONTEND = Path(os.environ.get("DNHACKS_FRONTEND_DIST", Path(__file__).resolve().parents[3] / "frontend" / "dist"))
 
 _CONTENT_TYPES = {
     ".html": "text/html; charset=utf-8",
@@ -133,7 +136,9 @@ class Handler(BaseHTTPRequestHandler):
         qs = parse_qs(parsed.query)
         try:
             if path == "/" or path == "/index.html":
-                return self._serve_static("index.html")
+                return self._serve_frontend("index.html")
+            if path.startswith("/assets/"):
+                return self._serve_frontend(unquote(path.lstrip("/")))
             if path.startswith("/static/"):
                 return self._serve_static(path[len("/static/"):])
             if path == "/api/projects" or path.startswith("/api/projects/"):
@@ -348,10 +353,19 @@ class Handler(BaseHTTPRequestHandler):
 
     # -- static ------------------------------------------------------------
 
+    def _serve_frontend(self, rel: str):
+        root = FRONTEND.resolve()
+        target = (root / rel).resolve()
+        if not target.is_relative_to(root) or not target.is_file():
+            if rel == "index.html":
+                return self._error(503, "Frontend not built. Run npm ci && npm run build in frontend/.")
+            return self._error(404, "not found")
+        return self._send_bytes(target.read_bytes(), _CONTENT_TYPES.get(target.suffix, "application/octet-stream"))
+
     def _serve_static(self, rel: str):
         # Prevent path traversal: resolve under STATIC and verify containment.
         target = (STATIC / rel).resolve()
-        if not str(target).startswith(str(STATIC.resolve())) or not target.is_file():
+        if not target.is_relative_to(STATIC.resolve()) or not target.is_file():
             return self._error(404, "not found")
         ctype = _CONTENT_TYPES.get(target.suffix, "application/octet-stream")
         self._send_bytes(target.read_bytes(), ctype)
@@ -406,7 +420,7 @@ class Handler(BaseHTTPRequestHandler):
         for lineno, item in data.tail_run(run_id, from_line=from_line):
             event = "heartbeat" if item.get("_heartbeat") else "step"
             payload = (
-                f"id: {lineno}\nevent: {event}\ndata: {json.dumps(item)}\n\n"
+                f"id: {lineno}\nevent: {event}\ndata: {json.dumps(_json_safe(item))}\n\n"
             ).encode("utf-8")
             self._write_chunk(payload)
         self._write_chunk(b"event: end\ndata: {}\n\n")
