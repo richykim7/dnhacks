@@ -41,10 +41,10 @@ Rules:
 1. Post a `claim` before you start a task and a `done` when it lands. Post an `update` when the plan changes.
    Two or three lines each. Name files (a trailing `/` claims a directory).
 2. Claims are heads-ups, NOT locks. You may work in a file someone else is in. Then: say so in your post, keep the
-   diff small, commit soon, and rebase before committing. Whoever rebases resolves the conflict, reading the other
+   diff small, commit soon, and sync with `origin/main` before committing. Whoever integrates resolves conflicts, reading the other
    agent's board posts to understand their intent. If the resolution is not obvious, post it and wait for a reply.
-3. Before every commit: `python3 scripts/board.py check`, then `git pull --rebase origin main`, then all gates.
-   Push after every commit.
+3. Before every commit: board `show` and `check`, sync with `origin/main` as described below, then all gates.
+   Push after every commit; automatically integrate completed, validated work into `main`.
 4. Shared interfaces (schemas, API contracts, generated types) always get a board post BEFORE the edit. Generated
    files and lockfiles are never hand-merged: take one side, rerun the generator.
 5. To talk to a specific agent, mention it: `@<agent name>` in a post. Answer on the board, not in a side channel.
@@ -53,8 +53,29 @@ Rules:
    post the missed updates when it is back. An outage does not require a `HANDOFF.md` entry.
 
 ## Git
-- One branch per session, `<person>/<session>`, short-lived. `main` is fast-forward only.
-- `git pull --rebase origin main` before every commit. Push after every commit.
+- Before implementation work (including documentation edits), check board `show`, `git status`,
+  `git branch --show-current`, and `git worktree list`. Compare your branch with other agents' active
+  claims/updates; a later note does not release a claim, only `done` does. Read-only work needs no new branch.
+- If another agent is active on the current branch, create a unique task branch in a separate worktree
+  from `origin/main` and work there. Never switch branches or alter the index in their shared checkout.
+  A new branch in the same directory does not isolate concurrent agents. If branch occupancy is unknown,
+  use a separate worktree. Post an `update` from the new worktree so the board records its branch.
+- Otherwise, reuse an appropriate task branch when its checkout is exclusively yours. Start a task
+  branch if on `main` or the previous task branch was already merged. Name new branches
+  `<person>/<session>-<task>`; agent identity stays unchanged. Recheck the board after claiming and before
+  Git mutations; the board is advisory, not an atomic lock. Do not stage or commit another agent's work.
+- Before every commit, fetch `origin` and incorporate `origin/main`. Rebase unpublished commits when
+  safe; if rebasing would rewrite published commits, merge `origin/main` into the task branch instead.
+  Resolve conflicts and run all gates on the result. Push after every commit. Never force-push.
+- Automatically integrate completed, validated work into `main`; this is standing user authorization,
+  with no routine per-PR approval request. Create/update a PR, review its diff, and use
+  `gh pr merge <number> --rebase --match-head-commit <validated-sha>` after checks pass, or add `--auto`
+  while required checks are pending. Keep existing branch protections and required reviews; never use
+  `--admin` to bypass them. Resolve routine failures/conflicts and revalidate autonomously.
+- Keep `main` history linear and never rewrite it. Confirm the PR is merged before posting board `done`
+  with the resulting main commit. A pushed branch or pending auto-merge is an `update`, not landed work.
+  If required external approval or another blocker prevents merging, report it on the board and to the
+  user. Do not switch, reset, or delete a branch/worktree another agent is using during cleanup.
 - Commit subject: `<Area>: <what changed>`.
 
 ## Communication and handoff protocol

@@ -4,7 +4,7 @@
 The board is ONE pinned GitHub issue (title "Board", label "board") in the
 repo's origin. Each agent posts a short comment when it starts a task,
 changes plan, or finishes. Claims are heads-ups, not locks: two agents may
-work in the same file as long as both have said so and rebase before
+work in the same file as long as both have said so and sync with main before
 committing.
 
 Only dependency: the `gh` CLI, logged in as the person running the agent.
@@ -267,20 +267,22 @@ def cmd_show(a):
         for p in sorted(parsed, key=lambda x: x["ts"])[-a.limit:]:
             print(f"{local_stamp(parse_ts(p['ts']))}  {p['agent']:<18} {p['kind']:<6} "
                   f"{p['text'].splitlines()[0] if p['text'] else ''}"
-                  + (f"  [{', '.join(p['files'])}]" if p['files'] else ""))
+                  + (f"  [{', '.join(p['files'])}]" if p['files'] else "")
+                  + f"  (branch {p.get('branch') or '?'})")
         return
     state = active_state(parsed)
     if not state:
         print("board is empty")
         return
     rows = sorted(state.items(), key=lambda kv: kv[1]["last"]["ts"], reverse=True)
-    print(f"{'agent':<18} {'kind':<6} {'when':<22} files / last message")
+    print(f"{'agent':<18} {'kind':<6} {'when':<22} {'branch':<28} files / last message")
     for agent, s in rows:
         last = s["last"]
         first = last["text"].splitlines()[0] if last["text"] else ""
         files = ", ".join(sorted(s["files"])) if s["files"] else "-"
-        print(f"{agent:<18} {last['kind']:<6} {local_stamp(parse_ts(last['ts'])):<22} {files}")
-        print(f"{'':<18} {'':<6} {'':<22} {first}")
+        branch = last.get("branch") or "?"
+        print(f"{agent:<18} {last['kind']:<6} {local_stamp(parse_ts(last['ts'])):<22} {branch:<28} {files}")
+        print(f"{'':<18} {'':<6} {'':<22} {'':<28} {first}")
     print(issue_url(repo, n))
 
 
@@ -316,7 +318,7 @@ def cmd_check(a):
         print(f"  {agent} ({local_stamp(parse_ts(last['ts']))}): {', '.join(shared)}")
         if last["text"]:
             print(f"    \"{last['text'].splitlines()[0]}\"")
-    print("Not a block. Rebase first, keep the diff small, and post an update naming them.")
+    print("Not a block. Sync with main, keep the diff small, and post an update naming them.")
 
 
 def cmd_watch(a):
