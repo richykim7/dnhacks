@@ -1,0 +1,2125 @@
+{
+  "audit": {
+    "baseline_computed_before_outcome_read": true,
+    "candidate_reselection_after_outcome_read": false,
+    "distinct_source_count": 12,
+    "evidence_count": 12,
+    "evidence_ids": [
+      "civic:evidence:1006",
+      "civic:evidence:1007",
+      "civic:evidence:1008",
+      "civic:evidence:1009",
+      "civic:evidence:1010",
+      "civic:evidence:1011",
+      "civic:evidence:1012",
+      "civic:evidence:1022",
+      "civic:evidence:1023",
+      "civic:evidence:1041",
+      "civic:evidence:1042",
+      "civic:evidence:1050"
+    ],
+    "failed_calls": 0,
+    "historical_selection_recomputed_and_matched": true,
+    "model_allocation": "Same model, call count, evidence schedule and output-token ceilings. Actual tokens differ.",
+    "per_step_source_packets_identical_across_model_conditions": true,
+    "prediction_files_complete_before_outcome_read": true,
+    "prompt_and_source_hashes_recomputed_and_matched": true,
+    "same_complete_candidate_ids_at_every_step": true,
+    "source_packet_sha256_by_step": {
+      "1": "8aaa172d4f1088b1d4035320a1f6c6c292f922405c32f6b21209c3c4adad82bf",
+      "2": "9022983bb0e736423fe4c99933226a93fb5bc91164f45fe9aeac5549586b3544"
+    },
+    "successful_calls": 6,
+    "usage_counting": "Sum top-level usage messages only; nested iterations repeat counts and are not added. Total input includes uncached input, cache creation, and cache reads."
+  },
+  "cohort": {
+    "candidate_count": 20,
+    "candidates": [
+      {
+        "id": "civic:candidate:46d850bfcc5752ea0330",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:cf63527e7eab1e1973a3",
+        "target_label": "Gefitinib"
+      },
+      {
+        "id": "civic:candidate:b852ffce2ab79afbf336",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:8a502a6052b4f10d99fa",
+        "target_label": "Panitumumab"
+      },
+      {
+        "id": "civic:candidate:211b2c81022fc91d3377",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:8c8d68f9576680d4d76c",
+        "target_label": "Regorafenib"
+      },
+      {
+        "id": "civic:candidate:e100356eb37398c3356a",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:8262fb73a8f20315bd91",
+        "target_label": "Erlotinib"
+      },
+      {
+        "id": "civic:candidate:e8a275e7c4ffb6db5b9e",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:c4880b11c964ec366f18",
+        "target_label": "Docetaxel, Selumetinib (AZD6244)"
+      },
+      {
+        "id": "civic:candidate:10285b1f20372913f4cb",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:86da4917f40dd02016c2",
+        "target_label": "Trametinib"
+      },
+      {
+        "id": "civic:candidate:5bb0be794472bfa57f06",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:545a026117a78ff9a313",
+        "target_label": "BYL719 (Alpelisib)"
+      },
+      {
+        "id": "civic:candidate:5dec38aebae9d8cfac26",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:a7c268e5b3766e4c5610",
+        "target_label": "Ridaforolimus, Temsirolimus"
+      },
+      {
+        "id": "civic:candidate:6b36d1076955544d818e",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:50129b7bd1f0c6a6d5e7",
+        "target_label": "BEZ235, Selumetinib (AZD6244)"
+      },
+      {
+        "id": "civic:candidate:74e20af677cccbd48747",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:b28d15fd5af4286089a1",
+        "target_label": "Crizotinib"
+      },
+      {
+        "id": "civic:candidate:a72a41acafec82122c73",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:048d2ec3fffa4d2d6b8b",
+        "target_label": "Vemurafenib"
+      },
+      {
+        "id": "civic:candidate:f8c3477b5e32d833a999",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:d0b67f9cbee4932ea291",
+        "target_label": "RO4987655"
+      },
+      {
+        "id": "civic:candidate:0729f159c828218f52b4",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:7d50aa3d0e31890a6ee3",
+        "target_label": "Dabrafenib"
+      },
+      {
+        "id": "civic:candidate:24da3701baa48148d137",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:a50c3c3072942e94ee6f",
+        "target_label": "Docetaxel"
+      },
+      {
+        "id": "civic:candidate:3361aee9292b437b402b",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:eba07443f61b4d8d9d0c",
+        "target_label": "BEZ235 (NVP-BEZ235, Dactolisib)"
+      },
+      {
+        "id": "civic:candidate:5f1e5774332b4f5d876a",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:3e6a821a9faa5652c2e4",
+        "target_label": "BAY 86-9766"
+      },
+      {
+        "id": "civic:candidate:9216198dbbd9bd07f274",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:411c6d2017cdd7cd5c79",
+        "target_label": "Afatinib, Erlotinib, Gefitinib"
+      },
+      {
+        "id": "civic:candidate:a18ab6a18287434531d4",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:ce90cd2a9375777ec6ba",
+        "target_label": "Everolimus"
+      },
+      {
+        "id": "civic:candidate:a5e6d07872e6bc37f0f5",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:4a767c5bb09955b90381",
+        "target_label": "AZD5363"
+      },
+      {
+        "id": "civic:candidate:c5120f360117c09069d6",
+        "observed": false,
+        "outcome_evidence_ids": [],
+        "query_id": "civic:variant:306",
+        "source": "civic:variant:306",
+        "source_label": "ERBB2 AMPLIFICATION",
+        "target": "civic:therapy-group:01e9baf2939c9665a734",
+        "target_label": "Dabrafenib, Trametinib"
+      }
+    ],
+    "observed_count": 0,
+    "query_id": "civic:variant:306",
+    "query_label": "ERBB2 AMPLIFICATION"
+  },
+  "conclusion": "All three real model conditions completed. This fixed historical cohort has no later-recorded positive associations: AP and AUROC are undefined; P@5 is zero for every condition and the historical popularity baseline. No forecasting superiority can be inferred.",
+  "evaluation_status": "no_positive_cohort",
+  "limitations": [
+    "No positive labels in this frozen query: zero precision does not experimentally disprove the candidates, and undefined AP/AUROC cannot rank the methods.",
+    "Labels mean later CIViC release inclusion, not first publication, first scientific discovery or treatment benefit.",
+    "Modern model pretraining may include post-cutoff knowledge; a historical retrieval cutoff cannot establish historical ignorance.",
+    "Citation checks establish source identity and availability, not entailment or scientific truth; model hypotheses remain unverified.",
+    "One historical query and one model trajectory per condition cannot establish general representation superiority.",
+    "Retrieval and branch scheduler were fixed; this experiment does not evaluate exploration-policy advantage.",
+    "Actual input/output token totals differ, and the historical popularity comparator uses no model calls.",
+    "The original 20-candidate cohort is preserved; results are not directly comparable to the separate 683-candidate structural forecast report."
+  ],
+  "models": {
+    "evolving_graph": {
+      "macro": {
+        "at_k": {
+          "10": {
+            "precision": 0.0,
+            "precision_eligible_queries": 1,
+            "recall": null,
+            "recall_eligible_queries": 0
+          },
+          "5": {
+            "precision": 0.0,
+            "precision_eligible_queries": 1,
+            "recall": null,
+            "recall_eligible_queries": 0
+          }
+        },
+        "auroc": null,
+        "auroc_eligible_queries": 0,
+        "average_precision": null,
+        "average_precision_eligible_queries": 0,
+        "query_count": 1
+      },
+      "metadata": {
+        "budget_tag": "a7973247ece8c46c32dd16e985400b8a61759584b40372c77a1e5e99ad707a04",
+        "candidate_count": 20,
+        "dataset_id": "CIViC historical releases",
+        "evidence_count": 12,
+        "model": "claude-sonnet-5",
+        "origin": "model",
+        "usage": {
+          "attempted_calls": 2,
+          "cache_creation_input_tokens": 24789,
+          "cache_read_input_tokens": 0,
+          "input_tokens": 4,
+          "output_tokens": 5098,
+          "successful_calls": 2,
+          "total_input_tokens_including_cache": 24793
+        }
+      },
+      "overall": {
+        "at_k": {
+          "10": {
+            "eligible_candidates": 20,
+            "hit_ids": [],
+            "hits": 0,
+            "missed_ids": [],
+            "precision": 0.0,
+            "precision_denominator": 10,
+            "recall": null,
+            "requested_k": 10,
+            "selected_count": 10,
+            "selected_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:e100356eb37398c3356a",
+              "civic:candidate:e8a275e7c4ffb6db5b9e",
+              "civic:candidate:10285b1f20372913f4cb",
+              "civic:candidate:211b2c81022fc91d3377",
+              "civic:candidate:24da3701baa48148d137",
+              "civic:candidate:3361aee9292b437b402b",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:5dec38aebae9d8cfac26"
+            ],
+            "unobserved_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:e100356eb37398c3356a",
+              "civic:candidate:e8a275e7c4ffb6db5b9e",
+              "civic:candidate:10285b1f20372913f4cb",
+              "civic:candidate:211b2c81022fc91d3377",
+              "civic:candidate:24da3701baa48148d137",
+              "civic:candidate:3361aee9292b437b402b",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:5dec38aebae9d8cfac26"
+            ]
+          },
+          "5": {
+            "eligible_candidates": 20,
+            "hit_ids": [],
+            "hits": 0,
+            "missed_ids": [],
+            "precision": 0.0,
+            "precision_denominator": 5,
+            "recall": null,
+            "requested_k": 5,
+            "selected_count": 5,
+            "selected_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:e100356eb37398c3356a",
+              "civic:candidate:e8a275e7c4ffb6db5b9e",
+              "civic:candidate:10285b1f20372913f4cb"
+            ],
+            "unobserved_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:e100356eb37398c3356a",
+              "civic:candidate:e8a275e7c4ffb6db5b9e",
+              "civic:candidate:10285b1f20372913f4cb"
+            ]
+          }
+        },
+        "auroc": null,
+        "auroc_eligible": false,
+        "average_precision": null,
+        "average_precision_eligible": false,
+        "candidate_count": 20,
+        "observed_count": 0,
+        "observed_rate": 0.0,
+        "unobserved_count": 20
+      },
+      "queries": {
+        "civic:variant:306": {
+          "at_k": {
+            "10": {
+              "eligible_candidates": 20,
+              "hit_ids": [],
+              "hits": 0,
+              "missed_ids": [],
+              "precision": 0.0,
+              "precision_denominator": 10,
+              "recall": null,
+              "requested_k": 10,
+              "selected_count": 10,
+              "selected_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:e100356eb37398c3356a",
+                "civic:candidate:e8a275e7c4ffb6db5b9e",
+                "civic:candidate:10285b1f20372913f4cb",
+                "civic:candidate:211b2c81022fc91d3377",
+                "civic:candidate:24da3701baa48148d137",
+                "civic:candidate:3361aee9292b437b402b",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:5dec38aebae9d8cfac26"
+              ],
+              "unobserved_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:e100356eb37398c3356a",
+                "civic:candidate:e8a275e7c4ffb6db5b9e",
+                "civic:candidate:10285b1f20372913f4cb",
+                "civic:candidate:211b2c81022fc91d3377",
+                "civic:candidate:24da3701baa48148d137",
+                "civic:candidate:3361aee9292b437b402b",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:5dec38aebae9d8cfac26"
+              ]
+            },
+            "5": {
+              "eligible_candidates": 20,
+              "hit_ids": [],
+              "hits": 0,
+              "missed_ids": [],
+              "precision": 0.0,
+              "precision_denominator": 5,
+              "recall": null,
+              "requested_k": 5,
+              "selected_count": 5,
+              "selected_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:e100356eb37398c3356a",
+                "civic:candidate:e8a275e7c4ffb6db5b9e",
+                "civic:candidate:10285b1f20372913f4cb"
+              ],
+              "unobserved_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:e100356eb37398c3356a",
+                "civic:candidate:e8a275e7c4ffb6db5b9e",
+                "civic:candidate:10285b1f20372913f4cb"
+              ]
+            }
+          },
+          "auroc": null,
+          "auroc_eligible": false,
+          "average_precision": null,
+          "average_precision_eligible": false,
+          "candidate_count": 20,
+          "observed_count": 0,
+          "observed_rate": 0.0,
+          "unobserved_count": 20
+        }
+      },
+      "ranking": [
+        {
+          "candidate_id": "civic:candidate:9216198dbbd9bd07f274",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.55,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:411c6d2017cdd7cd5c79",
+          "target_label": "Afatinib, Erlotinib, Gefitinib"
+        },
+        {
+          "candidate_id": "civic:candidate:46d850bfcc5752ea0330",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.15,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:cf63527e7eab1e1973a3",
+          "target_label": "Gefitinib"
+        },
+        {
+          "candidate_id": "civic:candidate:e100356eb37398c3356a",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.15,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8262fb73a8f20315bd91",
+          "target_label": "Erlotinib"
+        },
+        {
+          "candidate_id": "civic:candidate:e8a275e7c4ffb6db5b9e",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:c4880b11c964ec366f18",
+          "target_label": "Docetaxel, Selumetinib (AZD6244)"
+        },
+        {
+          "candidate_id": "civic:candidate:10285b1f20372913f4cb",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:86da4917f40dd02016c2",
+          "target_label": "Trametinib"
+        },
+        {
+          "candidate_id": "civic:candidate:211b2c81022fc91d3377",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8c8d68f9576680d4d76c",
+          "target_label": "Regorafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:24da3701baa48148d137",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:a50c3c3072942e94ee6f",
+          "target_label": "Docetaxel"
+        },
+        {
+          "candidate_id": "civic:candidate:3361aee9292b437b402b",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:eba07443f61b4d8d9d0c",
+          "target_label": "BEZ235 (NVP-BEZ235, Dactolisib)"
+        },
+        {
+          "candidate_id": "civic:candidate:5bb0be794472bfa57f06",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:545a026117a78ff9a313",
+          "target_label": "BYL719 (Alpelisib)"
+        },
+        {
+          "candidate_id": "civic:candidate:5dec38aebae9d8cfac26",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:a7c268e5b3766e4c5610",
+          "target_label": "Ridaforolimus, Temsirolimus"
+        },
+        {
+          "candidate_id": "civic:candidate:6b36d1076955544d818e",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:50129b7bd1f0c6a6d5e7",
+          "target_label": "BEZ235, Selumetinib (AZD6244)"
+        },
+        {
+          "candidate_id": "civic:candidate:a18ab6a18287434531d4",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:ce90cd2a9375777ec6ba",
+          "target_label": "Everolimus"
+        },
+        {
+          "candidate_id": "civic:candidate:b852ffce2ab79afbf336",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8a502a6052b4f10d99fa",
+          "target_label": "Panitumumab"
+        },
+        {
+          "candidate_id": "civic:candidate:f8c3477b5e32d833a999",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:d0b67f9cbee4932ea291",
+          "target_label": "RO4987655"
+        },
+        {
+          "candidate_id": "civic:candidate:0729f159c828218f52b4",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:7d50aa3d0e31890a6ee3",
+          "target_label": "Dabrafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:5f1e5774332b4f5d876a",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:3e6a821a9faa5652c2e4",
+          "target_label": "BAY 86-9766"
+        },
+        {
+          "candidate_id": "civic:candidate:74e20af677cccbd48747",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:b28d15fd5af4286089a1",
+          "target_label": "Crizotinib"
+        },
+        {
+          "candidate_id": "civic:candidate:a5e6d07872e6bc37f0f5",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:4a767c5bb09955b90381",
+          "target_label": "AZD5363"
+        },
+        {
+          "candidate_id": "civic:candidate:a72a41acafec82122c73",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:048d2ec3fffa4d2d6b8b",
+          "target_label": "Vemurafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:c5120f360117c09069d6",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:01e9baf2939c9665a734",
+          "target_label": "Dabrafenib, Trametinib"
+        }
+      ]
+    },
+    "flat_log": {
+      "macro": {
+        "at_k": {
+          "10": {
+            "precision": 0.0,
+            "precision_eligible_queries": 1,
+            "recall": null,
+            "recall_eligible_queries": 0
+          },
+          "5": {
+            "precision": 0.0,
+            "precision_eligible_queries": 1,
+            "recall": null,
+            "recall_eligible_queries": 0
+          }
+        },
+        "auroc": null,
+        "auroc_eligible_queries": 0,
+        "average_precision": null,
+        "average_precision_eligible_queries": 0,
+        "query_count": 1
+      },
+      "metadata": {
+        "budget_tag": "a7973247ece8c46c32dd16e985400b8a61759584b40372c77a1e5e99ad707a04",
+        "candidate_count": 20,
+        "dataset_id": "CIViC historical releases",
+        "evidence_count": 12,
+        "model": "claude-sonnet-5",
+        "origin": "model",
+        "usage": {
+          "attempted_calls": 2,
+          "cache_creation_input_tokens": 28931,
+          "cache_read_input_tokens": 0,
+          "input_tokens": 4,
+          "output_tokens": 5199,
+          "successful_calls": 2,
+          "total_input_tokens_including_cache": 28935
+        }
+      },
+      "overall": {
+        "at_k": {
+          "10": {
+            "eligible_candidates": 20,
+            "hit_ids": [],
+            "hits": 0,
+            "missed_ids": [],
+            "precision": 0.0,
+            "precision_denominator": 10,
+            "recall": null,
+            "requested_k": 10,
+            "selected_count": 10,
+            "selected_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:5dec38aebae9d8cfac26",
+              "civic:candidate:a18ab6a18287434531d4",
+              "civic:candidate:3361aee9292b437b402b",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:6b36d1076955544d818e",
+              "civic:candidate:a5e6d07872e6bc37f0f5",
+              "civic:candidate:10285b1f20372913f4cb",
+              "civic:candidate:24da3701baa48148d137"
+            ],
+            "unobserved_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:5dec38aebae9d8cfac26",
+              "civic:candidate:a18ab6a18287434531d4",
+              "civic:candidate:3361aee9292b437b402b",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:6b36d1076955544d818e",
+              "civic:candidate:a5e6d07872e6bc37f0f5",
+              "civic:candidate:10285b1f20372913f4cb",
+              "civic:candidate:24da3701baa48148d137"
+            ]
+          },
+          "5": {
+            "eligible_candidates": 20,
+            "hit_ids": [],
+            "hits": 0,
+            "missed_ids": [],
+            "precision": 0.0,
+            "precision_denominator": 5,
+            "recall": null,
+            "requested_k": 5,
+            "selected_count": 5,
+            "selected_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:5dec38aebae9d8cfac26",
+              "civic:candidate:a18ab6a18287434531d4",
+              "civic:candidate:3361aee9292b437b402b"
+            ],
+            "unobserved_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:5dec38aebae9d8cfac26",
+              "civic:candidate:a18ab6a18287434531d4",
+              "civic:candidate:3361aee9292b437b402b"
+            ]
+          }
+        },
+        "auroc": null,
+        "auroc_eligible": false,
+        "average_precision": null,
+        "average_precision_eligible": false,
+        "candidate_count": 20,
+        "observed_count": 0,
+        "observed_rate": 0.0,
+        "unobserved_count": 20
+      },
+      "queries": {
+        "civic:variant:306": {
+          "at_k": {
+            "10": {
+              "eligible_candidates": 20,
+              "hit_ids": [],
+              "hits": 0,
+              "missed_ids": [],
+              "precision": 0.0,
+              "precision_denominator": 10,
+              "recall": null,
+              "requested_k": 10,
+              "selected_count": 10,
+              "selected_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:5dec38aebae9d8cfac26",
+                "civic:candidate:a18ab6a18287434531d4",
+                "civic:candidate:3361aee9292b437b402b",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:6b36d1076955544d818e",
+                "civic:candidate:a5e6d07872e6bc37f0f5",
+                "civic:candidate:10285b1f20372913f4cb",
+                "civic:candidate:24da3701baa48148d137"
+              ],
+              "unobserved_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:5dec38aebae9d8cfac26",
+                "civic:candidate:a18ab6a18287434531d4",
+                "civic:candidate:3361aee9292b437b402b",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:6b36d1076955544d818e",
+                "civic:candidate:a5e6d07872e6bc37f0f5",
+                "civic:candidate:10285b1f20372913f4cb",
+                "civic:candidate:24da3701baa48148d137"
+              ]
+            },
+            "5": {
+              "eligible_candidates": 20,
+              "hit_ids": [],
+              "hits": 0,
+              "missed_ids": [],
+              "precision": 0.0,
+              "precision_denominator": 5,
+              "recall": null,
+              "requested_k": 5,
+              "selected_count": 5,
+              "selected_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:5dec38aebae9d8cfac26",
+                "civic:candidate:a18ab6a18287434531d4",
+                "civic:candidate:3361aee9292b437b402b"
+              ],
+              "unobserved_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:5dec38aebae9d8cfac26",
+                "civic:candidate:a18ab6a18287434531d4",
+                "civic:candidate:3361aee9292b437b402b"
+              ]
+            }
+          },
+          "auroc": null,
+          "auroc_eligible": false,
+          "average_precision": null,
+          "average_precision_eligible": false,
+          "candidate_count": 20,
+          "observed_count": 0,
+          "observed_rate": 0.0,
+          "unobserved_count": 20
+        }
+      },
+      "ranking": [
+        {
+          "candidate_id": "civic:candidate:9216198dbbd9bd07f274",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.35,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:411c6d2017cdd7cd5c79",
+          "target_label": "Afatinib, Erlotinib, Gefitinib"
+        },
+        {
+          "candidate_id": "civic:candidate:5bb0be794472bfa57f06",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.2,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:545a026117a78ff9a313",
+          "target_label": "BYL719 (Alpelisib)"
+        },
+        {
+          "candidate_id": "civic:candidate:5dec38aebae9d8cfac26",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.2,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:a7c268e5b3766e4c5610",
+          "target_label": "Ridaforolimus, Temsirolimus"
+        },
+        {
+          "candidate_id": "civic:candidate:a18ab6a18287434531d4",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.2,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:ce90cd2a9375777ec6ba",
+          "target_label": "Everolimus"
+        },
+        {
+          "candidate_id": "civic:candidate:3361aee9292b437b402b",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.15,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:eba07443f61b4d8d9d0c",
+          "target_label": "BEZ235 (NVP-BEZ235, Dactolisib)"
+        },
+        {
+          "candidate_id": "civic:candidate:46d850bfcc5752ea0330",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.15,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:cf63527e7eab1e1973a3",
+          "target_label": "Gefitinib"
+        },
+        {
+          "candidate_id": "civic:candidate:6b36d1076955544d818e",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.15,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:50129b7bd1f0c6a6d5e7",
+          "target_label": "BEZ235, Selumetinib (AZD6244)"
+        },
+        {
+          "candidate_id": "civic:candidate:a5e6d07872e6bc37f0f5",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.15,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:4a767c5bb09955b90381",
+          "target_label": "AZD5363"
+        },
+        {
+          "candidate_id": "civic:candidate:10285b1f20372913f4cb",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:86da4917f40dd02016c2",
+          "target_label": "Trametinib"
+        },
+        {
+          "candidate_id": "civic:candidate:24da3701baa48148d137",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:a50c3c3072942e94ee6f",
+          "target_label": "Docetaxel"
+        },
+        {
+          "candidate_id": "civic:candidate:e100356eb37398c3356a",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8262fb73a8f20315bd91",
+          "target_label": "Erlotinib"
+        },
+        {
+          "candidate_id": "civic:candidate:e8a275e7c4ffb6db5b9e",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:c4880b11c964ec366f18",
+          "target_label": "Docetaxel, Selumetinib (AZD6244)"
+        },
+        {
+          "candidate_id": "civic:candidate:0729f159c828218f52b4",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:7d50aa3d0e31890a6ee3",
+          "target_label": "Dabrafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:211b2c81022fc91d3377",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8c8d68f9576680d4d76c",
+          "target_label": "Regorafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:5f1e5774332b4f5d876a",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:3e6a821a9faa5652c2e4",
+          "target_label": "BAY 86-9766"
+        },
+        {
+          "candidate_id": "civic:candidate:74e20af677cccbd48747",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:b28d15fd5af4286089a1",
+          "target_label": "Crizotinib"
+        },
+        {
+          "candidate_id": "civic:candidate:a72a41acafec82122c73",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:048d2ec3fffa4d2d6b8b",
+          "target_label": "Vemurafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:b852ffce2ab79afbf336",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8a502a6052b4f10d99fa",
+          "target_label": "Panitumumab"
+        },
+        {
+          "candidate_id": "civic:candidate:c5120f360117c09069d6",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:01e9baf2939c9665a734",
+          "target_label": "Dabrafenib, Trametinib"
+        },
+        {
+          "candidate_id": "civic:candidate:f8c3477b5e32d833a999",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:d0b67f9cbee4932ea291",
+          "target_label": "RO4987655"
+        }
+      ]
+    },
+    "historical_popularity": {
+      "macro": {
+        "at_k": {
+          "10": {
+            "precision": 0.0,
+            "precision_eligible_queries": 1,
+            "recall": null,
+            "recall_eligible_queries": 0
+          },
+          "5": {
+            "precision": 0.0,
+            "precision_eligible_queries": 1,
+            "recall": null,
+            "recall_eligible_queries": 0
+          }
+        },
+        "auroc": null,
+        "auroc_eligible_queries": 0,
+        "average_precision": null,
+        "average_precision_eligible_queries": 0,
+        "query_count": 1
+      },
+      "metadata": {
+        "baseline_scope": "same candidate set and source evidence; no model, token budget or representation equivalence claimed",
+        "budget_tag": "same-12-evidence-rows-no-model-calls",
+        "candidate_count": 20,
+        "dataset_id": "CIViC historical releases",
+        "evidence_count": 12,
+        "model": "historical target degree",
+        "model_calls": 0,
+        "origin": "computed",
+        "score_definition": "number of distinct target neighbors in historical claims supported by the same final 12 evidence rows"
+      },
+      "overall": {
+        "at_k": {
+          "10": {
+            "eligible_candidates": 20,
+            "hit_ids": [],
+            "hits": 0,
+            "missed_ids": [],
+            "precision": 0.0,
+            "precision_denominator": 10,
+            "recall": null,
+            "requested_k": 10,
+            "selected_count": 10,
+            "selected_ids": [
+              "civic:candidate:0729f159c828218f52b4",
+              "civic:candidate:10285b1f20372913f4cb",
+              "civic:candidate:211b2c81022fc91d3377",
+              "civic:candidate:24da3701baa48148d137",
+              "civic:candidate:3361aee9292b437b402b",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:5dec38aebae9d8cfac26",
+              "civic:candidate:5f1e5774332b4f5d876a",
+              "civic:candidate:6b36d1076955544d818e"
+            ],
+            "unobserved_ids": [
+              "civic:candidate:0729f159c828218f52b4",
+              "civic:candidate:10285b1f20372913f4cb",
+              "civic:candidate:211b2c81022fc91d3377",
+              "civic:candidate:24da3701baa48148d137",
+              "civic:candidate:3361aee9292b437b402b",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:5dec38aebae9d8cfac26",
+              "civic:candidate:5f1e5774332b4f5d876a",
+              "civic:candidate:6b36d1076955544d818e"
+            ]
+          },
+          "5": {
+            "eligible_candidates": 20,
+            "hit_ids": [],
+            "hits": 0,
+            "missed_ids": [],
+            "precision": 0.0,
+            "precision_denominator": 5,
+            "recall": null,
+            "requested_k": 5,
+            "selected_count": 5,
+            "selected_ids": [
+              "civic:candidate:0729f159c828218f52b4",
+              "civic:candidate:10285b1f20372913f4cb",
+              "civic:candidate:211b2c81022fc91d3377",
+              "civic:candidate:24da3701baa48148d137",
+              "civic:candidate:3361aee9292b437b402b"
+            ],
+            "unobserved_ids": [
+              "civic:candidate:0729f159c828218f52b4",
+              "civic:candidate:10285b1f20372913f4cb",
+              "civic:candidate:211b2c81022fc91d3377",
+              "civic:candidate:24da3701baa48148d137",
+              "civic:candidate:3361aee9292b437b402b"
+            ]
+          }
+        },
+        "auroc": null,
+        "auroc_eligible": false,
+        "average_precision": null,
+        "average_precision_eligible": false,
+        "candidate_count": 20,
+        "observed_count": 0,
+        "observed_rate": 0.0,
+        "unobserved_count": 20
+      },
+      "queries": {
+        "civic:variant:306": {
+          "at_k": {
+            "10": {
+              "eligible_candidates": 20,
+              "hit_ids": [],
+              "hits": 0,
+              "missed_ids": [],
+              "precision": 0.0,
+              "precision_denominator": 10,
+              "recall": null,
+              "requested_k": 10,
+              "selected_count": 10,
+              "selected_ids": [
+                "civic:candidate:0729f159c828218f52b4",
+                "civic:candidate:10285b1f20372913f4cb",
+                "civic:candidate:211b2c81022fc91d3377",
+                "civic:candidate:24da3701baa48148d137",
+                "civic:candidate:3361aee9292b437b402b",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:5dec38aebae9d8cfac26",
+                "civic:candidate:5f1e5774332b4f5d876a",
+                "civic:candidate:6b36d1076955544d818e"
+              ],
+              "unobserved_ids": [
+                "civic:candidate:0729f159c828218f52b4",
+                "civic:candidate:10285b1f20372913f4cb",
+                "civic:candidate:211b2c81022fc91d3377",
+                "civic:candidate:24da3701baa48148d137",
+                "civic:candidate:3361aee9292b437b402b",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:5dec38aebae9d8cfac26",
+                "civic:candidate:5f1e5774332b4f5d876a",
+                "civic:candidate:6b36d1076955544d818e"
+              ]
+            },
+            "5": {
+              "eligible_candidates": 20,
+              "hit_ids": [],
+              "hits": 0,
+              "missed_ids": [],
+              "precision": 0.0,
+              "precision_denominator": 5,
+              "recall": null,
+              "requested_k": 5,
+              "selected_count": 5,
+              "selected_ids": [
+                "civic:candidate:0729f159c828218f52b4",
+                "civic:candidate:10285b1f20372913f4cb",
+                "civic:candidate:211b2c81022fc91d3377",
+                "civic:candidate:24da3701baa48148d137",
+                "civic:candidate:3361aee9292b437b402b"
+              ],
+              "unobserved_ids": [
+                "civic:candidate:0729f159c828218f52b4",
+                "civic:candidate:10285b1f20372913f4cb",
+                "civic:candidate:211b2c81022fc91d3377",
+                "civic:candidate:24da3701baa48148d137",
+                "civic:candidate:3361aee9292b437b402b"
+              ]
+            }
+          },
+          "auroc": null,
+          "auroc_eligible": false,
+          "average_precision": null,
+          "average_precision_eligible": false,
+          "candidate_count": 20,
+          "observed_count": 0,
+          "observed_rate": 0.0,
+          "unobserved_count": 20
+        }
+      },
+      "ranking": [
+        {
+          "candidate_id": "civic:candidate:0729f159c828218f52b4",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:7d50aa3d0e31890a6ee3",
+          "target_label": "Dabrafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:10285b1f20372913f4cb",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:86da4917f40dd02016c2",
+          "target_label": "Trametinib"
+        },
+        {
+          "candidate_id": "civic:candidate:211b2c81022fc91d3377",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8c8d68f9576680d4d76c",
+          "target_label": "Regorafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:24da3701baa48148d137",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:a50c3c3072942e94ee6f",
+          "target_label": "Docetaxel"
+        },
+        {
+          "candidate_id": "civic:candidate:3361aee9292b437b402b",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:eba07443f61b4d8d9d0c",
+          "target_label": "BEZ235 (NVP-BEZ235, Dactolisib)"
+        },
+        {
+          "candidate_id": "civic:candidate:46d850bfcc5752ea0330",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:cf63527e7eab1e1973a3",
+          "target_label": "Gefitinib"
+        },
+        {
+          "candidate_id": "civic:candidate:5bb0be794472bfa57f06",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:545a026117a78ff9a313",
+          "target_label": "BYL719 (Alpelisib)"
+        },
+        {
+          "candidate_id": "civic:candidate:5dec38aebae9d8cfac26",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:a7c268e5b3766e4c5610",
+          "target_label": "Ridaforolimus, Temsirolimus"
+        },
+        {
+          "candidate_id": "civic:candidate:5f1e5774332b4f5d876a",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:3e6a821a9faa5652c2e4",
+          "target_label": "BAY 86-9766"
+        },
+        {
+          "candidate_id": "civic:candidate:6b36d1076955544d818e",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:50129b7bd1f0c6a6d5e7",
+          "target_label": "BEZ235, Selumetinib (AZD6244)"
+        },
+        {
+          "candidate_id": "civic:candidate:74e20af677cccbd48747",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:b28d15fd5af4286089a1",
+          "target_label": "Crizotinib"
+        },
+        {
+          "candidate_id": "civic:candidate:9216198dbbd9bd07f274",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:411c6d2017cdd7cd5c79",
+          "target_label": "Afatinib, Erlotinib, Gefitinib"
+        },
+        {
+          "candidate_id": "civic:candidate:a18ab6a18287434531d4",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:ce90cd2a9375777ec6ba",
+          "target_label": "Everolimus"
+        },
+        {
+          "candidate_id": "civic:candidate:a5e6d07872e6bc37f0f5",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:4a767c5bb09955b90381",
+          "target_label": "AZD5363"
+        },
+        {
+          "candidate_id": "civic:candidate:a72a41acafec82122c73",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:048d2ec3fffa4d2d6b8b",
+          "target_label": "Vemurafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:b852ffce2ab79afbf336",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8a502a6052b4f10d99fa",
+          "target_label": "Panitumumab"
+        },
+        {
+          "candidate_id": "civic:candidate:c5120f360117c09069d6",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:01e9baf2939c9665a734",
+          "target_label": "Dabrafenib, Trametinib"
+        },
+        {
+          "candidate_id": "civic:candidate:e100356eb37398c3356a",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8262fb73a8f20315bd91",
+          "target_label": "Erlotinib"
+        },
+        {
+          "candidate_id": "civic:candidate:e8a275e7c4ffb6db5b9e",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:c4880b11c964ec366f18",
+          "target_label": "Docetaxel, Selumetinib (AZD6244)"
+        },
+        {
+          "candidate_id": "civic:candidate:f8c3477b5e32d833a999",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.0,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:d0b67f9cbee4932ea291",
+          "target_label": "RO4987655"
+        }
+      ]
+    },
+    "static_graph": {
+      "macro": {
+        "at_k": {
+          "10": {
+            "precision": 0.0,
+            "precision_eligible_queries": 1,
+            "recall": null,
+            "recall_eligible_queries": 0
+          },
+          "5": {
+            "precision": 0.0,
+            "precision_eligible_queries": 1,
+            "recall": null,
+            "recall_eligible_queries": 0
+          }
+        },
+        "auroc": null,
+        "auroc_eligible_queries": 0,
+        "average_precision": null,
+        "average_precision_eligible_queries": 0,
+        "query_count": 1
+      },
+      "metadata": {
+        "budget_tag": "a7973247ece8c46c32dd16e985400b8a61759584b40372c77a1e5e99ad707a04",
+        "candidate_count": 20,
+        "dataset_id": "CIViC historical releases",
+        "evidence_count": 12,
+        "model": "claude-sonnet-5",
+        "origin": "model",
+        "usage": {
+          "attempted_calls": 2,
+          "cache_creation_input_tokens": 28940,
+          "cache_read_input_tokens": 0,
+          "input_tokens": 4,
+          "output_tokens": 5111,
+          "successful_calls": 2,
+          "total_input_tokens_including_cache": 28944
+        }
+      },
+      "overall": {
+        "at_k": {
+          "10": {
+            "eligible_candidates": 20,
+            "hit_ids": [],
+            "hits": 0,
+            "missed_ids": [],
+            "precision": 0.0,
+            "precision_denominator": 10,
+            "recall": null,
+            "requested_k": 10,
+            "selected_count": 10,
+            "selected_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:24da3701baa48148d137",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:a18ab6a18287434531d4",
+              "civic:candidate:3361aee9292b437b402b",
+              "civic:candidate:5dec38aebae9d8cfac26",
+              "civic:candidate:6b36d1076955544d818e",
+              "civic:candidate:a5e6d07872e6bc37f0f5",
+              "civic:candidate:e100356eb37398c3356a"
+            ],
+            "unobserved_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:24da3701baa48148d137",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:a18ab6a18287434531d4",
+              "civic:candidate:3361aee9292b437b402b",
+              "civic:candidate:5dec38aebae9d8cfac26",
+              "civic:candidate:6b36d1076955544d818e",
+              "civic:candidate:a5e6d07872e6bc37f0f5",
+              "civic:candidate:e100356eb37398c3356a"
+            ]
+          },
+          "5": {
+            "eligible_candidates": 20,
+            "hit_ids": [],
+            "hits": 0,
+            "missed_ids": [],
+            "precision": 0.0,
+            "precision_denominator": 5,
+            "recall": null,
+            "requested_k": 5,
+            "selected_count": 5,
+            "selected_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:24da3701baa48148d137",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:a18ab6a18287434531d4"
+            ],
+            "unobserved_ids": [
+              "civic:candidate:9216198dbbd9bd07f274",
+              "civic:candidate:24da3701baa48148d137",
+              "civic:candidate:46d850bfcc5752ea0330",
+              "civic:candidate:5bb0be794472bfa57f06",
+              "civic:candidate:a18ab6a18287434531d4"
+            ]
+          }
+        },
+        "auroc": null,
+        "auroc_eligible": false,
+        "average_precision": null,
+        "average_precision_eligible": false,
+        "candidate_count": 20,
+        "observed_count": 0,
+        "observed_rate": 0.0,
+        "unobserved_count": 20
+      },
+      "queries": {
+        "civic:variant:306": {
+          "at_k": {
+            "10": {
+              "eligible_candidates": 20,
+              "hit_ids": [],
+              "hits": 0,
+              "missed_ids": [],
+              "precision": 0.0,
+              "precision_denominator": 10,
+              "recall": null,
+              "requested_k": 10,
+              "selected_count": 10,
+              "selected_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:24da3701baa48148d137",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:a18ab6a18287434531d4",
+                "civic:candidate:3361aee9292b437b402b",
+                "civic:candidate:5dec38aebae9d8cfac26",
+                "civic:candidate:6b36d1076955544d818e",
+                "civic:candidate:a5e6d07872e6bc37f0f5",
+                "civic:candidate:e100356eb37398c3356a"
+              ],
+              "unobserved_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:24da3701baa48148d137",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:a18ab6a18287434531d4",
+                "civic:candidate:3361aee9292b437b402b",
+                "civic:candidate:5dec38aebae9d8cfac26",
+                "civic:candidate:6b36d1076955544d818e",
+                "civic:candidate:a5e6d07872e6bc37f0f5",
+                "civic:candidate:e100356eb37398c3356a"
+              ]
+            },
+            "5": {
+              "eligible_candidates": 20,
+              "hit_ids": [],
+              "hits": 0,
+              "missed_ids": [],
+              "precision": 0.0,
+              "precision_denominator": 5,
+              "recall": null,
+              "requested_k": 5,
+              "selected_count": 5,
+              "selected_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:24da3701baa48148d137",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:a18ab6a18287434531d4"
+              ],
+              "unobserved_ids": [
+                "civic:candidate:9216198dbbd9bd07f274",
+                "civic:candidate:24da3701baa48148d137",
+                "civic:candidate:46d850bfcc5752ea0330",
+                "civic:candidate:5bb0be794472bfa57f06",
+                "civic:candidate:a18ab6a18287434531d4"
+              ]
+            }
+          },
+          "auroc": null,
+          "auroc_eligible": false,
+          "average_precision": null,
+          "average_precision_eligible": false,
+          "candidate_count": 20,
+          "observed_count": 0,
+          "observed_rate": 0.0,
+          "unobserved_count": 20
+        }
+      },
+      "ranking": [
+        {
+          "candidate_id": "civic:candidate:9216198dbbd9bd07f274",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.55,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:411c6d2017cdd7cd5c79",
+          "target_label": "Afatinib, Erlotinib, Gefitinib"
+        },
+        {
+          "candidate_id": "civic:candidate:24da3701baa48148d137",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.15,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:a50c3c3072942e94ee6f",
+          "target_label": "Docetaxel"
+        },
+        {
+          "candidate_id": "civic:candidate:46d850bfcc5752ea0330",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.15,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:cf63527e7eab1e1973a3",
+          "target_label": "Gefitinib"
+        },
+        {
+          "candidate_id": "civic:candidate:5bb0be794472bfa57f06",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.15,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:545a026117a78ff9a313",
+          "target_label": "BYL719 (Alpelisib)"
+        },
+        {
+          "candidate_id": "civic:candidate:a18ab6a18287434531d4",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.15,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:ce90cd2a9375777ec6ba",
+          "target_label": "Everolimus"
+        },
+        {
+          "candidate_id": "civic:candidate:3361aee9292b437b402b",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:eba07443f61b4d8d9d0c",
+          "target_label": "BEZ235 (NVP-BEZ235, Dactolisib)"
+        },
+        {
+          "candidate_id": "civic:candidate:5dec38aebae9d8cfac26",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:a7c268e5b3766e4c5610",
+          "target_label": "Ridaforolimus, Temsirolimus"
+        },
+        {
+          "candidate_id": "civic:candidate:6b36d1076955544d818e",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:50129b7bd1f0c6a6d5e7",
+          "target_label": "BEZ235, Selumetinib (AZD6244)"
+        },
+        {
+          "candidate_id": "civic:candidate:a5e6d07872e6bc37f0f5",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:4a767c5bb09955b90381",
+          "target_label": "AZD5363"
+        },
+        {
+          "candidate_id": "civic:candidate:e100356eb37398c3356a",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8262fb73a8f20315bd91",
+          "target_label": "Erlotinib"
+        },
+        {
+          "candidate_id": "civic:candidate:e8a275e7c4ffb6db5b9e",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.1,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:c4880b11c964ec366f18",
+          "target_label": "Docetaxel, Selumetinib (AZD6244)"
+        },
+        {
+          "candidate_id": "civic:candidate:10285b1f20372913f4cb",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:86da4917f40dd02016c2",
+          "target_label": "Trametinib"
+        },
+        {
+          "candidate_id": "civic:candidate:211b2c81022fc91d3377",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8c8d68f9576680d4d76c",
+          "target_label": "Regorafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:b852ffce2ab79afbf336",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:8a502a6052b4f10d99fa",
+          "target_label": "Panitumumab"
+        },
+        {
+          "candidate_id": "civic:candidate:f8c3477b5e32d833a999",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.05,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:d0b67f9cbee4932ea291",
+          "target_label": "RO4987655"
+        },
+        {
+          "candidate_id": "civic:candidate:0729f159c828218f52b4",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:7d50aa3d0e31890a6ee3",
+          "target_label": "Dabrafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:5f1e5774332b4f5d876a",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:3e6a821a9faa5652c2e4",
+          "target_label": "BAY 86-9766"
+        },
+        {
+          "candidate_id": "civic:candidate:74e20af677cccbd48747",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:b28d15fd5af4286089a1",
+          "target_label": "Crizotinib"
+        },
+        {
+          "candidate_id": "civic:candidate:a72a41acafec82122c73",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:048d2ec3fffa4d2d6b8b",
+          "target_label": "Vemurafenib"
+        },
+        {
+          "candidate_id": "civic:candidate:c5120f360117c09069d6",
+          "observed": false,
+          "outcome_evidence_ids": [],
+          "query_id": "civic:variant:306",
+          "score": 0.03,
+          "source": "civic:variant:306",
+          "source_label": "ERBB2 AMPLIFICATION",
+          "target": "civic:therapy-group:01e9baf2939c9665a734",
+          "target_label": "Dabrafenib, Trametinib"
+        }
+      ]
+    }
+  },
+  "protocol": {
+    "auroc": "positive-negative pair concordance; ties receive half credit; null without both classes",
+    "average_precision": "score-threshold grouped, non-interpolated; null without positives",
+    "budget_match": {
+      "status": "different",
+      "tags": {
+        "evolving_graph": "a7973247ece8c46c32dd16e985400b8a61759584b40372c77a1e5e99ad707a04",
+        "flat_log": "a7973247ece8c46c32dd16e985400b8a61759584b40372c77a1e5e99ad707a04",
+        "historical_popularity": "same-12-evidence-rows-no-model-calls",
+        "static_graph": "a7973247ece8c46c32dd16e985400b8a61759584b40372c77a1e5e99ad707a04"
+      },
+      "verified": false
+    },
+    "candidate_count": 20,
+    "candidate_set_sha256": "ce572954f6cf9c7f3c5d3a98aec02486d00c0a2da6177376d366394aeb3d3ae7",
+    "comparison": "identical complete candidate and outcome rows for every model",
+    "context": {
+      "budget": {
+        "calls_per_condition": 2,
+        "effort": "low",
+        "max_attempts_per_call": 1,
+        "max_output_tokens_per_call": 4000,
+        "max_turns_per_call": 1,
+        "model": "claude-sonnet-5",
+        "thinking": false,
+        "timeout_seconds_per_call": 90.0
+      },
+      "budget_tag": "a7973247ece8c46c32dd16e985400b8a61759584b40372c77a1e5e99ad707a04",
+      "candidate_selection": "one query: descending historical source claim degree, then query ID; candidates: descending historical target claim degree, then candidate ID",
+      "candidate_set_sha256": "f01fdf1237ea06d980c9cc78f3e69d2b001d5a43b90985e0c067882d19934107",
+      "candidates": [
+        {
+          "id": "civic:candidate:46d850bfcc5752ea0330",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:cf63527e7eab1e1973a3"
+        },
+        {
+          "id": "civic:candidate:b852ffce2ab79afbf336",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:8a502a6052b4f10d99fa"
+        },
+        {
+          "id": "civic:candidate:211b2c81022fc91d3377",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:8c8d68f9576680d4d76c"
+        },
+        {
+          "id": "civic:candidate:e100356eb37398c3356a",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:8262fb73a8f20315bd91"
+        },
+        {
+          "id": "civic:candidate:e8a275e7c4ffb6db5b9e",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:c4880b11c964ec366f18"
+        },
+        {
+          "id": "civic:candidate:10285b1f20372913f4cb",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:86da4917f40dd02016c2"
+        },
+        {
+          "id": "civic:candidate:5bb0be794472bfa57f06",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:545a026117a78ff9a313"
+        },
+        {
+          "id": "civic:candidate:5dec38aebae9d8cfac26",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:a7c268e5b3766e4c5610"
+        },
+        {
+          "id": "civic:candidate:6b36d1076955544d818e",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:50129b7bd1f0c6a6d5e7"
+        },
+        {
+          "id": "civic:candidate:74e20af677cccbd48747",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:b28d15fd5af4286089a1"
+        },
+        {
+          "id": "civic:candidate:a72a41acafec82122c73",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:048d2ec3fffa4d2d6b8b"
+        },
+        {
+          "id": "civic:candidate:f8c3477b5e32d833a999",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:d0b67f9cbee4932ea291"
+        },
+        {
+          "id": "civic:candidate:0729f159c828218f52b4",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:7d50aa3d0e31890a6ee3"
+        },
+        {
+          "id": "civic:candidate:24da3701baa48148d137",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:a50c3c3072942e94ee6f"
+        },
+        {
+          "id": "civic:candidate:3361aee9292b437b402b",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:eba07443f61b4d8d9d0c"
+        },
+        {
+          "id": "civic:candidate:5f1e5774332b4f5d876a",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:3e6a821a9faa5652c2e4"
+        },
+        {
+          "id": "civic:candidate:9216198dbbd9bd07f274",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:411c6d2017cdd7cd5c79"
+        },
+        {
+          "id": "civic:candidate:a18ab6a18287434531d4",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:ce90cd2a9375777ec6ba"
+        },
+        {
+          "id": "civic:candidate:a5e6d07872e6bc37f0f5",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:4a767c5bb09955b90381"
+        },
+        {
+          "id": "civic:candidate:c5120f360117c09069d6",
+          "query_id": "civic:variant:306",
+          "source": "civic:variant:306",
+          "target": "civic:therapy-group:01e9baf2939c9665a734"
+        }
+      ],
+      "comparison_scope": "representation and self-generated memory; retrieval and branch scheduler held fixed",
+      "evidence_batches": [
+        [
+          "civic:evidence:1006",
+          "civic:evidence:1007",
+          "civic:evidence:1008",
+          "civic:evidence:1009",
+          "civic:evidence:1010",
+          "civic:evidence:1011"
+        ],
+        [
+          "civic:evidence:1012",
+          "civic:evidence:1022",
+          "civic:evidence:1023",
+          "civic:evidence:1041",
+          "civic:evidence:1042",
+          "civic:evidence:1050"
+        ]
+      ],
+      "evidence_schedule_sha256": "aff45e04e479f9d3682fddfa3cd23866dfb07c1a27ca92b93f9b35ff68254d91",
+      "labels": "no outcomes accepted or loaded; final forecasts must be saved before separate evaluation",
+      "limitations": [
+        "Modern model pretraining may include post-cutoff knowledge; retrieval cutoff cannot prove historical ignorance.",
+        "Citation validation checks identity and availability, not entailment or scientific truth.",
+        "Single small historical query is a functional experiment, not evidence of general forecasting superiority.",
+        "No-positive cohorts and non-comparable failed conditions must be reported explicitly.",
+        "Tools disabled and fresh empty working directories apply to the built-in live provider; injected providers are caller controlled."
+      ],
+      "matched_allocation": "same candidates, evidence schedule, model, call and output-token ceilings; actual input/output tokens can differ",
+      "query_id": "civic:variant:306",
+      "retrieval_selection": "descending count of historical claims touching chosen endpoints, then availability date and evidence ID"
+    },
+    "ks": [
+      5,
+      10
+    ],
+    "macro": "equal query weights, excluding undefined values with eligibility counts",
+    "outcome_meaning": "recorded by the horizon; unobserved does not mean disproved",
+    "outcome_set_sha256": "680fab4500498be1b4b818692727a2b053cddbdfaeab9d2ed3ba17332748480d",
+    "precision_at_k": "hits / min(k, eligible candidates); denominator reported per query",
+    "query_count": 1,
+    "ranking_ties": "descending score, then ascending candidate_id"
+  },
+  "provenance": {
+    "comparison_file": "demo/forecasting/reasoning/civic-model/comparison.json",
+    "cutoff": "2018-01-01",
+    "dataset_id": "CIViC historical releases",
+    "evaluator": "dnhacksbio.forecasting.evaluation.compare_forecasts",
+    "evaluator_source_sha256": "d4bb4610a24ca5c1ff0b72022ba29131f361e7d335d180b0c434f45b9ca69b9f",
+    "frozen_artifact_file_sha256": {
+      "cohort.json": "232a43500dbf49e00429c617e7a54f90a6f7fab1c98737ef4944a27dbbebf220",
+      "comparison.json": "eb949a7b7cb2684112c811c01d18745a7b07853378ee08a3c1e3842b0d981e34",
+      "forecasts.json": "fad6ccfa9640687b122bcd0984f20e42fea83743e6f38cc4eea6f37739e2a0ef"
+    },
+    "historical_file_sha256": "bbb41512b7b56a8ee81b87165ca41c0bcebb09d914f0dfde4cce60c433f9f3ce",
+    "historical_packet_sha256": "0ee32041d2e677a1f9d4d55525adfd36a79e6b493cbdd08cdf9a43ac1308664c",
+    "horizon": "2022-03-01",
+    "model": "claude-sonnet-5",
+    "outcomes_file": "demo/forecasting/scenarios/civic-2018-2022/outcomes.json",
+    "outcomes_file_sha256": "738b102f8565fd4627b770ec2c1e4fcdc953f969ad73784a0687591e2fcca030",
+    "provider": "claude-agent-sdk",
+    "source_manifest": {
+      "association_semantics": "An association may describe sensitivity, resistance, or conflicting findings; inspect contexts.",
+      "candidate_policy": {
+        "candidate_rule": "cartesian product of retained historical variants and therapy groups, excluding all historical predictive associations",
+        "eligibility": "accepted, unflagged Predictive evidence with variant, gene and therapy identifiers",
+        "therapy_identity": "whole group split only on commas outside parentheses, whitespace/case normalized, sorted; no synonym expansion",
+        "therapy_limit": 36,
+        "therapy_order": "descending historical evidence-row count within chosen variants, then stable ID",
+        "variant_limit": 24,
+        "variant_order": "descending distinct historical therapy-group degree, then stable ID"
+      },
+      "claim_namespace": "CIViC imported association IDs; not litmap normalized Claim atom IDs",
+      "date_semantics": "release availability, not first publication or worldwide discovery",
+      "license": "CC0-1.0",
+      "license_url": "https://docs.civicdb.org/en/latest/about.html",
+      "origin": "computed",
+      "schema_version": 1,
+      "snapshot_id": "civic:snapshot:7c4ec90ee6f8514bea7e",
+      "source": {
+        "available_at": "2018-01-01",
+        "bytes": 2537871,
+        "sha256": "8895ce10b7c119856c3cbd38d8cf08fb597dbd294b06e22eaf50c35ba0db05d3",
+        "url": "https://civicdb.org/downloads/01-Jan-2018/01-Jan-2018-ClinicalEvidenceSummaries.tsv"
+      },
+      "task": "later CIViC variant\u2013therapy-group associations",
+      "unknown_interaction": "2018 therapy groups lack interaction type; no combination or efficacy inference."
+    }
+  },
+  "schema_version": "forecast-evaluation/v1"
+}
