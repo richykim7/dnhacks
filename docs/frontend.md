@@ -44,6 +44,8 @@ The development helper calls the official 21st HTTP MCP endpoint using an authen
 - Evidence: scoped literature graph and claim status filters; entity detail; required rationale for accept/reject; saved decisions applied through the existing promotion gate.
 - Structures: real user-selected PDB/mmCIF geometry, remote PDB lookup or local files, ribbon/atomic/surface representations, residue selection, camera reset and optional rotation. This is a reference viewer. There are no invented docking, confidence, mutation or binding scores. Local files stay in the browser and are not persisted to a project. Future engine structure artifacts need an explicit association and provenance contract.
 
+PDB files with no `ATOM  ` or `HETATM` coordinate records show the existing “No atoms could be read” error before loading 3Dmol. Selecting such a file clears previous geometry and retains the selected filename. PDB files containing coordinate records and mmCIF files continue through the viewer's full parsing and validation.
+
 Research IDs live behind disclosures. Job questions title investigations when available. A quiet trace is not labeled complete. Candidates remain unconfirmed until reviewed. Missing measurements say “Not measured.” Historical playback hides present-day experiment detail to avoid showing future results. History events are bounded summaries from the existing API; full observations remain in latest agent detail.
 
 ## Backend/UI audit fixes
