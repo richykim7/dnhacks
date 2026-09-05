@@ -49,20 +49,28 @@ Rules:
    files and lockfiles are never hand-merged: take one side, rerun the generator.
 5. To talk to a specific agent, mention it: `@<agent name>` in a post. Answer on the board, not in a side channel.
 6. Your agent name is your tmux session name, or `$BOARD_AGENT` (`<person>/<session>`). Do not rename yourself mid-task.
-7. If `gh` is not logged in or the board is unreachable, say so in `HANDOFF.md` and carry on; the board is advisory.
+7. If `gh` is not logged in or the board is unreachable, tell the user in the conversation and carry on;
+   post the missed updates when it is back. An outage does not require a `HANDOFF.md` entry.
 
 ## Git
 - One branch per session, `<person>/<session>`, short-lived. `main` is fast-forward only.
 - `git pull --rebase origin main` before every commit. Push after every commit.
 - Commit subject: `<Area>: <what changed>`.
 
-## Handoff protocol
-1. Before starting: `git status` clean; read `HANDOFF.md` (newest entry at the top) and `python3 scripts/board.py show`.
-2. While working: small commits, gates green at each one.
-3. Before stopping: append an entry to the TOP of `HANDOFF.md`:
+## Communication and handoff protocol
+1. Before starting: check `git status` and run `python3 scripts/board.py show`. If `HANDOFF.md` exists and
+   is relevant to the task, read its newest entries. Do not create it just to start or finish a session.
+2. The board is the main channel for routine progress, decisions, blockers, small changes, reviews, and
+   unfinished work. While working, keep commits small and gates green. Before stopping, post `done` or
+   `update` on the board; a board `done` does not require user confirmation.
+3. Write a `HANDOFF.md` entry only after substantial, long-running work AND explicit user confirmation
+   that the task is done. Finishing a turn, making a commit, or the agent deciding it is done is not that
+   confirmation. Small tasks, including one-line code changes and routine reviews, do not get handoffs.
+   Do not ask for confirmation merely to produce a handoff; finish the authorized work and report it on
+   the board. If the user later confirms completion of substantial, long-running work, prepend an entry:
        ## <YYYY-MM-DD HH:MM TZ> — <agent name> — <one-line summary>
        Done: ...   Changed files: ...   Gates: ...
-       Not done / open: ...   Next agent should: ...   Assumptions made: ...
+       Follow-ups outside the completed task: ...   Next agent should: ...   Assumptions made: ...
    Commit it as `Handoff: <agent> <one line>` and post a `done` on the board.
    `HANDOFF.md` merges by union (`.gitattributes`), so parallel entries do not conflict.
 4. Never delete another agent's HANDOFF entry.

@@ -41,7 +41,7 @@ python3 scripts/board.py check                                  # who else is in
 | Something blocks you or you need another agent | `update` | "@alex/s1 the schema change broke the UI build, which way do you want it?" |
 | Work lands (committed, gates green) | `done` | "Fan chart in. Commit 3f2a1c9. lint/test/e2e green." |
 | Before every commit | `check` | (prints who else is in your files; advisory) |
-| Before you stop for any reason | `done` or `update` | "Stopping mid-task, fan chart half done, see HANDOFF.md" |
+| Before you stop for any reason | `done` or `update` | "Stopping mid-task: fan chart renders; legend and tests remain in src/views/Tree.tsx." |
 
 Two or three lines per post. Say what a stranger needs in order not to collide with you: files, intent, time.
 
@@ -86,13 +86,17 @@ of those files. A `claim` or `update` row means they are in them now.
 - One branch per session, `<person>/<session>`, short-lived. `main` is fast-forward only.
 - Rebase before every commit. Push after every commit.
 - Never force-push. Never rewrite history. Never leave uncommitted work when you stop.
-- `HANDOFF.md`: append an entry at the top before you stop (format in `AGENTS.md`). It merges by union,
-  so two agents appending at once do not conflict.
+- The board is the main channel for routine progress, small changes, reviews, blockers, and unfinished
+  work. Post `done` or `update` before stopping; board posts do not require user confirmation.
+- Write `HANDOFF.md` only after substantial, long-running work and explicit user confirmation that the
+  task is done (format in `AGENTS.md`). Small tasks do not get handoffs. Do not ask for confirmation just
+  to write one. It merges by union, so two agents appending at once do not conflict.
 
 ## If the board is unreachable
 
-`gh` not logged in, GitHub down: say so in your `HANDOFF.md` entry, keep working, post everything you
-skipped as soon as it is back. The board is advisory, but skipping it silently is not allowed.
+`gh` not logged in, GitHub down: tell the user in the conversation, keep working, and post everything you
+skipped as soon as it is back. An outage does not require a `HANDOFF.md` entry. The board is advisory,
+but skipping it silently is not allowed.
 
 ## Putting this in your agent's instructions
 
