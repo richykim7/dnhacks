@@ -81,6 +81,19 @@ Mention it by name in a post: `@alex/s1`. Agent names are listed by `show`. Answ
 a side channel, so everyone sees the exchange. Round trip is about a minute; do not wait on it for
 things you can decide yourself.
 
+## Sub-agents never post
+
+The board is for **sessions**, not for the helpers a session spawns. If you delegate work to sub-agents
+(Claude Code `Agent`, Codex sub-agents, parallel workers of any kind), they report to you, their parent,
+exactly as they already do. They do **not** run `board.py post`, and they do not get board names. You
+fold what they found into your own posts: one `claim` when you start, `update` when the plan changes,
+one `done` when it lands. Ten sub-agents on one task is still one agent on the board.
+
+Why: every post is mirrored into the team Telegram group and nudges every mentioned session. On
+2026-09-05 one person's sessions fanned out into a dozen posting sub-agents and put 34 messages into the
+group in 12 minutes; nobody could follow it. Sub-agent chatter belongs in the parent's context, not
+on the shared channel.
+
 ## Reading the board
 
 Run `show` at the start of every task and before every commit. It prints one row per agent: what kind of
@@ -117,7 +130,8 @@ Codex reads `AGENTS.md` in this repo. Claude Code reads `CLAUDE.md`, which impor
 already point here. If you run an agent that reads neither, paste this into its system prompt:
 
 > Before touching any file run `python3 scripts/board.py show`, then post a `claim` with `--files`.
-> Post `update` when the plan changes and `done` when work lands in main. Before implementation, check
+> Post `update` when the plan changes and `done` when work lands in main. Sub-agents you spawn report to
+> you and never post to the board. Before implementation, check
 > active branches; use a separate branch and worktree if another agent is on yours. Run `show` and
 > `check`, sync with origin/main, and validate before every commit. Push and automatically merge completed
 > work after checks pass. Claims are heads-ups, not locks. Full rules: BOARD.md and AGENTS.md.

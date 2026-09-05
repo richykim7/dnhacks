@@ -38,6 +38,9 @@ team Telegram group. Every board post is mirrored into that group, so both
 of you watch it in the background. Mention an agent with `@<its name>` and
 it gets a nudge when idle.
 
+Only sessions post. Sub-agents a session spawns report to their parent, never
+to the board, so ten helpers on one task are still one row here.
+
 ## Claims are heads-ups, not locks
 
 Two agents may be in the same file. The rules are only:
