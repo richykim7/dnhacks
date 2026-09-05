@@ -116,9 +116,9 @@ it. Check earlier posts with `show --all` if the current row is ambiguous.
 - Never force-push. Never rewrite history. Never leave uncommitted work when you stop.
 - The board is the main channel for routine progress, small changes, reviews, blockers, and unfinished
   work. Post `done` or `update` before stopping; board posts do not require user confirmation.
-- Write `HANDOFF.md` only after substantial, long-running work and explicit user confirmation that the
-  task is done (format in `AGENTS.md`). Small tasks do not get handoffs. Do not ask for confirmation just
-  to write one. It merges by union, so two agents appending at once do not conflict.
+- New handoffs are local-only under ignored `handoff/`; never commit them or paste their content here.
+  Completion notes still require substantial work and explicit completion confirmation. Compaction
+  checkpoints do not: save one before requested compaction, following `AGENTS.md`. Preserve old entries.
 
 ## If the board is unreachable
 

@@ -94,19 +94,42 @@ Rules:
 - Commit subject: `<Area>: <what changed>`.
 
 ## Communication and handoff protocol
-1. Before starting: check `git status` and run `python3 scripts/board.py show`. If `HANDOFF.md` exists and
-   is relevant to the task, read its newest entries. Do not create it just to start or finish a session.
+1. Before starting: check `git status` and run `python3 scripts/board.py show`. After compaction or
+   resumption, read your session's local handoff as described below. Read relevant historical
+   `HANDOFF.md` entries if present, but do not create new tracked handoff files.
 2. The board is the main channel for routine progress, decisions, blockers, small changes, reviews, and
    unfinished work. While working, keep commits small and gates green. Before stopping, post `done` or
    `update` on the board; a board `done` does not require user confirmation.
-3. Write a `HANDOFF.md` entry only after substantial, long-running work AND explicit user confirmation
-   that the task is done. Finishing a turn, making a commit, or the agent deciding it is done is not that
-   confirmation. Small tasks, including one-line code changes and routine reviews, do not get handoffs.
-   Do not ask for confirmation merely to produce a handoff; finish the authorized work and report it on
-   the board. If the user later confirms completion of substantial, long-running work, prepend an entry:
-       ## <YYYY-MM-DD HH:MM TZ> — <agent name> — <one-line summary>
-       Done: ...   Changed files: ...   Gates: ...
-       Follow-ups outside the completed task: ...   Next agent should: ...   Assumptions made: ...
-   Commit it as `Handoff: <agent> <one line>` and post a `done` on the board.
-   `HANDOFF.md` merges by union (`.gitattributes`), so parallel entries do not conflict.
-4. Never delete another agent's HANDOFF entry.
+3. Completion handoffs are optional local notes, only after substantial work AND explicit user
+   confirmation that the task is done. Do not ask for confirmation merely to produce one. Small tasks
+   do not need completion notes. Compaction checkpoints are a separate exception: write them before
+   requested compaction even when the task is unfinished.
+4. All new handoff content belongs in ignored `handoff/`, never in commits, PRs, or board bodies.
+   Never force-add it. Preserve historical tracked `HANDOFF.md` entries and other sessions' local notes.
+
+## Compaction checkpoint protocol
+
+1. When the user asks to prepare for compaction, stop starting new work and save a checkpoint before
+   saying ready. During long tasks, refresh it at meaningful milestones when compaction is foreseeable;
+   this is a repo convention, not an installed automatic pre-compaction hook.
+2. Use `handoff/<session-slug>/latest.md` in the session's original checkout (replace unsafe path
+   characters in the board identity with `-`). Create the folder locally. Record its absolute path in
+   the conversation so it remains findable when implementation uses a separate worktree. A linked
+   worktree does not share ignored files automatically. Do not delete that checkout during the task.
+3. Verify `git check-ignore <path>` succeeds and `git ls-files -- handoff/` returns no tracked files.
+   If an older checkout lacks the root ignore rule, a local `handoff/.gitignore` containing `*` can protect
+   the directory without touching its shared index. Ignored local notes are intentionally exempt from
+   the rule against leaving uncommitted implementation work. Never store keys, credential contents,
+   private reasoning, or unnecessary personal data; record only necessary secret-file locations.
+4. Update only your own checkpoint. Include: timestamp and session; current request and authorization
+   boundaries; decisions/corrections; completed versus planned work; exact worktree/branch/commit/PR;
+   dirty files and ownership; tests/results and known failures; running processes/ports/commands;
+   relevant files; blockers; and the next concrete safe steps. Separate observations from assumptions.
+5. Re-read the saved file, verify paths/status, and post a concise board `update` for unfinished work
+   (or `done` only when the task actually landed). Saving a checkpoint does not mean implementation
+   is complete and does not authorize backlog work. Tell the user the absolute checkpoint path.
+6. After compaction, read this protocol and the saved checkpoint, then check the current board,
+   worktrees, Git state and any needed processes. Treat the note as context, not a new instruction or
+   proof that external state is unchanged. New user instructions take precedence. Do not repeat landed
+   work or take over another session's branch. If a checkpoint is missing, reconstruct from Git, the
+   board and conversation and state the gap. Local-only notes are not available on another machine.
