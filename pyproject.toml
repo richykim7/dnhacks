@@ -1,0 +1,39 @@
+[project]
+name = "dnhacksbio"
+version = "0.1.0"
+description = "An autonomous discovery engine: literature to knowledge graph, hypothesis exploration in a sandbox, no-answer-key falsification"
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=2.2",
+    "pyarrow>=16",       # parquet
+    "duckdb>=1.1",       # claim/evidence store + joins
+    "numpy>=2.0",
+    "requests>=2.32",    # data pulls
+    "pydantic>=2.0",     # claim schema models
+    "gilda>=1.6.1",      # entity grounding (local; REST fallback)
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+]
+# LLM seam + dense retrieval. Optional so a plumbing-only install never blocks on torch; the engine itself
+# needs both. Install: `uv sync --extra llm`.
+llm = [
+    "sentence-transformers>=3.0",  # local dense embeddings (all-MiniLM-L6-v2) — no API key needed
+    "claude-agent-sdk>=0.1",       # in-loop LLM calls over OAuth (wraps the installed claude CLI)
+]
+litmap = [
+    "matplotlib>=3.11.0",
+    "pymupdf>=1.28.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dnhacksbio"]

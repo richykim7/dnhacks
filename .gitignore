@@ -1,0 +1,37 @@
+# Data: raw pulls, intermediate tables, processed outputs and corpora are large, re-buildable, or
+# copyrighted publisher full text. Only the .gitkeep placeholders are tracked.
+data/raw/*
+data/interim/*
+data/processed/*
+data/corpora/*
+data/projects/*
+data/cache/
+data/pkgs/
+data/*.h5ad
+!data/**/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# uv
+.uv/
+
+# Local literature store (copyrighted publisher full text, never committed)
+corpus/
+
+# Unpublished drafts, photos, personal material
+*.docx
+*.HEIC
+*.pdf
+
+# Local
+.data/
+.claude/settings.local.json
+docs/
+tests/
+gpu-ssh-handoff/
