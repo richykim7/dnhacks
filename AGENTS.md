@@ -3,6 +3,12 @@
 Codex reads this file natively. Claude Code reads it through `CLAUDE.md` (`@AGENTS.md`).
 Edit this file, not `CLAUDE.md`.
 
+## MANDATORY: use the GitHub Board for every task
+Before you touch any file: `python3 scripts/board.py show`, then `python3 scripts/board.py post --kind claim --files <a,b> "<what>"`.
+Post `update` when the plan changes, `done` when work lands, and run `python3 scripts/board.py check` before every commit.
+Never edit code without a claim on the board. Never stop without a `done` or `update`. Full rules: `BOARD.md`.
+This applies to every agent, every session, every task. No exceptions.
+
 ## What this is
 DNHacks 2026 team repo. Fill in the one-paragraph project description here once the team agrees on it.
 
