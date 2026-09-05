@@ -1,0 +1,179 @@
+{
+  "historical_file": "historical.json",
+  "historical_sha256": "bbb41512b7b56a8ee81b87165ca41c0bcebb09d914f0dfde4cce60c433f9f3ce",
+  "scenario_canonical_sha256": "0ee32041d2e677a1f9d4d55525adfd36a79e6b493cbdd08cdf9a43ac1308664c",
+  "cutoff": "2018-01-01",
+  "historical_records": 216,
+  "source_documents": 166,
+  "sources_with_multiple_records": 36,
+  "future_labels_read": false,
+  "forecast_scores_evaluated": false,
+  "runs": [
+    {
+      "file": "civic-2018-2022-greedy.json",
+      "sha256": "d46d4cc29cca950d62fdb40b030d798628fd4fca8d8864c9c0043582c1581fae",
+      "origin": "computed",
+      "policy": "greedy",
+      "recorded_cost_unit": "one abstract acquisition per evidence record; not measured compute",
+      "initial_records": 54,
+      "initial_sources": 47,
+      "additional_records": 32,
+      "additional_source_documents": 30,
+      "acquired_records_with_already_acquired_source": 2,
+      "fixed_candidates": 683,
+      "revisions": [
+        {
+          "revision": 0,
+          "evidence_records": 54,
+          "source_documents": 47,
+          "claim_count": 46,
+          "added_records": 54,
+          "newly_encountered_sources": 47
+        },
+        {
+          "revision": 1,
+          "evidence_records": 62,
+          "source_documents": 55,
+          "claim_count": 59,
+          "added_records": 8,
+          "newly_encountered_sources": 8
+        },
+        {
+          "revision": 2,
+          "evidence_records": 70,
+          "source_documents": 63,
+          "claim_count": 66,
+          "added_records": 8,
+          "newly_encountered_sources": 8
+        },
+        {
+          "revision": 3,
+          "evidence_records": 78,
+          "source_documents": 71,
+          "claim_count": 70,
+          "added_records": 8,
+          "newly_encountered_sources": 8
+        },
+        {
+          "revision": 4,
+          "evidence_records": 86,
+          "source_documents": 77,
+          "claim_count": 76,
+          "added_records": 8,
+          "newly_encountered_sources": 6
+        }
+      ]
+    },
+    {
+      "file": "civic-2018-2022-top-singleton.json",
+      "sha256": "5d8b89f1fcbe4fa506aa959399633d8f902f8867ce625bebcfbedd4fcc19f552",
+      "origin": "computed",
+      "policy": "top_singleton",
+      "recorded_cost_unit": "one abstract acquisition per evidence record; not measured compute",
+      "initial_records": 54,
+      "initial_sources": 47,
+      "additional_records": 32,
+      "additional_source_documents": 30,
+      "acquired_records_with_already_acquired_source": 2,
+      "fixed_candidates": 683,
+      "revisions": [
+        {
+          "revision": 0,
+          "evidence_records": 54,
+          "source_documents": 47,
+          "claim_count": 46,
+          "added_records": 54,
+          "newly_encountered_sources": 47
+        },
+        {
+          "revision": 1,
+          "evidence_records": 62,
+          "source_documents": 55,
+          "claim_count": 53,
+          "added_records": 8,
+          "newly_encountered_sources": 8
+        },
+        {
+          "revision": 2,
+          "evidence_records": 70,
+          "source_documents": 63,
+          "claim_count": 62,
+          "added_records": 8,
+          "newly_encountered_sources": 8
+        },
+        {
+          "revision": 3,
+          "evidence_records": 78,
+          "source_documents": 69,
+          "claim_count": 67,
+          "added_records": 8,
+          "newly_encountered_sources": 6
+        },
+        {
+          "revision": 4,
+          "evidence_records": 86,
+          "source_documents": 77,
+          "claim_count": 72,
+          "added_records": 8,
+          "newly_encountered_sources": 8
+        }
+      ]
+    },
+    {
+      "file": "civic-2018-2022-uniform.json",
+      "sha256": "c17ea150b3d8f4e61f6765973720babc700d5ebc51b5def7dbdc6034cbecd49b",
+      "origin": "computed",
+      "policy": "uniform",
+      "recorded_cost_unit": "one abstract acquisition per evidence record; not measured compute",
+      "initial_records": 54,
+      "initial_sources": 47,
+      "additional_records": 32,
+      "additional_source_documents": 30,
+      "acquired_records_with_already_acquired_source": 2,
+      "fixed_candidates": 683,
+      "revisions": [
+        {
+          "revision": 0,
+          "evidence_records": 54,
+          "source_documents": 47,
+          "claim_count": 46,
+          "added_records": 54,
+          "newly_encountered_sources": 47
+        },
+        {
+          "revision": 1,
+          "evidence_records": 62,
+          "source_documents": 55,
+          "claim_count": 53,
+          "added_records": 8,
+          "newly_encountered_sources": 8
+        },
+        {
+          "revision": 2,
+          "evidence_records": 70,
+          "source_documents": 62,
+          "claim_count": 62,
+          "added_records": 8,
+          "newly_encountered_sources": 7
+        },
+        {
+          "revision": 3,
+          "evidence_records": 78,
+          "source_documents": 70,
+          "claim_count": 66,
+          "added_records": 8,
+          "newly_encountered_sources": 8
+        },
+        {
+          "revision": 4,
+          "evidence_records": 86,
+          "source_documents": 77,
+          "claim_count": 69,
+          "added_records": 8,
+          "newly_encountered_sources": 7
+        }
+      ]
+    }
+  ],
+  "interpretation": "Actual saved graph-construction replays, with recorded abstract per-evidence costs. Shared source identity demonstrates a possible reusable document stage; it does not establish reusable extraction, measured compute savings, complementarity, or future-action discovery. Candidate pool is fixed."
+}

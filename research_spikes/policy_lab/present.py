@@ -1,0 +1,95 @@
+"""Generate a standalone research figure and demo from recorded results."""
+import argparse
+import html
+import json
+from pathlib import Path
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--results", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    synthetic = json.loads((args.results / "synthetic.json").read_text())
+    bio = json.loads((args.results / "biological.json").read_text())
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    args.output.mkdir(parents=True, exist_ok=True)
+    rows = synthetic["shared_setup"]
+    sizes = [r["budget"] // 2 for r in rows]
+    plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 11,
+                         "svg.fonttype": "none", "svg.hashsalt": "policy-lab-20260905", "axes.spines.top": False,
+                         "axes.spines.right": False})
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.6), layout="constrained")
+    for row in rows:
+        outcomes = row["policies"]
+        assert outcomes["two_seed_witness"]["value"] == outcomes["allocated_two_seed"]["value"] == outcomes["shared_core_exact"]["value"]
+    ratios = [r["policies"]["deduplicated_witness"]["value"] / r["policies"]["shared_core_exact"]["value"] for r in rows]
+    exact_ratios = [r["policies"]["two_seed_witness"]["value"] / r["policies"]["shared_core_exact"]["value"] for r in rows]
+    axes[0].plot(sizes, ratios, "o-", color="#b45309", label="Deduplicated witness greedy")
+    axes[0].plot(sizes, exact_ratios, "s-", color="#0f766e", label="Exact + both seeded controls")
+    axes[0].set(xlabel="Targets sharing one costly prerequisite (m)",
+                ylabel="Completed reward / optimum", ylim=(0, 1.12),
+                title="Synthetic setup investment; budget = 2m")
+    axes[0].legend(loc="lower left", fontsize=9)
+    policies = [("deduplicated_coverage", "Coverage"), ("completion_singleton", "Singleton completion"),
+                ("deduplicated_witness", "Witness greedy"), ("two_seed_witness", "Two-seed witness"),
+                ("allocated_two_seed", "Allocated two-seed"), ("shared_core_exact", "Core exact")]
+    values = [bio["aggregate"][key]["mean_ratio"] for key, _ in policies]
+    bars = axes[1].barh([label for _, label in policies], values,
+                        color=["#94a3b8", "#64748b", "#b45309", "#0f766e", "#0f766e", "#0f766e"])
+    axes[1].invert_yaxis()
+    axes[1].bar_label(bars, fmt="%.3f", padding=4, fontsize=10)
+    axes[1].set(xlabel="Mean completion / optimum (93 positive instances)", xlim=(0, 1.17),
+                title="Frozen CIViC citation packets; simulated unit cost")
+    fig.suptitle("Shared evidence helps — strong existing methods already capture the tested gain", fontsize=13)
+    fig.savefig(args.output / "comparison.svg", metadata={"Date": None})
+    svg_path = args.output / "comparison.svg"
+    svg_path.write_text("\n".join(line.rstrip() for line in svg_path.read_text().splitlines()) + "\n")
+    fig.savefig(args.output / "comparison.png", dpi=170)
+    plt.close(fig)
+
+    table = "".join(f"<tr><td>{html.escape(label)}</td><td>{bio['aggregate'][key]['mean_ratio']:.6f}</td></tr>"
+                    for key, label in policies)
+    page = '''<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Policy lab — shared evidence, honest guarantees</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#142b38;background:#f4f6f3;line-height:1.6}
+body{max-width:1120px;margin:auto;padding:36px 24px}h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.1;max-width:900px}h2{font-size:1.4rem}
+.tag{letter-spacing:.12em;text-transform:uppercase;font-size:.8rem;color:#476374}.lead{font-size:1.2rem;max-width:850px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+section{background:white;border:1px solid #d5dfd9;border-radius:14px;padding:24px;margin:24px 0}a{color:#075c62}table{border-collapse:collapse;width:100%}td,th{padding:8px;border-bottom:1px solid #dce4e0;text-align:left}.muted{color:#48606c;font-size:.93rem}
+.value{font-size:2rem;font-weight:700;color:#0f766e}.bar{height:20px;background:#b45309;border-radius:4px;max-width:100%}.exact{background:#0f766e}input{width:100%;accent-color:#0f766e}figure{margin:24px 0}figure img{width:100%}.note{border-left:4px solid #0f766e;padding-left:16px}button{font:inherit;cursor:pointer;border:1px solid #0f766e;background:white;color:#0f766e;padding:7px 12px;border-radius:6px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}body{padding:22px 14px}section{padding:18px}}
+</style>
+<p class="tag">DNHacks · Algorithmic research · September 2026</p>
+<h1>One shared experiment can change the whole allocation.</h1>
+<p class="lead">We proved an exact result for declared evidence completion and found a sharp greedy failure. The exact method is a specialization of known Set-Union Knapsack. Strong existing controls matched it on every historical packet tested.</p>
+<p class="note"><strong>Recommendation:</strong> retain delivery coverage greedy; use the exact solver as a small-packet certificate. No novelty, biological truth, or forecasting improvement is claimed.</p>
+<section><h2>Explore the proved shared-prerequisite family</h2>
+<p>One setup costs m. Each of m follow-up actions costs 1 and completes reward m. Another 2m independent actions each cost 1 and earn 1. Every policy gets budget 2m and pays for shared work once.</p>
+<label for="size">Number of targets: <output id="m">8</output></label><input id="size" type="range" min="3" max="32" value="8">
+<div class="grid"><div><h3>Deduplicated witness greedy</h3><div class="value" id="greedyValue">16</div><div class="bar" id="greedyBar"></div><p>Each unstarted target has density m/(m+1), below the distractors' density 1.</p></div>
+<div><h3>Core exact and seeded controls</h3><div class="value" id="exactValue">64</div><div class="bar exact" style="width:100%"></div><p>Pay for setup, then finish every target. The shared core has just one action.</p></div></div>
+<p id="formula"></p><p class="muted">Slider values come from the proved family, not new live experiments. Measured full-baseline cases are m = 3, 4, 6, 8. Both seeded controls solve this family; it does not show exact superiority over them.</p></section>
+<section><h2>Frozen biological structure: 95 packet/budget cases</h2>
+<p>January 2018 CIViC supplies 192 contexts with multiple publications. Every context gets one fixed pair of citations. We group all contexts into 32 small packets and simulate unit source-acquisition costs. Future labels are never loaded.</p>
+<table><thead><tr><th>Policy</th><th>Mean completion / optimum</th></tr></thead><tbody>TABLE</tbody></table>
+<p class="muted">Means use 93 positive-optimum instances. Both seeded controls match exact in every case. Coverage optimizes different facets; its lower completion score is not a failure of its coverage guarantee. Distinct citations do not certify independent experiments or biological truth.</p></section>
+<section><h2>Bad advice changes work, not the certificate</h2><p>On the m=32 family, an ordering that postpones setup solves one profile and reports <strong>[64, 1024]</strong>. It admits unresolved optimization. A second solve reaches <strong>[1024, 1024]</strong>. Verified-bound ordering already solves the useful profile first.</p>
+<p class="muted">These are planning-computation counts. All core bounds are built upfront; no experimental-query savings were proved.</p></section>
+<figure><img src="comparison.svg" alt="Synthetic greedy ratios decrease from two-thirds to one-quarter while seeded and exact remain optimal. Historical mean completion ratios show both seeded methods and exact at one."><figcaption class="muted">Recorded comparisons; source numbers and per-instance costs are in the result JSON.</figcaption></figure>
+<p><a href="report.md">Full proofs and model</a> · <a href="literature.md">Closest prior art</a> · <a href="adversarial-review.md">Independent review</a> · <a href="results/biological.json">Historical results</a> · <a href="comparison.png">Export figure</a></p>
+<script>
+const size=document.querySelector('#size');
+function update(){const m=Number(size.value);document.querySelector('#m').value=m;document.querySelector('#greedyValue').textContent=2*m;document.querySelector('#exactValue').textContent=m*m;document.querySelector('#greedyBar').style.width=(200/m)+'%';document.querySelector('#formula').textContent=`Budget ${2*m}. Greedy earns ${2*m}; optimum earns ${m*m}. Ratio 2/m = ${(2/m).toFixed(3)}. This tends to zero as the shared family grows.`;}
+size.addEventListener('input',update);update();
+</script></html>'''.replace("TABLE", table)
+    (args.output / "demo.html").write_text(page)
+    print("comparison.svg, comparison.png and demo.html saved")
+
+
+if __name__ == "__main__":
+    main()

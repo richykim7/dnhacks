@@ -1,0 +1,33 @@
+{
+  "validated_base_commit": "22a4975191e81ad4e1d1d15609621e5c1f567b09",
+  "frontend_build": "passed",
+  "frontend_unit_tests": {
+    "passed": 2
+  },
+  "frontend_browser_tests": {
+    "passed": 10,
+    "backend_port": 8793,
+    "vite_port": 5193
+  },
+  "tracked_python_tests": {
+    "passed": 97,
+    "skipped": 0
+  },
+  "research_tests": {
+    "passed": 64
+  },
+  "artifact_checks": {
+    "slider": "passed",
+    "page_errors": 0,
+    "wcag_axe_violations": 0,
+    "mobile_width": 390,
+    "mobile_scroll_width": 390,
+    "svg_xml": "valid"
+  },
+  "notes": [
+    "Wider unversioned local vocabulary suite is not available in this worktree.",
+    "Installed existing dev/llm/litmap extras after dev-only setup lacked the imported LLM SDK. No dependency files modified.",
+    "The existing upstream 3Dmol eval build warning remains.",
+    "Generated SVG whitespace normalized by its generator to satisfy diff checking."
+  ]
+}
