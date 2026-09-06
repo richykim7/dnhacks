@@ -11,6 +11,7 @@ import "@/runtime.css";
 const BinderWorkbench = lazy(() => import("./binder/Workbench"));
 const SpindleMetrics = lazy(() => import("./spindle/SpindleMetrics"));
 const SpindleObservatory = lazy(() => import("./spindle/SpindleObservatory"));
+const TissueWorkbench = lazy(() => import("./tissue/TissueWorkbench"));
 const Structures = lazy(() => import("./Structures"));
 
 function RecordedDisclosure({
@@ -361,10 +362,17 @@ export function RuntimeDetail({
                   />
                 </RecordedDisclosure>
               )}
+              {events.filter(e=>e.kind==='tissue.capture' && e.experiment_id===exp.experiment_id).map(e=>(
+                <RecordedDisclosure key={e.sequence} title={`Agent tissue capture · event ${e.sequence}`}>
+                  <img alt={`Recorded tissue scene, recipe ${e.payload.recipe_sha256}`} style={{width:'100%',borderRadius:8}} src={runtimeUrl(runId,`blob/${e.payload.image_sha256}`,project,cursor)}/>
+                  <p>Scene revision: {e.payload.recipe_sha256}</p>
+                  {events.filter(o=>o.kind==='tissue.observation'&&o.payload.capture_id===e.payload.capture_id).map(o=><p key={o.sequence}>{o.payload.status}: {o.payload.observation}</p>)}
+                </RecordedDisclosure>
+              ))}
               {exp.artifacts.map((artifact: JsonRecord) => (
                 <div className="experiment-artifact" key={artifact.artifact_id}>
                   {artifact.status === "available" &&
-                  artifact.kind === "filament_trajectory" ? (
+                  artifact.kind === "tissue_simulation" ? (<Suspense fallback={<Loading label="Opening tissue experiment" />}><TissueWorkbench actions={events.filter(e=>e.kind==='tissue.scene' && e.experiment_id===exp.experiment_id && e.payload.artifact_sha256===artifact.sha256) as any} owner={`${exp.title || "Experiment"} · ${runId}`} url={runtimeUrl(runId, `blob/${artifact.storage_key}`, project, cursor)} /></Suspense>) : artifact.status === "available" && artifact.kind === "filament_trajectory" ? (
                     <Suspense
                       fallback={<Loading label="Opening spindle observatory" />}
                     >
