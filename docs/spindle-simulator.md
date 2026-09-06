@@ -212,3 +212,9 @@ see/revise workflow and its remaining visual/scientific limits.
 Isolated native motor direction/speed and unopposed filament growth now pass three
 timestep refinements; see [measured mechanics probes](spindle-mechanics.md). This
 does not establish convergence of the coupled spindle model.
+
+Native exports now include cortical anchors, bound filament identities, abscissae
+and force vectors in pN; the viewer shows the saved anchors and a measurement
+table. Every anchor is checked against its prescribed surface position at every
+frame. [Motor-field validation and the earlier placement erratum](spindle-motors.md)
+explain why original origin-anchored runs are unsuitable for localization comparisons.

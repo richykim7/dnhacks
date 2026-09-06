@@ -370,6 +370,7 @@ export default function SpindleObservatory({
               <strong>
                 {otherRun.frames[otherFrame].poles.length} centrosomes
               </strong>
+              {otherRun.frames[otherFrame].cortical_motors && <span>{otherRun.frames[otherFrame].cortical_motors!.length} cortical motors · {otherRun.frames[otherFrame].cortical_motors!.filter(m => m.filament != null).length} bound</span>}
               <span>
                 {otherRun.frames[otherFrame].time.toFixed(2)} s · saved physical
                 time
@@ -388,12 +389,14 @@ export default function SpindleObservatory({
           <br />
           Pearl: centrosomes · Cyan: filaments
           {recipe.trails ? " · Amber: pole tracks" : ""}
+          {frame.cortical_motors && <><br />Gold dots: native cortical anchors</>}
         </div>
         <div className="spindle-caption">
           <span>
             {run.condition} · seed {run.seed}
           </span>
           <strong>{frame.poles.length} centrosomes</strong>
+          {frame.cortical_motors && <span>{frame.cortical_motors.length} cortical motors · {frame.cortical_motors.filter(m => m.filament != null).length} bound</span>}
           <span>{frame.time.toFixed(2)} s · saved physical time</span>
         </div>
       </div>
@@ -528,6 +531,14 @@ export default function SpindleObservatory({
           µm
         </p>
       )}
+      {frame.cortical_motors && <details>
+        <summary>Cortical motor measurements · {frame.cortical_motors.length} anchors</summary>
+        <p>Saved anchor coordinates in µm; force vector in pN. Unbound motors have no bound-filament force measurement.</p>
+        <div style={{ maxHeight: 260, overflow: "auto" }}>
+          <table><thead><tr><th>Motor</th><th>Anchor (µm)</th><th>Filament</th><th>Force (pN)</th></tr></thead>
+            <tbody>{frame.cortical_motors.map(m => <tr key={m.id}><td>{m.id}</td><td>{m.position.map(x => x.toFixed(3)).join(", ")}</td><td>{m.filament ?? "Unbound"}</td><td>{m.force_pn?.map(x => x.toFixed(4)).join(", ") ?? "Unavailable"}</td></tr>)}</tbody></table>
+        </div>
+      </details>}
       <details>
         <summary>Trajectory & presentation</summary>
         <p>

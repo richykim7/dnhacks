@@ -10,6 +10,18 @@ from pathlib import Path
 from .protocol import validate_protocol
 
 
+def cortical_positions(radius,condition):
+    positions=[]
+    for i in range(condition['cortical_motors']):
+        z=1-2*(i+.5)/condition['cortical_motors'];a=i*math.pi*(3-math.sqrt(5))
+        direction=[math.sqrt(1-z*z)*math.cos(a),math.sqrt(1-z*z)*math.sin(a),z]
+        if condition['localization']=='positive_x_crescent':
+            direction[0]=abs(direction[0])+1
+            norm=math.sqrt(sum(x*x for x in direction));direction=[x/norm for x in direction]
+        positions.append([x*r for x,r in zip(direction,radius)])
+    return positions
+
+
 def configuration(protocol: dict, condition: dict, seed: int) -> str:
     p=validate_protocol(protocol)
     if condition not in p['conditions'] or seed not in p['seeds']:
@@ -42,14 +54,8 @@ def configuration(protocol: dict, condition: dict, seed: int) -> str:
     s+=block('set single cortical',{'hand':'minus_motor','stiffness':v['motor_stiffness_pn_um'],'activity':'fixed'})
     # Explicit equal-area unit-sphere directions mapped to ellipsoid; this is NOT
     # uniform ellipsoid surface-area density. Record the placement semantics.
-    for i in range(condition['cortical_motors']):
-        z=1-2*(i+.5)/condition['cortical_motors'];a=i*math.pi*(3-math.sqrt(5))
-        direction=[math.sqrt(1-z*z)*math.cos(a),math.sqrt(1-z*z)*math.sin(a),z]
-        if condition['localization']=='positive_x_crescent':
-            direction[0]=abs(direction[0])+1
-            norm=math.sqrt(sum(x*x for x in direction));direction=[x/norm for x in direction]
-        pos=[x*r for x,r in zip(direction,p['radius_um'])]
-        s+=block('new cortical',{'position':' '.join(f'{x:.17g}' for x in pos),'placement':'off'})
+    for pos in cortical_positions(p['radius_um'],condition):
+        s+=block('new cortical',{'position':' '.join(f'{x:.17g}' for x in pos),'placement':'anywhere'})
     s+=block('set couple crosslink',{'hand1':'minus_motor','hand2':'minus_motor',
         'stiffness':v['motor_stiffness_pn_um'],'diffusion':v['crosslink_diffusion_um2_s'],'length':v['crosslink_length_um']})
     if condition['crosslink_motors']:
@@ -80,18 +86,20 @@ def read_report(path: Path) -> dict[int,list[list[str]]]:
 
 def export_run(directory: Path, protocol: dict, condition: dict, seed: int) -> dict:
     asters=read_report(directory/'asters.txt');fibers=read_report(directory/'fibers.txt');owners=read_report(directory/'owners.txt')
+    anchors=read_report(directory/'motor-anchors.txt');links=read_report(directory/'motor-links.txt')
+    if set(anchors)!=set(asters) or set(links)!=set(asters):raise ValueError('Motor report frame mismatch')
     if set(asters)!=set(fibers) or set(asters)!=set(owners):raise ValueError('Solver reports have different frame boundaries')
     v={k:x['value'] for k,x in protocol['parameters'].items()}
     expected=1+round(v['duration_s']/v['sampling_interval_s'])
     if sorted(asters)!=list(range(expected)):raise ValueError('Incomplete trajectory; cannot invent final frame')
     times={}
-    for name in ['asters.txt','fibers.txt','owners.txt']:
+    for name in ['asters.txt','fibers.txt','owners.txt','motor-anchors.txt','motor-links.txt']:
         text=(directory/name).read_text()
         observed=[float(x) for x in re.findall(r'% time ([+0-9.eE-]+)',text)]
         if len(observed)!=expected or any(not math.isclose(t,i*v['sampling_interval_s'],rel_tol=0,abs_tol=5.1e-7) for i,t in enumerate(observed)):
             raise ValueError('Recorded solver clock disagrees with prescribed sampling')
         times[name]=observed
-    if times['asters.txt']!=times['fibers.txt'] or times['asters.txt']!=times['owners.txt']:
+    if any(clock!=times['asters.txt'] for clock in times.values()):
         raise ValueError('Solver reports use different physical clocks')
     result=[]
     for index in range(expected):
@@ -110,6 +118,23 @@ def export_run(directory: Path, protocol: dict, condition: dict, seed: int) -> d
         ids={x['id'] for x in poles}
         if len(poles)!=len(condition['initial_positions_um']) or set(geometry)!=set(owner_map) or any(x not in ids for x in owner_map.values()):
             raise ValueError('Missing pole or unresolved exported filament ownership')
-        result.append({'time':times['asters.txt'][index],'poles':poles,
+        attached={}
+        for row in links[index]:
+            if len(row)!=11 or row[1] in attached:raise ValueError('Invalid native bound motor report')
+            attached[row[1]]={'force_pn':list(map(float,row[5:8])),'filament':'F'+row[8],'abscissa_um':float(row[9])}
+        motors=[]
+        prescribed=cortical_positions(protocol['radius_um'],condition)
+        for row in anchors[index]:
+            if len(row)!=7:raise ValueError('Invalid native motor anchor report')
+            identity=int(row[1])
+            if not 1<=identity<=len(prescribed) or math.dist(list(map(float,row[2:5])),prescribed[identity-1])>1e-5:
+                raise ValueError('Native cortical anchor differs from prescribed surface position')
+            binding=attached.pop(row[1],None)
+            if (row[5]!='0') != (binding is not None):raise ValueError('Native motor binding state mismatch')
+            if binding and (binding['filament']!='F'+row[5] or row[5] not in geometry):raise ValueError('Native motor filament mismatch')
+            motors.append({'id':'M'+row[1],'position':list(map(float,row[2:5])),
+                **(binding or {'force_pn':None,'filament':None,'abscissa_um':None})})
+        if attached or len(motors)!=condition['cortical_motors']:raise ValueError('Missing native cortical motors')
+        result.append({'time':times['asters.txt'][index],'poles':poles,'cortical_motors':motors,
             'filaments':[{'id':'F'+key,'pole':owner_map[key],'points':points} for key,points in geometry.items()]})
     return {'seed':seed,'condition':condition['name'],'frames':result}

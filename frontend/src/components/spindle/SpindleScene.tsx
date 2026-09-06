@@ -43,6 +43,7 @@ export type RenderState = {
   physical_to_scene: { units: string; scale: number; interpolation: string };
   physical_time_s: number;
   poles: unknown;
+  cortical_motors: unknown;
   segments: number;
   frame_render_ms: number;
 };
@@ -87,6 +88,20 @@ function Filaments({
       />
     </lineSegments>
   );
+}
+function MotorField({ frame }: { frame: import("./types").SpindleFrame }) {
+  const geometry = useMemo(() => {
+    const positions: number[] = [], colors: number[] = [];
+    for (const motor of frame.cortical_motors ?? []) {
+      positions.push(...motor.position);
+      const color = new T.Color(motor.filament ? "#fff0b5" : "#d59642");
+      colors.push(color.r, color.g, color.b);
+    }
+    return new T.BufferGeometry().setAttribute("position", new T.Float32BufferAttribute(positions, 3))
+      .setAttribute("color", new T.Float32BufferAttribute(colors, 3));
+  }, [frame]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  return <points geometry={geometry}><pointsMaterial vertexColors size={5} sizeAttenuation={false} transparent opacity={0.9} depthWrite={false} /></points>;
 }
 function Stage({
   bundle,
@@ -183,6 +198,7 @@ function Stage({
           physical_to_scene: { units: "um", scale: 1, interpolation: "none" },
           physical_time_s: frame.time,
           poles: frame.poles,
+          cortical_motors: frame.cortical_motors ?? null,
           segments: frame.filaments.reduce(
             (n, f) => n + f.points.length - 1,
             0,
@@ -254,6 +270,7 @@ function Stage({
         </mesh>
       ))}
       <Filaments bundle={bundle} recipe={recipe} />
+      <MotorField frame={frame} />
       <lineSegments geometry={trails}>
         <lineBasicMaterial color="#e7b878" transparent opacity={0.6} />
       </lineSegments>

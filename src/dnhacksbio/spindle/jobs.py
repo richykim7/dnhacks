@@ -167,7 +167,7 @@ class SpindleStore:
                     check();run_dir=directory/f'{seed}-{index}';run_dir.mkdir()
                     config=configuration(protocol,condition,seed);(run_dir/'config.cym').write_text(config)
                     command([sim,f'random_seed={seed}'],run_dir,run_dir/'stdout.log')
-                    for kind,name in [('aster','asters.txt'),('fiber:points','fibers.txt'),('fiber','owners.txt')]:
+                    for kind,name in [('aster','asters.txt'),('fiber:points','fibers.txt'),('fiber','owners.txt'),('single:position','motor-anchors.txt'),('single:link','motor-links.txt')]:
                         command([report,kind,'precision=17','verbose=7'],run_dir,run_dir/name)
                     run=export_run(run_dir,protocol,condition,seed);runs.append(run)
                     with self.connect() as con:

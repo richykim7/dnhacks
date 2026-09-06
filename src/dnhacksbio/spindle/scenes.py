@@ -172,12 +172,14 @@ class SceneService:
         if requested_camera and any(not same_state(state['camera'].get(k),v) for k,v in requested_camera.items() if k not in {'quaternion','zoom'}):
             raise ValueError('Rendered camera differs from requested pose')
         frame=bundle['runs'][recipe['view']['run']]['frames'][recipe['view']['frame']]
+        if state.get('cortical_motors')!=frame.get('cortical_motors'):raise ValueError('Captured motor field differs from saved frame')
         if state.get('physical_time_s')!=frame['time'] or state.get('poles')!=frame['poles']:
             raise ValueError('Captured physical frame differs from saved trajectory')
         compare=recipe['view']['compare']
         if compare is not None:
             other=bundle['runs'][compare]['frames'];nearest=min(range(len(other)),key=lambda i:abs(other[i]['time']-frame['time']))
             comparison=state.get('comparison',{})
+            if comparison.get('cortical_motors')!=other[nearest].get('cortical_motors'):raise ValueError('Comparison motor field differs from saved frame')
             if comparison.get('physical_time_s')!=other[nearest]['time'] or comparison.get('poles')!=other[nearest]['poles']:
                 raise ValueError('Comparison is not synchronized to nearest saved physical time')
             if not same_state(comparison.get('camera'),state['camera']):raise ValueError('Comparison cameras differ')
@@ -213,10 +215,15 @@ class SceneService:
         if not isinstance(question,str) or not 1<=len(question)<=2000:raise ValueError('Bounded visual question required')
         snapshot=self.read_capture(capture_id,through)
         png=self.journal.read_blob(snapshot['image_sha256'])
-        note=await asyncio.wait_for(acomplete(
-            'Inspect this exact spindle image. Describe visible pole IDs, occlusion, depth and comparison balance. '
-            'Do not infer motor forces, clustering statistics, chromosome accuracy or viability from pixels. Question: '+question,
-            images=[png],tools_disabled=True,max_turns=1,max_attempts=1,max_output_tokens=768,effort='low'),timeout=90)
+        try:
+            note=await asyncio.wait_for(acomplete(
+                'Inspect this exact spindle image. Describe visible pole IDs, occlusion, depth and comparison balance. '
+                'Do not infer motor forces, clustering statistics, chromosome accuracy or viability from pixels. Question: '+question,
+                images=[png],tools_disabled=True,max_turns=1,max_attempts=1,max_output_tokens=768,effort='low'),timeout=90)
+        except Exception as exc:
+            self._append('scene.review.failed',{'capture_id':capture_id,'image_sha256':snapshot['image_sha256'],
+                'error_type':type(exc).__name__,'status':'No visual observation produced'})
+            raise RuntimeError(f'Vision review unavailable ({type(exc).__name__}); no observation recorded') from exc
         review={'schema':'visual_review.v1','scope':self.scope,'capture_id':capture_id,
                 'image_sha256':snapshot['image_sha256'],'recipe_sha256':snapshot['recipe_sha256'],
                 'observation':note,'status':'visual observation, not scientific verification'}
