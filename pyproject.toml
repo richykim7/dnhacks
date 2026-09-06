@@ -15,6 +15,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+expression = ["decoupler==2.2.0", "pydeseq2==0.5.4"]
 evalue = [
     "torch>=2.6",        # standalone learned betting diagnostics
 ]

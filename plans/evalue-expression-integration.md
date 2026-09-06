@@ -1,8 +1,10 @@
 # Pathway, TF and differential-expression background evidence
 
-Proposed plan, 2026-09-05. Planning only; no ingestion, implementation or experiments performed.
+Original proposal, 2026-09-05. Implementation requested 2026-09-06; registered paired-score service,
+strict preparation, optional approximate count effects and deterministic validation are implemented.
+See `docs/expression-scoring.md`. No confirmation ingestion or biological pilot has been performed.
 Prepared concurrently with dependency/drug-response reviewers; parent aligned shared interfaces.
-Implementation requires a subsequent request.
+Cohort selection, power justification and a locked confirmation pilot remain operator decisions.
 
 ## First endpoint and design
 
@@ -51,7 +53,8 @@ STAT3 regulon is a possible later TF endpoint, not a replacement selected after 
 
 ## Interfaces and implementation
 
-The existing TPM/encoder service works; decoupler/PyDESeq2 adapters are not implemented. Preserve
+The TPM/encoder service is preserved. A pinned decoupler weighted-sum reference and optional
+PyDESeq2 adapter now accompany the registered paired pathway implementation. Preserve
 expression v1 and `learned_evalue.py`. Use the shared transport prerequisite in [the dependency plan](evalue-dependency-integration.md).
 
 1. Register strict schema/method/protocol/hypothesis/family specifications with an operator-frozen
