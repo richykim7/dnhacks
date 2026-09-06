@@ -1,9 +1,12 @@
 # Learned pharmacotype association
 
-Implementation status (2026-09-06): CPU development contracts/encoders/operations and
-private fully-frozen native replay are implemented; see [operations and remaining gates](../../docs/pharmacotype.md).
-Acquired-data audits, biological training/evaluation, adaptive critic updates and
-confirmation release remain pending. The specification below retains the full target.
+Implementation status (2026-09-06): development operations, audited public PRISM/CCLE
+acquisition, real CPU and three-seed GPU training/evaluation, and private frozen or
+adaptive score-before-train replay are implemented. See the [model card](../../docs/pharmacotype-training.md)
+and [operations and remaining gates](../../docs/pharmacotype.md). PCA remains selected;
+PDAC utility and the synthetic power target are not established. Paired PDO access,
+fresh independent donor audit and reviewed scientific confirmation remain required.
+The specification below retains the full target and original source proposals.
 
 Original planning specification, 2026-09-06. The document itself did not authorize implementation, acquisition, training or confirmation; subsequent user instruction authorized the implementation described above. Read together with [the shared native evidence contract](native-evidence-contract.md). The target interfaces below extend beyond the current implementation.
 All training follows the [shared single-GPU scheduling rule](native-evidence-contract.md#coordination-on-the-shared-gpu): CPU work can overlap, but initial GPU pilots run serially; concurrency requires measured combined memory and throughput, a shared queue/lease, and separate artifacts. Individual job caps are not simultaneous GPU reservations.
@@ -38,7 +41,9 @@ Fit RNA scaling, gene order, response scaling and all batch transformations on d
 
 ## Public source feasibility and split decisions
 
-These are candidate resources, not acquired datasets or verified untouched confirmation sets. Primary records were checked on 2026-09-06; exact joins, licenses and usable independent denominators require a subsequent authorized metadata audit.
+The following records are the original source proposals. The completed PRISM/CCLE
+audit and verified PDO access limitations are recorded in the model card above;
+none is a verified untouched confirmation set.
 
 - **Broad PRISM/CCLE: training and development.** The primary study reports 4,518 compounds across 578 cell lines using pooled molecular barcoding. Those are neither 578 PDAC patients nor 4,518 complete dose-response series. Audit primary versus dose-response releases, CCLE expression joins and donor aliases. Use this broad source to train response representations and predictors, with PDAC held-out development slices; do not transfer its assay scale directly to PDO viability. Shared pools are a particular confirmation obstacle. [Broad primary study record](https://www.broadinstitute.org/publications/broad650611), [author-hosted study](https://golublab.broadinstitute.org/files/golub-lab/files/corsello-2020-discovering-the-anticancer-potentia_1.pdf).
 - **Tiriac PDO library: preferred PDAC development candidate.** The primary publication is verified; reviewer inventories report 114 cultures from 101 patients and 66 pharmacotyped PDOs. These figures require source-table rechecking: this session's PMC full text was challenged and the Europe PMC XML endpoint unavailable. They must not become confirmation denominators. Audit paired baseline expression, donor repeats, exact drug/dose coverage and downloadable processed responses before selecting splits. Published signature/outcome exposure makes development the conservative default. An untouched split is a candidate only if the operator documents no outcome-informed selection. [Primary publication record](https://pubmed.ncbi.nlm.nih.gov/29853643/).

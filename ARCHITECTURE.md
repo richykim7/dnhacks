@@ -377,8 +377,10 @@ These are in the package and tested, and deliberately not connected to the falsi
 - `pharmacotype_data.py`, `pharmacotype_encoder.py`, `pharmacotype.py`: declared donor/curve
   preparation, CPU separate-view encoders and development prediction/neighborhood/program tools.
   `pharmacotype_scoring.py` provides receipt-only operator-frozen association replay through the
-  shared native ledger. No biological model, confirmation cohort, adaptive critic update or GPU
-  training path is bundled. See [pharmacotype operations](docs/pharmacotype.md).
+  shared native ledger, with opt-in atomic past-block critic updates. Public PRISM/CCLE
+  acquisition and real CPU/GPU training are reproducible via scripts; PCA remains selected
+  after validation. No PDO confirmation is enabled. See [pharmacotype operations](docs/pharmacotype.md)
+  and [real-development model card](docs/pharmacotype-training.md).
 - `expr_encoder.py`: frozen PCA or masked-gene autoencoder encoders with recorded training provenance,
   trained by `scripts/train_expr_encoder.py`.
 - `evalues.py`: p-to-e calibration, merging and e-BH helpers. Inputs must already be valid.

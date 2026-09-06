@@ -29,6 +29,17 @@ def prepare(document, *, role='development'):
     Incomplete curves are excluded as whole donors and reported to the caller.
     Confirmation callers must keep this entire object private.
     """
+    if document.get('schema')=='pharmacotype.prepared.v1' and role=='development':
+        if document.get('role')!='development':raise ValueError('Prepared confirmation is forbidden')
+        if document.get('integrity_sha256')!=digest({k:v for k,v in document.items() if k!='integrity_sha256'}):
+            raise ValueError('Prepared development integrity mismatch')
+        data=dict(document);data['x']=np.asarray(data['x'],float);data['y']=np.asarray(data['y'],float)
+        if len(set(data['donors']))!=len(data['donors']) or len(set(data['genes']))!=len(data['genes']):
+            raise ValueError('Duplicate prepared identifiers')
+        if data['x'].shape!=(len(data['donors']),len(data['genes'])) or data['y'].shape!=(len(data['donors']),sum(len(p['doses']) for p in data['panel'])):
+            raise ValueError('Prepared matrix shape mismatch')
+        if not np.isfinite(data['y']).all() or np.isinf(data['x']).any():raise ValueError('Invalid prepared values')
+        return data
     if document.get('schema') != 'pharmacotype.data.v1' or document.get('role') != role:
         raise ValueError('Wrong schema or data role')
     assay = document['assay']
