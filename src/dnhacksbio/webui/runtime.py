@@ -81,7 +81,7 @@ def handle(handler, rest: str, qs: dict):
     through = int(qs["through"][0]) if "through" in qs else None
     if through is not None and through < 0:
         raise ValueError("Invalid playback cursor")
-    if action == "blob" and len(parts) == 3:
+    if action in {"blob", "geometry"} and len(parts) == 3:
         # A digest is not authority: it must be referenced by this exact run at this cursor.
         key = parts[2]
         state = j.snapshot(root, through)
@@ -101,6 +101,27 @@ def handle(handler, rest: str, qs: dict):
                 refs.append(p)
         if not any(ref.get("storage_key") == key for ref in refs):
             raise FileNotFoundError("Artifact not available for this researcher at this point")
+        if action == "geometry":
+            from dnhacksbio.inhibitor import normalize, define_pocket, measure, audit_pose, preparation_audit
+            artifact = next((ref for ref in refs if ref.get("storage_key") == key
+                             and ref.get("kind") == "molecular_structure"), None)
+            if artifact is None:
+                raise FileNotFoundError("Not a molecular artifact")
+            geometry = normalize(j.read_blob(key), artifact["format"], key)
+            operation = qs.get("operation", ["describe"])[0]
+            if operation == "measure":
+                result = measure(geometry, qs.get("atom", []))
+            elif operation == "pocket":
+                result = define_pocket(geometry, qs.get("residue", [""])[0], float(qs.get("margin", ["5"])[0]))
+            elif operation == "contacts":
+                result = audit_pose(geometry, qs.get("residue", [""])[0])
+            elif operation == "preparation":
+                result = preparation_audit(geometry)
+            elif operation == "describe":
+                result = geometry
+            else:
+                raise ValueError("Unknown geometry operation")
+            return handler._send_json(result)
         return handler._send_bytes(j.read_blob(key), "text/plain; charset=utf-8")
     if action == "snapshot":
         if through is None:
