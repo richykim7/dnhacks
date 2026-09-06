@@ -1,5 +1,7 @@
 # Cellular confirmation donor-access audit
 
+**Route cancelled, 2026-09-06.** The user deprecated this research plan for insufficient accessible independent eligible donors. Preserve all models, data, results and audits; no further research or autonomous resumption is authorized.
+
 The biological power gate remains unmet. Direct malignant/CAF development models now project more than 80% power at 60 simulated donors, but those simulations resample only eight development donors. The current 18-donor design still has near-zero power. This audit checks whether another independent, eligible cohort supplies the missing budget; it does not count cells, assay records, tumor sections or previously exposed training donors as new confirmation donors.
 
 ## Remaining original-source leads
@@ -22,10 +24,10 @@ Original GEO SOFT family metadata for GSE292095, GSE290274 and GSE278689 was obt
 
 The WashU paper distinguishes its broad scRNA cohort from the two snRNA validation cases. The perineural-niche preprint’s data statement is prospective, so its 11 specimens cannot be treated as data already delivered to this project. The original GSE290274 metadata explicitly identifies patient-derived xenograft cell lines and perturbations.
 
-## What is still needed
+## Unresolved requirements at cancellation
 
-A useful next step needs an approved, sufficiently large independent untreated-primary-PDAC cohort with the registered assay, original measured counts, canonical donor identities and malignant/CAF coverage. Approximately 60 usable donors is the current development-based planning target, not a guarantee of 80% biological power. The final model/alternative and eligibility rules must be frozen before independent numerical evaluation. The observed model-selection instability, biological uncertainty and the remaining confounding/missingness controls also remain unresolved.
+Confirmation would have required an approved, sufficiently large independent untreated-primary-PDAC cohort with the registered assay, original measured counts, canonical donor identities and malignant/CAF coverage. Approximately 60 usable donors is the current development-based planning target, not a guarantee of 80% biological power. The final model/alternative and eligibility rules must be frozen before independent numerical evaluation. The observed model-selection instability, biological uncertainty and the remaining confounding/missingness controls also remain unresolved.
 
-Reusing the exposed development donors, treating multiple modalities as new people, opening reserved data to tune a model, weakening the 80% threshold, or simply running more epochs would not establish this gate. Training and source-audit milestones are complete, but the full goal is not. Further confirmation requires an actionable source or approved access to a suitable cohort.
+Reusing the exposed development donors, treating multiple modalities as new people, opening reserved data to tune a model, weakening the 80% threshold, or simply running more epochs would not establish this gate. Training and source-audit milestones are complete, but the full goal is not. The user cancelled further pursuit; this audit does not authorize reopening the route.
 
 Related results: [direct count-model training and all power comparisons](ecosystem-cna-training.md), [CNA source preparation and initial transfer failure](ecosystem-cna.md), and [original plan](../plans/evalue-tool-council/PLAN-cellular-ecosystems.md). This milestone changes documentation only; source counts, links and consistency were reviewed, with no code-test rerun required.

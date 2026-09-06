@@ -59,7 +59,7 @@ A minimal enrollment file has this shape (values shown are examples, not a valid
 The example's 288-action horizon is not a recommended success deadline. The runtime now enforces
 prospective subtree contracts in `explorer/budget.py`, in the same SQLite transactions as parent grants.
 Pass `--budget-spec contract.json` to the explorer CLI; Python callers use `subtree_budget`.
-The default engineering contract is 3600 summed operation seconds and 288 research actions, with
+The default engineering contract is 43200 summed operation seconds and 2880 research actions, with
 600-second research operations, 90-second report/judge calls and 10-second fork launches. These are
 operational defaults, not empirically selected scientific horizons. Restart loads the original contract;
 a changed contract or retrospective enrollment is rejected. Nested explicit budgets charge every ancestor.

@@ -238,7 +238,15 @@ int main(int argc, char **argv) {
         import select
         monkeypatch.setattr(ui.time, "sleep", lambda seconds: select.select([], [], [], seconds))
         deadline = time.monotonic() + 5
-        while ui.waiting_popup(client.screen("fixture:0.0")) is None:
+        while True:
+            try:
+                if ui.waiting_popup(client.screen("fixture:0.0")) is not None:
+                    break
+            except ValueError as exc:
+                # The native fixture can still be drawing its first frame.
+                # Retry readiness only; production capture/Enter guards stay strict.
+                if str(exc) != "pane changed during capture":
+                    raise
             assert time.monotonic() < deadline, "fixture menu did not render"
             ui.time.sleep(0.05)
         assert ui.dismiss_waiting(client, "%0") == "dismissed"

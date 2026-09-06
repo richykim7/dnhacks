@@ -21,7 +21,7 @@ function Cells({
       side: THREE.DoubleSide,
       roughness: 0.52,
       metalness: 0.08,
-      clearcoat: 0.4,
+      clearcoat: cells.length > 2000 ? 0 : 0.4,
       clearcoatRoughness: 0.5,
       clippingPlanes: [
         new THREE.Plane(new THREE.Vector3(0, 0, -1), view.section),
@@ -34,7 +34,7 @@ function Cells({
       );
     };
     return m;
-  }, [view.section]);
+  }, [view.section, cells.length > 2000]);
   useEffect(() => () => membrane.dispose(), [membrane]);
   const visible = useMemo(
     () => cells.filter((c) => c.position[2] - c.radius <= view.section),
@@ -83,7 +83,7 @@ function Cells({
           if (e.instanceId !== undefined) onSelect(visible[e.instanceId].id);
         }}
       >
-        <sphereGeometry args={[1, 20, 14]} />
+        <sphereGeometry args={cells.length > 2000 ? [1, 12, 8] : [1, 20, 14]} />
         <primitive object={membrane} attach="material" />
       </instancedMesh>
       <Caps
@@ -150,12 +150,14 @@ function Field({
   opacity,
   section,
   maximum,
+  steps,
 }: {
   frame: Frame;
   data: Tissue;
   opacity: number;
   section: number;
   maximum: number;
+  steps: number;
 }) {
   const texture = useMemo(() => {
     const t = new THREE.Data3DTexture(
@@ -196,9 +198,9 @@ function Field({
         },
         vertexShader: `varying vec3 world; void main(){world=(modelMatrix*vec4(position,1.)).xyz; gl_Position=projectionMatrix*viewMatrix*vec4(world,1.);}`,
         fragmentShader: `precision highp sampler3D; uniform sampler3D volume; uniform float alpha,maximum,clip;uniform vec3 low,high; varying vec3 world;
-void main(){vec3 ray=normalize(world-cameraPosition);vec3 inv=1./ray;vec3 t0=(low-cameraPosition)*inv,t1=(high-cameraPosition)*inv;vec3 a=min(t0,t1),b=max(t0,t1);float start=max(max(a.x,a.y),a.z),end=min(min(b.x,b.y),b.z);vec4 acc=vec4(0.);float stepSize=(end-max(start,0.))/48.;for(int i=0;i<48;i++){vec3 p=cameraPosition+ray*(max(start,0.)+(float(i)+.5)*stepSize);if(p.z>clip)continue;float v=clamp(texture(volume,(p-low)/(high-low)).r/maximum,0.,1.);float k=v*alpha*.018;acc.rgb+=(1.-acc.a)*k*vec3(.12,.83,.86);acc.a+=(1.-acc.a)*k;}gl_FragColor=acc;}`,
+void main(){vec3 ray=normalize(world-cameraPosition);vec3 inv=1./ray;vec3 t0=(low-cameraPosition)*inv,t1=(high-cameraPosition)*inv;vec3 a=min(t0,t1),b=max(t0,t1);float start=max(max(a.x,a.y),a.z),end=min(min(b.x,b.y),b.z);vec4 acc=vec4(0.);float stepSize=(end-max(start,0.))/${steps}.;for(int i=0;i<${steps};i++){vec3 p=cameraPosition+ray*(max(start,0.)+(float(i)+.5)*stepSize);if(p.z>clip)continue;float v=clamp(texture(volume,(p-low)/(high-low)).r/maximum,0.,1.);float k=v*alpha*.018*(48./${steps}.);acc.rgb+=(1.-acc.a)*k*vec3(.12,.83,.86);acc.a+=(1.-acc.a)*k;}gl_FragColor=acc;}`,
       }),
-    [texture, opacity, section, data, maximum],
+    [texture, opacity, section, data, maximum, steps],
   );
   useEffect(() => () => material.dispose(), [material]);
   const b = data.domain.bounds;
@@ -235,12 +237,12 @@ function Camera({
     invalidate();
   }, [camera, view, invalidate, size.height, size.width, ...target]);
   useFrame(() => {
+    gl.render(scene, camera);
     if (pending.current) {
-      gl.render(scene, camera);
       pending.current = false;
       ready(size.height);
     }
-  });
+  }, 1);
   return null;
 }
 export default function TissueScene({
@@ -285,6 +287,10 @@ export default function TissueScene({
   return (
     <div
       className="tissue-canvas"
+      data-source-cells={frame.cells.length}
+      data-rendered-glyphs={displayCells.length}
+      data-volume-steps={frame.cells.length > 2000 ? 24 : 48}
+      data-volume-dimensions={displayFrame.field.dimensions.join("x")}
       tabIndex={0}
       role="group"
       aria-label="Tissue camera: arrow keys orbit, plus and minus zoom"
@@ -355,6 +361,10 @@ export default function TissueScene({
         <Canvas
           key={epoch}
           onCreated={({ gl, get }) => {
+            (gl.domElement as any).tissueCounters = () => ({
+              frames: gl.info.render.frame,
+              camera: get().camera.position.toArray(),
+            });
             gl.domElement.addEventListener(
               "webglcontextlost",
               (event) => {
@@ -435,6 +445,7 @@ export default function TissueScene({
               opacity={view.opacity}
               section={view.section}
               maximum={view.fieldMaximum}
+              steps={frame.cells.length > 2000 ? 24 : 48}
             />
           )}
           {selected && (

@@ -16,11 +16,13 @@ export default function Structures({
   url,
   owner,
   experimentId,
+  onOpenWorkbench,
 }: {
   artifact: JsonRecord;
   url: string;
   owner: string;
   experimentId: string;
+  onOpenWorkbench?: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const host = useRef<HTMLDivElement>(null),
@@ -182,7 +184,7 @@ export default function Structures({
       className="artifact-viewer"
       aria-label={`Experiment structure ${artifact.name}`}
     >
-      <Button className="pocket-open" onClick={() => setExpanded(true)}>Open inhibitor workbench</Button>
+      <Button className="pocket-open" onClick={onOpenWorkbench ?? (() => setExpanded(true))}>Open inhibitor workbench</Button>
       {expanded && <Suspense fallback={<Loading label="Opening pocket observatory" />}><Workbench artifact={artifact} owner={owner} experimentId={experimentId} url={url.replace('/blob/', '/geometry/')} onClose={() => setExpanded(false)} /></Suspense>}
       <div className="structure-toolbar">
         <AnimatedTabs

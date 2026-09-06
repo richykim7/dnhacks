@@ -145,6 +145,8 @@ async def dispatch(journal,project_id,run_id,request,*,renderer=None,usage_captu
     if operation in {'compare','propose_followup'}:
         keys=args.pop('bundle_sha256s');bundles=runtime.bundles(keys)
         result=await asyncio.to_thread(compare,bundles) if operation=='compare' else propose_followup(bundles,**args)
+        if operation=='compare':
+            for row,key in zip(result['rows'],keys):row['bundle_sha256']=key
         return runtime.record('binder_comparison' if operation=='compare' else 'binder_followup',result,keys)
     if operation=='inspect_scene_capture':return await service.inspect_scene_capture(**args,usage_capture=usage_capture)
     if operation in {'capture_scene','pick'}:

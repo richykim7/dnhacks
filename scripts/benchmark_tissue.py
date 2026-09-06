@@ -60,7 +60,7 @@ def main():
             type="CAF" if i % 7 == 0 else "tumor",
             state="dead" if i % 5 == 0 else "alive",
             parent_id=None,
-            alanine=0.3,
+            alanine=0.1 + 0.4 * (7.5 + 6 * (i % 20)) / 128,
         )
         for i in range(10000)
     ]
@@ -112,7 +112,7 @@ def main():
     scene = service.open_scene(result["sha256"])
     scene = service.set_scene_view(
         scene["recipe_sha256"],
-        {"opacity": 0.2},
+        {"opacity": 0.2, "zoom": 0.6},
         "Measure fixed native-grid rendering capacity",
     )
     httpd = server.ThreadingHTTPServer(("127.0.0.1", a.port), server.Handler)
@@ -120,17 +120,23 @@ def main():
     reports = []
     try:
         for name, viewport in [("desktop", (1600, 1000)), ("mobile", (390, 844))]:
-            capture = service.capture_scene(
-                scene["recipe_sha256"],
-                renderer(service, f"http://127.0.0.1:{a.port}"),
-                viewport,
-            )
-            (a.output / f"{name}.png").write_bytes(
-                journal.read_blob(capture["image_sha256"])
-            )
+            try:
+                capture = service.capture_scene(
+                    scene["recipe_sha256"],
+                    renderer(service, f"http://127.0.0.1:{a.port}", benchmark=True),
+                    viewport,
+                )
+                (a.output / f"{name}.png").write_bytes(
+                    journal.read_blob(capture["image_sha256"])
+                )
+                status = "captured"
+            except (TimeoutError, RuntimeError, ValueError) as exc:
+                capture = {"error": str(exc), "render_budget_seconds": 90}
+                status = "unavailable"
             reports.append(
                 dict(
                     profile=name,
+                    status=status,
                     source_cells=10000,
                     source_field=[128, 128, 128],
                     frame_payload_bytes=sum(c["byte_length"] for c in result["chunks"]),
@@ -138,6 +144,7 @@ def main():
                 )
             )
             print(json.dumps(reports[-1]), flush=True)
+            (a.output / "performance.json").write_bytes(canonical(reports))
         (a.output / "performance.json").write_bytes(canonical(reports))
     finally:
         httpd.shutdown()
