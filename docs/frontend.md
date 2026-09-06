@@ -259,6 +259,10 @@ prevents an older failed addition retry from resurrecting a removed paper.
 
 ### Investigation candidate review
 
+Search-tree nodes with no children at the current playback position use a cool gray
+fill and a contrasting border. Nodes that emitted candidates have a soft green glow.
+The Candidates queue uses red for rejected findings and muted teal for Needs review.
+
 Automated candidate emissions are deduplicated by recorded experiment/submission and retry identities.
 Candidate badges never mean human acceptance. Fresh heartbeats permit restrained activity animation;
 stale workers, idle researchers and historical playback do not animate progress. Replay derives counts,
