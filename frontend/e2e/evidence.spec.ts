@@ -259,6 +259,7 @@ test("a relationship opens its exact source/context; search and return retain gr
 }) => {
   await evidenceApi(page);
   await page.goto("/?project=ion-channels#knowledge");
+  await page.getByRole("button", { name: "Browse 2 relationships" }).click();
   await expect(page.locator(".claim-result")).toHaveCount(2);
   await expect(
     page.locator(".edge-label").filter({ hasText: "regulates" }),
@@ -335,6 +336,7 @@ test("a relationship opens its exact source/context; search and return retain gr
   await page
     .getByRole("textbox", { name: "Find an entity or relationship" })
     .fill("transport activity");
+  await page.getByRole("button", { name: "Browse 1 relationship" }).click();
   await expect(page.locator(".claim-result")).toHaveCount(1);
   await page.locator(".claim-result").click();
   await expect(
@@ -348,6 +350,7 @@ test("a relationship opens its exact source/context; search and return retain gr
     page.getByRole("heading", { name: "No claims match" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Clear search and filters" }).click();
+  await page.getByRole("button", { name: "Browse 2 relationships" }).click();
   await expect(page.locator(".claim-result")).toHaveCount(2);
 });
 
