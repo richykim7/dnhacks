@@ -58,12 +58,21 @@ def drain_stdin():
         pass
 
 
+def run_helper(cmd, *, input=None, timeout=5):
+    try:
+        return board.run_command(cmd, input=input, timeout=timeout)
+    except (subprocess.TimeoutExpired, OSError):
+        log("helper unavailable or timed out:", Path(cmd[0]).name, cmd[1])
+        return None
+
+
 def tg_send(chat: str, text: str, dry: bool) -> bool:
     if dry:
         log("DRY tgx ->", chat, "|", text.replace("\n", " / ")[:160])
         return True
-    p = subprocess.run([str(TGX), "send", "--to", chat, "-"], input=text,
-                       text=True, capture_output=True)
+    p = run_helper([str(TGX), "send", "--to", chat, "-"], input=text, timeout=60)
+    if p is None:
+        return False
     if p.returncode != 0:
         log("tgx failed", p.returncode, p.stderr.strip()[:200])
         return False
@@ -74,8 +83,8 @@ def tg_send(chat: str, text: str, dry: bool) -> bool:
 def live_sessions() -> dict[str, str]:
     if not FLEETCTL.exists():
         return {}
-    p = subprocess.run([str(FLEETCTL), "list", "--json"], text=True, capture_output=True)
-    if p.returncode != 0:
+    p = run_helper([str(FLEETCTL), "list", "--json"])
+    if p is None or p.returncode != 0:
         return {}
     try:
         rows = json.loads(p.stdout)
@@ -85,15 +94,16 @@ def live_sessions() -> dict[str, str]:
 
 
 def session_idle(name: str) -> bool:
-    p = subprocess.run([str(FLEETCTL), "status", name, "--raw"], text=True, capture_output=True)
-    return p.stdout.strip() == "idle"
+    p = run_helper([str(FLEETCTL), "status", name, "--raw"])
+    return p is not None and p.returncode == 0 and p.stdout.strip() == "idle"
 
 
 def nudge(session: str, text: str, dry: bool):
     if dry:
         log("DRY nudge ->", session, "|", text[:120])
-        return
-    subprocess.run([str(FLEETCTL), "send-keys", session, text], text=True, capture_output=True)
+        return True
+    p = run_helper([str(FLEETCTL), "send-keys", session, text])
+    return p is not None and p.returncode == 0
 
 
 def format_tg(p: dict) -> str:
@@ -156,12 +166,13 @@ def main():
             if c["id"] <= seen_id:
                 continue
             p = board.parse_comment(c)
+            if p and not p["agent"].endswith(TG_SUFFIX):
+                if not tg_send(str(a.to), format_tg(p), a.dry_run):
+                    break  # Keep this comment pending for the next poll.
             seen_id, since = c["id"], c["created_at"]
             bcur.write_text(json.dumps({"id": seen_id, "since": since}))
             if not p:
                 continue
-            if not p["agent"].endswith(TG_SUFFIX):
-                tg_send(str(a.to), format_tg(p), a.dry_run)
             sessions = live_sessions()
             for m in MENTION_RE.findall(p.get("text", "")):
                 real = sessions.get(sanitize(m))
@@ -173,8 +184,10 @@ def main():
         still = []
         for sess, text, tries in pending:
             if session_idle(sess):
-                nudge(sess, text, a.dry_run)
-                log("nudged", sess)
+                if nudge(sess, text, a.dry_run):
+                    log("nudged", sess)
+                else:
+                    log("dropped failed nudge", sess)
             elif tries < 20:
                 still.append((sess, text, tries + 1))
             else:
@@ -196,11 +209,15 @@ def main():
                     if a.dry_run:
                         log("DRY board <-", agent, "|", text[:120])
                     else:
-                        board.cmd_post(argparse.Namespace(kind="note", files=None, eta=None,
-                                                          agent=agent, text=[text]))
+                        try:
+                            board.cmd_post(argparse.Namespace(kind="note", files=None, eta=None,
+                                                              agent=agent, text=[text]))
+                        except SystemExit:
+                            log("inbox post failed; retrying next poll")
+                            break
                     log("forwarded telegram -> board")
-            inbox_line = len(lines)
-            icur.write_text(json.dumps({"line": inbox_line}))
+                inbox_line = i + 1
+                icur.write_text(json.dumps({"line": inbox_line}))
 
         time.sleep(a.interval)
 
