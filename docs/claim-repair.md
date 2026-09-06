@@ -51,22 +51,30 @@ Candidate lists are suggestions, not exhaustive entity-name menus. Repair may pr
 source-faithful canonical name outside a shortlist for code to resolve; closed category,
 predicate and aspect fields still use their schema menus.
 
+A mutation class is a `mutant` actor even when no individual variant is named;
+`general` means the unqualified gene. A weaker rescue is not a measured null.
+Repair retains these source qualifiers and returns an actionable error for the
+unsupported plural per-claim `experiments` field instead of silently losing its assay.
+
 ## Frozen corpus ingestion
 
 `scripts/ingest_frozen_corpus.py --corpus <frozen-directory> --run <durable-run-directory>
 --lexicons <processed-lexicons-directory>` extracts the selected full texts without
-search or retrieval. It runs strict batches of ten concurrent papers and pins the
+search or retrieval. It keeps a rolling pool of ten concurrent papers and pins the
 reader to `claude-opus-4-8`, with `claude-sonnet-5` direction checking and repair.
 All model sessions disable tools, MCP, skills and hooks, and verify returned model
 identifiers. Ontology lookups remain available to the application.
 
 Each paper checkpoints its reader output and complete validated result. Restarting
 the same command skips completed papers and reuses saved reader output for failed
-papers. Workers retry once; a batch with remaining failures halts further batches.
+papers. Workers retry once for ordinary failures. A model service/quota failure
+stops queued launches immediately, drains active workers, and remains resumable.
 The coordinator checks frozen file hashes, writes results through one transactional
-store writer, then publishes a closed snapshot by atomic rename. A pre-ingestion
+store writer, then publishes a closed snapshot by atomic rename as papers finish.
+An import ledger avoids rewriting unchanged paper contributions at each publication.
+A pre-ingestion
 database backup and per-paper model usage and repair audits stay in the run directory.
-The frontend can display each completed batch through the existing corpus source.
+The frontend can display completed papers through the existing corpus source.
 Scientific deferrals remain in the graph review queue and are distinct from service
 failures. Graph counts are deduplicated relationships, not extraction proposal counts.
 
@@ -86,5 +94,6 @@ For a run started before automatic recording was installed, the compatibility co
 time from artifact modification time. Earlier events recovered when the observer
 starts are not presented as precisely observed live events.
 This records replay data only; timeline controls, playback speed and animation remain
-frontend work. Actual graph publication happens per batch, while paper completions can
-be animated individually using their recorded completion artifacts.
+frontend work. Replay snapshots and actual database publication events are separate:
+standard builds publish after extraction, while the rolling runner publishes completed
+papers as they arrive.

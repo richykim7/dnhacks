@@ -1,4 +1,4 @@
-"""Resumable, monitored frozen full-text extraction in strict batches of ten."""
+"""Resumable, monitored frozen full-text extraction with ten concurrent papers."""
 from __future__ import annotations
 
 import argparse
@@ -18,6 +18,10 @@ import time
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 READER = "claude-opus-4-8"
 REPAIR = "claude-sonnet-5"
+
+
+class ServiceUnavailable(RuntimeError):
+    """A model service failure; never an unsupported scientific finding."""
 
 
 def serial(value):
@@ -88,11 +92,21 @@ async def worker(args, manifest):
                 super().__init__(*a, **kw)
 
             async def receive_response(self):
-                async for msg in super().receive_response():
+                stream = super().receive_response()
+                while True:
+                    try:
+                        msg = await asyncio.wait_for(anext(stream), timeout=600 if self.expected_model == READER else 300)
+                    except StopAsyncIteration:
+                        break
+                    except asyncio.TimeoutError as exc:
+                        raise ServiceUnavailable("Model session stopped producing responses before its idle timeout") from exc
                     if isinstance(msg, AssistantMessage):
                         record({"type": "assistant", "model": msg.model,
                                 "text": [b.text for b in msg.content if isinstance(b, TextBlock)]})
                         if msg.model != self.expected_model:
+                            if msg.model == "<synthetic>":
+                                message = "\n".join(b.text for b in msg.content if isinstance(b, TextBlock))
+                                raise ServiceUnavailable(message or "Model service returned a synthetic error")
                             raise RuntimeError(f"Model mismatch: {msg.model} != {self.expected_model}")
                         if msg.model == READER:
                             try:
@@ -105,7 +119,7 @@ async def worker(args, manifest):
                         record({"type": "result", "model": self.expected_model,
                                 "usage": msg.usage, "cost": msg.total_cost_usd, "error": msg.is_error})
                         if msg.is_error:
-                            raise RuntimeError(f"Model service error: {msg.result}")
+                            raise ServiceUnavailable(f"Model service error: {msg.result}")
                         if self.expected_model == READER:
                             if (msg.usage or {}).get("output_tokens", 0) >= llm.MAX_OUTPUT_TOKENS:
                                 raise RuntimeError("Reader output truncated")
@@ -129,9 +143,13 @@ async def worker(args, manifest):
             repair_model=REPAIR, raw_extraction=raw)
         if result["stats"].get("pass1_failed") or not result.get("raw_extraction"):
             raise RuntimeError("Reader parse failure; paper remains incomplete")
+        try:
+            validate_result(result, args.ref)
+        except ServiceUnavailable:
+            save(output / "incomplete-result.json", {**result, "source_ref": args.ref, "source_sha256": expected})
+            raise
         if not result["claims"]:
             raise RuntimeError("Zero retained claims requires inspection")
-        validate_result(result, args.ref)
         result.update(source_ref=args.ref, source_sha256=expected, elapsed_seconds=time.time() - start,
                       implementation_commit=args.commit, runner_sha256=args.runner_sha256,
                       implementation_hashes=implementation_hashes, usage=llm.LEDGER.summary())
@@ -153,6 +171,9 @@ def validate_result(result, ref):
     claims = [c if isinstance(c, Claim) else Claim.model_validate(c) for c in result["claims"]]
     experiments = [e if isinstance(e, Experiment) else Experiment.model_validate(e) for e in result["experiments"]]
     deferrals = [d if isinstance(d, Deferral) else Deferral.model_validate(d) for d in result["deferrals"]]
+    unavailable = [d.reason for d in deferrals if "Repair unavailable:" in d.reason]
+    if unavailable:
+        raise ServiceUnavailable(unavailable[0])
     ids = {e.experiment_id for e in experiments}
     if any(e.source_ref != ref for e in experiments) or any(d.source_ref != ref for d in deferrals):
         raise RuntimeError("Wrong source in experiment or deferral")
@@ -180,12 +201,17 @@ def publish(args, manifest):
     if not backup.exists():
         shutil.copy2(target, backup)
     staged = args.run / "publishing.duckdb"
-    shutil.copy2(backup, staged)
+    shutil.copy2(target, staged)
     store = KGStore(staged)
     try:
+        store.con.execute("CREATE TABLE IF NOT EXISTS ingestion_imports (source_ref INTEGER PRIMARY KEY, result_sha256 VARCHAR)")
         for paper in manifest["papers"]:
             path = args.run / f"{paper['ref']:03d}" / "result.json"
             if not path.exists():
+                continue
+            result_hash = digest(path)
+            imported = store.con.execute("SELECT result_sha256 FROM ingestion_imports WHERE source_ref = ?", [paper["ref"]]).fetchone()
+            if imported and imported[0] == result_hash:
                 continue
             result = json.loads(path.read_text())
             if result["source_sha256"] != manifest["files_sha256"][paper["text_file"]]:
@@ -194,6 +220,7 @@ def publish(args, manifest):
             store.con.execute("BEGIN")
             try:
                 store.write_paper(paper["ref"], claims, experiments, deferrals)
+                store.con.execute("INSERT OR REPLACE INTO ingestion_imports VALUES (?, ?)", [paper["ref"], result_hash])
                 store.con.execute("COMMIT")
             except Exception:
                 store.con.execute("ROLLBACK")
@@ -218,65 +245,125 @@ async def coordinator(args, manifest):
     verify(args.corpus, manifest)
     with (args.run / "coordinator.lock").open("w") as lock, closing(TimelineRecorder(args.run)) as timeline:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        identity = {"reader": READER, "repair": REPAIR, "batch_size": 10,
+        identity = {"reader": READER, "repair": REPAIR,
                     "manifest_sha256": digest(args.corpus / "MANIFEST.json")}
         if (args.run / "run.json").exists():
             previous = json.loads((args.run / "run.json").read_text())
             if any(previous.get(k) != v for k, v in identity.items()):
                 raise RuntimeError("Existing run belongs to another corpus or model configuration")
-        save(args.run / "run.json", {**identity, "commit": args.commit,
-                                    "runner_sha256": digest(Path(__file__))})
-        timeline.event("ingestion_started", identity["manifest_sha256"], identity)
+        save(args.run / "run.json", {**identity, "concurrency": 10, "scheduling": "rolling",
+                                    "commit": args.commit, "runner_sha256": digest(Path(__file__))})
+        timeline.event("ingestion_started", [identity["manifest_sha256"], "rolling"],
+                       {**identity, "concurrency": 10, "scheduling": "rolling"})
         papers = manifest["papers"]
-        for offset in range(0, len(papers), 10):
-            batch = papers[offset:offset + 10]
-            print("BATCH_START", offset // 10 + 1, [p["ref"] for p in batch], flush=True)
+        completed_refs = set()
+        failures = []
 
-            async def one(paper):
-                output = args.run / f"{paper['ref']:03d}"
-                output.mkdir(exist_ok=True)
-                if (output / "result.json").exists():
-                    completed = json.loads((output / "result.json").read_text())
-                    validate_result(completed, paper["ref"])
-                    timeline.paper_completed(paper["ref"], completed,
-                        timestamp=(output / "result.json").stat().st_mtime, timestamp_basis="result_file_mtime")
-                    return
-                for attempt in range(1, 3):
-                    timeline.event("paper_started", [paper["ref"], attempt, time.time()],
-                                   {"paper_ref": paper["ref"], "attempt": attempt})
-                    command = [sys.executable, str(Path(__file__).resolve()), "--corpus", str(args.corpus),
-                               "--run", str(args.run), "--lexicons", str(args.lexicons), "--ref", str(paper["ref"])]
-                    with (output / f"worker-{attempt}.log").open("a") as log:
-                        proc = await asyncio.create_subprocess_exec(*command, stdout=log, stderr=log)
+        def record_completed(paper):
+            path = args.run / f"{paper['ref']:03d}" / "result.json"
+            result = json.loads(path.read_text())
+            validate_result(result, paper["ref"])
+            if result["source_sha256"] != manifest["files_sha256"][paper["text_file"]]:
+                raise RuntimeError("Stale extraction source")
+            timeline.paper_completed(paper["ref"], result,
+                timestamp=path.stat().st_mtime, timestamp_basis="result_file_mtime")
+            completed_refs.add(paper["ref"])
+
+        queued = []
+        for paper in papers:
+            output = args.run / f"{paper['ref']:03d}"
+            output.mkdir(exist_ok=True)
+            if (output / "result.json").exists():
+                record_completed(paper)
+            else:
+                queued.append(paper)
+
+        async def one(paper):
+            output = args.run / f"{paper['ref']:03d}"
+            for attempt in range(1, 3):
+                timeline.event("paper_started", [paper["ref"], attempt, time.time()],
+                               {"paper_ref": paper["ref"], "attempt": attempt})
+                command = [sys.executable, str(Path(__file__).resolve()), "--corpus", str(args.corpus),
+                           "--run", str(args.run), "--lexicons", str(args.lexicons), "--ref", str(paper["ref"])]
+                with (output / f"worker-{attempt}.log").open("a") as log:
+                    proc = await asyncio.create_subprocess_exec(*command, stdout=log, stderr=log)
+                    try:
+                        code = await asyncio.wait_for(proc.wait(), timeout=2400)
+                    except (asyncio.TimeoutError, asyncio.CancelledError) as exc:
+                        proc.terminate()
                         try:
-                            code = await asyncio.wait_for(proc.wait(), timeout=2400)
+                            await asyncio.wait_for(proc.wait(), timeout=5)
                         except asyncio.TimeoutError:
-                            proc.terminate()
+                            proc.kill()
                             await proc.wait()
-                            code = -1
-                    print("PAPER_EXIT", paper["ref"], "attempt", attempt, "code", code, flush=True)
-                    if code == 0 and (output / "result.json").exists():
-                        completed = json.loads((output / "result.json").read_text())
-                        validate_result(completed, paper["ref"])
-                        timeline.paper_completed(paper["ref"], completed,
-                            timestamp=(output / "result.json").stat().st_mtime, timestamp_basis="result_file_mtime")
-                        return
-                    timeline.event("paper_failed", [paper["ref"], attempt, time.time()],
-                                   {"paper_ref": paper["ref"], "attempt": attempt, "exit_code": code})
-                raise RuntimeError(f"Paper {paper['ref']} failed twice; batch halted")
+                        if isinstance(exc, asyncio.CancelledError):
+                            raise
+                        code = -1
+                print("PAPER_EXIT", paper["ref"], "attempt", attempt, "code", code, flush=True)
+                if code == 0 and (output / "result.json").exists():
+                    record_completed(paper)
+                    return
+                timeline.event("paper_failed", [paper["ref"], attempt, time.time()],
+                               {"paper_ref": paper["ref"], "attempt": attempt, "exit_code": code})
+                if code == 75:
+                    raise RuntimeError(f"Paper {paper['ref']}: model service unavailable; queued work halted")
+            raise RuntimeError(f"Paper {paper['ref']} failed twice; queued work halted")
 
-            results = await asyncio.gather(*(one(p) for p in batch), return_exceptions=True)
-            failures = [str(r) for r in results if isinstance(r, BaseException)]
+        pending = set()
+        waiting = iter(queued)
+
+        def fill_pool():
+            while len(pending) < 10:
+                paper = next(waiting, None)
+                if paper is None:
+                    break
+                pending.add(asyncio.create_task(one(paper)))
+
+        def publish_progress():
+            # A worker may have atomically saved its result just before its exit notification.
+            # Record and validate every artifact the snapshot writer is about to include.
+            for paper in papers:
+                path = args.run / f"{paper['ref']:03d}" / "result.json"
+                if paper['ref'] not in completed_refs and path.exists():
+                    record_completed(paper)
             counts = publish(args, manifest)
             timeline.published(args.corpus / "pdac-frozen_kg.duckdb")
-            save(args.run / "progress.json", {"batch": offset // 10 + 1, "counts": counts,
-                 "completed": len(list(args.run.glob("[0-9][0-9][0-9]/result.json"))), "failures": failures})
-            print("BATCH_FINISHED", offset // 10 + 1, counts, "failures", failures, flush=True)
+            save(args.run / "progress.json", {"scheduling": "rolling", "concurrency": 10,
+                 "counts": counts, "completed": len(completed_refs), "total": len(papers),
+                 "active": len(pending), "failures": failures})
+            print("POOL_PROGRESS", len(completed_refs), "/", len(papers), counts,
+                  "failures", failures, flush=True)
+
+        try:
+            if completed_refs:
+                publish_progress()
+            fill_pool()
+            while pending:
+                finished, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+                for task in finished:
+                    error = task.exception()
+                    if error is not None:
+                        failures.append(str(error))
+                if not failures:
+                    fill_pool()
+                    # Start replacements immediately before the single writer publishes a snapshot.
+                    await asyncio.sleep(0)
+                publish_progress()
             if failures:
                 raise RuntimeError("; ".join(failures))
-        verify(args.corpus, manifest)
-        timeline.event("ingestion_completed", identity["manifest_sha256"], {"papers": len(papers)})
-        print("INGESTION_COMPLETE", flush=True)
+            verify(args.corpus, manifest)
+            timeline.event("ingestion_completed", identity["manifest_sha256"], {"papers": len(papers)})
+            print("INGESTION_COMPLETE", flush=True)
+        except BaseException as exc:
+            timeline.event("ingestion_failed", [time.time(), type(exc).__name__],
+                           {"error_type": type(exc).__name__, "error": str(exc),
+                            "completed": len(completed_refs)})
+            raise
+        finally:
+            for task in pending:
+                task.cancel()
+            if pending:
+                await asyncio.gather(*pending, return_exceptions=True)
 
 
 if __name__ == "__main__":
@@ -292,4 +379,12 @@ if __name__ == "__main__":
     args.commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=Path(__file__).resolve().parents[1], text=True).strip()
     args.runner_sha256 = digest(Path(__file__))
     manifest = json.loads((args.corpus / "MANIFEST.json").read_text())
-    asyncio.run(worker(args, manifest) if args.ref else coordinator(args, manifest))
+    try:
+        asyncio.run(worker(args, manifest) if args.ref else coordinator(args, manifest))
+    except ServiceUnavailable as exc:
+        if args.ref:
+            save(args.run / f"{args.ref:03d}" / "service-error.json",
+                 {"service_unavailable": True, "message": str(exc), "time": time.time(),
+                  "quota": any(word in str(exc).lower() for word in ("limit", "quota", "credit"))})
+        print("SERVICE_UNAVAILABLE", str(exc), flush=True)
+        raise SystemExit(75)
