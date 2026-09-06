@@ -59,67 +59,84 @@ def fingerprint(source: Path, config: dict) -> tuple[str, dict]:
 
 
 def transport_self_test(output: Path) -> dict:
-    """Send actual literal text + Enter only to an owned private-socket Python receiver."""
+    """Keep fixture locks and routing globals out of the caller's live environment."""
+    output = output.resolve()
     with tempfile.TemporaryDirectory(prefix="board-nudge-test-") as directory:
         root = Path(directory)
-        socket = root / "tmux.sock"
-        receiver, received = root / "receiver.py", root / "received.jsonl"
-        receiver.write_text("import json,sys\nfrom pathlib import Path\n"
-                            "p=Path(sys.argv[1])\nprint('READY',flush=True)\n"
-                            "while True:\n"
-                            " try: text=input('› ')\n"
-                            " except EOFError: break\n"
-                            " with p.open('a') as f: f.write(json.dumps(text)+'\\n')\n"
-                            " print('ACK',flush=True)\n")
-        session = "board-nudger-owned-test"
-        command = shlex.join([sys.executable, str(receiver), str(received)])
-        prefix = ["tmux", "-S", str(socket)]
-        environment = dict(os.environ)
-        environment.pop("TMUX", None)
-        environment.pop("TMUX_PANE", None)
         try:
-            run(["tmux", "-f", "/dev/null", "-S", str(socket), "new-session", "-d", "-s", session, command], env=environment)
-            actual_socket = run(prefix + ["display-message", "-p", "-t", "=" + session + ":", "#{socket_path}"], env=environment).stdout.strip()
-            if actual_socket != str(socket):
-                raise RuntimeError("Private test socket verification failed")
-            deadline = time.monotonic() + 5
-            while "READY" not in run(prefix + ["capture-pane", "-p", "-t", "=" + session + ":"], env=environment).stdout:
-                if time.monotonic() > deadline:
-                    raise RuntimeError("Owned test receiver did not become ready")
-                time.sleep(.1)
-            foreground = run(prefix + ["display-message", "-p", "-t", "=" + session + ":", "#{pane_current_command}"], env=environment).stdout.strip()
-            config = {"routes": {"test/owned": {"kind": "tmux", "socket": str(socket), "session": session,
-                                                "commands": [foreground]}}}
-            payload = "Literal Board probe: $() `backticks` ; #{session_name} @fixture-only"
-            inbox = Inbox(root / "inbox.sqlite3")
-            with inbox.db:
-                inbox.put("fixture:1", 1, "test/owned", payload)
-            nudger.deliver(inbox, config)
-            deadline = time.monotonic() + 5
-            while not received.exists():
-                if time.monotonic() > deadline:
-                    raise RuntimeError("Text/Enter did not reach the owned receiver")
-                time.sleep(.1)
-            if [json.loads(line) for line in received.read_text().splitlines()] != [payload]:
-                raise RuntimeError("Literal transport changed or duplicated the message")
-            inbox.db.close()
-            restarted = Inbox(root / "inbox.sqlite3")
-            restarted.recover()
-            with restarted.db:
-                restarted.put("fixture:1", 1, "test/owned", payload)
-            nudger.deliver(restarted, config)
-            time.sleep(.2)
-            if len(received.read_text().splitlines()) != 1:
-                raise RuntimeError("Restart/replay duplicated delivery")
-            evidence = {"time": stamp(), "source": str(Path(__file__).resolve()),
-                        "private_socket": actual_socket, "receiver": "owned Python stdin fixture, not an agent",
-                        "literal_text_and_enter": "passed", "restart_and_replay": "one delivery",
-                        "payload": payload, "captured_ack": run(prefix + ["capture-pane", "-p", "-t", "=" + session + ":"], env=environment).stdout}
-            write_json(output, evidence)
-            return evidence
+            run([sys.executable, "-c",
+                 "import sys; from pathlib import Path; sys.path.insert(0, sys.argv[1]); "
+                 "from board_nudge_service import _transport_self_test; "
+                 "_transport_self_test(Path(sys.argv[2]), Path(sys.argv[3]))",
+                 str(Path(__file__).resolve().parent), str(output), str(root)],
+                env=dict(os.environ, XDG_CACHE_HOME=str(root / "cache")), timeout=25)
+            return json.loads(output.read_text())
         finally:
-            # This socket was created above and is unique. Never target a default/shared server.
-            run(prefix + ["kill-server"], env=environment, check=False)
+            # Also clean up if the worker times out before its own finally block.
+            run(["tmux", "-S", str(root / "tmux.sock"), "kill-server"], check=False)
+
+
+def _transport_self_test(output: Path, root: Path) -> dict:
+    """Send actual literal text + Enter only to an owned private-socket Python receiver."""
+    socket = root / "tmux.sock"
+    receiver, received = root / "receiver.py", root / "received.jsonl"
+    receiver.write_text("import json,sys\nfrom pathlib import Path\n"
+                        "p=Path(sys.argv[1])\nprint('READY',flush=True)\n"
+                        "while True:\n"
+                        " try: text=input('› ')\n"
+                        " except EOFError: break\n"
+                        " with p.open('a') as f: f.write(json.dumps(text)+'\\n')\n"
+                        " print('ACK',flush=True)\n")
+    session = "board-nudger-owned-test"
+    command = shlex.join([sys.executable, str(receiver), str(received)])
+    prefix = ["tmux", "-S", str(socket)]
+    environment = dict(os.environ)
+    environment.pop("TMUX", None)
+    environment.pop("TMUX_PANE", None)
+    try:
+        run(["tmux", "-f", "/dev/null", "-S", str(socket), "new-session", "-d", "-s", session, command], env=environment)
+        actual_socket = run(prefix + ["display-message", "-p", "-t", "=" + session + ":", "#{socket_path}"], env=environment).stdout.strip()
+        if actual_socket != str(socket):
+            raise RuntimeError("Private test socket verification failed")
+        deadline = time.monotonic() + 5
+        while "READY" not in run(prefix + ["capture-pane", "-p", "-t", "=" + session + ":"], env=environment).stdout:
+            if time.monotonic() > deadline:
+                raise RuntimeError("Owned test receiver did not become ready")
+            time.sleep(.1)
+        foreground = run(prefix + ["display-message", "-p", "-t", "=" + session + ":", "#{pane_current_command}"], env=environment).stdout.strip()
+        config = {"routes": {"test/owned": {"kind": "tmux", "socket": str(socket), "session": session,
+                                            "commands": [foreground]}}}
+        payload = "Literal Board probe: $() `backticks` ; #{session_name} @fixture-only"
+        inbox = Inbox(root / "inbox.sqlite3")
+        with inbox.db:
+            inbox.put("fixture:1", 1, "test/owned", payload)
+        nudger.deliver(inbox, config)
+        deadline = time.monotonic() + 5
+        while not received.exists():
+            if time.monotonic() > deadline:
+                raise RuntimeError("Text/Enter did not reach the owned receiver")
+            time.sleep(.1)
+        if [json.loads(line) for line in received.read_text().splitlines()] != [payload]:
+            raise RuntimeError("Literal transport changed or duplicated the message")
+        inbox.db.close()
+        restarted = Inbox(root / "inbox.sqlite3")
+        restarted.recover()
+        with restarted.db:
+            restarted.put("fixture:1", 1, "test/owned", payload)
+        nudger.deliver(restarted, config)
+        time.sleep(.2)
+        if len(received.read_text().splitlines()) != 1:
+            raise RuntimeError("Restart/replay duplicated delivery")
+        evidence = {"time": stamp(), "source": str(Path(__file__).resolve()),
+                    "private_cache": os.environ["XDG_CACHE_HOME"],
+                    "private_socket": actual_socket, "receiver": "owned Python stdin fixture, not an agent",
+                    "literal_text_and_enter": "passed", "restart_and_replay": "one delivery",
+                    "payload": payload, "captured_ack": run(prefix + ["capture-pane", "-p", "-t", "=" + session + ":"], env=environment).stdout}
+        write_json(output, evidence)
+        return evidence
+    finally:
+        # This socket was created above and is unique. Never target a default/shared server.
+        run(prefix + ["kill-server"], env=environment, check=False)
 
 
 def unit_quote(value: str) -> str:

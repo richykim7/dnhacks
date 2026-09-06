@@ -1,5 +1,11 @@
 # Research workspace review
 
+## Review — sandbox-safe Board transport fixture
+
+- Reproduced the private transport test's `uncertain` failure with an unwritable input-lock cache; ordinary and isolated-PID probes passed.
+- Moved the complete fixture into a child Python process with its own temporary cache. The actual shared input guards, byte-identical literal/Enter acknowledgment and replay checks remain in use; caller environment and routing globals stay unchanged.
+- Validation: 65 coordination/input/mirror tests passed with an unwritable inherited cache. A separate user/PID namespace also passed actual literal/Enter delivery and one-delivery replay. Regressions cover absent/unusable cache settings, caller-state preservation and timeout cleanup. No other agent session or mirror is involved.
+
 ## Review — presentation revision and reliable local Board delivery
 
 - Consolidated the current [editable judge deck](../presentation/README.md): 29 slides, a 12-slide default pitch, four hidden discovery-reveal storyboards and 13 technical appendix slides, plus a four-layout kit. Every slide has a tentative script, status, sources and editing instructions in Notes.
