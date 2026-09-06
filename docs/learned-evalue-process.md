@@ -1,5 +1,9 @@
 # Learned e-values: process and slide notes
 
+Current milestone: real-expression encoder training on L40S, held-out comparison, 10,000 synthetic
+null runs, and a standalone wealth report are complete. The chronology below distinguishes the
+earlier CPU/synthetic work from this GPU/real-data iteration.
+
 ## What we set out to build
 
 A learned statistical judge for expression experiments: a small neural network learns from earlier
@@ -57,7 +61,7 @@ Under equal distributions and the stated independence assumptions, exchanging th
 payoff, making the score conditionally fair. This provides the statistical basis for monitoring
 wealth against `1/alpha`. Simulations check the implementation; they do not prove the theorem.
 
-## Results useful for slides
+## Initial synthetic pilot (historical)
 
 All figures below are synthetic and use alpha = 0.05. The two rejection summaries are different:
 **final wealth** is the returned e-value; **ever crossing** means the path reached the threshold at
@@ -80,7 +84,7 @@ that measured throughput gives roughly 89 minutes for the proposed 10,000 repeti
 run the reported initial budgets, not that larger evaluation. Exact floating-point replay depends
 on the recorded software environment.
 
-## What is implemented and what remains
+## Initial synthetic milestone (historical)
 
 Implemented: standalone CPU bettor, explicit sampling contract, log-wealth diagnostics and replay
 metadata, PCA/autoencoder training and loading, evidence utilities, tests, benchmark harness and
@@ -91,7 +95,7 @@ including all 21 targeted e-value tests. The frontend production build, two fron
 all ten browser scenarios, document links and diff checks passed. Skips belong to existing local
 data/event-dependent tests; the new e-value suite ran with its optional dependency installed.
 
-Still required: select a real expression cohort and comparison; establish disjoint encoder
+At that milestone, still required: select a real expression cohort and comparison; establish disjoint encoder
 training/development/evaluation units; measure biological utility and realistic training costs.
 Investigation-wide multiple-testing control, verification integration and a UI wealth view require
 separate contracts and work. No real-cohort power improvement is claimed.
@@ -101,16 +105,17 @@ separate contracts and work. No real-cohort power improvement is claimed.
 - **Slide 1 — From a trained judge to valid evidence:** distinguish encoder and bettor; show the
   past-data training → fresh-data scoring loop; state the independent-donor and diagnostic-only
   decisions.
-- **Slide 2 — What the validation taught us:** show the null/leakage comparison and the baseline
-  results; emphasize that simpler methods sometimes win and compression can hide signal; finish
-  with the real-cohort evaluation still needed.
+- **Slide 2 — What the validation taught us:** show the 10,000-run null/leakage comparison and
+  the real-cohort wealth figure. Actual GPU training and held-out expression evaluation are now
+  complete: learned e=3,653, PCA e=86, scalar e=5,964. Emphasize that simpler methods sometimes win;
+  one observational cohort does not establish general power or causal effects.
 
 ## Paper-fidelity audit and GPU check (2026-09-05)
 
 Conclusion: the implementation follows the paper's **DAVT-Projection** statistical construction
 under the supported independent-unit null. It is an adaptation with explicit implementation choices,
-not a reproduction of the paper's published benchmark results. Real-expression suitability remains
-unverified because no real cohort has been evaluated.
+not a reproduction of the paper's published benchmark results. At the time of this audit, real-expression suitability was unverified because no real cohort had
+been evaluated. The subsequent real-data iteration is recorded below.
 
 | Paper component | Repository implementation | Assessment |
 | --- | --- | --- |
@@ -140,8 +145,118 @@ hardware availability was not checked before those runs and should have been. Po
 in local `CLAUDE.md` and shared `AGENTS.md` so future compute planning starts with the handoff.
 
 This was a hardware/connectivity check, not a GPU training run. The remote default system Python
-does not currently import Torch; other environments were not inventoried. The current bettor and
-encoder trainer explicitly construct CPU tensors, so installing CUDA Torch alone will not move
+does not currently import Torch; other environments were not inventoried. At that point, the bettor and
+encoder trainer explicitly constructed CPU tensors, so installing CUDA Torch alone will not move
 training to the GPU. A GPU iteration needs an isolated environment, explicit device support,
 device/replay validation and a timed smoke run before larger training. Connection information stays
 in the local handoff; it is not copied into this document.
+
+## Real expression and GPU iteration (2026-09-05)
+
+The next iteration adds explicit CPU/CUDA and float32/float64 execution, recorded in model and
+result metadata. Missing CUDA is an error. Initialization and masking draw only from an isolated
+CPU RNG, so training leaves both the caller's CPU and CUDA random states intact. GPU tests check
+repeatability, agreement with CPU arithmetic, and loading GPU-trained NPZ encoders on CPU.
+
+We selected [GSE212041](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE212041), the public
+processed neutrophil TPM cohort from LaSalle et al. The source contains longitudinal samples;
+we retain only D0 samples from COVID-positive and symptomatic COVID-negative patients. Healthy
+controls and all later/event-driven draws are excluded. The remaining 374 distinct donors split
+by a fixed stratified seed into 149 training, 74 development, and 151 evaluation units. Training
+contains 119 positive/30 negative donors; evaluation contains 121 positive/30 negative donors.
+Unique donor labels and disjoint splits are checked. Recruitment, treatment, severity and cell
+composition remain possible explanations of a distribution difference; this is not causal inference.
+
+Before evaluation, `scripts/evalue_real_data.py prepare` freezes a protocol and hashes the source
+and split files. We select the top 19,000 human genes by training-only log1p(TPM) variance, freeze
+training means/scales, fit PCA64, and train a masked autoencoder with 512 hidden units and 128 latent
+features for 100 epochs with 15% masking. This uses a separate training partition of the same study,
+not an externally validated foundation model. Both preprocessing and representation fitting exclude
+development/evaluation donors. The development partition is available for device benchmarking;
+it is not used to choose features, architecture or epoch count in this fixed-budget run.
+
+On the L40S with Torch 2.10.0+cu128, real-data autoencoder training (float32) took 3.41 seconds;
+PCA CPU fitting took 0.22 seconds. Timings include model fitting, exclude data transfer, and apply
+to this modest 149-donor training set. Fast fitting and decreasing training loss are not evidence
+of generalization. Artifacts, source TPM, and donor-level replay remain in ignored data/processed.
+The repository contains reproducible scripts and aggregate reports rather than patient-level data.
+
+The primary comparison predeclares a seed, 30 donor pairs, four pairs per batch, and a 64/64 bettor
+with at most 100 epochs per update. Two batches are burn-in; six batches are scored, the final one
+partial. Comparators are PCA, learned encoder, a predeclared IFIT3 scalar bettor, and a mean-distance
+permutation test using frozen standardized genes. Ten other pairing orders are sensitivity checks
+on the same donors, not independent power trials; no strongest-seed selection or evidence merger.
+
+A separate real-expression null audit fixes unordered, disjoint held-out donor pairs and gives each
+pair an independent fair orientation. Pair order remains fixed (`pairing="in_order"`); reshuffling
+would break the conditional construction. This checks the learner on real feature geometry under
+an artificial null. It does not assert that observed COVID labels were randomized. The synthetic
+null evaluation separately targets 10,000 repetitions with disjoint seeds and the original fixed
+pilot architecture. The real-expression counts and uncertainty follow below; the expanded synthetic results are recorded
+when the fixed evaluation completes.
+
+### Held-out real-data results
+
+The predeclared primary seed gave final e-values of **3,652.81 (learned encoder), 85.76 (PCA),
+and 5,964.41 (IFIT3 scalar)**, all above the alpha=0.05 threshold of 20. Ordinary permutation
+p=0.0001; calibrated e=99. The learned encoder exceeded PCA, but the scalar gave stronger evidence.
+Ten predeclared order/subsample checks rejected at final wealth 9/10, 5/10 and 8/10 respectively.
+Those checks reuse donors and are sensitivity measurements, not independent estimates of power.
+
+In 200 fair-orientation null repetitions on fixed real donor pairs, final rejections were 0 for
+all three representations. Ever-crossing counts were 5 learned, 4 PCA and 0 scalar. Learned
+crossing rate: 2.5% with pointwise Wilson 95% interval 1.07%–5.72%. Small observed wealth quantiles
+cannot estimate the heavy-tailed expectation reliably. The null audit makes no claim that clinical
+COVID labels were randomized or free of confounding.
+
+The public TPM/artifact API is exercised end to end for PCA and autoencoder comparisons, including
+its donor-overlap guard and raw-input/artifact replay hashes. Frozen-manifest checks reject changed
+source files, changed cohorts, training artifacts from another split, or donor overlap. The small
+bettor uses CPU after warm timing (0.194 s CPU / 0.355 s CUDA), while the encoder uses CUDA.
+
+For slides, use [the wealth figure](../research/learned-evalue-validation/real-expression/wealth.svg)
+and [the standalone report](../research/learned-evalue-validation/real-expression/index.html).
+A current second slide can now say: real RNA-seq training on the GPU; learned features beat PCA in
+one predeclared held-out comparison; a single-gene baseline still gives stronger evidence; null
+and order-sensitivity checks delimit what the result establishes. It should not claim clinical
+validation, causal COVID effects, universal power improvement, or investigation-wide error control.
+
+### Reproducibility and regression checks
+
+CPU/GPU tests exercise the actual L40S, protect caller RNG state, compare device arithmetic and
+load GPU-trained encoders on CPU. Additional failure tests reject changed source downloads,
+changed training partitions, repeated donor records and duplicated simulation seed streams.
+The real-source files are pinned by SHA-256, and the frozen protocol, split hashes, training
+losses, execution settings and aggregate results are retained with the report.
+
+The fresh-checkout Python gate needs the repository's optional `llm` extra because the existing
+web server imports the Claude SDK. Use `uv sync --extra dev --extra evalue --extra llm` before
+that full gate. This iteration also checked the original checkout's wider local suite against
+the new numerical code: 615 passed and 12 existing data/event-dependent skips. Frontend production
+build, two unit tests and all 14 browser tests passed on the synchronized branch. The standalone
+report was checked at desktop/mobile sizes without page errors or page-width overflow.
+
+### Expanded synthetic validation completed
+
+We completed the plan's 10,000 null repetitions across four independent seed ranges, sharing
+identical frozen synthetic encoders. Learned-encoder final rejection: **20/10,000 (0.20%)**;
+anytime crossing: **112/10,000 (1.12%; pointwise 95% interval 0.93%–1.35%)**. Ordinary permutation
+rejected 513/10,000 (5.13%, interval 4.71%–5.58%). The deliberately invalid label-memorizing
+control rejected 10,000/10,000, confirming that the harness catches that concrete leakage error.
+Four one-thread workers completed in about 22.3 minutes wall time. Rejection counts are pooled;
+heavy-tailed wealth quantiles are kept per-shard. The merger verifies disjoint seeds and matching
+configuration, software and artifact identity.
+
+The expanded alternative evaluation uses 100 repetitions for each predefined mean, variance and
+omitted-coordinate shift, with the same CPU environment as the final null evaluation. Full counts,
+uncertainty and replay commands are in the [validation record](../research/learned-evalue-validation/README.md).
+These are implementation checks and power measurements for the specified synthetic distributions,
+not a universal validity proof. The GPU real-expression study uses its separately recorded environment.
+
+The completed deliverable is a standalone, replayable diagnostic workflow with actual GPU encoder
+training, held-out real expression comparisons and a wealth-path report. Native verification,
+adaptive confirmation-data selection, investigation-family accounting and application UI wiring
+remain the separately reviewed integration phase described in the plan.
+
+Final focused CUDA validation: **33 passed** on L40S. The local CUDA-only test is skipped because
+this checkout has no GPU; the same test runs and passes on the remote device.

@@ -41,7 +41,7 @@ The development helper calls the official 21st HTTP MCP endpoint using an authen
 
 - Investigations: project-scoped roster and spatial agent tree. New runs use ordered runtime events for lifecycle, actual model/tool execution, concise agent intent, worker heartbeat, streaming experiment output and deterministic playback. Select a node for its experiments and artifacts; Show terminal is opt-in and reports unavailable for SDK branches without a dedicated pane. Streams reconnect by cursor and close on navigation. Legacy trace-only runs are explicitly partial. See [runtime contract](runtime.md).
 - Library: create a project; edit all collection fields; preview/build; upload/remove documents; assistant conversation and proposed settings; build/run history, progress, logs, and cancellation. Imported collections remain read-only where the API requires it.
-- Evidence: scoped literature graph and claim status filters; entity detail; required rationale for accept/reject; saved decisions applied through the existing promotion gate.
+- Evidence: scoped literature graph with directed relationships, claim status filters, and a searchable relationship list. Selecting an edge or list result focuses its endpoints and opens stored quotations, paper metadata/links, attribution and per-source biological context. Search covers the loaded graph subset; it does not imply a full-corpus search. Missing quotations or source metadata remain explicit. Existing finding-review decisions still use the promotion gate.
 - Molecular structures: only a selected node's collected experiment artifacts, inline in that experiment. No standalone Structures route, remote demo lookup or unrelated file picker. PDB/mmCIF coordinates are validated before durable collection; ribbon/atomic/surface modes, ambient occlusion, chain/residue controls, camera preservation and optional rotation use the public 3Dmol API without a fork. Artifact provenance distinguishes reference, prediction, derived geometry and illustration. No invented docking, confidence, mutation or binding scores.
 
 Invalid/oversized/missing artifacts have explicit errors. A browser-side malformed PDB guard remains in addition to backend parsing; no renderable artifact means no viewer. Geometry is fetched only when inspecting its owning experiment, with run/project scope and immutable hash checks at the backend.
@@ -56,6 +56,8 @@ Research IDs live behind disclosures. New manifest questions survive job cleanup
 - Static containment uses path ancestry, preventing sibling directories with a shared string prefix from passing the check.
 - Investigation responses expose the question recorded by a launch job. Collection scope is never substituted for a research question.
 - Frontend preserves project scope for evidence and promotion writes, displays build/spec drift, and exposes required review rationale.
+- Graph edges preserve `claim_id`. `GET /api/kg?source=<collection>&claim=<claim_id>` reads the exact collection's claim and up to 100 evidence records, with `evidence_total`, source-paper metadata and context. Claim inspection requires an explicit source; unknown sources/claims return 404. It does not extract papers, run models or change the graph. Older graph responses without IDs retain relationship browsing but cannot open source details.
+- Lock-safe DuckDB snapshots include a hash of the resolved source path, preventing separate projects with the same `kg.duckdb` filename and modification time from sharing a cached snapshot.
 
 ## Validation
 

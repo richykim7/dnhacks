@@ -18,6 +18,98 @@ CONTRACT = le.SamplingContract("synthetic", "test fixture", "independent Gaussia
 CONFIG = le.LearnedEConfig(batch_pairs=2, hidden=(4,), max_epochs=4, patience=2, lr=0.01)
 
 
+@pytest.mark.parametrize("device,dtype", [("mps", "float64"), ("cpu", "half"), ("cpu:1", "float64")])
+def test_execution_rejects_unsupported_settings(device, dtype):
+    with pytest.raises(ValueError):
+        run(*data(), config=replace(CONFIG, device=device, dtype=dtype))
+
+
+def test_explicit_cuda_never_silently_falls_back(monkeypatch):
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+    with pytest.raises(ValueError, match="CUDA requested but unavailable"):
+        run(*data(), config=replace(CONFIG, device="cuda"))
+
+
+def test_in_order_pairing_preserves_predeclared_units():
+    result = run(*data(), config=replace(CONFIG, pairing="in_order"))
+    assert result.metadata["pair_order"] == [[f"synthetic-a-{i}", f"synthetic-b-{i}"] for i in range(16)]
+
+
+def test_real_cohort_split_excludes_repeats_and_keeps_donors_disjoint(monkeypatch):
+    from pathlib import Path
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+    from evalue_real_data import split_records
+    records = [dict(title=f"{i}_D0", **{"time point":"D0", "patient category":"COVID+"}) for i in range(20)]
+    records += [dict(title="0_D3", **{"time point":"D3", "patient category":"COVID+"}),
+                dict(title="H0_H", **{"time point":"H", "patient category":"healthy"})]
+    splits = split_records(records, 123)
+    units = [{r["title"].split("_")[0] for r in rows} for rows in splits.values()]
+    assert set.union(*units) == set(map(str,range(20)))
+    assert all(a.isdisjoint(b) for a,b in itertools.combinations(units,2))
+    with pytest.raises(ValueError, match="duplicate D0"):
+        split_records([*records,records[0]],123)
+
+
+def test_real_permutation_degenerate_null_is_one(monkeypatch):
+    from pathlib import Path
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+    from evalue_real_data import permutation
+    assert permutation(np.ones((8,3)),np.ones((8,3)),np.random.default_rng(1),99) == 1
+
+
+def test_real_workflow_rejects_changed_source_and_training_partition(tmp_path, monkeypatch):
+    from pathlib import Path
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+    from evalue_real_data import prepare, train
+    raw=tmp_path / "raw"
+    raw.mkdir()
+    (raw / "tpm.txt.gz").write_bytes(b"changed source")
+    with pytest.raises(ValueError, match="audited source release"):
+        prepare(tmp_path)
+    (tmp_path / "train.npz").write_bytes(b"changed cohort")
+    (tmp_path / "manifest.json").write_text(json.dumps({"splits":{"train":{"sha256":"expected"}}}))
+    with pytest.raises(ValueError, match="training cohort differs"):
+        train(tmp_path)
+
+
+def test_null_report_merge_rejects_duplicate_seed_streams(tmp_path, monkeypatch):
+    from pathlib import Path
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+    from evalue_harness import merge_reports
+    report = {"configuration":{"seed":1,"repetitions":2,"scenarios":["null"]},
+              "runs":[{"method":"identity","repetition":0,
+                       "result":{"metadata":{"software":{"torch":"fixture"},"artifact":"identity"}}}]}
+    source=tmp_path / "report.json"
+    source.write_text(json.dumps(report))
+    with pytest.raises(ValueError, match="overlapping evaluation seeds"):
+        merge_reports([source,source],tmp_path / "summary.json")
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="requires CUDA hardware")
+def test_cuda_training_replay_rng_and_portable_encoder(tmp_path):
+    torch.cuda.init()
+    cpu_state = torch.random.get_rng_state().clone()
+    cuda_states = torch.cuda.get_rng_state_all()
+    config = replace(CONFIG, device="cuda", dtype="float64")
+    first, second = run(*data(), config=config), run(*data(), config=config)
+    assert first.to_dict() == second.to_dict()
+    assert first.metadata["execution"]["device"].startswith("cuda:")
+    assert first.log_wealth_path == pytest.approx(run(*data()).log_wealth_path, abs=1e-8)
+    x = np.exp(data()[0])
+    kw = dict(genes=["g0", "g1", "g2"], units=[f"train-{i}" for i in range(len(x))],
+              source="fixture", sampling="independent synthetic", unit_namespace="fixture",
+              hidden=8, components=2, epochs=3, device="cuda", dtype="float32")
+    encoder, replay = fit_autoencoder(x, **kw), fit_autoencoder(x, **kw)
+    for a, b in zip(encoder.weights, replay.weights):
+        np.testing.assert_array_equal(a, b)
+    path = tmp_path / "gpu.npz"
+    encoder.save(path)
+    loaded = FrozenEncoder.load(path)
+    np.testing.assert_allclose(loaded.transform(x, genes=kw["genes"]), encoder.transform(x, genes=kw["genes"]))
+    assert torch.equal(cpu_state, torch.random.get_rng_state())
+    assert all(torch.equal(a, b) for a, b in zip(cuda_states, torch.cuda.get_rng_state_all()))
+
+
 def run(a, b, **kwargs):
     return le.learned_two_sample_e(a, b, genes=[f"g{i}" for i in range(a.shape[1])],
                                   sampling=kwargs.pop("sampling", CONTRACT),
