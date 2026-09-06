@@ -50,3 +50,41 @@ and the existing verified ortholog conventions are preserved.
 Candidate lists are suggestions, not exhaustive entity-name menus. Repair may propose a
 source-faithful canonical name outside a shortlist for code to resolve; closed category,
 predicate and aspect fields still use their schema menus.
+
+## Frozen corpus ingestion
+
+`scripts/ingest_frozen_corpus.py --corpus <frozen-directory> --run <durable-run-directory>
+--lexicons <processed-lexicons-directory>` extracts the selected full texts without
+search or retrieval. It runs strict batches of ten concurrent papers and pins the
+reader to `claude-opus-4-8`, with `claude-sonnet-5` direction checking and repair.
+All model sessions disable tools, MCP, skills and hooks, and verify returned model
+identifiers. Ontology lookups remain available to the application.
+
+Each paper checkpoints its reader output and complete validated result. Restarting
+the same command skips completed papers and reuses saved reader output for failed
+papers. Workers retry once; a batch with remaining failures halts further batches.
+The coordinator checks frozen file hashes, writes results through one transactional
+store writer, then publishes a closed snapshot by atomic rename. A pre-ingestion
+database backup and per-paper model usage and repair audits stay in the run directory.
+The frontend can display each completed batch through the existing corpus source.
+Scientific deferrals remain in the graph review queue and are distinct from service
+failures. Graph counts are deduplicated relationships, not extraction proposal counts.
+
+Both standard corpus builds and the frozen ingestion runner automatically record
+graph-construction timelines. Each completed paper immediately produces a cumulative
+replay snapshot; recording does not wait for the batch to publish. The reusable
+`litmap.timeline.TimelineRecorder` writes `timeline/events.jsonl` and self-contained
+graph snapshots under the extraction run directory. Claim IDs and content-derived evidence replay
+IDs let a player distinguish new relationships from additional supporting evidence.
+Snapshots include nodes, edges, sources, quotations, contexts and experiments, so
+later replay does not require rerunning extraction. Recording deduplicates events
+across restarts and skips published databases with an active WAL.
+
+For a run started before automatic recording was installed, the compatibility command
+`scripts/record_ingestion_timeline.py --run <run-directory> --db <corpus-kg.duckdb>
+--watch` observes completed artifacts every 1.5 seconds. Events distinguish observation
+time from artifact modification time. Earlier events recovered when the observer
+starts are not presented as precisely observed live events.
+This records replay data only; timeline controls, playback speed and animation remain
+frontend work. Actual graph publication happens per batch, while paper completions can
+be animated individually using their recorded completion artifacts.

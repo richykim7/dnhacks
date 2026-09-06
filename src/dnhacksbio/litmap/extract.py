@@ -1165,6 +1165,9 @@ async def extract_paper(text: str, *, source_ref: int, source_label: str = "", f
                     process_map[key] = hit
 
     def build(rc, reader):
+        if "experiments" in rc:
+            raise DeferralError("claim field `experiments` is not supported; use singular `experiment` "
+                                "with the source-supported assay for this finding, or omit it")
         if not quote_supported(rc.get("quote", ""), text):
             raise DeferralError("quote does not match the source text; restore the verbatim passage")
         rc_org = _claim_organism(rc, paper_org)
@@ -1213,6 +1216,9 @@ async def extract_paper(text: str, *, source_ref: int, source_label: str = "", f
         return Claim(spine=spine, mechanism=rc.get("mechanism") or "", evidence=[ev]), exp, notes
 
     async def validate(rc):
+        if "experiments" in rc:
+            return ("claim field `experiments` is not supported; use singular `experiment` "
+                    "with one inline source-supported assay for this finding, or omit it")
         if rc.get("experiment") is not None and not isinstance(rc["experiment"], dict):
             return "repair must provide an inline source-supported experiment or omit it; numeric experiment pointers are not accepted"
         if not quote_supported(rc.get("quote", ""), text):
@@ -1346,8 +1352,24 @@ async def extract_paper(text: str, *, source_ref: int, source_label: str = "", f
                 failure["reason"] += "; validation feedback: " + str(feedback)
         await asyncio.gather(*(enrich_failure(failure) for failure in failures))
         instructions = build_prompt(field, doc_type, "[Source is supplied separately below]")
+        instructions += (
+            "\nREPAIR IDENTITY AND SCIENTIFIC SCOPE: The existing graph normalizes supported "
+            "model-organism orthologs onto the HGNC `gene` node, while preserving the actual "
+            "organism in evidence context. If validation says a symbol is human-resolvable and "
+            "category `gene` owns it, use the supported canonical gene candidate and retain "
+            "the source species; do not keep retrying mouse capitalization under non_human_gene. "
+            "This does not authorize guessing an ortholog: verified collisions with unrelated "
+            "human symbols and species-specific genes still require non_human_gene. "
+            "Preserve mutation, loss, activation and construct qualifiers that define the finding. "
+            "A statement about mutations must not become a general or wild-type gene claim merely "
+            "to pass validation; use mutant state when supported without inventing a specific variant. "
+            "Weaker rescue, incomplete restoration, or an effect smaller than another intervention "
+            "does not establish no_effect_on. Require evidence of a measured null for that predicate; "
+            "otherwise preserve the supported comparative finding or leave it unresolved. "
+            "Do not strengthen the source's scientific conclusion to increase claim retention.")
         instructions += ("\nREPAIR EXPERIMENT OVERRIDE: Never output numeric experiment references. "
-                         "Use an inline experiment with its actual source passage only when it supports "
+                         "Use the singular field `experiment`, never `experiments`, with an inline "
+                         "experiment and its actual source passage only when it supports "
                          "this specific finding, readout and experimental system; otherwise omit it. "
                          "An intervention assay cannot support an unrelated expression or cell-line "
                          "correlation claim merely because it is in the same paper. "
