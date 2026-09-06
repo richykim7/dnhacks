@@ -108,7 +108,13 @@ export interface Project {
 }
 export interface Graph {
   sources: string[];
-  nodes: { id: string; label: string; degree: number; function?: string }[];
+  nodes: {
+    id: string;
+    label: string;
+    degree: number;
+    kind?: string;
+    curie?: string;
+  }[];
   edges: {
     source: string;
     target: string;

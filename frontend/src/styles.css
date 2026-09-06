@@ -1424,36 +1424,6 @@ select:focus-visible {
   background: var(--stage);
   min-width: 0;
 }
-.entity-node {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 10px 15px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  max-width: 250px;
-  flex-wrap: wrap;
-}
-.entity-node strong {
-  font-size: 13px;
-  font-weight: 500;
-}
-.entity-node small {
-  font-size: 10px;
-  flex-basis: 100%;
-  padding-left: 16px;
-}
-.entity-node.selected {
-  border-color: var(--accent);
-  background: var(--selected);
-}
-.entity-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--accent);
-  border-radius: 50%;
-}
 .relationships-layout .detail-scroll {
   padding-top: 24px;
 }
