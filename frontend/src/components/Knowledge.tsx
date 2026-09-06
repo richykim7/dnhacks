@@ -620,7 +620,8 @@ function Relationships({ project }: { project: string }) {
   const [selected, setSelected] = useState("");
   const [claimId, setClaimId] = useState("");
   const [browse, setBrowse] = useState(false);
-  const [hideLeaves, setHideLeaves] = useState(true);
+  const [minimumClaims, setMinimumClaims] = useState(2);
+  const appliedMinimum = useDebounced(minimumClaims, 80);
 
   useEffect(() => {
     const close = (event: KeyboardEvent) => {
@@ -642,7 +643,7 @@ function Relationships({ project }: { project: string }) {
   if (q) params.set("q", q);
   const graph = useResource<EvidenceGraph>(`/api/kg?${params}`, 15000);
   const data = graph.data;
-  const leaves = useMemo(() => {
+  const claimCounts = useMemo(() => {
     const incident = new Map<string, Set<string>>();
     for (const edge of data?.edges || []) {
       for (const node of new Set([edge.source, edge.target])) {
@@ -650,16 +651,21 @@ function Relationships({ project }: { project: string }) {
         incident.get(node)!.add(claimKey(edge));
       }
     }
-    return new Set(
-      [...incident].filter(([, claims]) => claims.size === 1).map(([id]) => id),
-    );
+    return new Map([...incident].map(([id, claims]) => [id, claims.size]));
   }, [data]);
-  const visibleEdges = (data?.edges || []).filter(
-    (e) => !hideLeaves || (!leaves.has(e.source) && !leaves.has(e.target)),
+  const maximumClaims = Math.max(2, minimumClaims, ...claimCounts.values());
+  const hiddenNodes = new Set(
+    (data?.nodes || [])
+      .filter(
+        (n) =>
+          appliedMinimum > 1 && (claimCounts.get(n.id) || 0) < appliedMinimum,
+      )
+      .map((n) => n.id),
   );
-  const visibleNodeCount = (data?.nodes || []).filter(
-    (n) => !hideLeaves || !leaves.has(n.id),
-  ).length;
+  const visibleEdges = (data?.edges || []).filter(
+    (e) => !hiddenNodes.has(e.source) && !hiddenNodes.has(e.target),
+  );
+  const visibleNodeCount = (data?.nodes.length || 0) - hiddenNodes.size;
   const labels = useMemo(
     () => new Map(data?.nodes.map((n) => [n.id, n.label])),
     [data],
@@ -706,7 +712,7 @@ function Relationships({ project }: { project: string }) {
       return {
         id: n.id,
         type: "entity",
-        hidden: hideLeaves && leaves.has(n.id),
+        hidden: hiddenNodes.has(n.id),
         position: positions.get(n.id) || { x: 0, y: 0 },
         width: r * 2,
         height: r * 2,
@@ -777,7 +783,7 @@ function Relationships({ project }: { project: string }) {
         source: e.source,
         target: e.target,
         type: "claim",
-        hidden: hideLeaves && (leaves.has(e.source) || leaves.has(e.target)),
+        hidden: hiddenNodes.has(e.source) || hiddenNodes.has(e.target),
         data: { bow, dim, active },
         label: (claim ? active : labelAll)
           ? humanize(e.predicate).toLowerCase()
@@ -918,17 +924,47 @@ function Relationships({ project }: { project: string }) {
             ))}
           </select>
         </label>
-        <label className="leaf-filter">
-          <input
-            type="checkbox"
-            checked={hideLeaves}
-            onChange={(e) => {
-              setHideLeaves(e.target.checked);
-              clear();
-            }}
-          />
-          Hide single-claim nodes
-        </label>
+        <div className="degree-filter">
+          <label htmlFor="knowledge-minimum-claims">
+            Minimum connected claims
+          </label>
+          <div>
+            <input
+              id="knowledge-minimum-claims"
+              type="range"
+              min={1}
+              max={maximumClaims}
+              step={1}
+              value={minimumClaims}
+              aria-valuetext={
+                minimumClaims === 1
+                  ? "All nodes"
+                  : `${minimumClaims} claims or more`
+              }
+              onChange={(e) => {
+                setMinimumClaims(Number(e.target.value));
+                clear();
+              }}
+            />
+            <input
+              type="number"
+              aria-label="Minimum connected claims value"
+              min={1}
+              max={maximumClaims}
+              step={1}
+              value={minimumClaims}
+              onChange={(e) => {
+                setMinimumClaims(
+                  Math.max(
+                    1,
+                    Math.min(maximumClaims, Number(e.target.value) || 1),
+                  ),
+                );
+                clear();
+              }}
+            />
+          </div>
+        </div>
         <span className="muted view-count" aria-live="polite">
           {graph.loading && !data && "Loading all claims and entities…"}
           {data?.shown != null &&
@@ -992,11 +1028,24 @@ function Relationships({ project }: { project: string }) {
                   {data.shown === data.matched
                     ? "All matching relationships loaded."
                     : "Incomplete response; reload to retrieve the complete graph."}{" "}
-                  {hideLeaves
-                    ? "Single-claim nodes and their claims are hidden."
+                  {appliedMinimum > 1
+                    ? `Showing nodes with at least ${appliedMinimum} connected claims.`
                     : "Zoom for detail; fit all to see every component."}
                 </span>
               </div>
+              {visibleNodeCount === 0 && (
+                <div className="degree-empty" role="status">
+                  <p>No nodes meet this threshold.</p>
+                  <Button
+                    onClick={() => {
+                      setMinimumClaims(1);
+                      clear();
+                    }}
+                  >
+                    Show all nodes
+                  </Button>
+                </div>
+              )}
               <ReactFlowProvider>
                 <ReactFlow
                   key={`${source}:${q}:${JSON.stringify(filters)}`}

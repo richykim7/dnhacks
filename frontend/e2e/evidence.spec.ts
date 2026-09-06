@@ -259,7 +259,9 @@ test("a relationship opens its exact source/context; search and return retain gr
 }) => {
   await evidenceApi(page);
   await page.goto("/?project=ion-channels#knowledge");
-  await page.getByLabel("Hide single-claim nodes").uncheck();
+  await page
+    .getByRole("spinbutton", { name: "Minimum connected claims value" })
+    .fill("1");
   await page.getByRole("button", { name: "Browse 2 relationships" }).click();
   await expect(page.locator(".claim-result")).toHaveCount(2);
   await expect(
@@ -319,7 +321,9 @@ test("a relationship opens its exact source/context; search and return retain gr
   await expect(page.getByText("Hypothesized", { exact: true })).toBeVisible();
   await expect(page.getByText("This source's own finding")).toBeVisible();
   await expect(page.getByText("model and checker agreed")).toBeVisible();
-  await page.screenshot({ path: test.info().outputPath("ux-code-evidence-dark.png") });
+  await page.screenshot({
+    path: test.info().outputPath("ux-code-evidence-dark.png"),
+  });
   expect(
     (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze())
       .violations,
@@ -364,7 +368,9 @@ test("claim request errors remain visible and evidence is accessible on a narrow
     route.fulfill({ status: 503, json: { error: "Source store unavailable" } }),
   );
   await page.goto("/?project=ion-channels#evidence");
-  await page.getByLabel("Hide single-claim nodes").uncheck();
+  await page
+    .getByRole("spinbutton", { name: "Minimum connected claims value" })
+    .fill("1");
   await page.getByRole("button", { name: "Browse 2 relationships" }).click();
   await page.locator(".claim-result").filter({ hasText: "regulates" }).click();
   await expect(page.getByRole("alert")).toContainText(
@@ -373,7 +379,9 @@ test("claim request errors remain visible and evidence is accessible on a narrow
   await page.unroute("**/api/kg?**claim=claim-1");
   await page.getByRole("button", { name: "Retry", exact: true }).click();
   await expect(page.locator(".source-evidence blockquote")).toBeVisible();
-  await page.screenshot({ path: test.info().outputPath("ux-code-evidence-mobile.png") });
+  await page.screenshot({
+    path: test.info().outputPath("ux-code-evidence-mobile.png"),
+  });
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
