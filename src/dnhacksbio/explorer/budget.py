@@ -17,7 +17,7 @@ class BudgetUnavailable(RuntimeError):
     pass
 
 
-DEFAULT_CONTRACT = dict(version=1, policy_id="parent-allocation-v1", seconds=3600., actions=288,
+DEFAULT_CONTRACT = dict(version=1, policy_id="parent-allocation-v1", seconds=43200., actions=2880,
                         research_seconds=600., report_seconds=90., report_attempts=3,
                         judge_seconds=90., fork_seconds=10.)
 
