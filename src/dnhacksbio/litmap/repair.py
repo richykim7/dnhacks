@@ -23,6 +23,11 @@ Every corrected claim needs a source quote. Quote verbatim; whitespace differenc
 joining ordered source passages are allowed. Reject only unsupported assertions or nonclaims; rejected results must include
 "rejection_kind": "unsupported" or "nonclaim" and a specific nonempty reason.
 Use unresolved for missing evidence, unavailable grounding, schema limitations, or uncertainty.
+Retrieved candidates are suggestions, not exhaustive menus of entity names. You may propose a
+source-faithful canonical name not present in a shortlist; the validator will look it up and
+check its owner. Do not mark a claim unresolved merely because you know its canonical name
+but it is absent from the shortlist. Categories, predicates, aspects and other closed fields
+must still use the supplied schema menus. Never supply invented identifiers.
 Return exactly one result for every supplied id. Do not combine or silently omit claims."""
 
 
