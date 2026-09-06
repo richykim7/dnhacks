@@ -76,3 +76,11 @@ python -m dnhacksbio.expression_scoring export \
 This exports every accepted attempt, including failures and unavailable diagnostics. Receipt IDs
 join these records to experiment logs. Keep the database for complete input replay. Never feed
 these exports back into an active discovery investigation.
+
+The expression service now uses the shared `experiment_transport.py` queue and method validator
+registry. Its CLI, HTTP envelope, encoder settings and private numerical routine remain compatible.
+Renamed identical payloads share a canonical job; original receipt declarations are preserved in
+private `aliases`. Old jobs are adopted on first submission without rescoring. Per-receipt child
+locks prevent a surviving worker and a restarted service from concurrently scoring the same job.
+The dependency adapter uses this transport with its own registered-cohort contract; it never treats
+Chronos data as TPM. See [dependency scoring](dependency-scoring.md) for that operator setup.

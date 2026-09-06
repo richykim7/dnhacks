@@ -6,12 +6,9 @@ import base64
 import json
 import os
 from pathlib import Path
-import re
 import sys
-import urllib.request
 
-MAX_INPUT = 48 * 1024 * 1024
-REQUEST_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,119}$")
+from .experiment_transport import MAX_INPUT, REQUEST_ID, send_payload
 
 
 def submit(input_path, spec_path, request_id, *, endpoint=None):
@@ -27,20 +24,10 @@ def submit(input_path, spec_path, request_id, *, endpoint=None):
     if len(spec_raw) > 16_384:
         raise ValueError("Specification exceeds 16 KiB")
     spec = json.loads(spec_raw)
-    body = json.dumps({"request_id": request_id, "spec": spec,
-                       "input": base64.b64encode(raw).decode("ascii")}, allow_nan=False).encode()
+    payload = {"request_id": request_id, "spec": spec,
+               "input": base64.b64encode(raw).decode("ascii")}
     endpoint = endpoint or os.environ.get("DNHACKS_EXPRESSION_ENDPOINT", "http://127.0.0.1:8793")
-    req = urllib.request.Request(endpoint.rstrip("/") + "/experiments", body,
-                                 {"Content-Type": "application/json"}, method="POST")
-    # Never relay server bodies, error details, statistics, paths or worker state.
-    # A receipt is constructed locally only after the server acknowledges durable acceptance.
-    try:
-        with urllib.request.urlopen(req, timeout=30) as response:
-            if response.status != 202:
-                raise RuntimeError("Unexpected acknowledgement")
-    except Exception:
-        raise RuntimeError("Submission not acknowledged; retry unchanged inputs with the same request ID") from None
-    return {"receipt": request_id, "status": "accepted"}
+    return send_payload(payload, endpoint)
 
 
 def main(argv=None):
