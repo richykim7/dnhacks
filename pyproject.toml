@@ -14,6 +14,9 @@ dependencies = [
     "gilda>=1.6.1",      # entity grounding (local; REST fallback)
 ]
 
+[project.scripts]
+protein-tool = "dnhacksbio.protein_tools:main"
+
 [project.optional-dependencies]
 expression = ["decoupler==2.2.0", "pydeseq2==0.5.4"]
 evalue = [

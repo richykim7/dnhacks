@@ -398,6 +398,18 @@ There is no API key anywhere. Two pinned models: one for scientific judgment (th
 the assistant), one for bulk extraction. A resumable `Session` is what makes the explorer's working memory
 and forking possible; a `UsageLedger` records tokens and cache hits per run.
 
+### Measured protein discovery
+
+`protein_design.py`, `protein_encoder.py` and `protein_tools.py` provide exploratory
+protein profiles, coverage, module means, nearest development profiles, context
+comparisons and localization-aware site tables. Frozen mask-aware PCA and optional
+CPU denoising artifacts use donor-disjoint non-PDAC training/validation cohorts;
+confirmation data and cross-assay transforms are rejected by discovery operations.
+The operator-only audit preserves grade eligibility and the 48-pair policy.
+`protein_experiment.py` blocks native registration until shared ledger, sampling,
+privacy and validation prerequisites are implemented and reviewed. No native wealth
+or verification verdict is exposed. See [protein signaling](docs/protein-signaling.md).
+
 ## 9. The console
 
 ### 9.1 Python side (`webui/`)
