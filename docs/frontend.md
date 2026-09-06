@@ -87,3 +87,11 @@ cutaways, exploded presentation and camera/coordinate export. Accessible tables 
 atom-pair distances. Artifact hash checks precede rendering and historical availability uses the
 existing event cursor. See [binder interface workbench](binder-design.md) for supported metrics,
 provenance, visual-review records and incomplete live-design acceptance.
+
+### Spindle trajectory development
+
+Selected experiments can display validated `filament_trajectory` JSON artifacts
+in the spindle observatory, using saved physical frames, persistent pole IDs,
+condition switching, camera controls and local PNG export. This is an in-progress
+exploratory viewer, not a calibrated spindle model or runtime vision pipeline.
+See [spindle operations](spindle-simulator.md) for the contract and remaining work.

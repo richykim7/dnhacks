@@ -1,0 +1,148 @@
+.spindle-observatory {
+  background: #080c20;
+  color: #e3e8ef;
+  border: 1px solid #29334b;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 16px 0;
+  font-size: 13px;
+}
+.spindle-observatory header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 26px;
+}
+.spindle-observatory header small {
+  letter-spacing: 0.22em;
+  color: #93b5c8;
+  font-size: 10px;
+}
+.spindle-observatory h3 {
+  font-size: 26px;
+  font-weight: 400;
+  margin: 5px 0;
+}
+.spindle-stage {
+  height: 450px;
+  position: relative;
+}
+.spindle-stage canvas {
+  touch-action: none;
+}
+.spindle-badge {
+  position: absolute;
+  top: 15px;
+  left: 25px;
+  color: #a9bdcf;
+  font-size: 11px;
+  pointer-events: none;
+}
+.spindle-caption {
+  position: absolute;
+  bottom: 24px;
+  left: 25px;
+  display: grid;
+  gap: 4px;
+  pointer-events: none;
+  color: #b6c3d2;
+  font-size: 11px;
+}
+.spindle-caption strong {
+  font-size: 24px;
+  font-weight: 400;
+  color: #edf1f4;
+}
+.spindle-toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 25px;
+  border-top: 1px solid #25314a;
+  align-items: end;
+}
+.spindle-toolbar label {
+  display: grid;
+  gap: 5px;
+  font-size: 10px;
+  color: #a9b7ca;
+}
+.spindle-observatory select,
+.spindle-observatory button {
+  background: #141e34;
+  color: #e1e8f1;
+  border: 1px solid #35425e;
+  padding: 7px 10px;
+  border-radius: 6px;
+  min-height: 36px;
+  font-size: 12px;
+}
+.spindle-observatory button:focus-visible,
+.spindle-observatory select:focus-visible,
+.spindle-observatory input:focus-visible {
+  outline: 2px solid #ffc680;
+  outline-offset: 3px;
+}
+.spindle-time {
+  display: grid;
+  gap: 8px;
+  padding: 8px 25px 20px;
+  color: #b3c0d0;
+  font-size: 11px;
+}
+.spindle-time input {
+  width: 100%;
+  accent-color: #a8cfd8;
+}
+.spindle-time > span {
+  display: flex;
+  justify-content: space-between;
+}
+.spindle-observatory details,
+.spindle-readout {
+  padding: 12px 25px;
+  border-top: 1px solid #25314a;
+  color: #a9b7ca;
+}
+.spindle-observatory pre {
+  max-height: 200px;
+  overflow: auto;
+}
+.spindle-expanded {
+  position: fixed;
+  inset: 20px;
+  z-index: 1000;
+  margin: 0;
+  overflow: auto;
+}
+.spindle-expanded .spindle-stage {
+  height: calc(100vh - 340px);
+  min-height: 280px;
+}
+@media (max-width: 600px) {
+  .spindle-expanded {
+    inset: 0;
+    border-radius: 0;
+  }
+  .spindle-observatory header {
+    padding: 16px;
+  }
+  .spindle-observatory h3 {
+    font-size: 20px;
+  }
+  .spindle-stage {
+    height: 410px;
+  }
+  .spindle-toolbar {
+    padding: 12px;
+    gap: 8px;
+  }
+  .spindle-toolbar label {
+    flex: 1;
+    min-width: 125px;
+  }
+  .spindle-badge,
+  .spindle-caption {
+    left: 16px;
+  }
+}
