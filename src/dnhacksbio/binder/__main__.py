@@ -46,7 +46,7 @@ def main():
     parser.add_argument('request',type=Path);parser.add_argument('--output',type=Path)
     args=parser.parse_args()
     try:result={'ok':True,'output':dispatch(json.loads(args.request.read_text()))}
-    except (ValueError,KeyError,FileNotFoundError) as exc:result={'ok':False,'error':str(exc)}
+    except (ValueError,KeyError,FileNotFoundError,RuntimeError,TimeoutError) as exc:result={'ok':False,'error':str(exc)}
     raw=canonical(result)
     if args.output:args.output.write_bytes(raw)
     else:print(raw.decode())

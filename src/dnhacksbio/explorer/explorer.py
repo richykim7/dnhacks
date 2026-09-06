@@ -161,6 +161,7 @@ Actions:
 - read_paper     {"paper_id": "<id>", "max_chars": 30000, "offset": 0}  -> a paper's text, local or just
                    fetched. Long papers come back truncated and say so; call again with the offset given to
                    read on. A truncated read never supports "the paper does not mention X".
+- binder         {"operation": "<operation>", "experiment_id": "<owned ID>", "args": {...}} -> scoped exploratory binder records, receipts and actual scene/vision tools; get_skill binder-interface first
 - spindle        {"operation": "<operation>", "experiment_id": "<owned ID>", "args": {...}} -> provisional native spindle jobs and scoped scene/vision workflow; get_skill spindle-interface first
 - search_skills  {"query": "<method or question>"}              -> which methods fit; then get_skill for the how
 - tissue         {"experiment_id":"<id>","operation":"<operation>","args":{...}} -> conditional spatial model; get_skill tissue-interface first
@@ -919,6 +920,9 @@ class Explorer:
             return "(at most 8 experiments per action)"
         for e in exps:
             method = e.get("method_id")
+            if method == "binder-interface":
+                self._event("policy.rejected", {"reason": "Binder guide is not an audited method", "method_id": method})
+                return "(binder-interface is an exploratory tool guide; use method_id exploratory)"
             required = "agent-runtime" if method == "exploratory" else method
             if not required or required not in self._skill_snapshots or required not in self._delivered:
                 self._event("policy.rejected", {"reason": "Method guidance not delivered", "method_id": method})
@@ -1477,6 +1481,18 @@ class Explorer:
              "subgraph": self._act_subgraph, "path": self._act_path}
         if name == "tissue":
             return await self._act_tissue(args)
+        if name == "binder":
+            if "binder-interface" not in self._delivered:
+                return "(binder blocked: get_skill binder-interface before dispatch)"
+            from dnhacksbio.binder.runtime import dispatch
+            usage={}
+            try:
+                result=await dispatch(self.journal,self.manifest.get("project_id"),self.run_id,args,usage_capture=usage)
+                return json.dumps(result,allow_nan=False)
+            except (ValueError,KeyError,TypeError,FileNotFoundError,RuntimeError,TimeoutError) as exc:
+                return json.dumps({"error":str(exc)})
+            finally:
+                if usage:self.control.cost(self.run_id,"research",0.,_capture_usage(usage))
         if name == "spindle":
             if "spindle-interface" not in self._delivered:
                 return "(spindle blocked: get_skill spindle-interface before dispatch)"

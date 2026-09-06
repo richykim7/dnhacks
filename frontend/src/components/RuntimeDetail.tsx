@@ -369,6 +369,38 @@ export function RuntimeDetail({
                   {events.filter(o=>o.kind==='tissue.observation'&&o.payload.capture_id===e.payload.capture_id).map(o=><p key={o.sequence}>{o.payload.status}: {o.payload.observation}</p>)}
                 </RecordedDisclosure>
               ))}
+              {(run?.history ?? []).some(
+                (e: RuntimeEvent) =>
+                  e.kind === "binder.job" &&
+                  e.experiment_id === exp.experiment_id,
+              ) && (
+                <RecordedDisclosure title="Binder design activity">
+                  <p>
+                    Recorded job states; queued receipts require an operator
+                    launch. No simulated compute progress.
+                  </p>
+                  <ol>
+                    {(run?.history ?? [])
+                      .filter(
+                        (e: RuntimeEvent) =>
+                          e.kind === "binder.job" &&
+                          e.experiment_id === exp.experiment_id,
+                      )
+                      .map((e: RuntimeEvent) => (
+                        <li key={e.sequence}>
+                          {human(e.payload.state)}
+                          {e.payload.candidate_id
+                            ? ` · ${e.payload.candidate_id}`
+                            : ""}
+                          {e.payload.reason ? ` · ${e.payload.reason}` : ""}
+                          {e.payload.rejection_reason
+                            ? ` · Rejected: ${e.payload.rejection_reason}`
+                            : ""}
+                        </li>
+                      ))}
+                  </ol>
+                </RecordedDisclosure>
+              )}
               {exp.artifacts.map((artifact: JsonRecord) => (
                 <div className="experiment-artifact" key={artifact.artifact_id}>
                   {artifact.status === "available" &&
@@ -388,7 +420,9 @@ export function RuntimeDetail({
                       />
                     </Suspense>
                   ) : artifact.status === "available" &&
-                    ["molecular_structure", "binder_bundle"].includes(artifact.kind) ? (
+                    ["molecular_structure", "binder_bundle"].includes(
+                      artifact.kind,
+                    ) ? (
                     <>
                       <h4>{artifact.name}</h4>
                       <Status label={human(artifact.provenance.category)} />
@@ -443,6 +477,36 @@ export function RuntimeDetail({
                     </>
                   ) : artifact.kind === "spindle_metrics" && artifact.status === "available" ? (
                     <Suspense fallback={<Loading label="Opening ensemble metrics" />}><SpindleMetrics url={runtimeUrl(runId,`blob/${artifact.storage_key}`,project,cursor)} /></Suspense>
+                  ) : artifact.status === "available" &&
+                    [
+                      "binder_target",
+                      "binder_epitope",
+                      "binder_protocol",
+                      "binder_comparison",
+                      "binder_followup",
+                    ].includes(artifact.kind) ? (
+                    <RecordedDisclosure
+                      title={`Inspect ${human(artifact.kind)}`}
+                    >
+                      <p>Immutable exploratory record · {artifact.name}</p>
+                      <a
+                        href={runtimeUrl(
+                          runId,
+                          `blob/${artifact.storage_key}`,
+                          project,
+                          cursor,
+                        )}
+                        download={`${artifact.kind}.json`}
+                      >
+                        Download record
+                      </a>
+                      <BlobText
+                        runId={runId}
+                        blob={artifact}
+                        project={project}
+                        cursor={cursor}
+                      />
+                    </RecordedDisclosure>
                   ) : artifact.kind === "scene_capture" &&
                     artifact.status === "available" ? (
                     <figure className="binder-recorded-capture">

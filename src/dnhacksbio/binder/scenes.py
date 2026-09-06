@@ -208,15 +208,22 @@ class SceneService:
         if snapshot['scope']!=self.scope:raise ValueError('Capture scope mismatch')
         return snapshot
 
-    async def inspect_scene_capture(self,capture_id,*,question,through=None):
+    async def inspect_scene_capture(self,capture_id,*,question,through=None,usage_capture=None):
         from dnhacksbio.llm import acomplete
         if not isinstance(question,str) or not 1<=len(question)<=2000:raise ValueError('Bounded visual question required')
         snapshot=self.read_capture(capture_id,through)
         png=self.journal.read_blob(snapshot['image_sha256'])
-        note=await asyncio.wait_for(acomplete(
-            'Inspect this exact molecular image. Describe observable geometry and occlusion; do not infer affinity, '
-            'specificity or biological efficacy. Scene actions are not physical time. Question: '+question,
-            images=[png],tools_disabled=True,max_turns=1,max_attempts=1,max_output_tokens=768,effort='low'),timeout=90)
+        try:
+            note=await asyncio.wait_for(acomplete(
+                'Inspect this exact molecular image. Describe observable geometry and occlusion; do not infer affinity, '
+                'specificity or biological efficacy. Scene actions are not physical time. Question: '+question,
+                images=[png],tools_disabled=True,max_turns=1,max_attempts=1,max_output_tokens=768,effort='low',capture=usage_capture),timeout=90)
+        except Exception as exc:
+            from dnhacksbio.explorer.runtime import redact
+            # Provider SDK errors are not necessarily RuntimeError subclasses. Keep the
+            # saved capture reusable, record no observation, and preserve caller usage.
+            detail=redact(str(exc))[:1000] or type(exc).__name__
+            raise RuntimeError('Visual observation unavailable: '+detail) from exc
         review={'schema':'visual_review.v1','scope':self.scope,'capture_id':capture_id,
                 'image_sha256':snapshot['image_sha256'],'recipe_sha256':snapshot['recipe_sha256'],
                 'observation':note,'status':'visual observation, not scientific verification'}
