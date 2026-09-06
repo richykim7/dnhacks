@@ -239,3 +239,15 @@
     font-size: 16px;
   }
 }
+
+.spindle-mobile-switch { display:flex; gap:8px; padding:8px 12px; }
+.spindle-mobile-switch [aria-pressed="true"] { border-color:#dbb477; color:#ffe0ae; }
+.spindle-sampling { margin:0; padding:6px 25px 12px; color:#a9b7ca; font-size:12px; }
+@media (max-width:600px) {
+  .spindle-comparison { display:grid; grid-template-columns:minmax(0,1fr); }
+  .spindle-comparison > .spindle-cell { grid-area:1/1; }
+  .spindle-comparison[data-mobile-side="0"] > .spindle-cell:nth-child(2),
+  .spindle-comparison[data-mobile-side="1"] > .spindle-cell:first-child { opacity:0; pointer-events:none; }
+  .spindle-comparison[data-mobile-side="1"] > .spindle-caption { display:none; }
+  .spindle-comparison .spindle-comparison-caption { left:16px; bottom:24px; font-size:11px; }
+}

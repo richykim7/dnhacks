@@ -36,6 +36,7 @@ def register_method(name, validator):
 
 class QueueStore:
     worker_module = ""
+    immutable_completions = False
 
     def validate_payload(self, payload):
         return VALIDATORS[self.method](payload)
@@ -62,6 +63,27 @@ class QueueStore:
                   digest TEXT NOT NULL, payload TEXT NOT NULL, outcome TEXT NOT NULL,
                   received_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')));
             """)
+            # Every concrete service opts in: a subclass may implement a different replay contract.
+            if type(self).__dict__.get("immutable_completions", False):
+                con.executescript("""
+                CREATE TABLE IF NOT EXISTS completions (
+                  receipt TEXT PRIMARY KEY, digest TEXT NOT NULL, status TEXT NOT NULL,
+                  result TEXT, config TEXT NOT NULL, completed_at REAL NOT NULL);
+                CREATE TRIGGER IF NOT EXISTS freeze_job_completion AFTER UPDATE OF status ON jobs
+                WHEN NEW.status IN ('completed','failed') AND OLD.status NOT IN ('completed','failed')
+                BEGIN
+                  INSERT INTO completions VALUES (NEW.receipt, NEW.digest, NEW.status, NEW.result,
+                    (SELECT config FROM settings WHERE id=1),
+                    (julianday('now') - 2440587.5) * 86400.0);
+                END;
+                CREATE TRIGGER IF NOT EXISTS immutable_completed_job BEFORE UPDATE ON jobs
+                WHEN OLD.status IN ('completed','failed')
+                BEGIN SELECT RAISE(ABORT, 'Terminal scoring jobs are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS immutable_completion_update BEFORE UPDATE ON completions
+                BEGIN SELECT RAISE(ABORT, 'Completion snapshots are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS immutable_completion_delete BEFORE DELETE ON completions
+                BEGIN SELECT RAISE(ABORT, 'Completion snapshots are immutable'); END;
+                """)
         os.chmod(self.path, 0o600)
 
     @contextmanager
@@ -224,4 +246,3 @@ def send_payload(payload, endpoint):
     except Exception:
         raise RuntimeError("Submission not acknowledged; retry unchanged inputs with the same request ID") from None
     return {"receipt": request_id, "status": "accepted"}
-

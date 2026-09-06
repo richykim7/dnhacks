@@ -258,10 +258,13 @@ def test_live_dependency_service_recovers_interrupted_job(registration, tmp_path
     endpoint = f"http://127.0.0.1:{port}"
     command = [sys.executable, "-m", "dnhacksbio.dependency_scoring", "serve", "--state", str(private),
                "--registration", str(registration_path), "--port", str(port)]
+    initial = Store(private)
+    initial.configure(registration)
+    initial.enqueue(payload(registration, "live-trial"))
+    with initial.connect() as con:
+        con.execute("UPDATE jobs SET status='running'")
+    completed = None
     for restart in (False, True):
-        if restart:
-            with Store(private).connect() as con:
-                con.execute("UPDATE jobs SET status='running', result=NULL")
         proc = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
             deadline = time.monotonic() + 40
@@ -286,6 +289,10 @@ def test_live_dependency_service_recovers_interrupted_job(registration, tmp_path
             assert submit(spec, "live-trial", endpoint=endpoint) == receipt
             with store.connect() as con:
                 assert con.execute("SELECT count(*) FROM jobs").fetchone()[0] == 1
+                snapshot = con.execute("SELECT * FROM completions").fetchone()
+                if restart:
+                    assert snapshot == completed
+                completed = snapshot
         finally:
             proc.send_signal(signal.SIGINT)
             try:

@@ -360,3 +360,16 @@
   font-size: 12px;
   color: var(--muted);
 }
+
+.binder-compare-select { display: flex; gap: 12px; align-items: center; padding: 8px 16px; font-size: 11px; border-bottom: 1px solid #263848; }
+.binder-compare-select select { max-width: 70%; }
+.binder-compare-stage { position: absolute; inset: 0; display: flex; }
+.binder-compare-view { position: relative; width: 50%; height: 100%; }
+.binder-compare-view + .binder-compare-view::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; border-left: 1px solid #294050; pointer-events: none; }
+.binder-compare-names { position: absolute; top: 104px; left: 0; right: 0; display: grid; grid-template-columns: 1fr 1fr; color: #c3d8e8; font-size: 11px; pointer-events: none; }
+.binder-compare-names span { padding: 0 20px; overflow-wrap: anywhere; }
+.binder-comparison-metrics { padding: 16px; overflow-x: auto; }
+.binder-comparison-metrics table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.binder-comparison-metrics caption { text-align: left; margin-bottom: 10px; color: #b7cde0; }
+.binder-comparison-metrics th, .binder-comparison-metrics td { text-align: left; padding: 8px; border-bottom: 1px solid #294050; }
+@media (max-width: 900px) { .node-scene .binder-compare-names { top: 62px; font-size: 9px; } .binder-compare-names span { padding: 0 10px; } }

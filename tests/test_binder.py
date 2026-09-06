@@ -168,6 +168,31 @@ def scene_renderer(request):
             'picked':request['bundle']['structure']['residues'][0]['id']}
 
 
+def test_orthographic_capture_preserves_scale_and_rejects_changed_zoom(scene_service, bundle):
+    from dnhacksbio.binder.scenes import validate_view
+    service,key=scene_service
+    camera={'projection':'OrthographicCamera','position':[0,0,60],'target':[0,0,0],
+            'height':80,'zoom':1.5,'near':.1,'far':2000}
+    for bad in [0, -1, float('nan'), 10001]:
+        with pytest.raises(ValueError,match='height'):
+            validate_view({'camera':{**camera,'height':bad}},bundle)
+    for bad in [0, float('nan'), 1001]:
+        with pytest.raises(ValueError,match='zoom'):
+            validate_view({'camera':{**camera,'zoom':bad}},bundle)
+    opened=service.open_scene(key)
+    scene=service.set_scene_view(opened['recipe_sha256'],{'camera':camera},note='Constant physical scale')
+    captured=service.capture_scene(scene['recipe_sha256'],scene_renderer)
+    assert captured['state']['camera']==camera
+    def changed(request):
+        result=scene_renderer(request)
+        result['state']['camera']={**result['state']['camera'],'zoom':2}
+        return result
+    with pytest.raises(ValueError,match='camera differs'):
+        service.capture_scene(scene['recipe_sha256'],changed)
+    with pytest.raises(ValueError,match='differs'):
+        service.pick(captured['capture_id'],recipe_sha256=scene['recipe_sha256'],x=0,y=0,renderer=changed)
+
+
 def test_scene_scope_cursor_and_stale_revision(scene_service):
     from dnhacksbio.binder.scenes import SceneService
     service,key=scene_service
@@ -265,3 +290,53 @@ def test_scene_representation_requires_available_source_geometry(bundle):
     assert validate_view({'representation':'ribbon','preset':'reverse'},bundle)['representation']=='atoms'
     bundle['structure']['atoms']=[a for a in bundle['structure']['atoms'] if a['name']!='CA']
     with pytest.raises(ValueError,match='trace unavailable'):validate_view({'representation':'ribbon'},bundle)
+
+
+def test_comparison_scene_binds_both_sources_cameras_and_pixel_lane(scene_service,bundle):
+    import base64
+    from dnhacksbio.binder.bundle import make_bundle
+    service,key=scene_service
+    second=make_bundle(base64.b64decode(bundle['files']['source.pdb']['base64']),'pdb',
+        target_chains=bundle['target_chains'],binder_chains=bundle['binder_chains'],candidate_id='second illustration',
+        scope=service.scope,provenance=bundle['manifest']['provenance'],source_evidence=[],protocol=bundle['protocol'])
+    other=service.journal.store_bytes(canonical(second))
+    opened=service.open_scene(key)
+    before=service.journal.snapshot(service.scope['run_id'])['sequence']
+    with pytest.raises(FileNotFoundError):
+        service.set_scene_view(opened['recipe_sha256'],{'comparison_bundle_sha256':other},note='Unavailable candidate')
+    assert service.journal.snapshot(service.scope['run_id'])['sequence']==before
+    service._append('artifact',{'artifact_id':'second','kind':'binder_bundle','status':'available',
+        'sha256':other,'storage_key':other})
+    with pytest.raises(ValueError,match='distinct'):
+        service.set_scene_view(opened['recipe_sha256'],{'comparison_bundle_sha256':key},note='Same candidate')
+    paired=service.set_scene_view(opened['recipe_sha256'],{'preset':'candidate-compare',
+        'comparison_bundle_sha256':other},note='Compare exact target geometry')
+    def render(request):
+        result=scene_renderer(request);state=result['state']
+        state['views']=[{'bundle_sha256':source,'camera':state['camera'],
+            'physical_to_scene':state['physical_to_scene'],'representation':state['representation'],
+            'viewport':{'x':i/2,'y':0,'width':.5,'height':1,'dpr':1},
+            'visible_residue_ids':[b['structure']['residues'][0]['id']]}
+            for i,(source,b) in enumerate([(key,bundle),(other,second)])]
+        source=other if request.get('pick',[0])[0]>=.5 else key
+        result['picked']={'bundle_sha256':source,'residue_id':second['structure']['residues'][0]['id']}
+        return result
+    capture=service.capture_scene(paired['recipe_sha256'],render)
+    result=service.pick(capture['capture_id'],recipe_sha256=paired['recipe_sha256'],x=.75,y=0,renderer=render)
+    assert result['bundle_sha256']==other and result['residue_id']
+    for attack in ['source','camera','scale','width','residue']:
+        def corrupt(request):
+            output=render(request);view=copy.deepcopy(output['state']['views'][1])
+            if attack=='source':view['bundle_sha256']=key
+            elif attack=='camera':view['camera']={**view['camera'],'fov':42}
+            elif attack=='scale':view['physical_to_scene']={**view['physical_to_scene'],'scale':2}
+            elif attack=='width':view['viewport']={**view['viewport'],'width':.6}
+            else:view['visible_residue_ids']=['invented']
+            output['state']['views'][1]=view
+            return output
+        with pytest.raises(ValueError,match='Comparison'):service.capture_scene(paired['recipe_sha256'],corrupt)
+    def wrong_lane(request):
+        output=render(request);output['picked']['bundle_sha256']=key;return output
+    with pytest.raises(ValueError,match='saved pixel'):
+        service.pick(capture['capture_id'],recipe_sha256=paired['recipe_sha256'],x=.75,y=0,renderer=wrong_lane)
+    with pytest.raises(FileNotFoundError):service.read_capture(capture['capture_id'],before)

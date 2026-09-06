@@ -126,6 +126,11 @@ atom-pair distances. Artifact hash checks precede rendering and historical avail
 existing event cursor. See [binder interface workbench](binder-design.md) for supported metrics,
 provenance, visual-review records and incomplete live-design acceptance.
 
+The comparison selector resolves another available binder in the same experiment. Exact target
+coordinates, residue mapping and metric protocol must agree. One canvas and camera drive equal-size
+views; picks return the candidate identity and its own contact metrics. Captures retain both source
+hashes and viewport metadata, and historical playback removes unavailable comparison sources.
+
 ### Spindle trajectory development
 
 Selected experiments can display validated `filament_trajectory` JSON artifacts
@@ -175,5 +180,10 @@ Binder scene camera changes interpolate position, orbit target and FOV over700ms
 visible pose. A new target rebases that transition; OrbitControls interaction cancels it immediately.
 Reduced motion disables transitions. Capture readiness waits for the transition and rendered frames,
 and exported scene recipes retain the actual camera after manual navigation. Inspection action time
-remains separate from physical simulation time. Other molecular artifacts retain their existing
-reference viewer and optional inhibitor workbench until its inline embedding seam is integrated.
+remains separate from physical simulation time. The projection selector also offers orthographic
+constant-scale comparison; its height/zoom travel with the saved camera and captures.
+
+The reference viewer's Open inhibitor workbench action replaces that viewer inline in the same
+left scene. Research activity remains alongside it, and Return to reference restores the original
+viewer. Only one molecular viewer is mounted. Embedded inhibitor controls open as an overlay;
+its recorded-action Follow/Replay behavior is unchanged.

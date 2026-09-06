@@ -17,6 +17,7 @@ from pathlib import Path
 
 from dnhacksbio import llm
 from .store import belongs, canonical, digest
+from . import receipt_outcomes
 
 PROMPT_VERSION = "subtree-outcome-v1"
 PROMPT = """Assess a completed research artifact against the frozen scientific objective and rubric.
@@ -34,9 +35,12 @@ expert certification. No trajectory scores or parent survival decisions are prov
 def policy(value):
     required = {"assessor_model", "prompt_version", "verification_policy", "adjudication_seconds",
                 "assessment_timeout", "max_candidates", "initial_snapshot"}
+    if isinstance(value, dict) and value.get("verification_policy") == receipt_outcomes.POLICY:
+        required.add("receipt_sources")
+        receipt_outcomes.validate_sources(value.get("receipt_sources"))
     if not isinstance(value, dict) or set(value) != required:
         raise ValueError("Explicit frozen outcome policy required")
-    if value["prompt_version"] != PROMPT_VERSION or value["verification_policy"] != "legacy-submission-v1":
+    if value["prompt_version"] != PROMPT_VERSION or value["verification_policy"] not in {"legacy-submission-v1", receipt_outcomes.POLICY}:
         raise ValueError("Unsupported frozen outcome/verification policy")
     if not isinstance(value["assessor_model"], str) or not value["assessor_model"].strip():
         raise ValueError("Pinned assessor model required")
@@ -98,10 +102,13 @@ def prepare(store, journal, trace_dir, *, outcome_policy, **spec):
     if b["terminal"] or b["spent"] or b["actions"] or b["active"]:
         raise ValueError("Cannot enroll an already used budget")
     relevant_events = [e for r in snap["runs"].values() if belongs(r["run_id"], spec["run_id"])
-                       for e in r["history"] if e["kind"] in {"tool.started", "model.started", "experiment.queued", "checkpoint.report"}]
+                       for e in r["history"] if e["kind"] in {"tool.started", "model.started", "experiment.queued", "checkpoint.report", "private_experiment.requested"}]
     if relevant_events or spec["start_sequence"] != snap["sequence"]:
         raise ValueError("Enrollment cursor must be current and precede all monitored work")
     proto = spec["protocol"]
+    if any(source["validity_review"]["disclosure_boundary"] != proto["disclosure_boundary"]
+           for source in p.get("receipt_sources", {}).values()):
+        raise ValueError("Receipt disclosure boundary must match the frozen episode")
     expected = b["contract"]["seconds"] if proto["budget_unit"] == "accounted_seconds" else b["contract"]["actions"]
     if proto["budget_unit"] not in {"accounted_seconds", "research_actions"} or proto["terminal_budget"] != expected or proto["policy_id"] != b["contract"]["policy_id"]:
         raise ValueError("Monitoring horizon/policy must match the enforced runtime contract")
@@ -113,6 +120,9 @@ def prepare(store, journal, trace_dir, *, outcome_policy, **spec):
                   ancestor_contracts={x["run_id"]: x["contract"] for x in audit["ancestors"]},
                   ancestor_start={x["run_id"]: {k: x[k] for k in ("actions", "spent", "holds", "active")} for x in audit["ancestors"]},
                   implementation_hash=digest(inspect.getsource(collect) + inspect.getsource(JournalVerification)))
+    if p["verification_policy"] == receipt_outcomes.POLICY:
+        frozen["receipt_sources"] = receipt_outcomes.freeze(p["receipt_sources"])
+        frozen["receipt_implementation_hash"] = receipt_outcomes.implementation_hash()
     ep = store.enroll(**spec)
     body = dict(episode_id=ep["episode_id"], frozen=frozen, frozen_hash=digest(frozen),
                 endpoint=None, bundle=None, assessments={}, status="collecting", attempts=0)
@@ -124,8 +134,9 @@ def prepare(store, journal, trace_dir, *, outcome_policy, **spec):
                 raise ValueError("Outcome assessor and runtime contract are frozen")
             return old
         # Include the outcome policy in the fitting/calibration protocol identity.
-        ep["protocol_hash"] = digest({"monitor": ep["protocol"], "outcome_policy": {k: v for k, v in p.items() if k != "initial_snapshot"},
-            "prompt_hash": frozen["prompt_hash"], "implementation_hash": frozen["implementation_hash"], "budget_contract": b["contract"],
+        ep["protocol_hash"] = digest({"monitor": ep["protocol"], "outcome_policy": receipt_outcomes.protocol_policy(p),
+            "prompt_hash": frozen["prompt_hash"], "implementation_hash": frozen["implementation_hash"],
+            "receipt_implementation_hash": frozen.get("receipt_implementation_hash"), "budget_contract": b["contract"],
             "ancestor_contracts": [x["contract"] for x in audit["ancestors"]]})
         ep["outcome_workflow"] = body["frozen_hash"]
         c.execute("UPDATE episodes SET body=? WHERE id=?", (canonical(ep), ep["episode_id"]))
@@ -133,7 +144,7 @@ def prepare(store, journal, trace_dir, *, outcome_policy, **spec):
     return body
 
 
-def collect(journal, ep, endpoint):
+def collect(journal, ep, endpoint, *, allow_private=False):
     """Only produced-and-submitted artifacts at the endpoint, never subsequent research."""
     snap = journal.snapshot(ep["root_id"])
     candidates = []
@@ -141,6 +152,20 @@ def collect(journal, ep, endpoint):
         if not belongs(rid, ep["run_id"]):
             continue
         events = [e for e in run["history"] if e["sequence"] > ep["start_sequence"] and e["recorded_at"] <= endpoint["at"]]
+        for event in events:
+            if event["producer"] != "runner":
+                continue
+            if event["kind"] == "private_experiment.requested" and not allow_private:
+                raise ValueError("Private requests require a receipt outcome policy")
+            if event["kind"] == "experiment.finished" and event["payload"].get("stdout"):
+                stdout = blob(journal, event["payload"]["stdout"])["text"]
+                for line in stdout.splitlines():
+                    try:
+                        value = json.loads(line)
+                    except ValueError:
+                        continue
+                    if isinstance(value, dict) and value.get("receipt") and value.get("status") == "accepted":
+                        raise ValueError("Unbound stdout receipt requires runner-owned submission")
         for submit in events:
             if submit["kind"] != "experiment.submitted" or submit["producer"] != "runner":
                 continue
@@ -218,7 +243,14 @@ async def adjudicate(store, journal, trace_dir, eid, *, complete_fn=None, verifi
     if b["actions"] != sum(o["phase"] == "research" for o in audit["operations"]) or not math.isclose(
             b["spent"], sum(o["charged"] for o in audit["operations"]), abs_tol=1e-6):
         raise ValueError("Terminal costs do not reconcile with operation ledger")
-    verifier = verification or JournalVerification()
+    if p["verification_policy"] == receipt_outcomes.POLICY:
+        if w["frozen"]["receipt_implementation_hash"] != receipt_outcomes.implementation_hash():
+            raise ValueError("Frozen receipt implementation changed")
+        verifier = receipt_outcomes.ReceiptVerification(p["receipt_sources"], w["frozen"]["receipt_sources"], b["terminal"])
+        if verification is not None:
+            raise ValueError("Registered receipt verification cannot be replaced")
+    else:
+        verifier = verification or JournalVerification()
     if verifier.policy_id != p["verification_policy"]:
         raise ValueError("Verification policy changed")
     if w["endpoint"] is None:
@@ -228,11 +260,13 @@ async def adjudicate(store, journal, trace_dir, eid, *, complete_fn=None, verifi
         endpoint = dict(b["terminal"], through_sequence=through,
                         deadline=b["terminal"]["at"] + p["adjudication_seconds"])
         try:
-            bundle = collect(journal, ep, endpoint)
+            bundle = collect(journal, ep, endpoint, allow_private=p["verification_policy"] == receipt_outcomes.POLICY)
+            if p["verification_policy"] == receipt_outcomes.POLICY:
+                bundle += receipt_outcomes.collect(journal, ep, endpoint, p["receipt_sources"])
             error = None
             if len(bundle) > p["max_candidates"]:
                 raise ValueError("Candidate limit exceeded")
-        except (ValueError, OSError, UnicodeError, KeyError):
+        except (ValueError, OSError, UnicodeError, KeyError, TypeError):
             bundle, error = [], "artifact_bundle_unavailable"
         with store.connect() as c:
             current = json.loads(c.execute("SELECT body FROM outcome_workflows WHERE id=?", (eid,)).fetchone()[0])
@@ -244,14 +278,20 @@ async def adjudicate(store, journal, trace_dir, eid, *, complete_fn=None, verifi
     pending, unavailable = False, bool(w.get("error"))
     seen = set(ep["initial_evidence"])
     baseline_artifacts = [set(a["sha256"] for a in i["artifacts"]) for i in w["frozen"]["baseline"]]
+    scientific_keys = set()
     for candidate in w["bundle"]:
         fid = candidate["finding_id"]
-        if fid in seen or candidate["fingerprint"] in seen or any(set(candidate["artifact_refs"]) <= refs for refs in baseline_artifacts):
+        private = "receipt" in candidate
+        if fid in seen or not private and candidate["fingerprint"] in seen or any(set(candidate["artifact_refs"]) <= refs for refs in baseline_artifacts):
             continue
-        seen.update((fid, candidate["fingerprint"]))
+        seen.add(fid)
+        if not private:
+            seen.add(candidate["fingerprint"])
         key = digest({"run": candidate["run_id"], "finding": fid})
         old = workflow(store, eid)["assessments"].get(key)
         if old:
+            if old.get("verification", {}).get("experiment_key"):
+                scientific_keys.add(old["verification"]["experiment_key"])
             unavailable |= old["status"] in {"running", "unavailable"}
             continue
         verified = verifier(journal, ep, candidate, deadline)
@@ -261,8 +301,16 @@ async def adjudicate(store, journal, trace_dir, eid, *, complete_fn=None, verifi
         if verified["status"] == "unavailable":
             unavailable = True
             continue
-        if verified["status"] == "failed":
+        if verified["status"] in {"failed", "duplicate"}:
             continue
+        if verified.get("experiment_key"):
+            if verified["experiment_key"] in scientific_keys:
+                continue
+            scientific_keys.add(verified["experiment_key"])
+            receipt_outcomes.associate(store, candidate, verified)
+            candidate = {**candidate, "result": verified["result"],
+                         "validity_review": verified["validity_review"],
+                         "artifact_refs": candidate["artifact_refs"] + [verified["result_hash"], verified["config_hash"]]}
         if now() >= deadline:
             unavailable = True
             continue
@@ -289,6 +337,8 @@ async def adjudicate(store, journal, trace_dir, eid, *, complete_fn=None, verifi
             raw = await asyncio.wait_for(complete_fn(prompt) if complete_fn else llm.acomplete(
                 prompt, model=p["assessor_model"], tools_disabled=True, max_turns=1, max_attempts=1,
                 max_output_tokens=2048, capture=cap), timeout=timeout)
+            if now() >= deadline or len(raw.encode()) > 16384:
+                raise ValueError("Final assessment exceeded frozen limits")
             assessment = validate_assessment(json.loads(raw))
             result = {"status": "assessed", "assessment": assessment}
         except Exception:

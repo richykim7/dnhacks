@@ -1,17 +1,34 @@
-import { memo, useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
+import {
+  memo,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type RefObject,
+} from "react";
+import {
+  Canvas,
+  useFrame,
+  useThree,
+  type ThreeEvent,
+} from "@react-three/fiber";
 import * as T from "three";
 import { Html, Line } from "@react-three/drei";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import {
   center,
   distance,
+  actionProgress,
+  smoothPhase,
+  type ActionPresentation,
   type Atom,
   type Geometry,
   type Recipe,
   type Surface,
   type Vec3,
 } from "@/lib/inhibitor";
+
+import InhibitorAction from "./InhibitorAction";
 
 function Instances({
   atoms,
@@ -202,7 +219,10 @@ function Scene({
   ack,
   onCamera,
   surface,
+  presentation,
 }: {
+  presentation: RefObject<ActionPresentation>;
+  sample?: number;
   g: Geometry;
   surface?: Surface;
   recipe: Recipe;
@@ -211,9 +231,13 @@ function Scene({
   onCamera: (position: Vec3, target: Vec3) => void;
 }) {
   const { gl, scene, camera, invalidate, size } = useThree();
+  useEffect(() => {
+    invalidate();
+  });
   const orbit = useRef<OrbitControls>(null);
   const motion = useRef<number | null>(null);
   const initialized = useRef(false);
+  const dragging = useRef(false);
   const atomSet = useMemo(
     () => g.atoms.filter((a) => a.model === recipe.model),
     [g, recipe.model],
@@ -262,16 +286,31 @@ function Scene({
     const controls = new OrbitControls(camera, gl.domElement);
     orbit.current = controls;
     controls.enableDamping = false;
-    controls.addEventListener("change", () => invalidate());
+    controls.addEventListener("change", () => {
+      gl.domElement.dataset.cameraPosition = JSON.stringify(
+        camera.position.toArray(),
+      );
+      gl.domElement.dataset.cameraTarget = JSON.stringify(
+        controls.target.toArray(),
+      );
+      invalidate();
+    });
     let startPosition = camera.position.clone(),
       startTarget = controls.target.clone();
     controls.addEventListener("start", () => {
+      dragging.current = true;
+      presentation.current.active = false;
       if (motion.current !== null) cancelAnimationFrame(motion.current);
       motion.current = null;
       startPosition = camera.position.clone();
       startTarget = controls.target.clone();
+      onCamera(
+        camera.position.toArray() as Vec3,
+        controls.target.toArray() as Vec3,
+      );
     });
     const end = () => {
+      dragging.current = false;
       if (
         startPosition.distanceTo(camera.position) +
           startTarget.distanceTo(controls.target) <
@@ -287,6 +326,10 @@ function Scene({
     return () => controls.dispose();
   }, [camera, gl, invalidate, onCamera]);
   useLayoutEffect(() => {
+    if (presentation.current.active || dragging.current) {
+      invalidate();
+      return;
+    }
     const target =
       recipe.camera?.target ||
       (recipe.shot === "arrival" ? center(atomSet) : focus);
@@ -308,6 +351,8 @@ function Scene({
       fromTarget = orbit.current!.target.clone();
     const duration =
       initialized.current &&
+      from.distanceTo(destination) + fromTarget.distanceTo(destinationTarget) >
+        0.0001 &&
       !matchMedia("(prefers-reduced-motion: reduce)").matches
         ? 700
         : 0;
@@ -339,6 +384,37 @@ function Scene({
     focus,
     invalidate,
   ]);
+  useFrame(() => {
+    const a = presentation.current;
+    if (!a.active || dragging.current || !recipe.camera) return;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const p = reduced ? 1 : actionProgress(a);
+    const endPosition = new T.Vector3(...recipe.camera.position),
+      endTarget = new T.Vector3(...recipe.camera.target);
+    const fromPosition = new T.Vector3(
+      ...(a.from?.position || recipe.camera.position),
+    );
+    const fromTarget = new T.Vector3(
+      ...(a.from?.target || recipe.camera.target),
+    );
+    const transition = smoothPhase(p, 0, 0.55);
+    const target = fromTarget.lerp(endTarget, transition);
+    const offset = fromPosition.lerp(endPosition, transition).sub(target);
+    // A restrained camera arc keeps an inspection moving even when two receipts
+    // refer to the same view. It returns exactly to the recorded camera at p=1.
+    offset.applyAxisAngle(
+      new T.Vector3(0, 1, 0),
+      reduced ? 0 : Math.sin(p * Math.PI) * 0.18,
+    );
+    camera.position.copy(target).add(offset);
+    orbit.current!.target.copy(target);
+    orbit.current!.update();
+    gl.domElement.dataset.actionProgress = String(p);
+    gl.domElement.dataset.cameraPosition = JSON.stringify(
+      camera.position.toArray(),
+    );
+    if (a.playing && p < 1) invalidate();
+  });
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -357,7 +433,8 @@ function Scene({
   }, [recipe, gl, scene, camera, ack, size]);
   return (
     <>
-      <color attach="background" args={["#09131d"]} />
+      <color attach="background" args={["#080f25"]} />
+      <InhibitorAction g={g} recipe={recipe} presentation={presentation} />
       <ambientLight intensity={0.7} />
       <directionalLight
         position={[20, 45, 70]}
@@ -446,7 +523,10 @@ function Scene({
           </Html>
         </group>
       ))}
-      {selected.length >= 2 && (
+      {selected.length >= 2 &&
+        (!presentation.current.active ||
+          presentation.current.kind !== "measurement" ||
+          matchMedia("(prefers-reduced-motion: reduce)").matches) && (
         <Line
           points={recipe.selected.map(
             (id) => g.atoms.find((a) => a.id === id)!.position,
