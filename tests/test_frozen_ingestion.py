@@ -169,6 +169,8 @@ def test_coordinator_replaces_finished_paper_while_first_is_slow_and_resumes(run
     async def fake_subprocess(*command, **kwargs):
         nonlocal first_wave_ready, release_slow, maximum_active
         ref = int(command[command.index("--ref") + 1])
+        assert kwargs["env"]["DNHACKS_REPAIR_OWNER"] == str(ref)
+        assert Path(kwargs["env"]["DNHACKS_REPAIR_SOCKET"]).is_socket()
         if first_wave_ready is None:
             first_wave_ready = asyncio.Event()
             release_slow = asyncio.Event()
