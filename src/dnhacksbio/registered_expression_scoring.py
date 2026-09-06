@@ -54,6 +54,7 @@ def validate_payload(payload):
 
 
 class Store(QueueStore):
+    immutable_completions = True
     worker_module = 'dnhacksbio.registered_expression_scoring'
 
     def configure(self, registry_path):

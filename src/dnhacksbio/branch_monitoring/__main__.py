@@ -35,6 +35,11 @@ def main():
     p.add_argument("--trace-dir", required=True)
     p.add_argument("--episode-id", required=True)
     p.add_argument("--watch", action="store_true")
+    p = sub.add_parser("route", help="Privately route completed registered receipts without assessing outcomes")
+    p.add_argument("--state", required=True)
+    p.add_argument("--trace-dir", required=True)
+    p.add_argument("--episode-id", required=True)
+    p.add_argument("--watch", action="store_true")
     p = sub.add_parser("score")
     p.add_argument("--state", required=True)
     p.add_argument("--trace-dir", required=True)
@@ -77,6 +82,15 @@ def main():
                 if not args.watch or result["status"] == "closed": break
                 await asyncio.sleep(5)
         asyncio.run(label())
+    elif args.command == "route":
+        from .receipt_outcomes import route
+        from .worker import ReadOnlyJournal
+        async def routing():
+            while True:
+                route(store, ReadOnlyJournal(args.trace_dir, create=False), args.trace_dir, args.episode_id)
+                if not args.watch or store.episode(args.episode_id)["status"] == "closed": break
+                await asyncio.sleep(5)
+        asyncio.run(routing())
     elif args.command == "associate":
         from .receipts import import_receipt
         import_receipt(store, **read(args.spec))

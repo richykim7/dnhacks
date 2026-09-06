@@ -123,9 +123,9 @@ The `label` worker reads the controller and journal without writing either. It w
 endpoint and reconciles cost/action totals against admitted operations. It freezes only experiments
 completed and submitted before that endpoint, gathering their actual code, stdout, parsed results and
 source-event references. Exact baseline replays, repeated submissions and duplicate artifact bundles
-cannot earn another finding. The initial adapter requires the matching legacy `CANDIDATE` soundness event
-from the verifier producer. Private receipt methods need their own validated adapter; a receipt or large
-e-value is never treated as a legacy RESULT or universal success gate.
+cannot earn another finding. `legacy-submission-v1` requires the matching legacy `CANDIDATE` soundness
+event from the verifier producer. `registered-receipts-v1` additionally supports the registered private
+methods below. A receipt or large e-value is never treated as a legacy RESULT or universal success gate.
 
 The frozen assessor sees these artifacts, the initial snapshot, objective and rubric. It receives no
 trajectory values, parent survival decisions, raw reasoning, human review notes or future research.
@@ -205,5 +205,104 @@ python -m dnhacksbio.branch_monitoring disclose --state /operator/monitor --boun
 Disclosure produces only an explicitly authorized boundary-specific export. Neither a private decision
 nor its note updates ordinary recall, feedback or the master graph automatically. A future discovery
 snapshot refresh must consume this export under the declared boundary; the shared discovery graph is
-not silently changed. Automatic receipt discovery/routing and human-review-based success assessment
-are not yet wired into a running investigation.
+not silently changed. Registered receipt discovery and routing run automatically inside private outcome
+adjudication and the standalone operator `route` worker. Human review decisions remain separate from the frozen automated outcome label.
+
+
+## Registered private receipt outcomes
+
+Use the runner action `private_experiment` with `method_id`, the operator-provided public `spec`, and
+`input: {cohort_id, manifest_sha256}`. Load the corresponding experiment skill first. The runner selects
+the endpoint from its operator environment and creates the request/experiment ID itself. It records
+exact request bytes before dispatch; only the accepted receipt enters research observations. The
+operation uses the existing action/time ledger and paused-state guard. A transport interruption is
+reconciled privately against durable acceptance, without an automatic new research request.
+
+| Outcome method | Required skill | Runner endpoint environment | Evidence contract |
+| --- | --- | --- | --- |
+| `paired-pathway-v1` | `expression-experiment` | `DNHACKS_EXPRESSION_ENDPOINT` | Fixed registered pathway/TF score, paired assignment or justified swap symmetry; count effects remain descriptive auxiliary evidence. |
+| `dependency-chronos-v1` | `dependency-experiment` | `DNHACKS_DEPENDENCY_ENDPOINT` | Frozen Chronos table and within-block event-label exchangeability, independent confirmation units. |
+| `biomarker_auc.v1` | `drug-response-experiment` | `DNHACKS_DRUG_RESPONSE_ENDPOINT` | Frozen observed-dose response and stratified biomarker association; no causal/synergy conclusion. |
+
+For `prepare`, replace the example's `verification_policy` with `registered-receipts-v1` and add
+`receipt_sources` to `outcome_policy`. Each supported method must have its own source entry:
+
+```json
+{
+  "dependency-chronos-v1": {
+    "directory": "/operator/dependency-queue",
+    "validity_review": {
+      "review_id": "study-design-v1",
+      "method_id": "dependency-chronos-v1",
+      "assumptions": "Document the actual independence and exchangeability review here",
+      "family_policy": "Document the prospective family and selection policy here",
+      "disclosure_boundary": "after-frozen-study",
+      "confirmation_units_disjoint": true,
+      "design_supported": true,
+      "selection_frozen": true
+    }
+  }
+}
+```
+
+This is the `receipt_sources` value, not a complete episode spec. The declarations must describe a
+real operator-reviewed design; copying `true` does not establish validity. The adapter rejects missing
+reviews and freezes their exact contents, queue settings, implementation hashes and preexisting
+scientific identities before research. Queue paths and review record IDs are episode provenance and
+are excluded from the shared fitting protocol hash; method and substantive review policy remain in it.
+The actual assessment endpoint, model/rubric and all accounting rules above still apply.
+
+At the endpoint the collector freezes eligible runner requests, including descendants. It checks exact
+payload hashes, method and manifest/protocol/artifact provenance, accepted timestamps and canonical
+scientific identity. Renamed aliases cannot earn another finding or claim another run's work. Existing
+queue identities are excluded even if they finish later. Printed stdout receipts cannot authenticate
+ownership: they cause censoring, as do registered requests used with the legacy-only label policy.
+Mismatches, unavailable designs, failed jobs and unresolved acknowledgements do not become negatives.
+
+`QueueStore` provides an opt-in completion contract enabled by these three registered stores. It records
+terminal status, result, frozen settings and completion time in one SQLite transaction. Their terminal
+rows/snapshots are immutable; other stores retain their existing native replay contracts. Completion after the research endpoint is allowed
+only within the frozen adjudication deadline; polling never changes that deadline. A completed result
+without a completion snapshot is unavailable, not retrospectively timestamped. New queues initialize
+this schema normally. Upgrade existing queues only in an explicitly authorized service maintenance
+window; no service was upgraded or restarted by this implementation. Frozen-software queues can require
+new registrations after a code upgrade. Never rewrite their previous scientific results to make them fit.
+
+The operator can route completed evidence while research is still running:
+
+```sh
+python -m dnhacksbio.branch_monitoring route --state /operator/monitor --trace-dir /research-traces --episode-id study-episode --watch
+```
+
+This uses the same frozen ownership/method checks and creates only private review records. It neither
+calls a model nor closes an outcome, and repeated routing is idempotent. After the endpoint it retains
+the same production cutoff and adjudication deadline. `label` also routes evidence automatically, so
+running this extra worker is optional unless early human inspection is wanted. Human decisions and
+notes never enter the final assessor or prefix verifier, and do not modify research state.
+
+The adapter validates method provenance and fixed-p calibration arithmetic without rerunning any
+permutation or model. Valid evidence, its stated null, and the frozen validity/family review enter the
+private final assessor. It checks relevance, substantive support and novelty. There is no universal
+p/e threshold; nonsignificance alone cannot qualify as falsification. The exact private evidence also
+routes to an immutable human review record, with no automatic decision, promotion or research feedback.
+Concurrent/restarted label workers retain the existing one-attempt assessment claim and private export.
+
+**Coverage boundary:** the old uploaded-TPM learned two-sample output is explicitly diagnostic-only;
+this change does not make it confirmatory. Protein, ecosystem, other native methods and standalone
+stdout-only submissions are not automatically covered by these three registered contracts. Use an
+explicit additional adapter before collecting training episodes that depend on those receipt methods.
+
+## Readiness after this engineering milestone
+
+Fixture-tested engineering covers controller budgets, lineage, prospective enrollment, receipt/artifact
+collection, method verification, private assessment/review, deadline/censoring rules, historical-prefix
+replay and training-eligible export. No real assessor or trajectory model was invoked for this work.
+
+Still required before a real training study: confirm corpus readiness and freeze its snapshot; choose
+and validate the actual assessor/rubric; run authorized development continuations to choose the total
+horizon; freeze the sampling/allocation/family/disclosure policies and supported method population;
+then collect representative completed episodes with independent fit/calibration/test groups. A separate
+operator account/filesystem/network boundary is required for private deployment. Existing synthetic
+tests do not establish predictive benefit or scientific acceptance. At the paper's example error targets,
+116 independent successful calibration units are needed merely to permit a finite threshold, in addition
+to fitting and held-out evaluation units. Statistical stopping remains disabled.

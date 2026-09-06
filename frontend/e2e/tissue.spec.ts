@@ -150,11 +150,15 @@ test("living tissue renders scoped artifact, synchronized views and exact-frame 
   });
   await page.evaluate(() => (document.documentElement.dataset.theme = "light"));
   await ready();
+  await page.getByRole('button',{name:'Watch agent actions'}).click();await ready();
+  await page.getByRole('button',{name:'Return to my view'}).click();await ready();
+  await expect(page.locator('html')).toHaveAttribute('data-theme','light');
   await page.screenshot({ path: `${dir}/light.png` });
   await page.evaluate(() => (document.documentElement.dataset.theme = "dark"));
+  // Mobile intentionally disables paired comparison; leave it before resizing.
+  await page.getByLabel("Paired comparison").uncheck();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.getByLabel("Paired comparison").uncheck();
   await ready();
   await page.screenshot({ path: `${dir}/mobile.png` });
   await page.locator('.tissue-canvas canvas').first().evaluate(el=>{
@@ -172,8 +176,8 @@ test("living tissue renders scoped artifact, synchronized views and exact-frame 
   }
   await page.route('**/api/runtime/**/blob/**',route=>route.fulfill({json:pickFixture}));
   await page.reload();
-  await page.getByRole('button',{name:'Inspect Inspect alanine exchange'}).click();
-  await page.getByRole('tablist',{name:'Researcher detail'}).getByRole('tab',{name:'Experiments'}).click();
+  await page.getByRole('tablist',{name:'Investigation view'}).getByRole('tab',{name:'Experiments',exact:true}).click();
+  await page.getByRole('button',{name:/Paired tissue experiment/}).click();
   await page.getByRole('button',{name:/Open living tissue/}).click();await ready();
   const canvas=page.locator('.tissue-canvas canvas').first();const box=await canvas.boundingBox();
   await canvas.click({position:{x:box!.width/2,y:box!.height/2}});

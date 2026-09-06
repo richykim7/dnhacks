@@ -503,3 +503,42 @@ the frozen terminal cursor and never exposes labels in verifier input.
 Final integrated gates against main 268f120: 421 Python tests passed, six optional checks skipped
 (Rscript, PyDESeq2 twice, decoupler, CUDA, opt-in Docker). Frontend build, six unit tests and
 19 browser tests passed. Both label-before-replay and label-during-replay orderings are covered.
+
+
+## 2026-09-06 — Registered receipt outcome adapters
+
+Closed the ingestion-independent integration gap left by the initial legacy-only outcome workflow.
+Added runner-owned registered submission for pathway/TF expression, Chronos dependency and biomarker/AUC
+response; exact public requests bind run/experiment ownership. Private adapters join those requests to
+canonical queue identities and immutable completion snapshots, checking method, settings, artifacts,
+validity/family reviews and endpoint deadlines without rescoring. Renamed/baseline evidence cannot earn
+another finding. Valid evidence routes to private human review and the frozen final rubric; no numerical
+threshold alone is success. Unsupported/unbound receipts and unavailable verification are censored.
+
+Synthetic real-worker tests exercise all three methods through descendant labels and private review,
+including immutable completion/restart, pending/late jobs, forged identities, altered provenance,
+concurrent aliases, historical-prefix replay after labeling and training-eligible export. These are
+engineering checks, not scientific validation or evidence of predictive pruning quality. Legacy TPM
+diagnostic output and other native receipt methods are outside these explicit contracts.
+
+Readiness remains distinct from a completed training study: actual corpus confirmation, assessor/rubric
+validation, development horizon selection, frozen sampling/family/disclosure policy, representative
+independent grouped rollouts and fit/calibration/evaluation are still required. No real trajectory
+collection/scoring/training, GPU work, account provisioning or deployment was performed. See the
+[operational coverage and readiness audit](branch-monitoring.md#readiness-after-this-engineering-milestone).
+
+Adapter milestone after integrating main 945d269: 149 focused Python checks passed, six optional
+Torch/CUDA/PyDESeq2 skips. Initial broad testing exposed native replay incompatibility; completion
+immutability now requires each concrete registered service to opt in, preserving native replay.
+Build and 12 frontend unit tests passed; full integration/browser gates remain in progress.
+
+Added the operator `route` worker for private evidence inspection before the subtree endpoint. It
+uses the same frozen adapter checks but never calls a model or labels an episode. Tests confirm
+idempotent CLI/restart behavior and that human decisions/notes do not enter final assessment or research.
+
+Final validation: full Python suite 663 passed / 46 optional dependency/native-build skips; latest
+monitoring regression set 69 passed, including reversed concurrent request/acceptance order and exact
+canonical payload matching. After syncing main's spindle runtime changes, 48 affected runtime/spindle
+checks passed / 2 optional skips and the frontend build passed. Frontend unit suite: 12 passed. All six
+runtime browser cases are covered: five passed initially; the review-button lookup timeout passed on
+an isolated rerun (4 seconds). No UI/product fix or weakened assertion was needed for that timeout.

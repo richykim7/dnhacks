@@ -117,7 +117,7 @@ def handle(handler, rest: str, qs: dict):
                 refs.extend(item.get("version", {}) for item in p.get("items", []))
             if e["kind"] == "artifact" and e["producer"] == "collector" and p.get("status") == "available":
                 refs.append(p)
-                if p.get("kind") == "scene_capture":refs.append(p.get("snapshot", {}))
+                if p.get("kind") in {"scene_capture","scene_movie"}:refs.append(p.get("snapshot", {}))
         if not any(ref.get("storage_key") == key for ref in refs):
             raise FileNotFoundError("Artifact not available for this researcher at this point")
         if action == "tissue":
@@ -153,6 +153,7 @@ def handle(handler, rest: str, qs: dict):
                 raise ValueError("Unknown geometry operation")
             return handler._send_json(result)
         media = "image/png" if any(ref.get("storage_key") == key and ref.get("kind") == "scene_capture" for ref in refs) else "text/plain; charset=utf-8"
+        if any(ref.get("storage_key") == key and ref.get("kind") == "scene_movie" for ref in refs):media="video/webm"
         return handler._send_bytes(j.read_blob(key), media)
     if action == "snapshot":
         if through is None:

@@ -131,6 +131,8 @@ async def dispatch(journal,project_id,run_id,request,*,renderer=None):
         return json.loads(store.read_blob(receipt,scope,archive['files']['metrics.json']))
     service=SceneService(journal,scope)
     if operation=='inspect_scene_capture':return await service.inspect_scene_capture(**args)
+    if operation=='export_scene_movie':
+        return await asyncio.to_thread(service.export_scene_movie,**args,renderer=renderer or (lambda r:render_scene(r,journal=journal)))
     if operation=='capture_scene':
         return await asyncio.to_thread(service.capture_scene,**args,renderer=renderer or (lambda r:render_scene(r,journal=journal)))
     if operation not in {'open_scene','set_scene_view','record_visual_review'}:raise ValueError('Unknown spindle operation')

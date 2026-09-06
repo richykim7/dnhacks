@@ -23,6 +23,7 @@ def digest(value):
 
 
 class Store(QueueStore):
+    immutable_completions = True
     worker_module = "dnhacksbio.drug_response_scoring"
 
     def configure(self, manifest_path):

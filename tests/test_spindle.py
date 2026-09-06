@@ -329,3 +329,43 @@ def test_failed_vision_cannot_create_a_visual_verdict(tmp_path,monkeypatch):
         asyncio.run(service.inspect_scene_capture(capture['capture_id'],question='Check visibility'))
     assert any(e['kind']=='scene.review.failed' for e in service.history())
     assert not any(e['kind']=='scene.review' for e in service.history())
+
+
+def spindle_movie_renderer(request):
+    import base64
+    result=spindle_renderer(request);shots=[]
+    for i,frame in enumerate(request['movie']['frames']):
+        changed=copy.deepcopy(request);changed['recipe']['view']['frame']=frame
+        state=spindle_renderer(changed)['state']
+        shots.append({'frame':frame,'presentation_time_s':i/request['movie']['fps'],'state':state})
+    # Encoder is mocked here; the actual native export is decoded separately.
+    result['movie']={'bytes':base64.b64encode(bytes.fromhex('1a45dfa3')+b'unit-encoder').decode(),
+        'frames':shots,'fps':request['movie']['fps'],'duration_s':len(shots)/request['movie']['fps'],
+        'interpolation':'none','camera':result['state']['camera'],'render_p95_ms':1}
+    return result
+
+
+def test_movie_scoping_mime_cursor_and_physical_frame_integrity(tmp_path,monkeypatch):
+    from dnhacksbio.webui import runtime as api
+    service,key=spindle_scene(tmp_path);opened=service.open_scene(key)
+    result=service.export_scene_movie(opened['recipe_sha256'],[0,1,2],10,spindle_movie_renderer)
+    monkeypatch.setattr(api,'journal',lambda:service.journal)
+    class Handler:
+        def _project_arg(self,qs):return 'p'
+        def _send_bytes(self,raw,media):return raw,media
+    raw,media=api.handle(Handler(),'r/blob/'+result['movie_sha256'],{})
+    assert media=='video/webm' and raw.startswith(bytes.fromhex('1a45dfa3'))
+    assert api.handle(Handler(),'r/blob/'+result['manifest_sha256'],{})[0]
+    with pytest.raises(FileNotFoundError):
+        api.handle(Handler(),'r/blob/'+result['movie_sha256'],{'through':[str(result['sequence']-1)]})
+    service.journal.register('other','Another experiment',project='p')
+    with pytest.raises(FileNotFoundError):api.handle(Handler(),'other/blob/'+result['movie_sha256'],{})
+    def wrong_time(request):
+        rendered=spindle_movie_renderer(request)
+        rendered['movie']['frames'][1]['state']['physical_time_s']+=1
+        return rendered
+    with pytest.raises(ValueError,match='physical frame'):
+        service.export_scene_movie(opened['recipe_sha256'],[0,1,2],10,wrong_time)
+    with pytest.raises(ValueError,match='increasing'):
+        service.export_scene_movie(opened['recipe_sha256'],[0,0],10,spindle_movie_renderer)
+    assert sum(e['kind']=='artifact' and e['payload'].get('kind')=='scene_movie' for e in service.history())==1
