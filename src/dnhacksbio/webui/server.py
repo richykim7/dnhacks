@@ -27,6 +27,9 @@ Projects — an analysis profile that scopes every view (see webui/projects.py)
   GET  /api/projects/<id>                     -> the full record
   POST /api/projects/<id>                     -> update   {name, description, spec, status}
   POST /api/projects/<id>/delete              -> remove   {purge}
+  GET  /api/projects/<id>/papers              -> local paper metadata
+  GET  /api/projects/<id>/papers/<paper>      -> stored text and figure captions
+  GET  /api/projects/<id>/papers/<paper>/figures/<index> -> local image
   GET  /api/projects/<id>/kg                  -> that project's graph in numbers
   GET  /api/projects/<id>/lane                -> the Workflow view's knowledge-graph lane, lit up
   POST /api/projects/<id>/build               -> start a corpus build   {mode, dry}
@@ -54,7 +57,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from . import architecture, assistant, attachments, data, jobs, projects, evidence
+from . import architecture, assistant, attachments, data, jobs, projects, evidence, library
 
 STATIC = Path(__file__).resolve().parent / "static"
 FRONTEND = Path(os.environ.get("DNHACKS_FRONTEND_DIST", Path(__file__).resolve().parents[3] / "frontend" / "dist"))
@@ -273,6 +276,16 @@ class Handler(BaseHTTPRequestHandler):
         if len(parts) == 1:
             return self._send_json(self._project_or_404(pid))
         tail = parts[1]
+        if tail == "papers":
+            self._project_or_404(pid)
+            if len(parts) == 2:
+                return self._send_json(library.list_papers(pid))
+            if len(parts) == 3:
+                return self._send_json(library.paper_detail(pid, parts[2]))
+            if len(parts) == 5 and parts[3] == "figures":
+                body, content_type = library.figure(pid, parts[2], int(parts[4]))
+                return self._send_bytes(body, content_type)
+            return self._error(404, "not found")
         if tail == "kg":
             self._project_or_404(pid)
             return self._send_json(data.kg_stats(pid))

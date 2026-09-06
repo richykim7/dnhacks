@@ -1,4 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { PaperBrowser } from "./PaperBrowser";
+import "../library.css";
 import {
   ArrowUpRight,
   BookOpen,
@@ -26,13 +28,11 @@ export function Library({
   projects,
   onProject,
   onRefresh,
-  onInvestigate,
 }: {
   project: string;
   projects: Project[];
   onProject: (id: string) => void;
   onRefresh: () => void;
-  onInvestigate: () => void;
 }) {
   const rec = useResource<Project>(
     project ? `/api/projects/${id(project)}` : null,
@@ -42,6 +42,7 @@ export function Library({
     10000,
   );
   const [tab, setTab] = useState("collection");
+  const [managing, setManaging] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -72,14 +73,23 @@ export function Library({
         <div>
           <div className="breadcrumb">Research workspace / Library</div>
           <h1>{rec.data?.name || "Your research library"}</h1>
-          <p>
-            A literature collection is the foundation for every investigation.
-          </p>
+          <p>Browse the papers behind your research.</p>
         </div>
-        <Button onClick={() => setCreating(true)}>
-          <Plus size={16} />
-          New project
-        </Button>
+        <div className="library-heading-actions">
+          {project && (
+            <Button
+              aria-expanded={managing}
+              onClick={() => setManaging(!managing)}
+            >
+              {managing ? "Back to papers" : "Manage collection"}
+            </Button>
+          )}
+          {(project || projects.length > 0) && (
+            <Button variant="ghost" onClick={() => setCreating(true)}>
+              <Plus size={16} /> New collection
+            </Button>
+          )}
+        </div>
       </header>
       <CreateProject
         open={creating}
@@ -112,10 +122,10 @@ export function Library({
           </div>
           {!projects.length && (
             <Empty
-              title="Create your first research project"
+              title="Create your first collection"
               action={
                 <Button variant="default" onClick={() => setCreating(true)}>
-                  Create a research project <Plus size={16} />
+                  Create a literature collection <Plus size={16} />
                 </Button>
               }
             >
@@ -131,123 +141,110 @@ export function Library({
           <ErrorNotice message={rec.error || error} retry={rec.refresh} />
           {rec.data && (
             <>
-              <div className="collection-intro">
-                <div>
-                  <Status
-                    label={
-                      rec.data.adopted
-                        ? "Imported collection"
-                        : human(rec.data.status)
-                    }
+              <div className="library-summary">
+                <span>
+                  {rec.data.adopted
+                    ? "Imported · read-only"
+                    : human(rec.data.status)}
+                </span>
+                {stats.data?.exists && !stats.data?.error && (
+                  <span>
+                    {number(stats.data.papers.n)} papers ·{" "}
+                    {number(stats.data.claims.n)} literature claims
+                  </span>
+                )}
+                <p>
+                  {rec.data.description ||
+                    rec.data.spec.scope ||
+                    "Your collected literature"}
+                </p>
+              </div>
+              {!managing && (
+                <PaperBrowser
+                  key={project}
+                  project={project}
+                />
+              )}
+              {managing && (
+                <>
+                  {rec.data.built?.stale && (
+                    <div className="notice">
+                      The collection settings have changed since the last build.
+                      Rebuild to include those changes in future investigations.
+                    </div>
+                  )}
+                  <AnimatedTabs
+                    label="Library sections"
+                    value={tab}
+                    onChange={setTab}
+                    tabs={[
+                      { value: "collection", label: "Collection settings" },
+                      { value: "documents", label: "Import documents" },
+                      { value: "assistant", label: "Research assistant" },
+                      { value: "history", label: "Builds & runs" },
+                    ]}
                   />
-                  <p>
-                    {rec.data.description ||
-                      rec.data.spec.scope ||
-                      "Add a description to explain what this collection covers."}
-                  </p>
-                </div>
-                <Button
-                  variant="default"
-                  disabled={!rec.data.kg_db}
-                  onClick={onInvestigate}
-                >
-                  Ask a research question <ArrowUpRight size={15} />
-                </Button>
-              </div>
-              <ErrorNotice message={stats.error || stats.data?.error} />
-              {stats.data?.exists && !stats.data?.error && (
-                <dl className="collection-numbers">
-                  <div>
-                    <dt>Papers collected</dt>
-                    <dd>{number(stats.data.papers.n)}</dd>
+                  <div className="library-content">
+                    {tab === "collection" && (
+                      <>
+                        <SpecEditor
+                          key={`${project}-${JSON.stringify(rec.data.spec)}`}
+                          project={rec.data}
+                          onSaved={refresh}
+                        />
+                        {!rec.data.adopted && (
+                          <div className="build-actions">
+                            <div>
+                              <h3>Build the collection</h3>
+                              <p>
+                                Preview matching papers, or collect and extract
+                                evidence for research.
+                              </p>
+                            </div>
+                            <Button
+                              disabled={busy}
+                              onClick={() => void build(true)}
+                            >
+                              Preview papers
+                            </Button>
+                            <Button
+                              variant="default"
+                              onClick={() => setConfirmBuild(true)}
+                            >
+                              Build collection
+                            </Button>
+                          </div>
+                        )}
+                        {rec.data.built && (
+                          <Disclosure title="Last build provenance">
+                            <pre>{JSON.stringify(rec.data.built, null, 2)}</pre>
+                          </Disclosure>
+                        )}
+                        {!rec.data.adopted && (
+                          <div className="danger-zone">
+                            <Button
+                              variant="ghost"
+                              onClick={() => setConfirmDelete(true)}
+                            >
+                              Delete project…
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {tab === "documents" && (
+                      <Documents
+                        project={project}
+                        readOnly={rec.data.adopted}
+                      />
+                    )}
+                    {tab === "assistant" && (
+                      <Assistant project={rec.data} onApplied={refresh} />
+                    )}
+                    {tab === "history" && <JobHistory project={project} />}
                   </div>
-                  <div>
-                    <dt>Literature claims</dt>
-                    <dd>{number(stats.data.claims.n)}</dd>
-                  </div>
-                  <div>
-                    <dt>Entities connected</dt>
-                    <dd>{number(stats.data.claims.entities)}</dd>
-                  </div>
-                  <div>
-                    <dt>Disputed claims</dt>
-                    <dd>{number(stats.data.disputed)}</dd>
-                  </div>
-                </dl>
+                </>
               )}
-              {rec.data.built?.stale && (
-                <div className="notice">
-                  The collection settings have changed since the last build.
-                  Rebuild to include those changes in future investigations.
-                </div>
-              )}
-              <AnimatedTabs
-                label="Library sections"
-                value={tab}
-                onChange={setTab}
-                tabs={[
-                  { value: "collection", label: "Collection settings" },
-                  { value: "documents", label: "Documents" },
-                  { value: "assistant", label: "Research assistant" },
-                  { value: "history", label: "Builds & runs" },
-                ]}
-              />
-              <div className="library-content">
-                {tab === "collection" && (
-                  <>
-                    <SpecEditor
-                      key={`${project}-${JSON.stringify(rec.data.spec)}`}
-                      project={rec.data}
-                      onSaved={refresh}
-                    />
-                    {!rec.data.adopted && (
-                      <div className="build-actions">
-                        <div>
-                          <h3>Build the collection</h3>
-                          <p>
-                            Preview matching papers, or collect and extract
-                            evidence for research.
-                          </p>
-                        </div>
-                        <Button
-                          disabled={busy}
-                          onClick={() => void build(true)}
-                        >
-                          Preview papers
-                        </Button>
-                        <Button
-                          variant="default"
-                          onClick={() => setConfirmBuild(true)}
-                        >
-                          Build collection
-                        </Button>
-                      </div>
-                    )}
-                    {rec.data.built && (
-                      <Disclosure title="Last build provenance">
-                        <pre>{JSON.stringify(rec.data.built, null, 2)}</pre>
-                      </Disclosure>
-                    )}
-                    {!rec.data.adopted && (
-                      <div className="danger-zone">
-                        <Button
-                          variant="ghost"
-                          onClick={() => setConfirmDelete(true)}
-                        >
-                          Delete project…
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                )}
-                {tab === "documents" && (
-                  <Documents project={project} readOnly={rec.data.adopted} />
-                )}
-                {tab === "assistant" && (
-                  <Assistant project={rec.data} onApplied={refresh} />
-                )}
-                {tab === "history" && <JobHistory project={project} />}
-              </div>
             </>
           )}
         </>
@@ -349,12 +346,12 @@ export function CreateProject({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title="Create a research project"
+      title="Create a literature collection"
       description="Start with a topic. You can refine the literature search and add documents next."
     >
       <form onSubmit={submit}>
         <label>
-          Project name
+          Collection name
           <input
             required
             maxLength={120}
@@ -376,7 +373,7 @@ export function CreateProject({
         <ErrorNotice message={error} />
         <div className="dialog-actions">
           <Button type="submit" variant="default" disabled={busy}>
-            {busy ? "Creating…" : "Create project"}
+            {busy ? "Creating…" : "Create collection"}
             <ArrowUpRight size={15} />
           </Button>
         </div>
@@ -402,20 +399,29 @@ function SpecEditor({
     setSpec((s) => ({ ...s, [key]: value }));
     setSaved(false);
   };
-  const list = (key: string, label: string, hint: string) => (
-    <label>
-      {label}
-      <textarea
-        rows={3}
+  const list = (key: string, label: string, hint: string) =>
+    key !== "queries" ? (
+      <CollectionChips
+        label={label}
+        hint={hint}
         disabled={p.adopted}
-        value={
-          Array.isArray(spec[key]) ? spec[key].join("\n") : spec[key] || ""
-        }
-        onChange={(e) => set(key, e.target.value.split("\n"))}
+        values={Array.isArray(spec[key]) ? spec[key] : []}
+        onChange={(values) => set(key, values)}
       />
-      <small>{hint}</small>
-    </label>
-  );
+    ) : (
+      <label>
+        {label}
+        <textarea
+          rows={3}
+          disabled={p.adopted}
+          value={
+            Array.isArray(spec[key]) ? spec[key].join("\n") : spec[key] || ""
+          }
+          onChange={(e) => set(key, e.target.value.split("\n"))}
+        />
+        <small>{hint}</small>
+      </label>
+    );
   return (
     <form
       className="spec-form"
@@ -461,25 +467,27 @@ function SpecEditor({
               rows={2}
             />
           </label>
-          <label>
-            Scope
-            <textarea
-              disabled={p.adopted}
-              value={spec.scope || ""}
-              onChange={(e) => set("scope", e.target.value)}
-              rows={3}
-            />
-          </label>
-          <label>
-            Relevance criteria
-            <textarea
-              disabled={p.adopted}
-              value={spec.theme || ""}
-              onChange={(e) => set("theme", e.target.value)}
-              rows={3}
-            />
-            <small>What makes a paper useful to this project?</small>
-          </label>
+          <Disclosure title="Scope and relevance criteria">
+            <label>
+              Scope
+              <textarea
+                disabled={p.adopted}
+                value={spec.scope || ""}
+                onChange={(e) => set("scope", e.target.value)}
+                rows={3}
+              />
+            </label>
+            <label>
+              Relevance criteria
+              <textarea
+                disabled={p.adopted}
+                value={spec.theme || ""}
+                onChange={(e) => set("theme", e.target.value)}
+                rows={3}
+              />
+              <small>What makes a paper useful to this project?</small>
+            </label>
+          </Disclosure>
         </div>
       </div>
       <div className="form-section">
@@ -514,13 +522,17 @@ function SpecEditor({
               />
             </label>
             <label>
-              Full text only
-              <input
-                type="checkbox"
+              Text availability
+              <select
                 disabled={p.adopted}
-                checked={!!spec.full_text_only}
-                onChange={(e) => set("full_text_only", e.target.checked)}
-              />
+                value={spec.full_text_only ? "full" : "any"}
+                onChange={(e) =>
+                  set("full_text_only", e.target.value === "full")
+                }
+              >
+                <option value="any">Include abstracts</option>
+                <option value="full">Full text only</option>
+              </select>
             </label>
           </div>
           <Disclosure title="Publication window and exclusions">
@@ -942,5 +954,79 @@ export function LaunchInvestigation({
         </div>
       </form>
     </Modal>
+  );
+}
+
+function CollectionChips({
+  label,
+  hint,
+  values,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  values: string[];
+  disabled: boolean;
+  onChange: (values: string[]) => void;
+}) {
+  const [draft, setDraft] = useState("");
+  const add = () => {
+    const value = draft.trim();
+    if (value && !values.includes(value))
+      onChange([...values.filter(Boolean), value]);
+    setDraft("");
+  };
+  return (
+    <div className="collection-chip-field">
+      <label>
+        {label}
+        {!disabled && (
+          <div className="collection-chip-input">
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder={
+                label === "Anchor papers" ? "Add a DOI" : "Add an excluded term"
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  add();
+                }
+              }}
+            />
+            <Button
+              type="button"
+              size="sm"
+              disabled={!draft.trim()}
+              onClick={add}
+            >
+              Add
+            </Button>
+          </div>
+        )}
+      </label>
+      <div className="collection-chips">
+        {values.filter(Boolean).map((value, i) => (
+          <span key={`${value}-${i}`}>
+            {value}
+            {!disabled && (
+              <button
+                type="button"
+                aria-label={`Remove ${value}`}
+                onClick={() =>
+                  onChange(values.filter((_, index) => index !== i))
+                }
+              >
+                ×
+              </button>
+            )}
+          </span>
+        ))}
+        {!values.filter(Boolean).length && <small>None added</small>}
+      </div>
+      <small>{hint}</small>
+    </div>
   );
 }

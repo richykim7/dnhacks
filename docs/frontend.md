@@ -40,7 +40,7 @@ The development helper calls the official 21st HTTP MCP endpoint using an authen
 ## User-facing behavior
 
 - Investigations: project-scoped roster and spatial agent tree. New runs use ordered runtime events for lifecycle, actual model/tool execution, concise agent intent, worker heartbeat, streaming experiment output and deterministic playback. Select a node for its experiments and artifacts; Show terminal is opt-in and reports unavailable for SDK branches without a dedicated pane. Streams reconnect by cursor and close on navigation. Legacy trace-only runs are explicitly partial. See [runtime contract](runtime.md).
-- Library: create a project; edit all collection fields; preview/build; upload/remove documents; assistant conversation and proposed settings; build/run history, progress, logs, and cancellation. Imported collections remain read-only where the API requires it.
+- Library: populated collections open to a scrollable paper browser with title, stored authors, publication year, local text/figure availability, title/author/DOI search, year/topic/availability filters and sorting. Selecting a paper opens a reading pane with stored text, section navigation and local figures; missing text, metadata and images are explicit. The reader can expand, and mobile returns to the list with Back to papers. Manage collection contains settings, document import, assistant and history; New collection is separate from the scoped New investigation action. Settings use chips for anchor DOIs/exclusions and progressive disclosure for advanced fields. Imported collections remain read-only where the API requires it.
 - Knowledge: the literature graph as stored, with nothing invented on the way to the screen, laid out as a force-directed graph (d3-force, deterministic, run to rest before first paint) rather than layered ranks. Each entity is a shape for its kind, sized by how many claims touch it in view, with its label beneath and its ontology identifier (linked through Bioregistry) in the inspector and on the selected node; edges carry the claim's sign in biological notation (arrowhead enables, bar represses, open dot for an unsigned predicate), line weight by distinct source count, and a dashed amber stroke for corpus-disputed claims. Claims between the same two entities fan apart so a dispute is visible as two edges. Search runs in the database over the whole collection; status, sign, entity kind and relation class filters are closed-vocabulary and show real counts. A summary strip states claims, entities, evidence records, papers (full text), reported experiments and engine tests with the graph file's modification time. Selecting a claim shows its status with what the word may mean (a source count, never approval or proof), the subject → predicate → object spine with entity state and variant, aspect, sources, first mention, mechanism and dispute kind, the other claims answering the same question, every engine test on the claim (predicted versus observed sign, effect, p, verifier outcome, reviewer decision and note, novelty), then each evidence record: paper with DOI/PubMed/PMC links, full-text and licence status, section, quotation, evidence type, study type, attribution and certainty with checker agreement, the source's own wording, what it cites, the experiment it reports, and biological context with provenance. Identifiers and extraction metadata sit in disclosures. Missing values say so. Review controls are not shown; backend decision and promotion APIs remain available.
 - Molecular structures: only a selected node's collected experiment artifacts, inline in that experiment. No standalone Structures route, remote demo lookup or unrelated file picker. PDB/mmCIF coordinates are validated before durable collection; ribbon/atomic/surface modes, ambient occlusion, chain/residue controls, camera preservation and optional rotation use the public 3Dmol API without a fork. Artifact provenance distinguishes reference, prediction, derived geometry and illustration. No invented docking, confidence, mutation or binding scores.
 
@@ -187,3 +187,21 @@ The reference viewer's Open inhibitor workbench action replaces that viewer inli
 left scene. Research activity remains alongside it, and Return to reference restores the original
 viewer. Only one molecular viewer is mounted. Embedded inhibitor controls open as an overlay;
 its recorded-action Follow/Replay behavior is unchanged.
+
+### Library paper reading
+
+`GET /api/projects/<id>/papers` lists every stored graph paper without retrieval or extraction.
+`GET /api/projects/<id>/papers/<paper_id>` returns its stored text and figure metadata;
+`GET /api/projects/<id>/papers/<paper_id>/figures/<index>` serves a locally stored image.
+The existing lock-safe read-only connection is used. Optional corpus `MANIFEST.json` and
+local citation metadata supply categories, authors and figures; absent metadata is not inferred.
+Figure paths are bounded to that corpus's paper directory. Nothing downloads publisher content.
+The reader renders extracted text safely, preserves publication front matter in a disclosure
+when an Abstract heading exists, and keeps original-source links for missing local content.
+
+For real-data visual review, `frontend/e2e/library.spec.ts` accepts
+`LIBRARY_REVIEW_SNAPSHOT=/tmp/library-review.json` containing a read-only exported project,
+list, per-paper details and local figure-URL mappings. Use the normal browser harness;
+it intercepts only GETs against the snapshot and never writes to the source corpus.
+Without the local snapshot these optional review cases explicitly skip. No paper text
+or image fixtures are committed.

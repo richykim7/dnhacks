@@ -1,0 +1,435 @@
+.library-page {
+  max-width: none;
+  padding: 30px 36px 24px;
+}
+.library-page .page-heading {
+  margin-bottom: 16px;
+  gap: 20px;
+}
+.library-heading-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.library-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 24px;
+}
+.library-summary > span:first-child {
+  color: var(--accent);
+}
+.library-summary p {
+  width: 100%;
+  margin: 3px 0 0;
+  max-width: 90ch;
+  line-height: 1.5;
+}
+.paper-browser {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.paper-browser-tools {
+  padding: 20px 24px 0;
+}
+.paper-browser-title {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.paper-browser-title h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.paper-browser-title > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.paper-search {
+  display: flex;
+  margin: 0 0 14px;
+}
+.paper-search input {
+  font-size: 14px;
+  padding: 12px 0;
+}
+.paper-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.paper-filters label {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 135px;
+  flex: 1;
+}
+.paper-filters select {
+  margin-top: 4px;
+  font-size: 12px;
+  width: 100%;
+}
+.paper-filters .paper-sort {
+  margin-left: auto;
+  flex: 0 1 160px;
+}
+.paper-results {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.paper-results > span:first-child {
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.paper-workspace {
+  display: flex;
+  min-width: 0;
+  border-top: 1px solid var(--border);
+}
+.paper-list {
+  width: 100%;
+  min-width: 0;
+  max-height: max(420px, calc(100dvh - 440px));
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.paper-row {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  display: flex;
+  gap: 18px;
+  text-align: left;
+  padding: 20px 24px;
+  color: var(--fg);
+  align-items: flex-start;
+}
+.paper-row:last-child {
+  border-bottom: 0;
+}
+.paper-row:hover {
+  background: var(--hover);
+}
+.paper-row.selected {
+  background: var(--selected);
+  box-shadow: inset 3px 0 var(--accent);
+}
+.paper-row-index {
+  font-size: 11px;
+  color: var(--subtle);
+  font-variant-numeric: tabular-nums;
+  padding-top: 4px;
+  width: 22px;
+  flex-shrink: 0;
+}
+.paper-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  flex: 1;
+}
+.paper-row-body > strong {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  max-width: 95ch;
+}
+.paper-row-authors {
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.paper-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 11px;
+  color: var(--muted);
+  align-items: center;
+}
+.paper-row-meta > span {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+.paper-text-available {
+  color: var(--accent);
+}
+.paper-row-arrow {
+  color: var(--subtle);
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.has-reader .paper-list {
+  width: 40%;
+}
+.has-reader .paper-row {
+  padding: 18px 16px;
+  gap: 10px;
+}
+.has-reader .paper-row-index,
+.has-reader .paper-row-arrow {
+  display: none;
+}
+.has-reader .paper-row-body > strong {
+  font-size: 13px;
+}
+.paper-reader {
+  width: 60%;
+  min-width: 0;
+  border-left: 1px solid var(--border);
+  background: var(--bg);
+  max-height: max(540px, calc(100dvh - 340px));
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.paper-reader-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.paper-article {
+  max-width: 820px;
+  margin: auto;
+  padding: 28px 32px 40px;
+}
+.paper-reader-kicker {
+  color: var(--accent);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 13px;
+}
+.paper-article h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 27px;
+  line-height: 1.3;
+  margin: 0 0 16px;
+}
+.paper-byline {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.paper-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  font-size: 12px;
+  margin: 12px 0;
+}
+.paper-reading-note {
+  margin: 18px 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted);
+}
+.paper-fulltext p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: Georgia, serif;
+  font-size: 16px;
+  line-height: 1.85;
+  margin: 0 0 1.2em;
+}
+.paper-figures {
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+.paper-figures figure {
+  margin: 24px 0;
+}
+.paper-figures img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  background: white;
+  border-radius: 4px;
+}
+.paper-figures figcaption {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.reader-expanded .paper-list {
+  display: none;
+}
+.reader-expanded .paper-reader {
+  width: 100%;
+  border-left: 0;
+}
+.collection-chip-field {
+  margin-bottom: 20px;
+}
+.collection-chip-input,
+.collection-chips {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.collection-chips {
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.collection-chips > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--raised);
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.collection-chips button {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  padding: 0 4px;
+}
+@media (max-width: 1100px) {
+  .library-page {
+    padding: 24px;
+  }
+  .library-page .page-heading {
+    flex-wrap: wrap;
+  }
+  .has-reader .paper-list {
+    width: 36%;
+  }
+  .paper-reader {
+    width: 64%;
+  }
+  .paper-article {
+    padding: 24px;
+  }
+}
+@media (max-width: 700px) {
+  .library-page {
+    padding: 18px 14px;
+  }
+  .library-page .page-heading {
+    gap: 12px;
+  }
+  .library-heading-actions {
+    flex-wrap: wrap;
+  }
+  .library-summary {
+    margin-bottom: 16px;
+  }
+  .paper-browser-tools {
+    padding: 16px 14px 0;
+  }
+  .paper-browser-title > span {
+    display: none;
+  }
+  .paper-filters {
+    gap: 10px;
+  }
+  .paper-filters label,
+  .paper-filters .paper-sort {
+    min-width: 0;
+    flex: 1 1 40%;
+    margin-left: 0;
+  }
+  .paper-row {
+    padding: 17px 14px;
+    gap: 10px;
+  }
+  .paper-row-index,
+  .paper-row-arrow {
+    display: none;
+  }
+  .paper-row-body > strong {
+    font-size: 14px;
+  }
+  .has-reader .paper-list {
+    display: none;
+  }
+  .paper-reader {
+    width: 100%;
+    border-left: 0;
+    max-height: 70dvh;
+  }
+  .paper-article {
+    padding: 22px 18px;
+  }
+  .paper-article h2 {
+    font-size: 24px;
+  }
+  .paper-expand {
+    display: none;
+  }
+}
+.paper-reader-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.paper-fulltext h3 {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  line-height: 1.5;
+  margin: 1.5em 0 0.6em;
+}
+.paper-fulltext [id],
+.paper-figures {
+  scroll-margin-top: 70px;
+}
+.paper-fulltext .disclosure {
+  margin: 16px 0;
+}
+.paper-section-picker {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  margin: 16px 0;
+}
+.library-page {
+  font-family: "IBM Plex Sans Variable", sans-serif;
+}
+.reader-expanded .paper-browser-tools {
+  display: none;
+}
+.reader-expanded .paper-reader {
+  max-height: calc(100dvh - 240px);
+  min-height: 420px;
+}
+@media (max-width: 700px) {
+  .has-reader .paper-browser-tools {
+    display: none;
+  }
+  .library-page:has(.has-reader) .library-summary {
+    display: none;
+  }
+  .has-reader .paper-reader {
+    max-height: calc(100dvh - 260px);
+    min-height: 360px;
+  }
+}
