@@ -56,6 +56,8 @@ class CountData:
             if np.any(idx[1:] <= idx[:-1]):
                 raise ValueError('CSR indices must be sorted without duplicates')
         m = self.manifest
+        if m.get('library_size_rule', 'sum-supplied-panel') not in ('sum-supplied-panel', 'measured-all-genes'):
+            raise ValueError('Unsupported library measurement rule')
         if m.get('schema') != 'ecosystem-counts-v1' or m.get('scale') != 'UMI counts':
             raise ValueError('Explicit UMI count schema required; TPM is unsupported')
         for key in ('population', 'organism', 'tissue', 'assay', 'ontology', 'state_dictionary', 'sampling_justification', 'specimen_rule'):
@@ -110,9 +112,23 @@ class CountData:
                 raise ValueError('Invalid row')
             start, stop = self.indptr[i:i+2]
             out[j, self.indices[start:stop]] = self.data[start:stop]
-        if np.any(out.sum(axis=1) <= 0) or np.any(out.sum(axis=1) > 2**53):
+        if (self.manifest.get('library_size_rule') != 'measured-all-genes' and np.any(out.sum(axis=1) <= 0)) or np.any(out.sum(axis=1) > 2**53):
             raise ValueError('Empty library or library precision overflow')
+        if self.manifest.get('library_size_rule') == 'measured-all-genes':
+            self.library_sizes(rows, out)
         return out
+
+    def library_sizes(self, rows, counts=None):
+        rows = list(rows)
+        if self.manifest.get('library_size_rule') == 'measured-all-genes':
+            totals = np.asarray([self.cells[i]['library_size'] for i in rows], dtype=float)
+        else:
+            totals = (self.rows(rows) if counts is None else counts).sum(axis=1)
+        if not np.isfinite(totals).all() or np.any(totals <= 0) or np.any(totals > 2**53) or np.any(totals != np.floor(totals)):
+            raise ValueError('Invalid measured library offsets')
+        if counts is not None and np.any(totals < counts.sum(axis=1)):
+            raise ValueError('Library offset below measured selected counts')
+        return totals
 
     def identity(self):
         h = hashlib.sha256()
