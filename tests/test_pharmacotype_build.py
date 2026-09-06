@@ -71,12 +71,17 @@ def test_pdo_auc_identity_audit_and_curve_separation(tmp_path, monkeypatch):
     with pytest.raises(ValueError,match='Duplicate source organoid'):pdo.build(raw,out)
 
 
-def test_cuda_tuning_excludes_heldout_outcomes(tmp_path):
+@pytest.mark.parametrize('pathways',[False,True])
+def test_cuda_tuning_excludes_heldout_outcomes(tmp_path,pathways):
     torch=pytest.importorskip('torch')
     if not torch.cuda.is_available():pytest.skip('CUDA fitting requires GPU')
     from dnhacksbio.pharmacotype_data import digest
     spec=importlib.util.spec_from_file_location('pdo_tuner',Path(__file__).parents[1]/'scripts/tune_pharmacotype_cuda.py')
     tuner=importlib.util.module_from_spec(spec);spec.loader.exec_module(tuner)
+    library=None
+    if pathways:
+        library=tmp_path/'frozen.gmt'
+        library.write_text('early\tfixture\tG0\tG1\tG2\tG3\tG4\nlate\tfixture\tG7\tG8\tG9\tG10\tG11\n')
     rng=np.random.default_rng(3);z=rng.normal(size=(60,12))
     donors=[f'fixture-{i}' for i in range(60)]
     data=dict(schema='pharmacotype.auc-development.v1',donors=donors,
@@ -86,13 +91,30 @@ def test_cuda_tuning_excludes_heldout_outcomes(tmp_path):
     def run():
         data['integrity_sha256']=digest({k:v for k,v in data.items() if k!='integrity_sha256'})
         (tmp_path/'auc-development.json').write_text(json.dumps(data))
-        tuner.run(tmp_path)
-        return [json.loads((tmp_path/name).read_text()) for name in ('cv-report.json','cv-model.json')]
+        tuner.run(tmp_path,pathways=library)
+        output=tmp_path/'pathways' if pathways else tmp_path
+        return [json.loads((output/name).read_text()) for name in ('cv-report.json','cv-model.json')]
     report,model=run()
-    assert report['metrics']['test']['rmse']<report['metrics']['test']['baseline_rmse']
+    if not pathways:assert report['metrics']['test']['rmse']<report['metrics']['test']['baseline_rmse']
+    else:
+        assert model['pathways']['names']==['early','late']
+        assert len(report['trials'])==20
     data['y'][40:]=[[99.] for _ in range(20)]
     changed,model2=run()
     assert changed['selection']['selected']==report['selection']['selected']
     assert changed['trials']==report['trials']
     assert model2['coef']==model['coef']
     assert model2['features']==model['features']
+
+
+def test_cuda_pathway_ranks_are_sample_local_and_average_ties():
+    torch=pytest.importorskip('torch')
+    if not torch.cuda.is_available():pytest.skip('CUDA required')
+    spec=importlib.util.spec_from_file_location('pdo_tuner',Path(__file__).parents[1]/'scripts/tune_pharmacotype_cuda.py')
+    tuner=importlib.util.module_from_spec(spec);spec.loader.exec_module(tuner)
+    raw=torch.tensor([[0.,0.,2.,4.],[1.,5.,5.,9.]],device='cuda',dtype=torch.float64)
+    programs={'members':[[0,1],[2,3]]}
+    result=tuner.inputs(raw,programs)
+    assert torch.allclose(result,torch.tensor([[.375,.875],[.4375,.8125]],device='cuda',dtype=torch.float64))
+    assert torch.equal(result[:1],tuner.inputs(raw[:1],programs))
+    assert torch.equal(result,tuner.inputs(raw*7+11,programs))

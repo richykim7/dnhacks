@@ -229,6 +229,7 @@ The actions:
 | `search_skills`, `get_skill` | find and read a method guide |
 | `run_experiments` | run several pieces of Python in parallel |
 | `inhibitor` | skill-gated, experiment-scoped bounded preparation/docking, scene vision and canonical measurements; exploratory artifacts only |
+| `spindle` | bounded provisional 3D filament jobs, collected numerical ensembles and separate scoped scene/capture/vision operations; requires spindle-interface guidance |
 | `log` | record an idea, observation, dead end, open question or note with a promise score |
 | `submit` | send a self-judged experiment to verification |
 | `fork`, `checkpoint` | request parent allocation through a mandatory checkpoint report |
@@ -587,7 +588,13 @@ donor partitions have been audited and separate count/PCA/set models actually
 trained: held-out reconstruction favored cell PCA; learned set pooling did not
 improve on donor-summary PCA. All-gene library offsets and a residual NB decoder
 bin preserve selected-panel measurement semantics. The [training report](docs/ecosystem-training.md)
-records coverage, source checksums and negative pilot results. Reserved-cohort
+records coverage, source checksums and negative pilot results. The subsequent
+[CUDA expansion](docs/ecosystem-expansion.md) acquired three more original cohorts
+for 72 donor records and trained separate 64-dimensional denoising/NB encoders
+across three seeds, a lineage classifier and donor-matching scorers. All fitting,
+including exact PCA, runs on CUDA under the shared GPU lease. Fifty-five donors
+meet the two-compartment 32-cell coverage rule; external reconstruction still
+favors PCA. These separate development checkpoints are not private registrations. Reserved-cohort
 audit, adequate power and deployment privacy remain confirmation gates.
 No graph promotion or branch-success behavior changes.
 See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limits.
@@ -595,7 +602,8 @@ See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limi
 ### Exploratory binder interfaces
 
 `binder/` adds bounded coordinate inspection, exact residue maps, contact/SASA diagnostics and
-portable `binder_bundle.v1` artifacts. The existing collector and explorer enforce source/hash,
+portable `binder_bundle.v1` artifacts with optional rebuilt source-derived surface meshes.
+Worker-parsed surfaces and labeled Cα traces remain visual representations of immutable coordinates. The existing collector and explorer enforce source/hash,
 provenance and experiment-scope checks before publication. RuntimeDetail opens those collected
 artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
 Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
@@ -618,3 +626,17 @@ the CLI's scoped model/job/scene operations. Immutable agent revisions support s
 playback; rendered PNG bytes reach the model seam and unavailable vision cannot complete a review.
 The sourced sensitivity study and final performance acceptance remain active validation work.
 See [tumor–stroma](docs/tumor-stroma.md).
+
+### Spindle experiment adapter
+
+`spindle/` validates source-linked numerical protocols and executes an operator-pinned
+3D Cytosim CPU build with durable scoped receipts, cancellation, budgets and raw
+archives. The registered `spindle` action publishes complete saved trajectories and
+ensemble metrics into their owning experiment. New scientific hypotheses use new
+experiment identities; scene revisions do not rerun mechanics. The inline spindle
+observatory preserves source coordinates and physical samples, displays pole IDs
+and comparison, and replays recorded scene actions separately from human exploration.
+Immutable scene recipes, captures and actual image-bearing model observations use
+the runtime journal and its playback visibility boundary. This is provisional,
+uncalibrated mechanics; no p-values, biological sample counts or verification verdicts
+are generated. See [spindle operations](docs/spindle-simulator.md).

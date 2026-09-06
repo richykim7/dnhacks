@@ -9,6 +9,7 @@ import type { JsonRecord } from "@/lib/types";
 import { actionLabel, date, human, number } from "@/lib/utils";
 import "@/runtime.css";
 const BinderWorkbench = lazy(() => import("./binder/Workbench"));
+const SpindleMetrics = lazy(() => import("./spindle/SpindleMetrics"));
 const SpindleObservatory = lazy(() => import("./spindle/SpindleObservatory"));
 const TissueWorkbench = lazy(() => import("./tissue/TissueWorkbench"));
 const Structures = lazy(() => import("./Structures"));
@@ -376,6 +377,8 @@ export function RuntimeDetail({
                       fallback={<Loading label="Opening spindle observatory" />}
                     >
                       <SpindleObservatory
+                        sha256={artifact.sha256}
+                        sceneActions={(run?.history ?? []).filter((e: RuntimeEvent)=>e.kind==="scene.recipe" && e.experiment_id===exp.experiment_id && e.payload.bundle_sha256===artifact.sha256).map((e:RuntimeEvent)=>({sequence:e.sequence,note:e.payload.note,recipe_sha256:e.payload.recipe.sha256,view:e.payload.view}))}
                         url={runtimeUrl(
                           runId,
                           `blob/${artifact.storage_key}`,
@@ -438,6 +441,8 @@ export function RuntimeDetail({
                         <small>SHA-256: {artifact.sha256}</small>
                       </Disclosure>
                     </>
+                  ) : artifact.kind === "spindle_metrics" && artifact.status === "available" ? (
+                    <Suspense fallback={<Loading label="Opening ensemble metrics" />}><SpindleMetrics url={runtimeUrl(runId,`blob/${artifact.storage_key}`,project,cursor)} /></Suspense>
                   ) : artifact.kind === "scene_capture" &&
                     artifact.status === "available" ? (
                     <figure className="binder-recorded-capture">

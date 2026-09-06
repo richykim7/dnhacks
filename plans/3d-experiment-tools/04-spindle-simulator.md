@@ -2,8 +2,8 @@
 
 Status: implementation in progress, 2026-09-06. The trajectory viewer and clustering analysis
 landed in PR68; the pinned Cytosim CPU worker and archive adapter are implemented.
-See [implemented scope and remaining work](../../docs/spindle-simulator.md). Calibration,
-full runtime visual review, and final visual/performance acceptance are not complete.
+See [implemented scope and remaining work](../../docs/spindle-simulator.md). Scoped runtime capture/vision review is implemented. Calibration and final broad
+visual/performance acceptance are not complete.
 Follow the [shared studio contract](README.md) for ownership, artifacts, capture and review.
 The visual ambition is a luminous kinetic sculpture: a complete spindle suspended in a glasslike
 cell, with microtubule fans sweeping through depth and centrosomes moving like small pearl stars.

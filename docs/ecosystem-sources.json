@@ -1,6 +1,6 @@
 {
   "schema": "ecosystem-source-inventory-v1",
-  "status": "Peng-and-Lin-development-acquired-audited-and-trained; confirmation-unavailable",
+  "status": "five-original-study-development-expansion-acquired-and-CUDA-trained; confirmation-unavailable",
   "origin": "plans/evalue-tool-council/PLAN-cellular-ecosystems.md",
   "sources": [
     {
@@ -110,6 +110,40 @@
         "exclude whole reserved studies and donor aliases",
         "raw source and reference-fitting provenance"
       ]
+    },
+    {
+      "study": "Werba",
+      "accessions": [
+        "GSE205013"
+      ],
+      "audited_donors": 17,
+      "proposed_role": "training-development",
+      "access_status": "verified-local-original-10x-counts",
+      "primary_reference": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205013",
+      "canonical_donor_rule": "Primary PDAC only; ten liver metastases excluded. Treatment mixtures are exposed development."
+    },
+    {
+      "study": "Steele reprocessed",
+      "accessions": [
+        "GSE229413",
+        "GSE155698"
+      ],
+      "audited_donors": 15,
+      "proposed_role": "training-and-donor-validation",
+      "access_status": "verified-local-original-10x-counts",
+      "primary_reference": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229413",
+      "canonical_donor_rule": "One original donor counted once across releases; Keller repeat and normals excluded. Thirteen annotation joins verified by barcode and full-library count; two explicit GEO donor identities retained with unknown labels for CUDA prediction."
+    },
+    {
+      "study": "Zhang",
+      "accessions": [
+        "GSE212966"
+      ],
+      "audited_donors": 6,
+      "proposed_role": "external-development-only",
+      "access_status": "verified-local-original-10x-counts",
+      "primary_reference": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE212966",
+      "canonical_donor_rule": "Six untreated primary PDAC donors; adjacent normals excluded; entire study held out from fitting."
     }
   ],
   "audit_date": "2026-09-06",
@@ -287,5 +321,15 @@
     }
   ],
   "checksum_scope": "SHA256 of actual downloaded bytes; no upstream count checksum assertion. Peng expected byte size additionally checked.",
-  "cross_study_review": "Peng recruited at Peking Union Medical College Hospital; Lin at HonorHealth and Samsung. Different original studies and institutions support exposed-development separation; this is not a confirmation identity certificate."
+  "cross_study_review": "Peng recruited at Peking Union Medical College Hospital; Lin at HonorHealth and Samsung. Different original studies and institutions support exposed-development separation; this is not a confirmation identity certificate.",
+  "expanded_development": {
+    "donor_records": 72,
+    "prepared_cells": 338900,
+    "gpu_loaded_cells": 313518,
+    "common_genes": 2625,
+    "complete_donors_at_32_cells_per_compartment": 55,
+    "report": "ecosystem-expansion.md",
+    "new_source_bytes_and_hashes": "ecosystem-expansion/acquisition.json",
+    "reserved_Hwang_opened": false
+  }
 }

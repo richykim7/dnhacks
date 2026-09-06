@@ -260,10 +260,43 @@ class Workbench:
                     a['position']=positions[a['name']]
         return {**measure(geometry,ids),'pose':pose,'bundle':bundle_key}
 
+    def timeline(self, key):
+        """Replay actual receipts; never expand a camera bookmark into invented actions."""
+        self.source(key)
+        recipes, captures, result = {}, {}, []
+        for e in self.history():
+            p, kind = e['payload'], e['kind']
+            actor = p.get('actor', 'agent')
+            if kind == 'scene.capture' and p.get('source_hash') == key:
+                captures[p['image_hash']] = p
+            relevant = p.get('source_hash') == key
+            if kind in ('scene.vision', 'scene.review'):
+                relevant = p.get('capture_id') in captures
+            if not relevant or kind not in ('scene.changed', 'scene.capture', 'scene.measurement',
+                                             'scene.vision', 'scene.review', 'inhibitor.job'):
+                continue
+            if kind == 'scene.changed':
+                recipes[actor] = p['recipe']
+                note = p.get('note') or 'Changed the scene'
+            elif kind == 'scene.measurement':
+                note = f"Measured {p['value']:.3f} {p['units']}"
+            elif kind == 'scene.capture':
+                note = 'Captured the rendered scene for inspection'
+            elif kind == 'scene.vision':
+                note = 'Inspected scene pixels'
+            elif kind == 'scene.review':
+                note = p.get('disposition') or 'Reviewed the visual evidence'
+            else:
+                note = 'Docking: ' + p['status']
+            result.append({'sequence': e['sequence'], 'recorded_at': e['recorded_at'],
+                           'actor': actor, 'kind': kind, 'note': note,
+                           'recipe': recipes.get(actor), 'details': p})
+        return result
+
     def describe(self,key=None):
         return {'run_id':self.run,'experiment_id':self.experiment,'project_id':self.project,
                 'jobs':self.jobs(),'bundles':self.bundles(),'scenes':self.scenes(key) if key else [],
-                'readonly':self.through is not None}
+                'timeline':self.timeline(key) if key else [], 'readonly':self.through is not None}
 
     def compare(self,keys):
         if not isinstance(keys,list) or not 2<=len(keys)<=5 or len(set(keys))!=len(keys):

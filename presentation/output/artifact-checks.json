@@ -1,32 +1,45 @@
 {
-  "source_snapshot": "1e83cfb158dd1c9d35894e05006bd9482a566233",
-  "checks": [
-    {
-      "file": "DNHacks_2026_DN_Research.pptx",
-      "slides": 17,
-      "all_slides_have_notes": true,
-      "package_integrity": "passed",
-      "all_native_text_present_in_pdf": true,
-      "native_shape_count": 737
+  "renderer": "LibreOffice Impress + Poppler",
+  "native_powerpoint_animation_review": false,
+  "decks": {
+    "DNHacks_2026_DN_Research": {
+      "slides": 29,
+      "notes": 29,
+      "rendered_pages": 29,
+      "hidden_slides": [
+        10,
+        11,
+        12,
+        13,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "missing_text_tokens": {}
     },
-    {
-      "file": "DNHacks_Layout_Kit.pptx",
+    "DNHacks_Layout_Kit": {
       "slides": 4,
-      "all_slides_have_notes": true,
-      "package_integrity": "passed",
-      "all_native_text_present_in_pdf": true,
-      "native_shape_count": 63
+      "notes": 4,
+      "rendered_pages": 4,
+      "hidden_slides": [],
+      "missing_text_tokens": {}
     }
-  ],
+  },
   "sha256": {
-    "DNHacks_2026_DN_Research.pdf": "67ddb4905391d898e11390a464ee03d8feb2f58e4c76e84b614e5a3af053a2d7",
-    "DNHacks_2026_DN_Research.pptx": "f1bce03e562d7f899c6e32513a1b979723e59217b69f5473082df74ac7406516",
-    "DNHacks_Layout_Kit.pdf": "cc5f4f05891943564d6b20a9c0750f73b18c15e61dcdb8fe70a2b71f9a3c14d3",
-    "DNHacks_Layout_Kit.pptx": "9bad17a021bdd7ed3f0e1a476686211b37aaf66a7834ad05ab88d6c1f3ace7ac",
-    "contact-sheet.png": "ff1f474a4f146b87092f60c421771733caa271c1438c88103db70bfc6aebb0f0",
-    "deck-manifest.json": "4f141aab9d174703626004a7bd4fb30f7bfdf5b827d7b9a520d1b5da6fc81628",
-    "layout-kit-preview.png": "4f399ca345c7308eac1a435a4512ab34485a3cfc6f516beeefb00a1acde114c7",
-    "presentation/assets/evidence-fixture.png": "c6f7fd6cebdb6c51e78c289e1f5c943ac92a4d47295b409eac8a64fc6b9d520b",
-    "presentation/assets/workspace-fixture.png": "839e8ec3de8686ea1f034e7bf0bee5335113724108d3db4419e4b947a89a4c1b"
+    "DNHacks_2026_DN_Research.pptx": "14833f3b5a02b316843a64cebdbc5424fccfe07f3559d8fe6a88471e22243d45",
+    "DNHacks_2026_Reviewer_Copy.pdf": "7399b87b80f133fe24e03b390a2e4a2597088b6da7c9c42cf1785743e2de0313",
+    "DNHacks_Layout_Kit.pdf": "cda0dbde74867c901ad05446d516bee7ae8fc7ed716dc6112dd12f9084b554fb",
+    "DNHacks_2026_DN_Research.pdf": "063fd6e8c9569b2972ce2c95a142da97b4d156dbaf5dd55a5d2700d1ac6bd649",
+    "DNHacks_Layout_Kit.pptx": "ffbd2bd5ac9bd4b2234c2257817c0c311b74717bced2baf0728b1e9ad01eba6d"
   }
 }

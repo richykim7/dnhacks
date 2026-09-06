@@ -79,6 +79,33 @@ The test set was inspected in the earlier benchmark and remains development
 data. No endpoint, donor or drug subset was selected using the new test results.
 The measured search took 0.65 seconds and reserved 22 MiB on the L40S.
 
+### Fixed pathway follow-up
+
+The [pathway report](pharmacotype-pathways.json) preserves all 20 CUDA fits
+using all 50 programs from the [Enrichr MSigDB Hallmark 2020 library](https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=text&libraryName=MSigDB_Hallmark_2020).
+The frozen GMT SHA256 is
+`4275592957a1587652092bb398cf77216fde5b8daa2aedaa0e016f7d10bbdb81`.
+Features are mean within-sample percentile ranks, with average ranks for ties.
+Every source program is retained, requiring at least five measured genes;
+program selection never uses response outcomes. Fold-training scaling and the
+same training-only CV rule select among linear/RBF kernels and penalties.
+Portable artifacts include the exact gene-to-program mapping and library hash.
+
+The selected RBF model (gamma 4, penalty 0.01) has validation RMSE 0.1692 versus
+the mean baseline 0.1562, and test RMSE 0.1087 versus 0.1162. The approximately
+6.4% test-error reduction does not overcome worse validation or make the
+previously inspected test set fresh. Retain the mean baseline; no verified PDO
+model success or full-curve confirmation is claimed. This is another recorded
+development experiment, not an independent replication of the earlier search.
+The run took 0.68 seconds and reserved 22 MiB on the L40S. GPU tests verify
+sample-local ranks, average ties, monotone rescaling invariance, portable
+prediction equivalence, and unchanged selection when held-out outcomes change.
+
+Reproduce with `scripts/tune_pharmacotype_cuda.py --data
+data/interim/pharmacotype/shi2022 --pathways
+data/raw/pharmacotype/hallmark2020.gmt`. Results are written under the data
+directory's `pathways/` subdirectory, preserving the previous gene-level search.
+
 ### PRISM/CCLE source details
 
 Acquired the secondary dose-response release from [PRISM 19Q4](https://api.figshare.com/v2/articles/9393293),
@@ -188,6 +215,16 @@ Table S4 is also AUC. Yin 2025 supplies dose-level CFTR-drug measurements; its
 cross-study RNA join and dose-label consistency require audit before use.
 These are development candidates; the cell-line pilot cannot substitute for PDOs.
 
+Additional source checks found that Tiriac Table S3 contains subtype gene lists,
+not the missing sample-expression matrix. The [Tian 2023 Dryad release](https://datadryad.org/dataset/doi:10.5061/dryad.dbrv15f7s)
+lists organoid viability and gene-read-count spreadsheets; direct file downloads
+returned HTTP 403 during this audit. Its [GSE225011](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225011)
+record has 32 sequencing samples from two organoid identities, U123M15-T and
+U049MAI, across treated/untreated timepoints and replicates. Those 32 samples
+cannot supply 32 independent donors or a training/validation/test cohort.
+Untreated replicates may support an assay example after verifying the original
+curve files, but no successful predictive benchmark is inferred from metadata.
+
 Adaptive diagnostics use 10,000 streams per case at a synthetic 32-donor budget.
 Anytime rejection: IID null 0.01%, heavy-tail null 0.10%, simple alternative
 35.52%, nonlinear alternative 0%. The [report](pharmacotype-adaptive-validation.json)
@@ -198,3 +235,45 @@ invalid shared-control, current-block fitting and pseudoreplication controls.
 The proposed 80% power target is unmet. No audited fresh PDO denominator, reviewed
 sampling/normalization proof, or deployed private OS boundary is claimed. These
 remain explicit scientific release requirements rather than manufactured results.
+
+## Nonlinear critic feasibility on CUDA
+
+The previous synthetic nonlinear failure is partly structural. For symmetric
+X with Y = X² + independent noise, reflecting X leaves the joint distribution
+unchanged while negating every score of the scalar critic tanh(wXY).
+Consequently its native factor has conditional expectation one even under this
+dependent alternative, including when w is chosen from past blocks. More donors
+cannot give that critic 80% rejection power at a valid 5% anytime threshold.
+
+The [separate feasibility report](pharmacotype-critic-power.json) compares a
+bounded 2–32–32–1 tanh MLP, trained entirely on CUDA, with that bilinear baseline.
+For each relation and each of three seeds, it uses 1,024 synthetic training and
+256 external development-validation donors. Training has 100 logistic
+initialization epochs and 200 native mean-log-factor epochs; the best external
+validation checkpoint freezes before any evaluation stream is generated.
+All seeds are reported independently. Each model is tested on 10,000 fresh
+streams per case with 32 donors, stake 0.9 and threshold 20. Every evaluation
+block cross-checks a scored factor against the scalar production arithmetic.
+
+| Critic | Simple alternative anytime power | Quadratic alternative anytime power |
+| --- | ---: | ---: |
+| Fixed scalar bilinear | 35.90% | 0% |
+| Relation-specific externally trained MLP, three seeds | 99.97–99.98% | 99.04–99.21% |
+
+MLP IID-null rejection ranges from 0.16% to 0.41%, and independent heavy-tail
+null rejection from 0.16% to 0.23%; the report contains Wilson intervals and
+detection delays. The alternatives deliberately have strong signal (noise SD
+0.25), and each MLP is trained on synthetic examples of its target relation.
+This establishes synthetic feasibility, not power against an unknown biological
+alternative. The run took 7.36 seconds and reserved 24 MiB on the L40S.
+The fixed bilinear baseline does not receive the MLP's optimization budget, so
+the simple-alternative improvement does not isolate architecture from training.
+The quadratic blind-spot argument applies to every scalar bilinear weight.
+
+Reproduce on CUDA with `python scripts/validate_pharmacotype_critic_cuda.py
+--output data/interim/pharmacotype/critic-power.json`. The pre-run design is
+written separately; the report retains the six frozen model weights and hashes.
+The experimental MLP is not integrated into the private process ledger, does
+not replace the existing adaptive report, and does not establish real PDO
+utility, sufficient fresh donors, or confirmation eligibility. Those gates
+remain open despite the successful synthetic comparison.

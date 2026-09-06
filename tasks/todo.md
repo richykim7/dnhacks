@@ -1,5 +1,16 @@
 # Research workspace review
 
+## Review — presentation revision and reliable local Board delivery
+
+- Consolidated the current [editable judge deck](../presentation/README.md): 29 slides, a 12-slide default pitch, four hidden discovery-reveal storyboards and 13 technical appendix slides, plus a four-layout kit. Every slide has a tentative script, status, sources and editing instructions in Notes.
+- Led with biological anticipation and the window of unilateral advantage, including the verified NSCEB §1.3 quote. Retained DTX relevance without claiming threat prediction, clinical benefit or customer traction.
+- Incorporated current inhibitor image-to-coordinate review, negative docking recovery, real model training and held-out comparisons, and the larger external protein benchmark. Added 14 reproducible PNG/PDF research figures; no new scientific training or experiments were run.
+- Used the existing LaoZhang adapter for two matching conceptual backgrounds, estimated total $0.18. Preserved prompts/provenance and local originals; tracked delivery JPEGs. Remaining credits/final billing were unavailable with the inference key.
+- Preserved the required full loop → survivors → paper fade → frozen-corpus-next-slide sequence. It remains hidden until a real qualifying run and excluded matching paper are verified; no discovery was fabricated.
+- Installed one persistent Board nudger with explicit identity routes, durable SQLite cursor/outbox, guarded tmux transport, Herdr delivery, automatic crash recovery and source/config/dependency updates. Both a direct and a managed-service probe arrived as actual messages in this active session. No Rich agent was contacted and no Telegram mirror was started.
+- Validation passed: 529 Python tests (33 optional/opt-in skips), 24 browser cases, six UI units, the production build and final isolation check. Fixed an incidental process-reaping assertion race; its OS-level check passed 50 repetitions. The revised PPTX and both PDFs were sent to Telegram.
+- Final rendering, repository gates and limitations are recorded in [presentation/validation.md](../presentation/validation.md); nudger operation and update behavior are documented in [docs/board-nudger.md](../docs/board-nudger.md).
+
 ## Review — DNHacks judge presentation
 
 - Created [editable PowerPoint, PDF preview, speaker notes and reusable layout kit](../presentation/README.md)

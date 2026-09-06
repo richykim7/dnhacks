@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { createHash } from "node:crypto";
+import { test, expect, type Page } from "@playwright/test";
 import { mockApi, investigation } from "./fixtures";
 import type { SpindleBundle, Vec3 } from "../src/components/spindle/types";
 function fixture(): SpindleBundle {
@@ -53,16 +54,18 @@ function fixture(): SpindleBundle {
               pole: p.id,
               points: Array.from({ length: 14 }, (_, j) => {
                 const f = j / 13;
-                return p.position.map(
-                  (v, n) =>
-                    v * (1 - f) +
-                    target[n] * f +
-                    (n === 1
-                      ? 1.8 * Math.sin(Math.PI * f) * Math.sin(i * 0.07)
-                      : n === 2
-                        ? 1.2 * Math.sin(Math.PI * f) * Math.cos(i * 0.07)
-                        : 0),
-                ) as Vec3;
+                return p.position
+                  .map(
+                    (v, n) =>
+                      v * (1 - f) +
+                      target[n] * f +
+                      (n === 1
+                        ? 1.8 * Math.sin(Math.PI * f) * Math.sin(i * 0.07)
+                        : n === 2
+                          ? 1.2 * Math.sin(Math.PI * f) * Math.cos(i * 0.07)
+                          : 0),
+                  )
+                  .map((x) => Number(x.toFixed(6))) as Vec3;
               }),
             };
           }),
@@ -72,11 +75,11 @@ function fixture(): SpindleBundle {
     })),
   };
 }
-test("spindle saved coordinates, deterministic views, condition comparison and review captures", async ({
-  page,
-}) => {
+async function openSpindle(page: Page) {
   await mockApi(page);
   const root = investigation.root;
+  const rawBundle = JSON.stringify(fixture());
+  const sha = createHash("sha256").update(rawBundle).digest("hex");
   const raw = [
     [
       "attempt.started",
@@ -94,6 +97,7 @@ test("spindle saved coordinates, deterministic views, condition comparison and r
       "artifact",
       {
         artifact_id: "spindle",
+        sha256: sha,
         name: "spindle.json",
         kind: "filament_trajectory",
         status: "available",
@@ -119,7 +123,8 @@ test("spindle saved coordinates, deterministic views, condition comparison and r
   );
   await page.route("**/api/runtime/**", (r) => {
     const u = new URL(r.request().url());
-    if (u.pathname.includes("/blob/")) return r.fulfill({ json: fixture() });
+    if (u.pathname.includes("/blob/"))
+      return r.fulfill({ body: rawBundle, contentType: "application/json" });
     if (u.pathname.endsWith("/events"))
       return r.fulfill({
         json: {
@@ -137,13 +142,18 @@ test("spindle saved coordinates, deterministic views, condition comparison and r
   });
   await page.goto("/");
   await page
-    .getByRole("button", { name: "Inspect Inspect spindle trajectories" })
-    .click();
-  await page
-    .getByRole("tablist", { name: "Researcher detail" })
+    .getByRole("tablist", { name: "Investigation view" })
     .getByRole("tab", { name: "Experiments", exact: true })
     .click();
+  await page.getByRole("button", { name: /Spindle visual development/ }).click();
   await page.getByRole("button", { name: "Expand scene" }).click();
+  return page.locator(".spindle-observatory");
+}
+test("spindle saved coordinates, deterministic views, condition comparison and review captures", async ({
+  page,
+}) => {
+  test.setTimeout(90_000); // Six software-rendered review PNGs plus coordinate assertions.
+  await openSpindle(page);
   const scene = page.locator(".spindle-observatory");
   await expect(scene).toHaveAttribute("data-scene-ready", "true");
   const pass = process.env.SPINDLE_REVIEW_PASS || "draft";
@@ -162,6 +172,15 @@ test("spindle saved coordinates, deterministic views, condition comparison and r
   await expect(page.locator(".spindle-readout")).toContainText(
     "C1 · (-5.000, -0.700, -0.500)",
   );
+});
+test("spindle condition comparison and responsive review captures", async ({
+  page,
+}) => {
+  test.setTimeout(90_000); // Four viewport captures, including the presentation frame.
+  const scene = await openSpindle(page);
+  const pass = process.env.SPINDLE_REVIEW_PASS || "draft";
+  await page.getByLabel("Centrosome", { exact: true }).selectOption("C1");
+  await page.getByLabel("Spindle physical time").fill("20");
   await page.getByLabel("Condition", { exact: true }).selectOption("1");
   await expect(page.locator(".spindle-caption")).toContainText("100.00 s");
   await expect(scene).toHaveAttribute("data-scene-ready", "true");
@@ -176,4 +195,42 @@ test("spindle saved coordinates, deterministic views, condition comparison and r
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(scene).toHaveAttribute("data-scene-ready", "true");
   await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-mobile.png`) });
+});
+
+test("spindle controller freezes comparison cameras and restores context", async ({
+  page,
+}) => {
+  const scene = await openSpindle(page);
+  const stage = scene.locator(".spindle-stage");
+  await stage.evaluate(async (el) => {
+    const b = (el as HTMLElement & { spindleController: any })
+      .spindleController;
+    await b.apply({
+      run: 0,
+      frame: 10,
+      compare: 1,
+      selected: "C1",
+      camera: { position: [23, 14, 40], target: [0, 0, 0] },
+    });
+    await b.ready();
+  });
+  const state = await stage.evaluate((el) =>
+    (
+      el as HTMLElement & { spindleController: any }
+    ).spindleController.inspect(),
+  );
+  expect(state.physical_time_s).toBe(50);
+  expect(state.comparison.physical_time_s).toBe(50);
+  expect(state.camera.position).toEqual(state.comparison.camera.position);
+  expect(state.poles[0].id).toBe("C1");
+  await stage.screenshot({ path: test.info().outputPath("spindle-scenes-comparison.png") });
+  await scene
+    .locator("canvas").nth(1)
+    .evaluate((c: HTMLCanvasElement) =>
+      c.getContext("webgl2")?.getExtension("WEBGL_lose_context")?.loseContext(),
+    );
+  await expect(page.getByRole("alert")).toContainText("Graphics context lost");
+  await page.getByRole("button", { name: "Restore spindle scene" }).click();
+  await expect(scene).toHaveAttribute("data-scene-ready", "true");
+  await expect(page.locator(".spindle-readout")).toContainText("C1");
 });

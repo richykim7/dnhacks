@@ -1,9 +1,49 @@
 {
-  "source_snapshot": "1e83cfb158dd1c9d35894e05006bd9482a566233",
+  "source_snapshot": "fee316580ba27951c2ad6fea4bdd4a6b335421ed",
   "built_on": "2026-09-06",
-  "main_slides": 17,
-  "core_slides": 11,
-  "core_seconds": 315,
+  "main_slides": 29,
+  "core_slides": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    14,
+    15,
+    16
+  ],
+  "core_seconds": 340,
+  "hidden_slides": [
+    10,
+    11,
+    12,
+    13,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29
+  ],
+  "reveal_sequence": [
+    10,
+    11,
+    12,
+    13
+  ],
+  "paper_reveal_slide": 12,
+  "frozen_corpus_slide": 13,
   "layout_kit_slides": 4,
   "fonts": [
     "IBM Plex Sans",
@@ -33,6 +73,18 @@
     "deepmind": [
       "Google DeepMind \u00b7 Co-scientist",
       "https://deepmind.google/blog/co-scientist-a-multi-agent-ai-partner-to-accelerate-research/"
+    ],
+    "nsceb": [
+      "NSCEB final report, April 2025, \u00a71.3",
+      "https://www.biotech.senate.gov/final-report/chapters/chapter-1/section-3/"
+    ],
+    "foresight": [
+      "NSCEB final report, April 2025, \u00a73.3",
+      "https://www.biotech.senate.gov/final-report/chapters/chapter-3/section-3/"
+    ],
+    "darpa": [
+      "DARPA \u00b7 Pandemic Prevention Platform",
+      "https://www.darpa.mil/research/programs/pandemic-prevention-platform"
     ]
   }
 }

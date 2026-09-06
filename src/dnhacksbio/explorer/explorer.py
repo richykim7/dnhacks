@@ -161,6 +161,7 @@ Actions:
 - read_paper     {"paper_id": "<id>", "max_chars": 30000, "offset": 0}  -> a paper's text, local or just
                    fetched. Long papers come back truncated and say so; call again with the offset given to
                    read on. A truncated read never supports "the paper does not mention X".
+- spindle        {"operation": "<operation>", "experiment_id": "<owned ID>", "args": {...}} -> provisional native spindle jobs and scoped scene/vision workflow; get_skill spindle-interface first
 - search_skills  {"query": "<method or question>"}              -> which methods fit; then get_skill for the how
 - tissue         {"experiment_id":"<id>","operation":"<operation>","args":{...}} -> conditional spatial model; get_skill tissue-interface first
 - get_skill      {"name": "<skill>"}                            -> full method guidance, rigor invariants and an example
@@ -1476,6 +1477,15 @@ class Explorer:
              "subgraph": self._act_subgraph, "path": self._act_path}
         if name == "tissue":
             return await self._act_tissue(args)
+        if name == "spindle":
+            if "spindle-interface" not in self._delivered:
+                return "(spindle blocked: get_skill spindle-interface before dispatch)"
+            from dnhacksbio.spindle.runtime import dispatch
+            try:
+                result=await dispatch(self.journal,self.manifest.get("project_id"),self.run_id,args)
+                return json.dumps(result,allow_nan=False)
+            except (ValueError,KeyError,FileNotFoundError,RuntimeError,TimeoutError) as exc:
+                return json.dumps({"error":str(exc)})
         if name == "run_experiments":
             return await self._act_run_experiments(args)
         if name == "fetch_papers":

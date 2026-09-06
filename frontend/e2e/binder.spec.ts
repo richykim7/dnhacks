@@ -2,12 +2,12 @@ import { test, expect, type Page } from "@playwright/test";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { mockApi, investigation } from "./fixtures";
-const raw = readFileSync(
+const baseRaw = readFileSync(
   new URL("./binder-fixture.json", import.meta.url),
   "utf8",
 );
-const sha = createHash("sha256").update(raw).digest("hex");
-async function fixture(page: Page, recorded = false) {
+async function fixture(page: Page, recorded = false, raw = baseRaw) {
+  const sha = createHash("sha256").update(raw).digest("hex");
   await mockApi(page);
   const root = investigation.root;
   const payloads: [string, unknown][] = [
@@ -234,4 +234,97 @@ test("recorded camera actions replay at adjustable speed while exploration stays
       page.evaluate(() => (window as any).sceneReview?.inspect().preset),
     )
     .toBe("hero");
+});
+
+test("source-mapped surface and backbone trace preserve the coordinate assessment", async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  const review =
+    process.env.BINDER_SURFACE_REVIEW_DIR || "/tmp/binder-surface-r02";
+  mkdirSync(review, { recursive: true });
+  const source = readFileSync(
+    new URL("./binder-surface-fixture.json", import.meta.url),
+    "utf8",
+  );
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await fixture(page, false, source);
+  await page.getByRole("button", { name: "Expand workbench" }).click();
+  await page.evaluate(async () => {
+    await (window as any).sceneReview.ready();
+  });
+  expect(
+    await page.evaluate(
+      () => (window as any).sceneReview.inspect().representation,
+    ),
+  ).toBe("surface");
+  await page.screenshot({ path: review + "/hero-page.png" });
+  await page
+    .locator('[data-testid="binder-stage"]')
+    .screenshot({ path: review + "/hero-stage.png" });
+  const picked = await page.evaluate(() => {
+    const bridge = (window as any).sceneReview;
+    const { width, height } = bridge.inspect().viewport;
+    for (let x = width * 0.35; x < width * 0.65; x += 20) {
+      const id = bridge.pick(x, height * 0.5);
+      if (id) return id;
+    }
+    return null;
+  });
+  expect(JSON.parse(source).structure.residues.map((r: any) => r.id)).toContain(
+    picked,
+  );
+  await page.getByLabel("Molecular representation").selectOption("ribbon");
+  await page.evaluate(async () => {
+    await (window as any).sceneReview.ready();
+  });
+  expect(
+    await page.evaluate(
+      () => (window as any).sceneReview.inspect().representation,
+    ),
+  ).toBe("ribbon");
+  await page
+    .locator('[data-testid="binder-stage"]')
+    .screenshot({ path: review + "/ribbon-stage.png" });
+  await page
+    .getByRole("button", { name: "interface close", exact: true })
+    .click();
+  await page.evaluate(async () => {
+    await (window as any).sceneReview.ready();
+  });
+  expect(
+    await page.evaluate(
+      () => (window as any).sceneReview.inspect().representation,
+    ),
+  ).toBe("atoms");
+  await expect(page.locator(".binder-inspector")).toContainText("404");
+  await expect(page.locator(".binder-inspector")).toContainText("Not measured");
+  await page.evaluate(async () => {
+    await (window as any).sceneReview.apply({
+      preset: "hero",
+      representation: "surface",
+      selected: null,
+      style: "copper",
+    });
+    await (window as any).sceneReview.ready();
+  });
+  await page
+    .locator('[data-testid="binder-stage"]')
+    .screenshot({ path: review + "/copper-stage.png" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.evaluate(async () => {
+    await (window as any).sceneReview.apply({
+      preset: "small-screen",
+      representation: "surface",
+      style: "pearl",
+    });
+    await (window as any).sceneReview.ready();
+  });
+  await page.screenshot({ path: review + "/mobile.png" });
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= 390),
+  ).toBeTruthy();
+  expect(errors).toEqual([]);
 });

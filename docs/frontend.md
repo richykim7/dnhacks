@@ -149,3 +149,12 @@ elongated CAF glyphs are illustration layers, never sampled measurements. Fixtur
 For headless hosts without a usable graphics driver, set `PLAYWRIGHT_SOFTWARE_RENDERING=1` to
 explicitly use Chromium SwiftShader. This keeps the same assertions and timeouts. Record this renderer
 when reporting performance; browser screenshot success is not evidence of hardware GPU throughput.
+The browser backend explicitly rebinds application journal, project, corpus, KG and
+cache paths to its temporary data directory. Changing only the process cwd would
+leave source-rooted application state visible; the runner regression checks that
+a pre-existing journal cannot leak into the empty-backend test.
+
+Binder bundles may include precomputed source-mapped surfaces. A browser worker performs parsing,
+hash checks and normal preparation before the stage becomes ready. The representation selector
+retains atomic envelopes and a labeled Cα trace; analytical close/reverse remain atomic cutaways.
+See the binder guide for mesh approximation and exact source-picking semantics.

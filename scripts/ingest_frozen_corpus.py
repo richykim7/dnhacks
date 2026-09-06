@@ -240,11 +240,78 @@ def publish(args, manifest):
     return counts
 
 
+def repair_model_call(run):
+    from claude_agent_sdk import ClaudeSDKClient, AssistantMessage, ResultMessage
+    from dnhacksbio import llm
+    from dnhacksbio.litmap.repair import _SYSTEM
+
+    audit = run / "repair-queue"
+    audit.mkdir(exist_ok=True)
+    empty = audit / "empty"
+    empty.mkdir(exist_ok=True)
+
+    def record(value):
+        with (audit / "transcript.jsonl").open("a") as handle:
+            handle.write(json.dumps({"time": time.time(), **value}) + "\n")
+
+    class CheckedClient(ClaudeSDKClient):
+        async def receive_response(self):
+            stream = super().receive_response()
+            while True:
+                try:
+                    msg = await asyncio.wait_for(anext(stream), timeout=300)
+                except StopAsyncIteration:
+                    break
+                if isinstance(msg, AssistantMessage) and msg.model != REPAIR:
+                    raise ServiceUnavailable("Repair service returned unexpected model " + str(msg.model))
+                if isinstance(msg, ResultMessage):
+                    record({"type": "result", "model": REPAIR, "usage": msg.usage,
+                            "cost": msg.total_cost_usd, "error": msg.is_error})
+                    if msg.is_error:
+                        raise ServiceUnavailable(str(msg.result))
+                yield msg
+
+    async def call(prompt):
+        # A batch's records carry distinct source owners; no evidence crosses papers.
+        system = _SYSTEM + "\nEach record belongs to source_owner. Use only that record's quoted evidence and source_context; never borrow evidence from another record or paper. Use its schema_id to select the supplied schema."
+        session = llm.Session(system=system, model=REPAIR, effort="medium", max_turns=1,
+                              tools_disabled=True)
+        options = llm._opts(REPAIR, system, "medium", 1, tools_disabled=True,
+                            cwd=str(empty))
+        options.mcp_servers = {}
+        options.skills = []
+        options.settings = json.dumps({"disableAllHooks": True})
+        options.extra_args = {"no-session-persistence": None, "disable-slash-commands": None}
+        session._client = CheckedClient(options)
+        record({"type": "request", "model": REPAIR, "effort": "medium",
+                "prompt_chars": len(prompt), "output_limit": llm.MAX_OUTPUT_TOKENS,
+                "claims": len(json.loads(prompt)["records"])})
+        async with session:
+            answer = await session.ask(prompt)
+            if session.truncated:
+                raise ServiceUnavailable("Repair response reached output limit; no truncated correction accepted")
+            return answer
+    return call
+
+
 async def coordinator(args, manifest):
+    from dnhacksbio.litmap.repair_queue import RepairQueue
+    socket_dir = Path("/tmp") / ("dnhacks-repair-" + hashlib.sha256(str(args.run).encode()).hexdigest()[:16])
+    socket_dir.mkdir(mode=0o700, exist_ok=True)
+    queue = RepairQueue(socket_dir / "broker.sock", repair_model_call(args.run),
+                        batch_size=10, max_concurrency=10, cache_dir=args.run / "repair-queue")
+    try:
+        await _coordinator(args, manifest, queue)
+    finally:
+        await queue.close()
+
+
+async def _coordinator(args, manifest, queue):
     from dnhacksbio.litmap.timeline import TimelineRecorder
     verify(args.corpus, manifest)
     with (args.run / "coordinator.lock").open("w") as lock, closing(TimelineRecorder(args.run)) as timeline:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        await queue.start()
         identity = {"reader": READER, "repair": REPAIR,
                     "manifest_sha256": digest(args.corpus / "MANIFEST.json")}
         if (args.run / "run.json").exists():
@@ -252,6 +319,8 @@ async def coordinator(args, manifest):
             if any(previous.get(k) != v for k, v in identity.items()):
                 raise RuntimeError("Existing run belongs to another corpus or model configuration")
         save(args.run / "run.json", {**identity, "concurrency": 10, "scheduling": "rolling",
+                                    "repair_batch_size": 10, "repair_concurrency": 10,
+                                    "repair_mode": "shared-compact-queue",
                                     "commit": args.commit, "runner_sha256": digest(Path(__file__))})
         timeline.event("ingestion_started", [identity["manifest_sha256"], "rolling"],
                        {**identity, "concurrency": 10, "scheduling": "rolling"})
@@ -278,7 +347,7 @@ async def coordinator(args, manifest):
             else:
                 queued.append(paper)
 
-        async def one(paper):
+        async def one_body(paper):
             output = args.run / f"{paper['ref']:03d}"
             for attempt in range(1, 3):
                 timeline.event("paper_started", [paper["ref"], attempt, time.time()],
@@ -286,7 +355,9 @@ async def coordinator(args, manifest):
                 command = [sys.executable, str(Path(__file__).resolve()), "--corpus", str(args.corpus),
                            "--run", str(args.run), "--lexicons", str(args.lexicons), "--ref", str(paper["ref"])]
                 with (output / f"worker-{attempt}.log").open("a") as log:
-                    proc = await asyncio.create_subprocess_exec(*command, stdout=log, stderr=log)
+                    env = {**os.environ, "DNHACKS_REPAIR_SOCKET": str(queue.path),
+                           "DNHACKS_REPAIR_OWNER": str(paper["ref"])}
+                    proc = await asyncio.create_subprocess_exec(*command, stdout=log, stderr=log, env=env)
                     try:
                         code = await asyncio.wait_for(proc.wait(), timeout=2400)
                     except (asyncio.TimeoutError, asyncio.CancelledError) as exc:
@@ -309,6 +380,13 @@ async def coordinator(args, manifest):
                     raise RuntimeError(f"Paper {paper['ref']}: model service unavailable; queued work halted")
             raise RuntimeError(f"Paper {paper['ref']} failed twice; queued work halted")
 
+        async def one(paper):
+            await queue.set_active(str(paper["ref"]), True)
+            try:
+                await one_body(paper)
+            finally:
+                await queue.set_active(str(paper["ref"]), False)
+
         pending = set()
         waiting = iter(queued)
 
@@ -330,6 +408,9 @@ async def coordinator(args, manifest):
             timeline.published(args.corpus / "pdac-frozen_kg.duckdb")
             save(args.run / "progress.json", {"scheduling": "rolling", "concurrency": 10,
                  "counts": counts, "completed": len(completed_refs), "total": len(papers),
+                 "repair": {**dict(queue.stats), "queued_claims": len(queue.pending),
+                            "active_calls": len(queue.running), "concurrency_limit": 10,
+                            "batch_size": 10},
                  "active": len(pending), "failures": failures})
             print("POOL_PROGRESS", len(completed_refs), "/", len(papers), counts,
                   "failures", failures, flush=True)

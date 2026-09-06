@@ -8,7 +8,14 @@ import {
 import { OrbitControls, Line } from "@react-three/drei";
 import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
-import { type Atom, type Bundle, type SceneState } from "./types";
+import {
+  type Atom,
+  type Bundle,
+  type SceneState,
+  type SurfaceMesh,
+} from "./types";
+
+import SourceMesh, { sourceAtomAt, hasBackboneTrace } from "./SourceMesh";
 
 const radius: Record<string, number> = {
   C: 1.7,
@@ -73,7 +80,7 @@ function Molecule({
     if (mesh.current.instanceColor)
       mesh.current.instanceColor.needsUpdate = true;
     mesh.current.computeBoundingSphere();
-    mesh.current.userData = { atoms, role };
+    mesh.current.userData = { atoms, role, pickable: true };
   }, [atoms, color, selected, offset, role, detail]);
   return (
     <instancedMesh
@@ -100,8 +107,10 @@ function Scene({
   state,
   onPick,
   onHandle,
+  meshes: surfaceMeshes,
 }: {
   bundle: Bundle;
+  meshes: Record<string, SurfaceMesh>;
   state: SceneState;
   onPick: (id: string) => void;
   onHandle: (h: StageHandle | null) => void;
@@ -140,6 +149,24 @@ function Scene({
       .getCenter(new THREE.Vector3());
     return { target, binder, center, seam, contactIds, atoms };
   }, [bundle]);
+  const detail = ["interface-close", "reverse"].includes(state.preset);
+  const requested =
+    state.representation ??
+    (surfaceMeshes.target && surfaceMeshes.binder ? "surface" : "atoms");
+  const traceSupported = useMemo(() => hasBackboneTrace(bundle), [bundle]);
+  const representation =
+    requested === "ribbon" && !traceSupported
+      ? "atoms"
+      : detail
+        ? "atoms"
+        : requested === "surface" &&
+            (!surfaceMeshes.target || !surfaceMeshes.binder)
+          ? "atoms"
+          : requested;
+  useEffect(() => {
+    settled.current = 0;
+    invalidate();
+  }, [state.style, state.selected, representation, invalidate]);
   useFrame((_, delta) => {
     settled.current++;
     if (settled.current < 5) invalidate();
@@ -208,6 +235,7 @@ function Scene({
   }, [
     state.preset,
     state.revision,
+    representation,
     parts,
     camera,
     size.width,
@@ -215,9 +243,9 @@ function Scene({
     invalidate,
   ]);
   useEffect(() => {
-    const meshes: THREE.InstancedMesh[] = [];
+    const meshes: THREE.Mesh[] = [];
     scene.traverse((o) => {
-      if (o instanceof THREE.InstancedMesh) meshes.push(o);
+      if (o instanceof THREE.Mesh && o.userData.pickable) meshes.push(o);
     });
     const ray = new THREE.Raycaster();
     const visibility = () => {
@@ -229,11 +257,13 @@ function Scene({
         atoms.forEach((a, i) => {
           if (!parts.contactIds.has(a.residue_id)) return;
           total[a.residue_id] = (total[a.residue_id] || 0) + 1;
-          const mat = new THREE.Matrix4();
-          mesh.getMatrixAt(i, mat);
-          const p = new THREE.Vector3()
-            .setFromMatrixPosition(mat)
-            .applyMatrix4(mesh.matrixWorld);
+          const p = new THREE.Vector3(...a.xyz);
+          if (mesh instanceof THREE.InstancedMesh) {
+            const mat = new THREE.Matrix4();
+            mesh.getMatrixAt(i, mat);
+            p.setFromMatrixPosition(mat);
+          }
+          p.applyMatrix4(mesh.matrixWorld);
           const ndc = p.clone().project(camera);
           if (Math.abs(ndc.x) > 1 || Math.abs(ndc.y) > 1 || Math.abs(ndc.z) > 1)
             return;
@@ -241,8 +271,7 @@ function Scene({
           const hit = ray.intersectObjects(meshes)[0];
           if (
             hit?.object === mesh &&
-            hit.instanceId !== undefined &&
-            atoms[hit.instanceId].residue_id === a.residue_id
+            sourceAtomAt(hit)?.residue_id === a.residue_id
           )
             visible[a.residue_id] = (visible[a.residue_id] || 0) + 1;
         });
@@ -269,6 +298,27 @@ function Scene({
         });
       },
       inspect: () => ({
+        representation,
+        representation_protocol:
+          representation === "surface"
+            ? {
+                target: surfaceMeshes.target.protocol,
+                binder: surfaceMeshes.binder.protocol,
+              }
+            : representation === "ribbon"
+              ? {
+                  method:
+                    "Cα trace; spline interpolation, not secondary structure; sidechains omitted",
+                }
+              : {
+                  method: detail
+                    ? "contact-only atom cutaway"
+                    : "instanced atoms",
+                },
+        picking_definition:
+          representation === "atoms"
+            ? "exact atom instance"
+            : "source atom associated with nearest intersected triangle vertex",
         camera: {
           position: camera.position.toArray(),
           quaternion: camera.quaternion.toArray(),
@@ -305,9 +355,7 @@ function Scene({
           camera,
         );
         const hit = ray.intersectObjects(meshes)[0];
-        return hit?.instanceId === undefined
-          ? null
-          : (hit.object.userData.atoms as Atom[])[hit.instanceId].residue_id;
+        return hit ? (sourceAtomAt(hit)?.residue_id ?? null) : null;
       },
       capture: () => {
         gl.render(scene, camera);
@@ -318,9 +366,18 @@ function Scene({
       active = false;
       onHandle(null);
     };
-  }, [camera, gl, scene, size, parts, onHandle, state.preset]);
+  }, [
+    camera,
+    gl,
+    scene,
+    size,
+    parts,
+    onHandle,
+    state.preset,
+    representation,
+    surfaceMeshes,
+  ]);
   const pearl = state.style === "pearl";
-  const detail = ["interface-close", "reverse"].includes(state.preset);
   const targets = parts.target.filter(
     (a) => !parts.contactIds.has(a.residue_id),
   );
@@ -340,39 +397,71 @@ function Scene({
         color={pearl ? "#70bed8" : "#807dff"}
       />
       <directionalLight position={[30, -10, 30]} intensity={0.7} />
-      {!detail && (
-        <Molecule
-          atoms={targets}
-          color={pearl ? "#c7d3db" : "#a77948"}
-          selected={state.selected}
-          onPick={onPick}
-          style={state.style}
-          role="target"
-        />
+      {representation === "atoms" ? (
+        <>
+          {" "}
+          {!detail && (
+            <Molecule
+              atoms={targets}
+              color={pearl ? "#c7d3db" : "#a77948"}
+              selected={state.selected}
+              onPick={onPick}
+              style={state.style}
+              role="target"
+            />
+          )}
+          <Molecule
+            detail={detail}
+            atoms={seam}
+            color={pearl ? "#e9907b" : "#e9be69"}
+            selected={state.selected}
+            onPick={onPick}
+            style={state.style}
+            role="interface"
+          />
+          <Molecule
+            detail={detail}
+            atoms={
+              detail
+                ? parts.binder.filter((a) => parts.contactIds.has(a.residue_id))
+                : parts.binder
+            }
+            color={pearl ? "#26b8cd" : "#9193fc"}
+            selected={state.selected}
+            onPick={onPick}
+            offset={state.preset === "exploded" ? 12 : 0}
+            style={state.style}
+            role="binder"
+          />
+        </>
+      ) : (
+        <>
+          <SourceMesh
+            bundle={bundle}
+            atoms={parts.target}
+            surface={surfaceMeshes.target}
+            representation={representation}
+            color={pearl ? "#c7d3db" : "#a77948"}
+            contacts={parts.contactIds}
+            selected={state.selected}
+            offset={0}
+            style={state.style}
+            onPick={onPick}
+          />
+          <SourceMesh
+            bundle={bundle}
+            atoms={parts.binder}
+            surface={surfaceMeshes.binder}
+            representation={representation}
+            color={pearl ? "#26b8cd" : "#9193fc"}
+            contacts={new Set()}
+            selected={state.selected}
+            offset={state.preset === "exploded" ? 12 : 0}
+            style={state.style}
+            onPick={onPick}
+          />
+        </>
       )}
-      <Molecule
-        detail={detail}
-        atoms={seam}
-        color={pearl ? "#e9907b" : "#e9be69"}
-        selected={state.selected}
-        onPick={onPick}
-        style={state.style}
-        role="interface"
-      />
-      <Molecule
-        detail={detail}
-        atoms={
-          detail
-            ? parts.binder.filter((a) => parts.contactIds.has(a.residue_id))
-            : parts.binder
-        }
-        color={pearl ? "#26b8cd" : "#9193fc"}
-        selected={state.selected}
-        onPick={onPick}
-        offset={state.preset === "exploded" ? 12 : 0}
-        style={state.style}
-        role="binder"
-      />
       {state.selected &&
         bundle.metrics.contacts
           .filter(
@@ -415,6 +504,7 @@ function Scene({
 }
 export default function Stage(props: {
   bundle: Bundle;
+  meshes: Record<string, SurfaceMesh>;
   state: SceneState;
   onPick: (id: string) => void;
   onHandle: (h: StageHandle | null) => void;

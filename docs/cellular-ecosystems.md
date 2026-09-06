@@ -4,7 +4,9 @@ The `ecosystem` command implements exposed development preparation, separate
 compartment count encoders, donor profiles, exploratory coupling/comparison and
 segmented-cell spatial summaries. Private registration/scoring is an operator
 surface that uses the [shared native core](native-evidence.md). Public Peng and Lin development count cohorts have been acquired and audited,
-and real compartment models trained and evaluated; see the [training report](ecosystem-training.md).
+and real compartment models trained and evaluated; see the [initial training report](ecosystem-training.md).
+The [expanded CUDA run](ecosystem-expansion.md) adds Werba, Steele and Zhang: 72 donor
+records, 338,900 prepared cells, three-seed neural models and exact GPU PCA controls.
 Confirmation remains unavailable
 until a separate operator audits and approves every design gate.
 
@@ -13,7 +15,11 @@ until a separate operator audits and approves every design gate.
 Install normally, then run `ecosystem --help`, or use
 `PYTHONPATH=src uv run python scripts/ecosystem.py --help` from the repository.
 PCA uses NumPy; optional NB/set training requires the `evalue` extra (Torch).
-Source preparation and figure export use the `ecosystem` extra (SciPy/Matplotlib).
+Source preparation and figure export use the `ecosystem` extra (SciPy/Matplotlib/h5py).
+For current GPU training use the [expanded workflow](ecosystem-expansion.md#reproduce);
+its CUDA-only scripts include GPU PCA and hold the shared GPU lease. The original
+CLI examples below describe the earlier CPU-capable artifact format. Expanded
+checkpoints use a separate development schema and are not native registrations.
 
 ```sh
 ecosystem prepare --input training-csr.json --output training.npz
@@ -67,7 +73,7 @@ reconcile aliases across studies, releases, atlas components, organoids and
 modalities before preparing input. Raw-source checksums identify externally
 verified source bytes; the tool additionally hashes the complete prepared
 counts/metadata. It does not fetch or automatically verify upstream sources.
-[The source inventory](ecosystem-sources.json) records verified Peng/Lin development
+[The source inventory](ecosystem-sources.json) records verified Peng/Lin/Werba/Steele/Zhang development
 inputs and unresolved/reserved alternatives. Original counts, source hashes,
 donor crosswalks, all-gene library offsets and preparation reports remain local
 under `data/interim/ecosystems/`; acquisition never downloads reserved Hwang data.
