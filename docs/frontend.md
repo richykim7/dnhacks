@@ -158,3 +158,20 @@ Binder bundles may include precomputed source-mapped surfaces. A browser worker 
 hash checks and normal preparation before the stage becomes ready. The representation selector
 retains atomic envelopes and a labeled Cα trace; analytical close/reverse remain atomic cutaways.
 See the binder guide for mesh approximation and exact source-picking semantics.
+
+### Persistent researcher scenes
+
+A researcher with an available binder or molecular structure now opens a split workspace:
+one selected collected source on the left, research activity and experiment records on the right.
+The scene remains mounted when switching Activity/Experiments. The scene selector is restricted
+to that researcher's available artifacts at the current cursor; rewinding removes later sources.
+The selected experiment's binder is preferred, then its reference structure. Choosing another
+source is a local viewing action and does not rewrite recorded agent activity. Mobile stacks the
+scene above the research panel with an independently reachable close control.
+
+Binder scene camera changes interpolate position, orbit target and FOV over700ms from the current
+visible pose. A new target rebases that transition; OrbitControls interaction cancels it immediately.
+Reduced motion disables transitions. Capture readiness waits for the transition and rendered frames,
+and exported scene recipes retain the actual camera after manual navigation. Inspection action time
+remains separate from physical simulation time. Other molecular artifacts retain their existing
+reference viewer and optional inhibitor workbench until its inline embedding seam is integrated.

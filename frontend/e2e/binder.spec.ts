@@ -402,3 +402,80 @@ test("native binder records and real job states respect the experiment cursor", 
     page.getByText("Binder design activity", { exact: true }),
   ).toHaveCount(0);
 });
+
+
+test("node scene persists across activity tabs and selects only available sources", async ({ page }) => {
+  test.setTimeout(90000);
+  const surfaceRaw = readFileSync(new URL("./binder-surface-fixture.json", import.meta.url), "utf8");
+  const second = JSON.parse(surfaceRaw);
+  second.manifest.candidate_id = "second illustrative view";
+  const raw = JSON.stringify(second), hash = createHash("sha256").update(raw).digest("hex");
+  await fixture(page, false, surfaceRaw, { blobs: { [hash]: raw }, payloads: [["artifact", {
+    artifact_id: "second", kind: "binder_bundle", name: "Second illustrative candidate",
+    status: "available", storage_key: hash, sha256: hash, provenance: { category: "illustration" },
+  }], ["scene.review", { observation: "Fixture image observation: compare the source contact distances." }],
+  ["scene.recipe", { note: "Fixture action: inspect the opposite interface", bundle_sha256: "other-unavailable-source" }]] });
+  const stage = page.locator('[data-testid="binder-stage"] canvas');
+  await stage.evaluate(el => el.setAttribute("data-preserved", "yes"));
+  await page.getByRole("tablist", { name: "Researcher detail" }).getByRole("tab", { name: "Activity", exact: true }).click();
+  await expect(stage).toHaveAttribute("data-preserved", "yes");
+  await expect(page.getByText("Fixture image observation: compare the source contact distances.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Fixture action: inspect the opposite interface", { exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Research activity and findings" })).toBeVisible();
+  const left = await page.getByRole("region", { name: "Research scene", exact: true }).boundingBox();
+  const right = await page.getByRole("region", { name: "Research activity and findings" }).boundingBox();
+  expect(left!.x + left!.width).toBeLessThanOrEqual(right!.x + 1);
+  await page.screenshot({ path: test.info().outputPath("node-scene-desktop.png") });
+  await page.getByRole("combobox", { name: "Scene source", exact: true }).selectOption("exp1:second");
+  await expect(page.locator(`.binder-workbench[data-bundle-sha256="${hash}"]`)).toBeVisible();
+  await expect(page.locator('[data-testid="binder-stage"] canvas')).toHaveCount(1);
+  await page.getByLabel("Activity playback position").fill("4");
+  await expect(page.getByRole("combobox", { name: "Scene source", exact: true }).locator("option")).toHaveCount(1);
+  await expect(page.locator(`.binder-workbench[data-bundle-sha256="${hash}"]`)).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForFunction(() => Boolean((window as any).sceneReview));
+  await page.evaluate(async () => { await (window as any).sceneReview.ready(); });
+  await page.screenshot({ path: test.info().outputPath("node-scene-mobile.png") });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await expect(page.getByRole("button", { name: "Close scene workspace" })).toBeVisible();
+});
+
+test("binder camera travels continuously and user takeover cancels the remaining motion", async ({ page }) => {
+  test.setTimeout(90000);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await fixture(page);
+  const samples = await page.evaluate(async () => {
+    const bridge = (window as any).sceneReview;
+    const start = bridge.inspect().camera.position;
+    await bridge.apply({ preset: "reverse" });
+    const positions = [start], frames: string[] = [];
+    const deadline = performance.now() + 2000;
+    while (frames.length < 3 && performance.now() < deadline) {
+      await new Promise(requestAnimationFrame);
+      const position = bridge.inspect().camera.position;
+      if (JSON.stringify(position) === JSON.stringify(positions.at(-1))) continue;
+      positions.push(position); frames.push(bridge.capture());
+    }
+    return { positions, frames };
+  });
+  expect(samples.frames).toHaveLength(3);
+  samples.frames.forEach((png, i) => writeFileSync(test.info().outputPath(`camera-motion-${i}.png`), Buffer.from(png.split(",")[1], "base64")));
+  writeFileSync(test.info().outputPath("camera-motion.json"), JSON.stringify(samples.positions));
+  expect(samples.positions[1]).not.toEqual(samples.positions[0]);
+  expect(samples.positions[2]).not.toEqual(samples.positions[1]);
+  expect(samples.positions[3]).not.toEqual(samples.positions[2]);
+  const box = await page.locator('[data-testid="binder-stage"] canvas').boundingBox();
+  await page.mouse.move(box!.x + 20, box!.y + 20);
+  await page.evaluate(async () => { await (window as any).sceneReview.apply({ preset: "hero" }); });
+  expect(await page.evaluate(() => (window as any).sceneReview.inspect().camera_transitioning)).toBe(true);
+  await page.mouse.down();
+  expect(await page.evaluate(() => (window as any).sceneReview.inspect().camera_transitioning)).toBe(false); await page.mouse.move(box!.x + 45, box!.y + 25); await page.mouse.up();
+  const held = await page.evaluate(() => (window as any).sceneReview.inspect().camera);
+  await page.waitForTimeout(800);
+  expect(await page.evaluate(() => (window as any).sceneReview.inspect().camera)).toEqual(held);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.evaluate(async () => { await (window as any).sceneReview.apply({ preset: "hero" }); await (window as any).sceneReview.ready(); });
+  const fixed = await page.evaluate(() => (window as any).sceneReview.inspect().camera);
+  await page.waitForTimeout(150);
+  expect(await page.evaluate(() => (window as any).sceneReview.inspect().camera)).toEqual(fixed);
+});
