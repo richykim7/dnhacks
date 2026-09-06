@@ -1,0 +1,180 @@
+@import "@fontsource-variable/ibm-plex-sans";
+* {
+  box-sizing: border-box;
+}
+.capture-video,
+.paper-scene {
+  font-family: "IBM Plex Sans Variable", sans-serif;
+  background: #141b1b;
+  color: #edf0ea;
+  overflow: hidden;
+}
+.capture-screen {
+  position: absolute;
+  inset: 0 0 80px;
+  overflow: hidden;
+  background: #151c1c;
+}
+.captured-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1000px;
+}
+.capture-pointer {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 3px #0009);
+}
+.capture-click {
+  position: absolute;
+  left: -12px;
+  top: -12px;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #c5e7d4;
+  border-radius: 100%;
+}
+.capture-caption {
+  position: absolute;
+  bottom: 0;
+  height: 80px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 34px;
+  border-top: 1px solid #334a40;
+  background: #111917;
+  gap: 32px;
+}
+.capture-caption > span {
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: #99bbaa;
+  min-width: 280px;
+}
+.capture-caption > b {
+  font-size: 25px;
+  font-weight: 450;
+  letter-spacing: -0.25px;
+}
+.capture-caption > small {
+  margin-left: auto;
+  font-size: 12px;
+  color: #8da799;
+}
+.paper-scene {
+  padding: 75px 90px;
+  background: radial-gradient(ellipse at 25% 30%, #233b2f, #111b16 80%);
+}
+.paper-heading {
+  font-size: 16px;
+  letter-spacing: 2.8px;
+  color: #a6cabb;
+}
+.paper-story {
+  position: absolute;
+  left: 100px;
+  top: 145px;
+  width: 760px;
+}
+.paper-story h1 {
+  font-size: 80px;
+  line-height: 1.12;
+  font-weight: 500;
+  letter-spacing: -3px;
+  margin: 35px 0;
+}
+.paper-story > p {
+  font-size: 35px;
+  color: #b9d0c1;
+  line-height: 1.5;
+  margin: 45px 0;
+}
+.candidate-reveal-label {
+  border-left: 3px solid #a6cabb;
+  padding: 12px 22px;
+  font-size: 22px;
+  margin-top: 50px;
+}
+.paper-citation {
+  font-size: 19px;
+  color: #99b4a3;
+  line-height: 1.8;
+  margin-top: 37px;
+}
+.actual-paper {
+  position: absolute;
+  top: 74px;
+  right: 105px;
+  height: 922px;
+  box-shadow: 0 25px 80px #0008;
+  background: white;
+}
+.actual-paper > img {
+  height: 100%;
+  width: auto;
+  display: block;
+}
+.paper-credit {
+  position: absolute;
+  bottom: 24px;
+  right: 105px;
+  color: #94ad9b;
+  font-size: 12px;
+}
+.boundary-scene h1 {
+  font-size: 67px;
+  font-weight: 450;
+  line-height: 1.12;
+  letter-spacing: -2px;
+  margin: 55px 0 65px;
+}
+.evidence-columns {
+  display: flex;
+  gap: 70px;
+}
+.evidence-columns > section {
+  flex: 1;
+  border-top: 1px solid #4d7059;
+  padding-top: 25px;
+}
+.evidence-columns span {
+  font-size: 23px;
+  color: #a6cabb;
+}
+.evidence-columns h2 {
+  font-size: 32px;
+  font-weight: 500;
+  margin: 25px 0;
+}
+.evidence-columns p {
+  font-size: 24px;
+  line-height: 1.65;
+  color: #b2c9ba;
+}
+.evidence-provenance {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #8fae9a;
+  margin-top: 45px;
+}
+.latent-end {
+  position: absolute;
+  bottom: 65px;
+  left: 90px;
+  right: 90px;
+  border-top: 1px solid #395341;
+  padding-top: 26px;
+  font-size: 32px;
+  font-weight: 550;
+}
+.latent-end span {
+  float: right;
+  font-size: 23px;
+  font-weight: 400;
+  color: #9abaa5;
+}

@@ -1,9 +1,8 @@
-import "./index.css";
+import "./captured.css";
 import { useRef, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Player, PlayerRef } from "@remotion/player";
-import { Walkthrough } from "./Composition";
-import { totalFrames, pendingReveal } from "./story";
+import { CapturedWalkthrough } from "./CapturedWalkthrough";
 declare global {
   interface Window {
     seekVideo: (frame: number) => void;
@@ -13,10 +12,9 @@ declare global {
 function Preview() {
   const ref = useRef<PlayerRef>(null);
   useEffect(() => {
-    window.seekVideo = (frame) => ref.current!.seekTo(frame);
-    const onFrame = ({ detail }: { detail: { frame: number } }) => {
-      window.videoFrame = detail.frame;
-    };
+    window.seekVideo = (f) => ref.current!.seekTo(f);
+    const onFrame = ({ detail }: { detail: { frame: number } }) =>
+      (window.videoFrame = detail.frame);
     ref.current!.addEventListener("frameupdate", onFrame);
     window.videoFrame = 0;
     return () => ref.current?.removeEventListener("frameupdate", onFrame);
@@ -24,9 +22,8 @@ function Preview() {
   return (
     <Player
       ref={ref}
-      component={Walkthrough}
-      inputProps={{ reveal: pendingReveal }}
-      durationInFrames={totalFrames}
+      component={CapturedWalkthrough}
+      durationInFrames={5100}
       fps={30}
       compositionWidth={1920}
       compositionHeight={1080}
