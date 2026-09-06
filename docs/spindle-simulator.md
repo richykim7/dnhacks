@@ -4,7 +4,7 @@ Implementation is in progress. The viewer renders selected-experiment immutable 
 A scoped durable worker now executes a pinned Cytosim 3D aster model and exports
 raw trajectories, float64 chunks, display frames and prespecified clustering
 analysis. It does not yet provide calibrated mechanics, register an audited
-method, or deliver captures to a research vision agent.
+method, or establish biological validity. Scoped runtime captures and image-bearing vision review are available.
 
 A `manifest.json` artifact entry uses `kind: filament_trajectory`, `format: json`,
 and ordinary artifact provenance. Category is `illustration` for illustrative
@@ -44,9 +44,9 @@ Browser fixtures are explicitly illustrative and remain under `frontend/e2e`.
 The actual app does not offer fabricated example experiments. Run the spindle
 browser test with `SPINDLE_REVIEW_PASS=draft|revision|final` to save matching views
 under `/tmp/spindle-<pass>-*.png`. The development visual review is recorded in
-`docs/spindle-visual-review.md`. Remaining plan milestones include production scene/capture contracts, independent
+`docs/spindle-visual-review.md`. Remaining plan milestones include independent
 mechanical convergence/interaction validation, calibration/held-out assessment,
-a real runtime vision loop, performance and accessibility acceptance.
+final performance/accessibility acceptance and a broader scientifically assessed ensemble.
 
 
 ## Frozen numerical model
@@ -170,3 +170,45 @@ the operator build it skips explicitly. Tests cover protocol determinism, matche
 initial poles/filaments, physical clocks and 3D displacement, receipt ownership and
 idempotency, duplicate execution rejection, failure archives, active cancellation,
 timeout process-group termination and lossless/corrupt binary chunks.
+
+## Runtime integration and visual review
+
+The explorer's `spindle` action requires delivered `spindle-interface` guidance.
+It derives project/run ownership from the active researcher. Numerical preparation,
+submission, status/cancel and frozen-plan analysis are registered operations. The
+operator sets `SPINDLE_CYTOSIM_BIN` and `SPINDLE_CYTOSIM_BUILD` to the pinned native
+build directory and build-manifest file; the runner launches a separate bounded
+worker and collects its actual trajectory and numerical metrics into the selected
+experiment. An experiment ID cannot change its specification, idempotency key or
+budget. A new ID plus `parent_experiment_id` links a scientific follow-up. Receipt
+retries do not relaunch a worker. Operator recovery remains explicit for interrupted
+processes; native jobs remain exploratory and do not create a statistical RESULT.
+
+`open_scene`, `set_scene_view`, `capture_scene`, `inspect_scene_capture` and
+`record_visual_review` now operate on collected trajectory hashes. Immutable
+recipes retain adapter/scope/source, parent revision, shot, treatment, selection,
+sampled frame/run, trails, comparison and camera. Historical cursors cannot reveal
+future recipes/captures. Obsolete or concurrently changed recipes cannot publish
+captures. A recorded review requires an image-bearing observation; the vision
+worker receives exact scoped PNG bytes through the tested SDK images parameter.
+Visual revisions do not change numerical protocols or outputs.
+
+Captures open the actual owning experiment through Playwright, apply a bounded
+controller view, wait for shader/render readiness and current canvas dimensions,
+and save PNG plus actual camera, physical time, pole positions, viewport/DPR,
+browser version and hashes of served JavaScript/CSS. `SPINDLE_SCENE_BASE_URL`
+selects a trusted local workspace server (default `http://127.0.0.1:8765`). No
+fixture substitution occurs in that renderer. Pixel observations and review
+verdicts remain separate from numerical measurements and statistical verification.
+
+The viewer checks artifact SHA-256, labels persistent poles, offers synchronized
+comparison with identical cameras, and restores a lost graphics context on request.
+Agent scene actions have their own follow/replay selector, separate from saved
+physical time and human exploration. Numerical ensemble tables report every seed,
+censoring, final pole counts, dwell variability and sensitivity; one simulation
+seed has no across-seed SD estimate. The native review log records the real
+see/revise workflow and its remaining visual/scientific limits.
+
+Isolated native motor direction/speed and unopposed filament growth now pass three
+timestep refinements; see [measured mechanics probes](spindle-mechanics.md). This
+does not establish convergence of the coupled spindle model.

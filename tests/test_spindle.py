@@ -189,3 +189,100 @@ def test_running_job_cancellation_preserves_archive(tmp_path):
         while store.status(receipt,scope)['state']=='queued' and time.monotonic()<deadline:time.sleep(.01)
         store.cancel(receipt,scope)
         assert result.result(timeout=4)['state']=='canceled'
+
+
+def spindle_scene(tmp_path):
+    from dnhacksbio.spindle.scenes import SceneService
+    from dnhacksbio.spindle.protocol import canonical
+    j=Journal(tmp_path);scope={'project_id':'p','run_id':'r','experiment_id':'e'}
+    j.register('r','Spindle review',project='p');j.append('r','a','attempt.started',{'original_question':'Spindle review'})
+    j.append('r','a','experiment.queued',{'title':'Spindle review'},experiment_id='e')
+    raw=canonical(bundle());key=j.store_bytes(raw)
+    j.append('r','a','artifact',{'artifact_id':'spindle','kind':'filament_trajectory','status':'available','sha256':key,'storage_key':key},experiment_id='e',producer='collector')
+    return SceneService(j,scope),key
+
+
+def spindle_renderer(request):
+    import struct,zlib
+    def chunk(kind,data):return struct.pack('>I',len(data))+kind+data+struct.pack('>I',zlib.crc32(kind+data))
+    png=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',320,320,8,2,0,0,0))+chunk(b'IDAT',zlib.compress((b'\0'+b'\0'*960)*320))+chunk(b'IEND',b'')
+    view=request['recipe']['view'];frame=request['bundle']['runs'][view['run']]['frames'][view['frame']]
+    return {'png':png,'state':{**view,'camera':view['camera'] or {'position':[0,0,30],'target':[0,0,0],'fov':40,'near':.1,'far':300},
+        'physical_time_s':frame['time'],'poles':frame['poles'],'viewport':{'width':320,'height':320,'dpr':1},
+        'physical_to_scene':{'units':'um','scale':1,'interpolation':'none'},'bundle_sha256':request['recipe']['bundle_sha256']}}
+
+
+def test_scene_scoping_revisions_pixels_and_saved_time(tmp_path,monkeypatch):
+    import asyncio
+    from dnhacksbio.spindle.scenes import SceneService
+    service,key=spindle_scene(tmp_path);first=service.open_scene(key)
+    second=service.set_scene_view(first['recipe_sha256'],{'frame':2,'selected':'0'},note='Inspect stable two-pole interval')
+    with pytest.raises(ValueError,match='obsolete'):service.capture_scene(first['recipe_sha256'],spindle_renderer)
+    with pytest.raises(FileNotFoundError):SceneService(service.journal,{**service.scope,'experiment_id':'other'}).open_scene(key)
+    captured=service.capture_scene(second['recipe_sha256'],spindle_renderer)
+    with pytest.raises(FileNotFoundError):service.read_capture(captured['capture_id'],first['sequence'])
+    async def pixels(prompt,**kwargs):
+        assert kwargs['images']==[service.journal.read_blob(captured['image_sha256'])]
+        return 'Test transport received the PNG; test does not certify visual quality.'
+    monkeypatch.setattr('dnhacksbio.llm.acomplete',pixels)
+    viewed=asyncio.run(service.inspect_scene_capture(captured['capture_id'],question='Are pole IDs readable?'))
+    assert service.record_visual_review(viewed['review_sha256'],observed_defects=['Mock renderer'],changes=[],disposition='incomplete')['disposition']=='incomplete'
+    def wrong(r):
+        result=spindle_renderer(r);result['state']['physical_time_s']=100;return result
+    with pytest.raises(ValueError,match='physical frame'):service.capture_scene(second['recipe_sha256'],wrong)
+    with pytest.raises(ValueError):service.set_scene_view(second['recipe_sha256'],{'frame':999},note='Invalid future')
+
+
+def test_runtime_collects_native_result_only_in_owning_experiment(tmp_path):
+    # No native launch: completed archive receipt fixture tests publication and idempotency.
+    from dnhacksbio.spindle.runtime import collect_job
+    from dnhacksbio.spindle.jobs import SpindleStore
+    from dnhacksbio.spindle.protocol import canonical
+    service,_=spindle_scene(tmp_path/'journal');store=SpindleStore(tmp_path/'jobs');scope=service.scope
+    receipt=store.run_spindle_experiment(protocol(),scope=scope,idempotency_key='collect',budget={'wall_seconds':30,'artifact_bytes':1000000})['receipt']
+    with store.connect() as con:
+        native=bundle();native.update(category='simulation',model_id=protocol()['model_id'])
+        key=store._publish(con,receipt,'trajectory.json',canonical(native))
+        metrics=store._publish(con,receipt,'metrics.json',b'{}')
+        store._publish(con,receipt,'archive.json',canonical({'scope':scope,'files':{'trajectory.json':key,'metrics.json':metrics},'protocol':protocol(),'build':{'solver_commit':'fixture'},'spec_ref':'fixture'}))
+        con.execute("UPDATE jobs SET state='completed' WHERE receipt=?",(receipt,))
+    collect_job(service.journal,store,receipt,scope);n=len(service.history());collect_job(service.journal,store,receipt,scope)
+    assert len(service.history())==n
+    with pytest.raises(FileNotFoundError):collect_job(service.journal,store,receipt,{**scope,'experiment_id':'other'})
+
+
+def test_runtime_launch_retry_does_not_create_an_orphan_job(tmp_path,monkeypatch):
+    import asyncio
+    from dnhacksbio.spindle.runtime import dispatch
+    from dnhacksbio.spindle.jobs import SpindleStore
+    service,_=spindle_scene(tmp_path)
+    monkeypatch.setenv('SPINDLE_CYTOSIM_BIN','/operator/bin');monkeypatch.setenv('SPINDLE_CYTOSIM_BUILD','/operator/build.json')
+    calls=[];monkeypatch.setattr('dnhacksbio.spindle.runtime.subprocess.Popen',lambda *a,**kw:calls.append(a))
+    request={'operation':'run_spindle_experiment','experiment_id':'new','args':{'protocol':protocol(),'idempotency_key':'one','budget':{'wall_seconds':30,'artifact_bytes':1000000}}}
+    first=asyncio.run(dispatch(service.journal,'p','r',request));second=asyncio.run(dispatch(service.journal,'p','r',request))
+    assert first['receipt']==second['receipt'] and len(calls)==1
+    request['args']['idempotency_key']='changed'
+    with pytest.raises(ValueError,match='retry'):asyncio.run(dispatch(service.journal,'p','r',request))
+    store=SpindleStore(service.journal.directory/'spindle-jobs')
+    with store.connect() as con:assert con.execute('SELECT COUNT(*) FROM jobs').fetchone()[0]==1
+
+
+def test_runtime_worker_preflight_failure_is_durable(tmp_path):
+    from dnhacksbio.spindle.runtime import worker
+    from dnhacksbio.spindle.jobs import SpindleStore
+    service,_=spindle_scene(tmp_path/'journal');store=SpindleStore(service.journal.directory/'spindle-jobs')
+    receipt=store.run_spindle_experiment(protocol(),scope=service.scope,idempotency_key='no-build',budget={'wall_seconds':1,'artifact_bytes':1000000})['receipt']
+    path=tmp_path/'worker.json';path.write_text(json.dumps({'journal':str(service.journal.directory.parent),'scope':service.scope,
+        'receipt':receipt,'sim':str(tmp_path/'sim'),'report':str(tmp_path/'report'),'build':str(tmp_path/'missing-build.json')}))
+    worker(path)
+    state=store.status(receipt,service.scope)
+    assert state['state']=='failed' and 'preflight failed' in state['events'][-1]['reason']
+    assert any(a['name']=='archive.json' for a in state['artifacts'])
+    assert any(e['kind']=='experiment.finished' and e['payload']['status']=='failed' for e in service.history())
+
+
+def test_pending_native_queue_is_bounded(tmp_path):
+    from dnhacksbio.spindle.jobs import SpindleStore
+    store=SpindleStore(tmp_path);scope={'project_id':'p','run_id':'r','experiment_id':'e'}
+    for i in range(4):store.run_spindle_experiment(protocol(),scope=scope,idempotency_key=str(i),budget={'wall_seconds':1,'artifact_bytes':10000})
+    with pytest.raises(ValueError,match='queue is full'):store.run_spindle_experiment(protocol(),scope=scope,idempotency_key='extra',budget={'wall_seconds':1,'artifact_bytes':10000})

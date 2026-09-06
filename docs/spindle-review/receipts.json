@@ -1,0 +1,2288 @@
+{
+  "native_job": {
+    "scope": {
+      "project_id": "spindle-development",
+      "run_id": "spindle-development",
+      "experiment_id": "native-demo-1"
+    },
+    "receipt": {
+      "receipt": "5afe6493b02f45d39ebb458fc4a3e24d",
+      "spec_ref": "231c543cd3d2e664ea3ce7aa3b6e27fdbd51b58b0f3f678d95fc087a377e0c5d",
+      "state": "queued",
+      "experiment_id": "native-demo-1"
+    },
+    "scene": {
+      "scene_id": "339b0d80a07dc3e1c999c03ea5f3e1b8d786b05ce2070f66f24dd1035ed26d4a",
+      "recipe_sha256": "c0373593393edb70e14658c99fa8876e0e3101e0d3860ab0bd8fd91128308536",
+      "sequence": 8,
+      "view": {
+        "shot": "oblique",
+        "treatment": "luminous",
+        "selected": "C1",
+        "camera": null,
+        "run": 0,
+        "frame": 10,
+        "trails": true,
+        "compare": null
+      }
+    },
+    "metrics": {
+      "analysis_plan": {
+        "dwell_s": 0.2,
+        "sensitivity_thresholds_um": [
+          0.5,
+          2
+        ],
+        "threshold_um": 1
+      },
+      "classifier": "single-linkage distance components; exactly two components; sampled dwell",
+      "conditions": {
+        "control": {
+          "final_pole_count_distribution": {
+            "2": 1
+          },
+          "mean_bipolar_dwell_s": 1.0,
+          "replicate_sd_s": null,
+          "simulation_replicates": 1,
+          "uncensored_replicates": 1
+        },
+        "cortical": {
+          "final_pole_count_distribution": {
+            "2": 1
+          },
+          "mean_bipolar_dwell_s": 1.0,
+          "replicate_sd_s": null,
+          "simulation_replicates": 1,
+          "uncensored_replicates": 1
+        }
+      },
+      "runs": [
+        {
+          "bipolar_dwell_s": 1.0,
+          "condition": "control",
+          "final_pole_count": 2,
+          "observation_end_s": 1.0,
+          "pairwise_distances": [
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.0
+                }
+              ],
+              "time_s": 0.0
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.972543886207439
+                }
+              ],
+              "time_s": 0.1
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.908637046487513
+                }
+              ],
+              "time_s": 0.2
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.9519644868159727
+                }
+              ],
+              "time_s": 0.3
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.9750682827984547
+                }
+              ],
+              "time_s": 0.4
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.9820194098326414
+                }
+              ],
+              "time_s": 0.5
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.951794831479653
+                }
+              ],
+              "time_s": 0.6
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 4.001348289618949
+                }
+              ],
+              "time_s": 0.7
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 4.011502867361981
+                }
+              ],
+              "time_s": 0.8
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 4.0148614640384706
+                }
+              ],
+              "time_s": 0.9
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 4.059042689040113
+                }
+              ],
+              "time_s": 1.0
+            }
+          ],
+          "pole_counts": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "right_censored": false,
+          "seed": 41,
+          "time_to_bipolar_s": 0.0
+        },
+        {
+          "bipolar_dwell_s": 1.0,
+          "condition": "cortical",
+          "final_pole_count": 2,
+          "observation_end_s": 1.0,
+          "pairwise_distances": [
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.0
+                }
+              ],
+              "time_s": 0.0
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.042751541490773
+                }
+              ],
+              "time_s": 0.1
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.9718505652687384
+                }
+              ],
+              "time_s": 0.2
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.967396980478884
+                }
+              ],
+              "time_s": 0.3
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.982560019126822
+                }
+              ],
+              "time_s": 0.4
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.9942436045010425
+                }
+              ],
+              "time_s": 0.5
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.9265818622965463
+                }
+              ],
+              "time_s": 0.6
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.9615989327896877
+                }
+              ],
+              "time_s": 0.7
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.957127199023732
+                }
+              ],
+              "time_s": 0.8
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.967136681631706
+                }
+              ],
+              "time_s": 0.9
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.005789819207736
+                }
+              ],
+              "time_s": 1.0
+            }
+          ],
+          "pole_counts": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "right_censored": false,
+          "seed": 41,
+          "time_to_bipolar_s": 0.0
+        }
+      ],
+      "schema_version": 1,
+      "status": "exploratory_simulation_only",
+      "threshold_sensitivity": {
+        "0.5": [
+          2,
+          2
+        ],
+        "2": [
+          2,
+          2
+        ]
+      },
+      "uncertainty": "Between simulation seeds only; biological uncertainty unassessed."
+    }
+  },
+  "draft": {
+    "capture_id": "c95f4938819bd3a131f56b499e8c742f93b1f00dedb6c92add35522e74837f8a",
+    "image_sha256": "45fb7cecd0dc26c3557a640d330b1ddc680f5cf0038bda372e8a07c17515cea2",
+    "recipe_sha256": "c0373593393edb70e14658c99fa8876e0e3101e0d3860ab0bd8fd91128308536",
+    "sequence": 9,
+    "state": {
+      "frame": 10,
+      "run": 0,
+      "selected": "C1",
+      "shot": "oblique",
+      "treatment": "luminous",
+      "trails": true,
+      "revision": 1,
+      "camera": {
+        "position": [
+          10.075801749271138,
+          6.297376093294461,
+          17.422740524781343
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "fov": 40,
+        "near": 0.1,
+        "far": 300,
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "quaternion": [
+          -0.14587942748968788,
+          0.2561944302717382,
+          0.03914471877057544,
+          0.9547519560207212
+        ],
+        "projection": "PerspectiveCamera"
+      },
+      "compare": null,
+      "viewport": {
+        "width": 1558,
+        "height": 660,
+        "dpr": 1
+      },
+      "renderer": "Three.js 180 / WebGL2",
+      "physical_to_scene": {
+        "units": "um",
+        "scale": 1,
+        "interpolation": "none"
+      },
+      "physical_time_s": 1,
+      "poles": [
+        {
+          "id": "C2",
+          "position": [
+            2.006962299346924,
+            0.006979319732636213,
+            0.2304919809103012
+          ]
+        },
+        {
+          "id": "C1",
+          "position": [
+            -2.0347061157226562,
+            0.12335468083620071,
+            -0.1261601597070694
+          ]
+        }
+      ],
+      "segments": 177,
+      "frame_render_ms": 0.7000000476837158,
+      "bundle_sha256": "2c766e2635add5b437884523a6925c1c257256737719d0dec27538d3ae87b3b2",
+      "comparison": null
+    }
+  },
+  "revision": {
+    "scene": {
+      "scene_id": "339b0d80a07dc3e1c999c03ea5f3e1b8d786b05ce2070f66f24dd1035ed26d4a",
+      "recipe_sha256": "e4983f5829b9b08c484b01198fc3521b9d02c79d38f8b6863c912a71c5bb08c6",
+      "sequence": 12,
+      "view": {
+        "shot": "oblique",
+        "treatment": "luminous",
+        "selected": "C1",
+        "camera": {
+          "position": [
+            9.6,
+            6,
+            16.6
+          ],
+          "target": [
+            0,
+            0,
+            0
+          ]
+        },
+        "run": 0,
+        "frame": 10,
+        "trails": true,
+        "compare": null
+      }
+    },
+    "capture": {
+      "capture_id": "71d7d9cc590ee98588531210b4c6c5b5127e3fdeb7c70ae5628d327d4b64d012",
+      "image_sha256": "ee55e1074d741463bce68c3e7552a983e47ca2b36ae61c5596086328cc95cd6b",
+      "recipe_sha256": "e4983f5829b9b08c484b01198fc3521b9d02c79d38f8b6863c912a71c5bb08c6",
+      "sequence": 13,
+      "state": {
+        "frame": 10,
+        "run": 0,
+        "selected": "C1",
+        "shot": "oblique",
+        "treatment": "luminous",
+        "trails": true,
+        "revision": 1,
+        "camera": {
+          "position": [
+            9.600000000000001,
+            6,
+            16.600000000000005
+          ],
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "fov": 40,
+          "near": 0.1,
+          "far": 300,
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "quaternion": [
+            -0.14587942748968785,
+            0.2561944302717382,
+            0.03914471877057543,
+            0.9547519560207212
+          ],
+          "projection": "PerspectiveCamera"
+        },
+        "compare": null,
+        "viewport": {
+          "width": 1558,
+          "height": 660,
+          "dpr": 1
+        },
+        "renderer": "Three.js 180 / WebGL2",
+        "physical_to_scene": {
+          "units": "um",
+          "scale": 1,
+          "interpolation": "none"
+        },
+        "physical_time_s": 1,
+        "poles": [
+          {
+            "id": "C2",
+            "position": [
+              2.006962299346924,
+              0.006979319732636213,
+              0.2304919809103012
+            ]
+          },
+          {
+            "id": "C1",
+            "position": [
+              -2.0347061157226562,
+              0.12335468083620071,
+              -0.1261601597070694
+            ]
+          }
+        ],
+        "segments": 177,
+        "frame_render_ms": 0.5,
+        "bundle_sha256": "2c766e2635add5b437884523a6925c1c257256737719d0dec27538d3ae87b3b2",
+        "comparison": null
+      }
+    }
+  },
+  "comparison": {
+    "scene": {
+      "scene_id": "339b0d80a07dc3e1c999c03ea5f3e1b8d786b05ce2070f66f24dd1035ed26d4a",
+      "recipe_sha256": "fca403125165f6e23a4fa624935b7c5c469e9856695ef567075a0744c1e32c44",
+      "sequence": 20,
+      "view": {
+        "shot": "oblique",
+        "treatment": "luminous",
+        "selected": null,
+        "camera": {
+          "position": [
+            9.6,
+            6,
+            16.6
+          ],
+          "target": [
+            0,
+            0,
+            0
+          ]
+        },
+        "run": 0,
+        "frame": 10,
+        "trails": true,
+        "compare": 1
+      }
+    },
+    "capture": {
+      "capture_id": "5f218d85faafb4ddb7a9f2273f5e8e2e5511009e7fe85ff0813b02b45cd3f9df",
+      "image_sha256": "ed0e4c5e6526553786a51963cf7b42d0dded518b46389e83348edfe84bed2019",
+      "recipe_sha256": "fca403125165f6e23a4fa624935b7c5c469e9856695ef567075a0744c1e32c44",
+      "sequence": 21,
+      "state": {
+        "frame": 10,
+        "run": 0,
+        "selected": null,
+        "shot": "oblique",
+        "treatment": "luminous",
+        "trails": true,
+        "revision": 1,
+        "camera": {
+          "position": [
+            9.600000000000001,
+            6,
+            16.600000000000005
+          ],
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "fov": 40,
+          "near": 0.1,
+          "far": 300,
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "quaternion": [
+            -0.14587942748968785,
+            0.2561944302717382,
+            0.03914471877057543,
+            0.9547519560207212
+          ],
+          "projection": "PerspectiveCamera"
+        },
+        "compare": 1,
+        "viewport": {
+          "width": 1558,
+          "height": 660,
+          "dpr": 1
+        },
+        "renderer": "Three.js 180 / WebGL2",
+        "physical_to_scene": {
+          "units": "um",
+          "scale": 1,
+          "interpolation": "none"
+        },
+        "physical_time_s": 1,
+        "poles": [
+          {
+            "id": "C2",
+            "position": [
+              2.006962299346924,
+              0.006979319732636213,
+              0.2304919809103012
+            ]
+          },
+          {
+            "id": "C1",
+            "position": [
+              -2.0347061157226562,
+              0.12335468083620071,
+              -0.1261601597070694
+            ]
+          }
+        ],
+        "segments": 177,
+        "frame_render_ms": 0.5,
+        "bundle_sha256": "2c766e2635add5b437884523a6925c1c257256737719d0dec27538d3ae87b3b2",
+        "comparison": {
+          "camera": {
+            "position": [
+              9.600000000000001,
+              6,
+              16.600000000000005
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "fov": 40,
+            "near": 0.1,
+            "far": 300,
+            "up": [
+              0,
+              1,
+              0
+            ],
+            "quaternion": [
+              -0.14587942748968785,
+              0.2561944302717382,
+              0.03914471877057543,
+              0.9547519560207212
+            ],
+            "projection": "PerspectiveCamera"
+          },
+          "viewport": {
+            "width": 778,
+            "height": 660,
+            "dpr": 1
+          },
+          "renderer": "Three.js 180 / WebGL2",
+          "physical_to_scene": {
+            "units": "um",
+            "scale": 1,
+            "interpolation": "none"
+          },
+          "physical_time_s": 1,
+          "poles": [
+            {
+              "id": "C1",
+              "position": [
+                -1.9786278009414673,
+                0.17303656041622162,
+                0.11647294461727142
+              ]
+            },
+            {
+              "id": "C2",
+              "position": [
+                2.0214896202087402,
+                -0.02052747644484043,
+                0.027334533631801605
+              ]
+            }
+          ],
+          "segments": 176,
+          "frame_render_ms": 0.40000009536743164
+        },
+        "browser": "153.0.8010.12",
+        "served_assets": [
+          {
+            "url": "http://127.0.0.1:5185/@react-refresh",
+            "sha256": "fe633113388e056842f0b8df96ea422fcd97761329b79d39fddd71d1fee2f8c7"
+          },
+          {
+            "url": "http://127.0.0.1:5185/@vite/client",
+            "sha256": "c68763a21107945b28cddc808c646b8618d08602b14a72123a1369fca57edc96"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@dagrejs_dagre.js?v=b9733a38",
+            "sha256": "ba24b006db03e45e223568e100d040d60268eacd48c04a79d88b2a587457ebd6"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=b9733a38",
+            "sha256": "303bf52b5679e260ba1eb7695191bd183db3d9014c9d95ad3d5b5da935670d2f"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@radix-ui_react-slot.js?v=b9733a38",
+            "sha256": "e95254cceb1c3a4afe7f1d93cdee1442edb743b247c506ccd661e60fdeb570cb"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=b9733a38",
+            "sha256": "325083be9121ac500df2504fd14671367f85e5cce6dabb87bace7f087204d549"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@react-three_fiber.js?v=b9733a38",
+            "sha256": "d42e9f0ef4119e9687b6bbcbca9d07100d0bb7f1c57149d582cb52d7f9d3f7f7"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@xyflow_react.js?v=b9733a38",
+            "sha256": "cbe0041174dd1302dcdc878e86102390a07640396a687f05e632eb590dc163eb"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-5J2Q2FQS.js?v=b9733a38",
+            "sha256": "6edeeef7b6fc9dfc294870d67886f4d5ad2f9c68edf04d7c92ea11f718dcc894"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-7IUVF2PG.js?v=b9733a38",
+            "sha256": "1b6e186dc17bd1bbe394bc61b4e26c69c53cdbe788b50a69f1a57ad10157aa33"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-A3W4J62T.js?v=b9733a38",
+            "sha256": "fb9c53809f1e622e19e4255576310a7a6456da93fe01eb7f43915b6215ea10ee"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-IKHJ3LZN.js?v=b9733a38",
+            "sha256": "60d29fb3d6940e8e9fdda27133d951322038ec5cb140eb9e245e03fa62413f0e"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-IOETYALQ.js?v=b9733a38",
+            "sha256": "64a26e351cfd6371f93003864a7dba2beb8bf0e529dccc7f99a84812b19db605"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-MRJA4UBN.js?v=b9733a38",
+            "sha256": "947448ae597fcc8662ff1211f3a13db1d48cc39dadfaf73bb751a8bf13f630cb"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-NGNPUD5H.js?v=b9733a38",
+            "sha256": "f0f3554d678631a25abc06ab52f8146921503511d128c3637c01ae756224b46e"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-O3JQTBRN.js?v=b9733a38",
+            "sha256": "3aeb93490c03d78d419c32672445dfad82c7dd68df732a5b8ffa754f05b19eb2"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-OEDLMEXZ.js?v=b9733a38",
+            "sha256": "b799627fc5ee980db022c6af32691cde66d8eb479ea7291a9949d735eccd0b4a"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-T22HSH4J.js?v=b9733a38",
+            "sha256": "b65ad00974cad157307b672c022c6c1704719cb90662a10fe54862a8aa8c1ea0"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-U7P2NEEE.js?v=b9733a38",
+            "sha256": "43389e3772ba47861f225b161fca8dfde50b6caa258aaf5a0a0c5d2160ca7fb6"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-XKAMT3SU.js?v=b9733a38",
+            "sha256": "9da880b0162d178840334c6e81056b3ccd0a909aae772b0394a01b3b203d9b6b"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-XL5ANHBC.js?v=b9733a38",
+            "sha256": "4ac4ffe5ea998b67485a090a3bc70a7c088729bb3bc78c6921699a5ac31ac195"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/class-variance-authority.js?v=b9733a38",
+            "sha256": "04c23d4827b54ce595e2efe06f5a8c7aedf24eb37415bcfcf21bb52a68b7d88e"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/clsx.js?v=b9733a38",
+            "sha256": "df33f2093278aa9aeff2c2c188edd846c4b0c012e2af896ae1ccb16d052e3a8a"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/d3-force.js?v=b9733a38",
+            "sha256": "094059fb0cbfe5c56cc50d3e80afdd06a6d1a44aeb14fdc5082bbce2782d87f1"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/lucide-react.js?v=b9733a38",
+            "sha256": "c5d57e3e43584aa7163dbfd4f3c1f2013b3407f28e3698db608b6431a9d14bac"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/motion_react.js?v=b9733a38",
+            "sha256": "3b6fd09c372ecfc31d2325e56350ba36d03a4e334ae9d5d3cdfe0d896e96a40b"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=b9733a38",
+            "sha256": "d081cf02ef4fb94f96fe3868e5f43f01173339fc770664db1986e3ae413c2560"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/react-dom_client.js?v=b9733a38",
+            "sha256": "d9eb1861dd227626f1dfa317c88c95d5e2838d624e312e72bd9207bafb36b650"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/react.js?v=b9733a38",
+            "sha256": "4a10249e99eb5de6f71feb9be674f153dffd1f7769486520ccbea99afff26f18"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/tailwind-merge.js?v=b9733a38",
+            "sha256": "8d4dd4c2d49c8657afd2741aee769dc53de74ca9cfddc9ffdec660f60c20038c"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/three_examples_jsm_controls_OrbitControls__js.js?v=b9733a38",
+            "sha256": "6117b71ec6a0785d95f8291f108812d1248655514a23e021912f5d2cc2729894"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/three.js?v=b9733a38",
+            "sha256": "38a0eb61d948ecd3cba74049bdbd371509b390b25c92603d4043f68abfe2bac5"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/@fontsource-variable/ibm-plex-sans/index.css",
+            "sha256": "69aced71df936e4ce67ded7cb26181400479bf473ecb71ad576ce45ae8a840cc"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/@fontsource/ibm-plex-mono/400.css",
+            "sha256": "9e75b9166d296ac2beaa97a9b71c6c8ca8d1d8abb6bfc44233f663e45f2ec31a"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/@xyflow/react/dist/style.css",
+            "sha256": "3dce8af8481ad5a1eb3f5d95c0dee621f620616043bfd657b1ed5ee6552ff32d"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/vite/dist/client/env.mjs",
+            "sha256": "989a1a6b55bdf57842aa46c52fefdce50a16fbfdfbf643e682ac82ad73023401"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/App.tsx?t=1788683823254",
+            "sha256": "f49541c6b909875f44784d2bd8edc2bbf9021625e0645300484b2f1c82037f9c"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/common.tsx",
+            "sha256": "559b3e345d012fe6b5e581b4f17bf31167bd0d3c330df114b5cef0264c393769"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/Investigation.tsx?t=1788683823254",
+            "sha256": "6f18ba8f0eea73064d897dd51ca8cd27786610b908f98f987cfa4ba8a9e70deb"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/Knowledge.tsx",
+            "sha256": "e9e5ff1791ae6101e95f533e5fd615435a6134752f9730c841bf51c1dd64987a"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/Library.tsx",
+            "sha256": "c86ac2d0c6a0adf77ed71e8b0854328c51aba161df06bff0244accdd8b02f8a3"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/ResearchProcess.tsx",
+            "sha256": "b599a508c4f65b9614d1fdf1823cf2e13031bfc2ae384e795815f637c603b242"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/RuntimeDetail.tsx?t=1788683823254",
+            "sha256": "9d5b40da79f982349fe50d2942c08bdce90117827dfbe006c63de4112f66d71c"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/spindle/spindle.css?t=1788683823026",
+            "sha256": "0e1d50c95814d8efe9ca0b68237c2ec9f4a781370a973adcd01bd2b57f093f97"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/spindle/SpindleMetrics.tsx",
+            "sha256": "022e4a09dad532ef2dee976f61bec57e8e4cf8011ad9dd03e36e74f31a7382b1"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/spindle/SpindleObservatory.tsx?t=1788683823254",
+            "sha256": "d9fa84d5669076252e29323a04ee1c0a68e7e9e153be3536f6a11c82077fb135"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/spindle/SpindleScene.tsx",
+            "sha256": "8095df9283d484e724a44ea096deb0d957570a7f11aaa4b6f16c36a26629a8a4"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/spindle/types.ts",
+            "sha256": "a0aff6730ce4189b7366b947e7e04042c41582fed521c8a9e9c7047547f8d07d"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/ui/animated-tabs.tsx",
+            "sha256": "ee945e50aae38b9c00522ad75f89a1e36495ce22dc9603534362d7ce2356868e"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/ui/button.tsx",
+            "sha256": "479b16cdc4c43ec394746f246367aa9b8ecf6e5003ebfb888196c37cee6d9c6f"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/evidence.css",
+            "sha256": "5310aa2ffb492bbd95346839dc8c84696db50236fe0266de45dcc1da35c58574"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/lib/api.ts",
+            "sha256": "0f49b977f7d788d5e5187a886e829fc02a522a694918add3a9dcc68d6735ab2e"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/lib/evidence.ts",
+            "sha256": "e9e9d49190b754fd92e3c4fdfaca8227a4a12d469ab6c743a36c6e6a062ca5a9"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/lib/runtime.ts",
+            "sha256": "f112b77c59ae6f36f6c6ecf0f62816937e71b257616afb3aeaa629dc8856030f"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/lib/utils.ts",
+            "sha256": "24a50e196c9f61fe5ce263cc3f0ba6c01408e58cae5b21db089ed979701980b9"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/main.tsx?t=1788683823254",
+            "sha256": "f1ccaa4a94a8c26e47ff86fec3288b6bf43cbe2f459898c781002e6a62c1570f"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/runtime.css",
+            "sha256": "6408f7ae499ca8913e2ae8a22c1b416c3c0d7496c2cf24f960d8be1f3db3c70f"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/styles.css?t=1788683823254",
+            "sha256": "4bf88c9e84afed29fc545b750821631a9d292c73f725f17f1efa151a8576c778"
+          }
+        ],
+        "adapter_sha256": "602ed373e742aef30bb4e59ba49922912e05d1482083b25b2dfeedafa23e6515"
+      }
+    }
+  },
+  "vision_draft": {
+    "schema": "visual_review.v1",
+    "scope": {
+      "project_id": "spindle-development",
+      "run_id": "spindle-development",
+      "experiment_id": "native-demo-1"
+    },
+    "capture_id": "c95f4938819bd3a131f56b499e8c742f93b1f00dedb6c92add35522e74837f8a",
+    "image_sha256": "45fb7cecd0dc26c3557a640d330b1ddc680f5cf0038bda372e8a07c17515cea2",
+    "recipe_sha256": "c0373593393edb70e14658c99fa8876e0e3101e0d3860ab0bd8fd91128308536",
+    "observation": "## Pole IDs\n\nBoth labels are present and legible as text:\n\n- **C1** \u2014 dark label chip centered near (719, 259), sitting above/right of the orange sphere at ~(673, 303). The glyphs themselves are crisp and unclipped.\n- **C2** \u2014 label chip at ~(963, 308), above the pale white sphere at ~(897, 357). Also crisp.\n\nSo the answer to \"are both pole IDs legible\" is **yes for the glyphs, but no for the label placement** \u2014 see clipping defects below.\n\n## Occlusion\n\n- The **C1 chip overlaps the aster itself**. Its lower-left corner cuts across the upper-right radial filaments emanating from the orange centrosome; several spokes terminate abruptly at the chip's rectangular edge rather than at their natural tips. The chip is opaque, not alpha-blended, so it acts as a hard mask.\n- The **C2 chip** likewise clips the upper-right spokes of the white aster, though it clears the sphere body.\n- The two chips do not overlap each other; there is roughly 115 px of horizontal clearance between C1's right edge (~778) and C2's left edge (~895).\n- Neither sphere is occluded by the other; the orange body is fully drawn, the white body is fully drawn.\n\n## Depth cues\n\n- A wireframe cell boundary is drawn as three great-circle arcs (one near-vertical at left, one near-vertical at right, one shallow ellipse for the equator). Line weight is uniform, so there is no depth-of-field or front/back line-weight differentiation to tell you which arc segments are near vs. far.\n- Two faint ground-shadow ellipses appear low in the frame (~(779, 615) and a broader one under the equator), implying a floor plane, but they are far from the spheres and do not read as attached shadows.\n- The white centrosome has a soft halo/glow that the orange one lacks a matching version of, which reads as a mild depth/lighting inconsistency rather than a deliberate cue.\n\n## Comparison balance\n\n- The two asters are rendered at different scales and densities: the orange C1 aster has visibly longer spokes with a wider angular spread (roughly 180 px tip-to-tip vertically) while the white C2 aster is more compact (~120 px) and its spokes fade out sooner. Whether that is a real geometric difference or just a fade-out artifact cannot be told from pixels alone \u2014 but as presented, the two asters are **not** visually matched, so side-by-side comparison of their extents is unreliable.\n\n- Sphere sizes also differ: the orange body spans ~44 px, the white body ~50 px. Small, but enough that \"which pole is bigger\" is not a safe read.\n- Label chips differ in width (C1 ~118 px, C2 ~140 px) and sit at different vertical offsets relative to their spheres, so the two annotations are not on a common baseline.\n\n## Concrete clipping defects\n\n1. **Cell rim is not complete.** The right-hand great-circle arc runs off the right edge of the canvas around x\u22481135 and the outer boundary is truncated; the sphere's silhouette is cut by the frame. The full rim is therefore **not** visible.\n2. **Bottom truncation.** The lower portion of the boundary arcs runs to the bottom edge (y\u2248661) and is cut off there as well \u2014 the southern pole of the cell wireframe is missing.\n3. **Top truncation.** The near-vertical arcs exit through y=0 at roughly x\u2248650 and x\u2248940; the northern cap is likewise absent.\n4. **Label-over-filament clipping.** Both chips are opaque rectangles drawn on top of the asters, amputating spoke tips at hard axis-aligned edges (most visible on C1's lower edge, y\u2248277, where 4\u20136 spokes stop dead).\n5. **Large dead margin.** The right ~27% of the frame (x>1140) is empty background while the subject is cut off \u2014 the crop is off-center, which is what forced defects 1\u20133.\n\n## Concrete filament-contrast defects\n\n1. **Low luminance separation from background.** The filaments are a desaturated cyan on a very dark navy field; the thinnest spokes drop to near-background level along their outer thirds, so tip positions are ambiguous.\n2. **Sub-pixel line width.** Many spokes are 1 px or thinner and are anti-aliased into partial transparency, producing dashed/broken appearance rather than continuous lines.\n3. **Asymmetric contrast between the two asters.** The C2 filaments are dimmer than the C1 filaments against the same background, compounding the balance problem in point 3 above \u2014 you cannot tell whether C2 has fewer filaments or merely fainter ones.\n\n4. **Halo washout at C2.** The soft glow around the white sphere raises local background brightness in a ~60 px radius, so the inner segments of C2's spokes lose contrast right where they attach to the body. Attachment points are unresolvable.\n5. **Filament/rim confusion.** The cell-boundary arcs and the filaments are drawn in similar pale tones and comparable widths. Where C2's rightward spokes approach the right-hand arc (around x\u2248960\u20131000, y\u2248380\u2013430), the two line families are hard to separate.\n6. **No occlusion ordering on the filaments.** Spokes pass over the equatorial ellipse with no depth sorting or fading, so it is not visually determinable which filaments are in front of or behind the mid-plane.\n\n## Summary answer\n\n- **Both pole IDs legible?** Yes as text \u2014 \"C1\" and \"C2\" both render cleanly. But both chips are opaque and clip filaments beneath them, and they are not placed consistently relative to their spheres.\n- **Complete cell rim visible?** No. The wireframe boundary is truncated at the right, top, and bottom canvas edges; only the left portion of the rim is fully contained.\n\n## Out of scope\n\nI have not commented on motor forces, clustering statistics, chromosome-segregation accuracy, or viability. None of those are determinable from this raster, and the header text (\"Provisional simulation \u00b7 3D\", \"control \u00b7 seed 41\", \"2 centrosomes\", \"1.00 s \u00b7 saved physical time\") is metadata, not pixel evidence.\n\n## Suggested fixes, smallest first\n\n1. Make label chips semi-transparent or add a leader line and move them clear of the asters.\n2. Re-center and pad the crop so the full boundary sphere fits with margin; recover the wasted right-hand 27%.\n3. Raise filament luminance and set a 1.5\u20132 px minimum stroke width.\n4. Normalize the two asters' stroke opacity and the two spheres' radii so the comparison is fair.\n5. Differentiate rim strokes from filament strokes by hue or dash pattern, and depth-sort filaments across the mid-plane.",
+    "status": "visual observation, not scientific verification",
+    "review_sha256": "4ef788edddbd77c631ad71c824b944b0ac5f9516aed37c2cc9e6fbf544cc8660",
+    "sequence": 10
+  },
+  "vision_revision": {
+    "schema": "visual_review.v1",
+    "scope": {
+      "project_id": "spindle-development",
+      "run_id": "spindle-development",
+      "experiment_id": "native-demo-1"
+    },
+    "capture_id": "08b7185bbe1fee9cfd3e05dcd58437baee5602bc55c29dddc8c0f85c511c2f89",
+    "image_sha256": "d7bca0dce7ff270730bfa662f60a45e21e43612edcaf320f48e28d60b21edf1e",
+    "recipe_sha256": "b7e44f8a84e3b5bb4bb5366c311495ef29088aae7385b42727257469d64d7946",
+    "observation": "## Pole labels\n\nTwo labels are present and both legible at full opacity:\n\n- **\"C1\"** \u2014 sits at roughly (738, 281), up-left of the left centrosome body (~707, 312). It is placed directly on top of the aster's own filaments; several thin cyan rays pass beneath the glyph strokes, so the text reads against a striped rather than clean background. Contrast is adequate but the label is the dimmer/smaller-rendered of the two.\n- **\"C2\"** \u2014 at roughly (897, 316), up-right of the right centrosome body (~857, 347). It clears the densest part of that aster and sits mostly on empty dark field, so it is the cleaner of the two labels.\n\nBoth labels use the same leader-free offset convention (short diagonal displacement from the sphere). No duplicate, missing, or overlapping label pairs. No label collides with the other label.\n\n## Rim containment\n\nThe cell boundary is drawn as a wireframe sphere (outer circle plus two great-circle ellipses \u2014 one equatorial, one near-meridional). Centered near (778, 322) with a radius of roughly 230 px.\n\n- Both centrosome spheres are well inside the rim.\n- **Containment breach at the right aster:** several filaments from C2 extend past the equatorial great circle and one group at the right (~928, 352) and lower-right (~910, 395) crosses close to, and in places visually over, the interior ellipse line. The rays do not cross the outer silhouette circle, so the pole stays nominally contained, but the aster is noticeably off-center toward the +x side, and its envelope approaches the rim asymmetrically.\n- The left aster (C1) is comfortably interior with margin on all sides.\n- The two asters are separated by a visible gap of empty field around x \u2248 770\u2013790; no filament interdigitation is drawn between them.\n\n## Filament legibility\n\n- C1: roughly 20\u201325 discrete rays, thin, uniform cyan, radiating fairly isotropically but with a bias upward and to the left; the upper-left rays are the longest.\n- C2: denser, roughly 25\u201330 rays, with a strong downward and rightward bias; the lower fan (toward ~880, 405) is the most crowded region in the frame and individual rays there begin to merge.\n- Line weight is at or near 1 px throughout, so rays crossing the wireframe ellipses partially disappear where the rim stroke and the filament stroke overlap at similar luminance. No ray is rendered with an arrowhead, cap, or terminal marker, so ray endpoints are inferred from where the stroke fades rather than from an explicit terminus.\n\n## Depth and occlusion\n\n- The scene reads as an isometric-ish 3D projection with no perspective foreshortening cue other than the ellipse eccentricity.\n- The near/far ordering of the two great circles is ambiguous: where the equatorial ellipse crosses the meridional one near (620, 300) and again near (1000, 345), neither line is broken, so there is no over/under occlusion cue at the crossings.\n- Both centrosome spheres are drawn fully opaque and both occlude the wireframe behind them, which correctly places both in front of the far hemisphere but gives no information about their relative depth to each other.\n- A faint dark ellipse near (785, 525) at the bottom of the volume reads as a shadow or floor contact patch; it is not aligned under either pole, so it does not disambiguate depth either.\n- Filaments are drawn at uniform opacity regardless of orientation, so rays pointing toward the viewer and away from the viewer are indistinguishable.\n\n## Comparison balance\n\nThis frame is a single condition \u2014 the caption block reads **\"control \u00b7 seed 41\"**, **\"2 centrosomes\"**, **\"1.00 s \u00b7 saved physical time\"**, with **\"Provisional simulation \u00b7 3D\"** in the top-left. There is no side-by-side or paired panel in the image, so there is no cross-condition comparison to balance. Anything a viewer would want to compare against (a treated arm, a different seed) is not present in this exact image.\n\nBalance issues within the single panel:\n\n- The spindle assembly is offset up and slightly left of the raster center; the lower third of the frame is empty dark field between the sphere bottom (~y 560) and the caption block (~y 568).\n- Large empty margins on the left (x < 545) and right (x > 1010) \u2014 the sphere occupies under a third of the frame width.\n- The caption block is bottom-left anchored while the title \"Provisional simulation \u00b7 3D\" is top-left, leaving the entire right half of the frame unused.\n\n## Remaining visible defects\n\n1. **C1 1. **C1 label sits on its own filaments** \u2014 the glyphs at (738, 281) are struck through by several cyan rays, reducing edge crispness. C2 has no such interference, so the two labels are not treated consistently.\n\n2. **No leader lines on either label** \u2014 attachment to a specific sphere is inferred purely from proximity. With the two poles only ~150 px apart and C1's label displaced toward C2, the assignment is readable but not enforced.\n\n3. **Label offset directions are inconsistent** \u2014 C1 is offset up-left, C2 up-right. No shared convention.\n\n4. **Aster envelope crosses the interior equatorial ellipse** on the right (~928, 352 and ~910, 395) with no occlusion break, so filament and rim strokes visually merge at those crossings.\n\n5. **Uniform filament opacity** \u2014 no depth cueing, so front-facing and back-facing rays are identical in appearance.\n\n6. **No occlusion breaks at wireframe self-intersections** (~620, 300 and ~1000, 345), leaving the near/far hemisphere ordering unresolved.\n\n7. **Ray crowding in the C2 lower fan** (~880, 405) \u2014 individual filaments merge into a solid wedge; counts are not recoverable there by eye.\n\n8. **Unexplained dark ellipse at (~785, 525)** \u2014 bottom-of-volume patch with no legend entry; ambiguous between shadow, floor contact, and a rendering artifact.\n\n9. **Asymmetric pole placement** \u2014 C2 is displaced right and down relative to the sphere center (778, 322) while C1 is closer to center, so the pair is not centered on the volume.\n\n10. **Composition offset** \u2014 assembly sits above frame center with unused margins left, right, and lower-center.\n\n11. **No scale bar or axis indicator** \u2014 the \"1.00 s\" timestamp is present but there is no spatial reference anywhere in the frame.\n\n12. **No legend for stroke colors** \u2014 cyan filament vs. pale wireframe vs. white sphere are undefined in the image itself.\n\nAll of the above are described strictly as rendering and labeling properties of this frame. I have not drawn any conclusion about forces, clustering, chromosome attachment, or viability, and none of these observations should be read as indicating a change in mechanical outcome.\n\n**Scope note:** the frame is marked \"Provisional simulation,\" so all items above are legibility and presentation defects only.",
+    "status": "visual observation, not scientific verification",
+    "review_sha256": "ba1f3b6247d9e1104c7fadce949b292bdbdb2d7f59396b54a63572bd235bfc57",
+    "sequence": 16
+  },
+  "vision_comparison": {
+    "schema": "visual_review.v1",
+    "scope": {
+      "project_id": "spindle-development",
+      "run_id": "spindle-development",
+      "experiment_id": "native-demo-1"
+    },
+    "capture_id": "033871b3311f5e9c4eacd396593f65419bc04237bd7cb45c9c33340ec098f51e",
+    "image_sha256": "2368470f46fb232e53d3267327e19cf3c820882eafaa31902441f6e74e02b2fb",
+    "recipe_sha256": "27d46446b385c39d3e6dd1779b1f5e664920b1e1c689ac160e0e167eced535d6",
+    "observation": "## What is visible\n\n**Panel layout.** Two panels side by side, separated by a vertical rule at roughly the horizontal midpoint. Both show a dark navy field with a translucent wireframe ellipsoid (cell boundary drawn as a few great-circle outlines plus an equatorial ring) containing two pearl-white spheres, each with a cyan radial filament aster.\n\n**Pole IDs.** Both panels carry legible labels: `C1` on the upper-left sphere and `C2` on the upper-right of the lower-right sphere. In the left panel `C1` sits at ~(348, 282) and `C2` at ~(508, 316); in the right panel `C1` at ~(1124, 282) and `C2` at ~(1292, 315). Both IDs are present and unoccluded in both panels \u2014 no label is clipped or overdrawn by filaments.\n\n**Condition labels.** Left panel: `control \u00b7 seed 41`, headline `2 centrosomes`, `1.00 s \u00b7 saved physical time`, all in the lower-left, plus `Provisional simulation \u00b7 3D` top-left. Right panel: a single monospace line `cortical \u00b7 seed 41 \u00b7 1.00 s` at lower-left of the panel, plus a top-right legend block `Cell semiaxes 5 \u00d7 5 \u00d7 5 \u00b5m` and `Pearl: centrosomes \u00b7 Cyan: filaments \u00b7 Amber: pole tracks`. So both a control tag and a perturbation tag are readable, but they are rendered in different type styles, sizes and vertical positions.\n\n**Occlusion and depth.** Depth cues are limited to line opacity and overlap: the filaments of the C2 aster cross in front of the equatorial ring in both panels, and the ellipsoid's far-side arcs are drawn fainter than the near-side ones. Several C1 filaments in each panel are partially overlapped by the C1 sphere itself. In the right panel one long near-horizontal filament extends leftward from C1 to about x = 1028, crossing the ellipsoid's left meridian. No pole is hidden behind the other; both spheres are fully drawn in both panels.\n\n## Clipping and comparison imbalance\n\n- **Silhouette clipping.** In the left panel the ellipsoid outline is complete: it spans roughly x = 158\u2013622, y = 96\u2013560,fully inside the panel. In the right panel the ellipsoid spans roughly x = 935\u20131400, y = 96\u2013560, also fully inside its panel. Neither cell silhouette is cut by a panel edge or by the image border, so both complete outlines are visible.\n\n- **Horizontal framing imbalance.** The dividing rule sits at x \u2248 780, giving the left panel ~780 px and the right panel ~778 px of width \u2014 near parity. But the contents are not centred the same way: the left ellipsoid's centre falls at x \u2248 390 (panel centre \u2248 390, well centred), while the right ellipsoid's centre falls at x \u2248 1167 against a panel centre of \u2248 1169 \u2014 also near centred. Vertical centres match at y \u2248 328 in both. Geometrically the two renders are close to registered.\n\n- **Annotation imbalance (the main asymmetry).** The metadata is distributed unevenly. The left panel carries the large headline (`2 centrosomes`), the condition tag, and the timestamp as three separate stacked lines in proportional type at the lower left. The right panel compresses condition, seed and time into one small monospace line and instead carries the scale and colour legend at top right. A reader scanning for \"what changed\" gets a large typographic cue on the control side and a small one on the perturbation side; the control panel also has a top-left provenance line (`Provisional simulation \u00b7 3D`) with no right-panel counterpart. This is a labelling asymmetry, not a data asymmetry.\n\n- **Legend coverage.** The colour key names three channels \u2014 pearl, cyan, amber. Pearl and cyan are both visible in both panels. I do not see any amber-coloured element in either panel; the \"pole tracks\" entry appears to have no rendered counterpart at this timepoint. That is an unmatched legend entry rather than clipping.\n\n- **Baseline offset of the condition lines.** The left condition line sits at y \u2248 568 and the right at y \u2248 630, a ~62 px vertical offset, so the two condition tags do not read on a common baseline.\n\n## Scope note\n\nEverything above is a description of marks, labels, extents and overlaps in this single rendering. I have not read anything from these pixels about motor forces, aster clustering statistics, chromosome segregation accuracy, viability, or whether the `cortical`condition produced any mechanical change relative to control. Two frames at one timepoint and one seed cannot support that, and the visible differences I listed are annotation and framing differences, not measurements.\n\n## Direct answers\n\n**Are complete cell silhouettes visible in both panels?** Yes. Both ellipsoid wireframes are drawn in full, roughly y = 96\u2013560 in each, with no edge cutting the outline.\n\n**Are C1/C2 identities visible in both panels?** Yes. Four labels total, two per panel, all legible and unoccluded.\n\n**Are control/perturbation labels visible in both panels?** Yes, but unevenly. Left reads `control \u00b7 seed 41` plus a large `2 centrosomes` headline; right reads `cortical \u00b7 seed 41 \u00b7 1.00 s` in small monospace only.\n\n**Major clipping?** None affecting the cells or labels. The only unmatched item is the amber \"pole tracks\" legend entry with no visible amber marks.\n\n**Major comparison imbalance?** Typographic and metadata placement: headline weight, line count, baseline position (~62 px offset) and top-corner annotations all differ between panels, while the geometry is near-registered.",
+    "status": "visual observation, not scientific verification",
+    "review_sha256": "cdaf17b8de291049112efefc4f38223665e5673a0009058be685b94a52323599",
+    "sequence": 19
+  },
+  "native_protocol": {
+    "analysis_plan": {
+      "dwell_s": 0.2,
+      "sensitivity_thresholds_um": [
+        0.5,
+        2
+      ],
+      "threshold_um": 1
+    },
+    "conditions": [
+      {
+        "cortical_motors": 0,
+        "crosslink_motors": 0,
+        "fibers_per_aster": 32,
+        "initial_positions_um": [
+          [
+            -2,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            0
+          ]
+        ],
+        "localization": "uniform",
+        "name": "control"
+      },
+      {
+        "cortical_motors": 8,
+        "crosslink_motors": 0,
+        "fibers_per_aster": 32,
+        "initial_positions_um": [
+          [
+            -2,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            0
+          ]
+        ],
+        "localization": "uniform",
+        "name": "cortical"
+      }
+    ],
+    "dimensionality": 3,
+    "model_id": "cytosim-3d-aster-v1",
+    "parameters": {
+      "aster_stiffness_pn_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 500
+      },
+      "catastrophe_s_inv": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.1
+      },
+      "confine_stiffness_pn_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 100
+      },
+      "core_radius_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.25
+      },
+      "crosslink_diffusion_um2_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0
+      },
+      "crosslink_length_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0
+      },
+      "duration_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 1
+      },
+      "fiber_rigidity_pn_um2": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 20
+      },
+      "growth_force_pn": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 1.67
+      },
+      "growth_um_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.5
+      },
+      "initial_length_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 1
+      },
+      "motor_binding_s_inv": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 5
+      },
+      "motor_range_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.02
+      },
+      "motor_speed_um_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": -1
+      },
+      "motor_stall_pn": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 5
+      },
+      "motor_stiffness_pn_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 100
+      },
+      "motor_unbinding_force_pn": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 2
+      },
+      "motor_unbinding_s_inv": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.5
+      },
+      "nucleation_s_inv": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 1
+      },
+      "rescue_s_inv": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0
+      },
+      "sampling_interval_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.1
+      },
+      "segmentation_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.5
+      },
+      "shrink_um_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.85
+      },
+      "thermal_energy_pn_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.0042
+      },
+      "time_step_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.001
+      },
+      "viscosity_pn_s_um2": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.01
+      }
+    },
+    "radius_um": [
+      5,
+      5,
+      5
+    ],
+    "schema": "spindle_protocol.v1",
+    "scientific_status": "provisional_uncalibrated",
+    "seeds": [
+      41
+    ],
+    "solver_commit": "0780e265cb6a2bb3536c6f89d2143ba9bb016ff0",
+    "source_ids": [
+      "https://gitlab.com/f-nedelec/cytosim"
+    ],
+    "units": {
+      "force": "pN",
+      "length": "um",
+      "time": "s"
+    }
+  },
+  "followup": {
+    "parent_experiment_id": "native-demo-1",
+    "experiment_id": "native-extra-centrosomes",
+    "receipt": {
+      "receipt": "a0c2e2aed3024d9892e80af88754e9cf",
+      "spec_ref": "1813b01d67a8ca85c41a17514d2ff067141f75219f72121e0e5fe1d363f64f21",
+      "state": "queued",
+      "experiment_id": "native-extra-centrosomes"
+    },
+    "reason": "The two-centrosome controls start bipolar and cannot test supernumerary clustering; this follow-up introduces four initial centrosomes under the same engineering parameters and frozen classifier.",
+    "protocol": {
+      "analysis_plan": {
+        "dwell_s": 0.2,
+        "sensitivity_thresholds_um": [
+          0.5,
+          2
+        ],
+        "threshold_um": 1
+      },
+      "conditions": [
+        {
+          "cortical_motors": 0,
+          "crosslink_motors": 0,
+          "fibers_per_aster": 32,
+          "initial_positions_um": [
+            [
+              -2,
+              0,
+              0
+            ],
+            [
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              2,
+              0.5
+            ],
+            [
+              0,
+              -2,
+              -0.5
+            ]
+          ],
+          "localization": "uniform",
+          "name": "control"
+        },
+        {
+          "cortical_motors": 8,
+          "crosslink_motors": 0,
+          "fibers_per_aster": 32,
+          "initial_positions_um": [
+            [
+              -2,
+              0,
+              0
+            ],
+            [
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              2,
+              0.5
+            ],
+            [
+              0,
+              -2,
+              -0.5
+            ]
+          ],
+          "localization": "uniform",
+          "name": "cortical"
+        }
+      ],
+      "dimensionality": 3,
+      "model_id": "cytosim-3d-aster-v1",
+      "parameters": {
+        "aster_stiffness_pn_um": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 500
+        },
+        "catastrophe_s_inv": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.1
+        },
+        "confine_stiffness_pn_um": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 100
+        },
+        "core_radius_um": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.25
+        },
+        "crosslink_diffusion_um2_s": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0
+        },
+        "crosslink_length_um": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0
+        },
+        "duration_s": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 1
+        },
+        "fiber_rigidity_pn_um2": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 20
+        },
+        "growth_force_pn": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 1.67
+        },
+        "growth_um_s": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.5
+        },
+        "initial_length_um": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 1
+        },
+        "motor_binding_s_inv": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 5
+        },
+        "motor_range_um": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.02
+        },
+        "motor_speed_um_s": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": -1
+        },
+        "motor_stall_pn": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 5
+        },
+        "motor_stiffness_pn_um": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 100
+        },
+        "motor_unbinding_force_pn": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 2
+        },
+        "motor_unbinding_s_inv": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.5
+        },
+        "nucleation_s_inv": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 1
+        },
+        "rescue_s_inv": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0
+        },
+        "sampling_interval_s": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.1
+        },
+        "segmentation_um": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.5
+        },
+        "shrink_um_s": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.85
+        },
+        "thermal_energy_pn_um": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.0042
+        },
+        "time_step_s": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.001
+        },
+        "viscosity_pn_s_um2": {
+          "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+          "status": "assumed",
+          "value": 0.01
+        }
+      },
+      "radius_um": [
+        5,
+        5,
+        5
+      ],
+      "schema": "spindle_protocol.v1",
+      "scientific_status": "provisional_uncalibrated",
+      "seeds": [
+        41
+      ],
+      "solver_commit": "0780e265cb6a2bb3536c6f89d2143ba9bb016ff0",
+      "source_ids": [
+        "https://gitlab.com/f-nedelec/cytosim"
+      ],
+      "units": {
+        "force": "pN",
+        "length": "um",
+        "time": "s"
+      }
+    },
+    "metrics": {
+      "analysis_plan": {
+        "dwell_s": 0.2,
+        "sensitivity_thresholds_um": [
+          0.5,
+          2
+        ],
+        "threshold_um": 1
+      },
+      "classifier": "single-linkage distance components; exactly two components; sampled dwell",
+      "conditions": {
+        "control": {
+          "final_pole_count_distribution": {
+            "4": 1
+          },
+          "mean_bipolar_dwell_s": 0.0,
+          "replicate_sd_s": null,
+          "simulation_replicates": 1,
+          "uncensored_replicates": 0
+        },
+        "cortical": {
+          "final_pole_count_distribution": {
+            "4": 1
+          },
+          "mean_bipolar_dwell_s": 0.0,
+          "replicate_sd_s": null,
+          "simulation_replicates": 1,
+          "uncensored_replicates": 0
+        }
+      },
+      "runs": [
+        {
+          "bipolar_dwell_s": 0.0,
+          "condition": "control",
+          "final_pole_count": 4,
+          "observation_end_s": 1.0,
+          "pairwise_distances": [
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.0
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8722813232690143
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.8722813232690143
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.8722813232690143
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.8722813232690143
+                },
+                {
+                  "a": "C4",
+                  "b": "C3",
+                  "distance_um": 4.123105625617661
+                }
+              ],
+              "time_s": 0.0
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C4",
+                  "distance_um": 2.924798555867596
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.222913936046934
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.873923219448595
+                },
+                {
+                  "a": "C2",
+                  "b": "C4",
+                  "distance_um": 2.942419520128671
+                },
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.045168918227759
+                },
+                {
+                  "a": "C2",
+                  "b": "C3",
+                  "distance_um": 2.955729856598642
+                }
+              ],
+              "time_s": 0.1
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.052932037489729
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8205705110203674
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.968707348872644
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.992678135690613
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.926058957417736
+                },
+                {
+                  "a": "C4",
+                  "b": "C3",
+                  "distance_um": 4.224112372872567
+                }
+              ],
+              "time_s": 0.2
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.9565324882606756
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8291149338378636
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.187976949549163
+                },
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.065845904014385
+                },
+                {
+                  "a": "C2",
+                  "b": "C4",
+                  "distance_um": 2.8747360694013686
+                },
+                {
+                  "a": "C2",
+                  "b": "C3",
+                  "distance_um": 3.011883026293707
+                }
+              ],
+              "time_s": 0.3
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 4.04806020512311
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.893296362433977
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.9036971876521034
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.9442001827587063
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8582079105643055
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.151906911696948
+                }
+              ],
+              "time_s": 0.4
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C4",
+                  "distance_um": 2.9094743486656274
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.070308777644243
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8177783031713752
+                },
+                {
+                  "a": "C2",
+                  "b": "C4",
+                  "distance_um": 2.878520746025988
+                },
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.110141932405259
+                },
+                {
+                  "a": "C2",
+                  "b": "C3",
+                  "distance_um": 2.96253674848389
+                }
+              ],
+              "time_s": 0.5
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.793784443063388
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.8884039945662403
+                },
+                {
+                  "a": "C4",
+                  "b": "C3",
+                  "distance_um": 4.012051954025127
+                },
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.0451315644504175
+                },
+                {
+                  "a": "C2",
+                  "b": "C3",
+                  "distance_um": 2.903117057861596
+                },
+                {
+                  "a": "C2",
+                  "b": "C4",
+                  "distance_um": 2.8082094297990237
+                }
+              ],
+              "time_s": 0.6
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 4.003651130709276
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.924681194179944
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8077120620812352
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.7949115419319606
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.8808958556270325
+                },
+                {
+                  "a": "C4",
+                  "b": "C3",
+                  "distance_um": 4.062799478365869
+                }
+              ],
+              "time_s": 0.7
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.8588310277390105
+                },
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.969122414670037
+                },
+                {
+                  "a": "C2",
+                  "b": "C4",
+                  "distance_um": 2.8518445776739667
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.7179091209040127
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.052264399004581
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.9169167973707038
+                }
+              ],
+              "time_s": 0.8
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C4",
+                  "distance_um": 2.831672270055113
+                },
+                {
+                  "a": "C1",
+                  "b": "C4",
+                  "distance_um": 2.8855195887554075
+                },
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.909797969181742
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.020030549877732
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.8385370761223667
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.6613051562101204
+                }
+              ],
+              "time_s": 0.9
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.8795308575449714
+                },
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.9052315037255063
+                },
+                {
+                  "a": "C2",
+                  "b": "C4",
+                  "distance_um": 2.810318904524074
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.6895978741557967
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.031812728803705
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.84846297322615
+                }
+              ],
+              "time_s": 1.0
+            }
+          ],
+          "pole_counts": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "right_censored": true,
+          "seed": 41,
+          "time_to_bipolar_s": null
+        },
+        {
+          "bipolar_dwell_s": 0.0,
+          "condition": "cortical",
+          "final_pole_count": 4,
+          "observation_end_s": 1.0,
+          "pairwise_distances": [
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 4.0
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8722813232690143
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.8722813232690143
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.8722813232690143
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.8722813232690143
+                },
+                {
+                  "a": "C4",
+                  "b": "C3",
+                  "distance_um": 4.123105625617661
+                }
+              ],
+              "time_s": 0.0
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.9437650391049095
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.87567299961532
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.7536792290211776
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.876386181062337
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.8574408717486803
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.089144483378836
+                }
+              ],
+              "time_s": 0.1
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.909232106001913
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.640509057171371
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.8705973458362024
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.9146358426462373
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8751905524583004
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.078338537943677
+                }
+              ],
+              "time_s": 0.2
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.839922485828253
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.9354692887525915
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8576475357470037
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.6605035236812506
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.8728729641275645
+                },
+                {
+                  "a": "C4",
+                  "b": "C3",
+                  "distance_um": 4.162718899600841
+                }
+              ],
+              "time_s": 0.3
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C1",
+                  "b": "C4",
+                  "distance_um": 2.875029386941916
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.185012173454149
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8664585667108016
+                },
+                {
+                  "a": "C2",
+                  "b": "C4",
+                  "distance_um": 2.6481348056067695
+                },
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.8521026099194002
+                },
+                {
+                  "a": "C2",
+                  "b": "C3",
+                  "distance_um": 2.986018204196029
+                }
+              ],
+              "time_s": 0.4
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.9850648039999994
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.860993449359258
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.2068480732707165
+                },
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.842712293987979
+                },
+                {
+                  "a": "C2",
+                  "b": "C4",
+                  "distance_um": 2.596558965459492
+                },
+                {
+                  "a": "C2",
+                  "b": "C3",
+                  "distance_um": 2.949506405025751
+                }
+              ],
+              "time_s": 0.5
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.796183236763011
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.8845400693316927
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 2.9261701952975923
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.9748255796355325
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.564328354122542
+                },
+                {
+                  "a": "C4",
+                  "b": "C3",
+                  "distance_um": 4.217557373510918
+                }
+              ],
+              "time_s": 0.6
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C1",
+                  "distance_um": 3.841133011635326
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.857563214824891
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 3.022194355981678
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.9787531053337886
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.560301526849792
+                },
+                {
+                  "a": "C4",
+                  "b": "C3",
+                  "distance_um": 4.229012447679708
+                }
+              ],
+              "time_s": 0.7
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 3.0640619324513554
+                },
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.9019303903815286
+                },
+                {
+                  "a": "C1",
+                  "b": "C3",
+                  "distance_um": 2.893109957054987
+                },
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.551052208586102
+                },
+                {
+                  "a": "C4",
+                  "b": "C3",
+                  "distance_um": 4.194089343840243
+                },
+                {
+                  "a": "C4",
+                  "b": "C1",
+                  "distance_um": 2.9461920502134737
+                }
+              ],
+              "time_s": 0.8
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C4",
+                  "b": "C2",
+                  "distance_um": 2.6081108042322314
+                },
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.896518517632736
+                },
+                {
+                  "a": "C1",
+                  "b": "C4",
+                  "distance_um": 2.858798092282791
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 3.1371568172969804
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.250319087019848
+                },
+                {
+                  "a": "C3",
+                  "b": "C1",
+                  "distance_um": 2.933031652719047
+                }
+              ],
+              "time_s": 0.9
+            },
+            {
+              "pairs": [
+                {
+                  "a": "C2",
+                  "b": "C4",
+                  "distance_um": 2.5355523505733464
+                },
+                {
+                  "a": "C3",
+                  "b": "C4",
+                  "distance_um": 4.248689370663105
+                },
+                {
+                  "a": "C3",
+                  "b": "C2",
+                  "distance_um": 3.250929463399336
+                },
+                {
+                  "a": "C1",
+                  "b": "C4",
+                  "distance_um": 2.789213531311901
+                },
+                {
+                  "a": "C1",
+                  "b": "C2",
+                  "distance_um": 3.849126491885185
+                },
+                {
+                  "a": "C1",
+                  "b": "C3",
+                  "distance_um": 2.900716840243247
+                }
+              ],
+              "time_s": 1.0
+            }
+          ],
+          "pole_counts": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "right_censored": true,
+          "seed": 41,
+          "time_to_bipolar_s": null
+        }
+      ],
+      "schema_version": 1,
+      "status": "exploratory_simulation_only",
+      "threshold_sensitivity": {
+        "0.5": [
+          4,
+          4
+        ],
+        "2": [
+          4,
+          4
+        ]
+      },
+      "uncertainty": "Between simulation seeds only; biological uncertainty unassessed."
+    }
+  },
+  "vision_balanced": {
+    "schema": "visual_review.v1",
+    "scope": {
+      "project_id": "spindle-development",
+      "run_id": "spindle-development",
+      "experiment_id": "native-demo-1"
+    },
+    "capture_id": "5f218d85faafb4ddb7a9f2273f5e8e2e5511009e7fe85ff0813b02b45cd3f9df",
+    "image_sha256": "ed0e4c5e6526553786a51963cf7b42d0dded518b46389e83348edfe84bed2019",
+    "recipe_sha256": "fca403125165f6e23a4fa624935b7c5c469e9856695ef567075a0744c1e32c44",
+    "observation": "## What's in the frame\n\n**Two panels, one shared header.** Header text is centered over the full canvas width: \"Provisional simulation \u00b7 3D\", \"Cell semiaxes 5 \u00d7 5 \u00d7 5 \u00b5m\", and the legend line \"Pearl: centrosomes \u00b7 Cyan: filaments \u00b7 Amber: pole tracks\". A thin vertical divider runs down the middle at roughly x\u2248780.\n\n**Pole IDs \u2014 all four are present and legible.**\n- Left panel: `C1` at approximately (348, 281), sitting up-right of the left pearl sphere; `C2` at approximately (509, 315), up-right of the lower-right pearl.\n- Right panel: `C1` at approximately (1124, 281); `C2` at approximately (1293, 314).\n- All four sit in open dark background, not overlapping any glyph or caption. None are clipped.\n\n**Cell silhouettes \u2014 both complete.** Each panel shows a full wireframe sphere with three great-circle rings (equator plus two meridians) and a faint filled interior. Left sphere spans roughly x 158\u2013620, y 97\u2013560. Right sphere spans roughly x 936\u20131400, y 97\u2013560. Top, bottom, and both sides of each outline are inside the canvas; neither touches the divider nor the outer frame edge.\n\n**Captions.** Left block starts at x\u224828: \"control \u00b7 seed 41\" / \"2 centrosomes\" / \"1.00 s \u00b7 saved physical time\". Right block starts at x\u2248806 with the same three-line structure, \"cortical \u00b7 seed 41\" on the eyebrow line. The headline type size looks matched between panels \u2014 both \"2 centrosomes\" lines occupy the same cap height and the same baseline (y\u2248599). Eyebrow and footnote baselines also align at y\u2248568 and y\u2248628.\n\n**Occlusion and depth.** In both panels the two pearl spheres are drawn opaque and each occludes the near ends of some cyan filaments radiating from it. Filaments crossing behind the equatorial ring are not visibly dimmed or interrupted, so the ring reads as flat-on-top rather than as a depth cue. In the left panel the C2 pearl (center \u2248467, 348) overlaps the equator ring line; in the right panel the C2 pearl (\u22481251, 346) does the same. There is a soft light gradient onthe lower-right quadrant of each sphere interior; it reads as a fill highlight, not as a labeled feature.\n\n**Depth ordering within each panel.** The two pearls are drawn at different vertical positions (C1 higher, C2 lower and to the right) with the same rendered radius \u2014 left panel C1 r\u224814 px, C2 r\u224815 px; right panel C1 r\u224814 px, C2 r\u224814 px. Because radius is essentially constant, there is no size cue separating near from far. The only depth signal is the y-offset and the ring crossings.\n\n## Answer to the question\n\n**Partly.** The two things you asked about are done:\n\n- Caption sizing is now equal \u2014 same headline point size, same three-line stack, same baselines across the divider. Neither side reads as the \"primary\" panel from type weight anymore.\n- Shared annotations are centered on the full canvas rather than sitting over one panel. The title, semiaxes line, and legend are all centered near x\u2248779, which is the canvas midline and also the divider position.\n- All four pole IDs (C1/C2 left, C1/C2 right) are visible and unclipped.\n- Both cell silhouettes are complete and uncropped.\n\n## Concrete remaining defects\n\n1. **Centered header collides with the divider.** The three header lines are centered at x\u2248779 and the panel divider is at x\u2248780. The divider's top end and the text block occupy the same column, so the legend line \"Pearl: centrosomes \u00b7 Cyan: filaments \u00b7 Amber: pole tracks\" straddles the seam. Either stop the divider below y\u224870 or offset it.\n\n2. **Amber is in the legend but not in the image.** The legend declares \"Amber: pole tracks\", yet no amber/orange pixels appear in either panel \u2014 only pearl white spheres and cyan filaments. Either the track layer failed to render or it should be dropped from the legend.\n\n3. **Caption blocks are not mirrored, they are both left-aligned at different insets.** Left block starts at x\u224828 (28 px from canvas edge); right block starts at x\u2248806 (26 px from divider). Close, but not identical, and the right block's available width runs to x\u22481558 while the left runs to x\u2248780. The size match is fixed; the gutter match is off by ~2 px.\n\n4. **Panel identity lives only in the eyebrow line.** \"control \u00b7 seed 41\" and \"cortical \u00b7 seed 41\" are the smallest, dimmest text on the canvas (~11 px, low-contrast grey) while the identical headline \"2 centrosomes\" is large and bright in both panels. The one line that differs between panels is the hardest to read; the line that is identical dominates. Promote the condition word or move it above the sphere.\n\n5. **`C1` labels sit at the same y in both panels but at different distances from their pearls.** Left: label at (348, 281), pearl center (317, 311) \u2014 offset \u224831 px right, 30 px up. Right: label at (1124, 281), pearl center (1092, 311) \u2014 offset \u224832, 30. These match. But `C2` differs: left label (509, 315) vs pearl (467, 348) = 42 px right; right label (1293, 314) vs pearl (1251, 346) = 42 px right. Also matched. So leader offsets are consistent \u2014 no defect here, listing it as checked.\n\n6. **No depth encoding on the pearls.** Both spheres render at ~14 px radius regardless of position along the viewing axis, and filaments passing behind the wireframe rings are not attenuated. Near/far ordering has to be read from vertical position alone. A depth-sorted stroke opacity on the rings, or a small radius scale, would make the two poles separable without adding any inferred quantity.\n\n7. **Right panel filaments approach the equator ring at x\u22481030.** A few cyan strokes from the right-panel C1 extend left to about x=1030 and visually touch the sphere's left meridian. They do not cross the silhouette boundary, so the cell outline is still closed, but the crossing point is dense enough that the meridian line is briefly hard to trace.\n\n## Summary\n\nComparison imbalance from caption sizing is resolved; both silhouettes and all four pole labels survive. Fix, in order of visual cost: the amber legend entry with no amber content, the header/divider collision at x\u2248780, and the under-weighted condition eyebrow.",
+    "status": "visual observation, not scientific verification",
+    "review_sha256": "8738898395bf225a6a08c96d64a3e6a66dc00e330070c9d30d0ae38b7a271d4f",
+    "sequence": 27
+  }
+}
