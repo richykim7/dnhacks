@@ -22,6 +22,29 @@ def _sign(x: float | None) -> int:
     return (x > 0) - (x < 0)
 
 
+def result_problem(result: dict) -> str | None:
+    """Strict shared RESULT schema; never infer a successful scientific check."""
+    if not isinstance(result, dict):
+        return "RESULT must be an object"
+    for field in ("effect", "p_null"):
+        value = result.get(field)
+        try:
+            finite = type(value) in (int, float) and math.isfinite(value)
+        except OverflowError:
+            finite = False
+        if not finite:
+            return f"{field} must be a finite number"
+    if not 0 < result["p_null"] <= 1:
+        return "p_null must be in (0,1]; permutation probabilities cannot be zero"
+    if type(result.get("n_units")) is not int or result["n_units"] < 1:
+        return "n_units must be a positive integer at the independent unit"
+    if not isinstance(result.get("null_model"), str) or not result["null_model"].strip():
+        return "null_model must describe the null test"
+    if type(result.get("robust")) is not bool:
+        return "robust must explicitly be true or false"
+    return None
+
+
 @dataclass
 class ToolResult:
     """The common audited-statistic contract every rigorous result emits. `expected_sign` is set by the

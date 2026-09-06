@@ -14,7 +14,7 @@ from pathlib import Path
 from dnhacksbio.explorer import lineage as LIN
 from dnhacksbio.falsifier import Falsifier, kind_of_kill
 from dnhacksbio.litmap.store import KGStore
-from dnhacksbio.methods import ToolResult
+from dnhacksbio.methods import ToolResult, result_problem
 
 
 def _now() -> str:
@@ -22,7 +22,7 @@ def _now() -> str:
 
 
 # A fixable or indecisive test, worth another attempt. Keyed on the falsifier's stable slugs.
-_RETRY_REASONS = {"no-effect", "malformed-p", "too-few-units", "not-robust"}
+_RETRY_REASONS = {"no-effect", "malformed-p", "malformed-result", "too-few-units", "not-robust"}
 
 
 def _feedback_status(status: str, reason: str, note: str) -> str:
@@ -142,11 +142,13 @@ class VerifyQueue:
     @staticmethod
     def _toolresult(row: dict) -> ToolResult:
         res = row["result"]
+        if problem := result_problem(res):
+            raise ValueError(problem)
         return ToolResult(
             tool=row["method"], effect=res.get("effect"), p_null=float(res.get("p_null", 1.0)),
             null_model=res.get("null_model", ""), n_units=int(res.get("n_units", 0) or 0),
             expected_sign=int(row["expected_sign"] or 0),
-            robust=bool(res.get("robust", True)),
+            robust=res["robust"],
             trust_class="audited-statistic",   # an experiment that follows the rigor skill is the audited statistic
             dataset=res.get("dataset", ""), method=res.get("method", row["method"]))
 
@@ -158,13 +160,18 @@ class VerifyQueue:
         rows = self.pending(run_id)
         if not rows:
             return []
-        trs = [self._toolresult(r) for r in rows]
-
         kg = self.kg
         elog = None
         results = []
-        for row, tr in zip(rows, trs):
-            ok, reason, note = fal.soundness_floor_tool(tr)
+        for row in rows:
+            try:
+                tr = self._toolresult(row)
+            except (ValueError, TypeError, OverflowError) as exc:
+                tr = ToolResult(tool=row["method"], effect=None, p_null=1.0,
+                                null_model="invalid result", n_units=0, robust=False)
+                ok, reason, note = False, "malformed-result", str(exc)
+            else:
+                ok, reason, note = fal.soundness_floor_tool(tr)
             cls = None if ok else kind_of_kill(reason)
             fb_note = note if ok else f"[{cls}] {note}"        # the factual class only
             explore_entry = (row.get("provenance") or {}).get("exploration_entry")

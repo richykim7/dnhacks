@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mockApi, project } from "./fixtures";
 
-// Synthetic API responses exercise the actual Evidence screen, never app imports.
+// Synthetic API responses exercise the actual Knowledge screen, never app imports.
 export async function evidenceApi(page: Page) {
   await mockApi(page);
   const graph = {
@@ -99,7 +99,7 @@ test("a relationship opens its exact source/context; search and return retain gr
   page,
 }) => {
   await evidenceApi(page);
-  await page.goto("/?project=ion-channels#evidence");
+  await page.goto("/?project=ion-channels#knowledge");
   await expect(page.locator(".claim-result")).toHaveCount(2);
   await expect(
     page.locator(".react-flow__edge-text").filter({ hasText: "regulates" }),
@@ -132,7 +132,7 @@ test("a relationship opens its exact source/context; search and return retain gr
       .violations,
   ).toEqual([]);
   await page.getByRole("button", { name: "Switch to light theme" }).click();
-  await page.screenshot({ path: "/tmp/ux-code-evidence-light.png" });
+  await page.screenshot({ path: "/tmp/ux-code-evidence-light.png", animations: "disabled" });
   expect(
     (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze())
       .violations,

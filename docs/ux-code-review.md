@@ -1,6 +1,6 @@
 # Improvements grounded in the research application
 
-This review supersedes the standalone backtesting prototype as a product direction. The user rejected that prototype's design and its substitution of backtesting for actual research use. This pass reads the current application and engine, preserves the existing frontend, and implements a useful interaction directly in Evidence.
+This review supersedes the standalone backtesting prototype as a product direction. The user rejected that prototype's design and its substitution of backtesting for actual research use. This pass reads the current application and engine, preserves the existing frontend, and implements a useful interaction directly in Knowledge (formerly named Evidence).
 
 ## What the code actually does
 
@@ -18,15 +18,15 @@ The important product gap is **connecting what a researcher did to what was lear
 |---|---|---|---|
 | 1 | An investigation's **Findings** view answers “What have we learned?” with the researcher's synthesis, tested findings and unresolved attempts. Each result opens the exact experiment/code/artifact and originating branch. | `/api/tree/:root` already includes notes and experiments. `reflect` persists a note titled `reflection`; the current frontend filters the experiment view to `kind === "experiment"`. Label reflection as researcher interpretation. A structured final answer/next-work object is not yet supplied: `done` returns `DONE`. | Proposed to runtime owner; no new synthesis/model call or invented conclusions in this change. |
 | 2 | Select a research branch and see **the scientific relationships it tested**, with a path back to the recorded attempt. | Branch → entry → submission → test is reliable. Exact literature attribution is missing: experiment provenance lacks claim/evidence IDs and `_act_submit` does not pass the supported `kg_claim_id`. Persist explicit IDs before drawing audited links. Subject/object labels can be displayed, but should not be guessed into canonical entities. | Runtime/shared-interface proposal only. No changes to inference, branch selection or graph-write policy here. |
-| 3 | Click a literature relationship and read **what supports it, in what context**. Search and follow connected entities within the existing graph. | Quotes, source reference, attribution, `evidence_context` and `papers` were stored already. The graph API selected `claim_id` but discarded it; the frontend stopped at source counts. | **Implemented in this change.** Read-only API plus existing Evidence screen; no new visual shell. |
-| 4 | Preserve the selected investigation when moving to Evidence/Library; an experiment click should open **that experiment**, not the agent's default Activity tab. | Project, run ID and experiment entry ID are already available; sidebar links discard the run, and experiment clicks previously selected only the agent. | Runtime owner confirmed both fixes are in their active slice. This task does not duplicate those edits. |
+| 3 | Click a literature relationship and read **what supports it, in what context**. Search and follow connected entities within the existing graph. | Quotes, source reference, attribution, `evidence_context` and `papers` were stored already. The graph API selected `claim_id` but discarded it; the frontend stopped at source counts. | **Implemented in this change.** Read-only API plus existing Knowledge screen; no new visual shell. |
+| 4 | Preserve the selected investigation when moving to Knowledge/Library; an experiment click should open **that experiment**, not the agent's default Activity tab. | Project, run ID and experiment entry ID are already available; sidebar links discard the run, and experiment clicks previously selected only the agent. | Runtime owner confirmed both fixes are in their active slice. This task does not duplicate those edits. |
 | 5 | Make Library's ready state lead to **Explore evidence / Ask a research question**. After Build, show the returned job's live progress and a clear Open investigation action. | Ready/built/stale status, collection counts, job ID and run ID are present. Today ready/imported collections foreground settings, and a build request can leave the user on that form. | Small follow-up in `Library.tsx` with App callback wiring. No new setup framework needed. |
 
 For a judge-facing demonstration, lead with a real research objective, then show the recorded branching work, one substantive finding, its experiment and evidence, and the next question. The existing workspace contains more useful material than the rejected standalone storyboard exposed.
 
 ## Implemented evidence interaction
 
-- Kept the existing navigation, typography, palette, graph library and review flow.
+- Kept the existing navigation, typography, palette, graph library and graph interactions. Review controls have since been hidden; backend review remains intact.
 - Replaced the degree-sorted spiral with a left-to-right relationship layout using the already installed Dagre. Limited initial zoom prevents tiny graphs from becoming oversized cards.
 - Added readable directions and relationship labels. Corpus-disputed edges use a dashed amber stroke; selecting a relationship highlights its endpoints and keeps its meaning on the graph.
 - Added a searchable list of loaded relationships. Select a list result or edge to open the same source inspector; endpoint buttons continue exploration. Search explicitly describes its loaded-subset scope.
@@ -40,7 +40,7 @@ This is a normal research interaction and works with a built collection. It is n
 
 ## Code locations
 
-- Frontend: `frontend/src/components/Evidence.tsx`, `frontend/src/evidence.css`, `frontend/src/lib/evidence.ts`.
+- Frontend: `frontend/src/components/Knowledge.tsx`, `frontend/src/evidence.css`, `frontend/src/lib/evidence.ts`.
 - Read API: `src/dnhacksbio/webui/evidence.py`; narrow dispatch and edge-ID additions in `server.py` and `data.py`.
 - Stored evidence: `src/dnhacksbio/litmap/graph.py`, `store.py`; source metadata: `src/dnhacksbio/explorer/fulltext.py` and `litmap/corpus_build.py`.
 - Research-output linkage: `_act_run_experiments`, `_act_submit`, `_act_fetch_papers`, `reflect`/`done` dispatch in `explorer.py`; `verifyqueue.py`; `webui/data.py:run_tree`.

@@ -104,11 +104,33 @@ function history(): RuntimeEvent[] {
     recorded_at: Date.now() / 1000,
   }));
 }
-async function fixture(page: Page, invalid = false) {
+async function fixture(page: Page, invalid = false, reviewed = false) {
   await mockApi(page);
   let terminalReads = 0,
     artifactReads = 0;
   const events = history();
+  if (reviewed) {
+    for (const [kind, payload] of [
+      ["experiment.reviewed", { verification: "CANDIDATE" }],
+      [
+        "experiment.human_reviewed",
+        {
+          human_review: "validated",
+          human_review_note: "Checked independent controls",
+        },
+      ],
+    ] as const) {
+      events.push({
+        ...events[0],
+        sequence: events.length + 1,
+        event_id: `review-${events.length}`,
+        run_id: child,
+        experiment_id: "exp1",
+        kind,
+        payload,
+      });
+    }
+  }
   await page.route("**/api/investigations**", (r) =>
     r.fulfill({ json: [{ ...investigation, runtime: true }] }),
   );
@@ -212,6 +234,25 @@ test("malformed experiment structure is an explicit error", async ({
     .getByRole("tab", { name: "Experiments" })
     .click();
   await expect(page.getByRole("alert")).toContainText("No atoms could be read");
+});
+test("human review status follows the playback cursor", async ({ page }) => {
+  await fixture(page, false, true);
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Inspect Inspect the experimental fold" })
+    .click();
+  await page
+    .getByRole("tablist", { name: "Researcher detail" })
+    .getByRole("tab", { name: "Experiments" })
+    .click();
+  await expect(page.getByText("Accepted by human review")).toBeVisible();
+  await expect(page.getByText("Checked independent controls")).toBeVisible();
+  await page.getByLabel("Activity playback position").fill("12");
+  await expect(page.getByText("Accepted by human review")).toHaveCount(0);
+  await expect(page.getByText("Checked independent controls")).toHaveCount(0);
+  await expect(page.locator(".experiment-detail")).toContainText(
+    "awaiting human review",
+  );
 });
 test("experiment list opens its owning experiment and navigation preserves investigation", async ({
   page,

@@ -12,7 +12,7 @@ test("retired forecast route opens investigations without forecast requests", as
   await expect(navigation.getByRole("link")).toHaveText([
     "Investigations",
     "Library",
-    "Evidence",
+    "Knowledge",
   ]);
   await expect(
     page.getByRole("heading", { name: investigation.goal, level: 1 }),
@@ -110,23 +110,29 @@ test("library edits, assistant proposals, uploads, build and launch requests", a
     ),
   ).toBeTruthy();
 });
-test("review requires rationale and preserves project scope", async ({
+test("review controls are hidden and old knowledge links still work", async ({
   page,
 }) => {
-  const writes = await mockApi(page);
-  await page.goto("/?project=ion-channels#evidence");
-  await page.getByRole("tab", { name: "Review findings" }).click();
-  await expect(
-    page.getByRole("button", { name: "Accept finding" }),
-  ).toBeDisabled();
-  await page
-    .getByLabel("Review rationale")
-    .fill("Independent assays support the direction of effect.");
-  await page.getByRole("button", { name: "Accept finding" }).click();
-  expect(
-    writes.find((w) => w.path === "/api/review/promotion")?.body.project,
-  ).toBe("ion-channels");
-  await expect(page.getByText("Decision saved: Validated")).toBeVisible();
+  const requests: string[] = [];
+  page.on("request", (r) => requests.push(r.url()));
+  await mockApi(page);
+  for (const route of ["knowledge", "evidence", "review"]) {
+    await page.goto("/?project=ion-channels#" + route);
+    await expect(
+      page.getByRole("heading", { name: "Explore knowledge" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("tab", { name: "Review findings" }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Accept finding" }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("link", { name: "Knowledge", exact: true }),
+    ).toHaveAttribute("href", "#knowledge");
+  }
+  expect(requests.some((url) => url.includes("/api/review"))).toBe(false);
+  await page.screenshot({ path: "/tmp/dn-knowledge.png" });
 });
 test("playback conceals later evidence and mobile layout fits", async ({
   page,

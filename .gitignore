@@ -36,7 +36,6 @@ corpus/
 docs/
 tests/
 gpu-ssh-handoff/
-CLAUDE.md
 
 # Frontend build and local secrets
 .env

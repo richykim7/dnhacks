@@ -14,25 +14,26 @@ import type { Project } from "./lib/types";
 import { safeStorage, saveStorage } from "./lib/utils";
 import { Investigation } from "./components/Investigation";
 import { Library, LaunchInvestigation } from "./components/Library";
-import { Evidence } from "./components/Evidence";
+import { Knowledge } from "./components/Knowledge";
 import { ResearchProcess } from "./components/ResearchProcess";
 import { Button } from "./components/ui/button";
 import { ErrorNotice } from "./components/common";
-type View = "investigations" | "library" | "evidence";
+type View = "investigations" | "library" | "knowledge";
 function readRoute() {
   const [path, run = ""] = window.location.hash.slice(1).split("/");
   const map: Record<string, View> = {
     runs: "investigations",
     tree: "investigations",
     workflow: "investigations",
-    graph: "evidence",
-    review: "evidence",
+    graph: "knowledge",
+    evidence: "knowledge",
+    review: "knowledge",
     corpus: "library",
     projects: "library",
     new: "library",
   };
   return {
-    view: (["investigations", "library", "evidence"].includes(path)
+    view: (["investigations", "library", "knowledge"].includes(path)
       ? path
       : map[path] || "investigations") as View,
     run: decodeURIComponent(run),
@@ -94,7 +95,7 @@ export default function App() {
       icon: GitBranch,
     },
     { view: "library" as const, label: "Library", icon: BookOpen },
-    { view: "evidence" as const, label: "Evidence", icon: Network },
+    { view: "knowledge" as const, label: "Knowledge", icon: Network },
   ];
   return (
     <div className="app-shell">
@@ -220,8 +221,8 @@ export default function App() {
               onInvestigate={() => setLaunch(true)}
             />
           )}{" "}
-          {route.view === "evidence" && (
-            <Evidence key={project} project={project} />
+          {route.view === "knowledge" && (
+            <Knowledge key={project} project={project} />
           )}{" "}
         </main>
       </div>

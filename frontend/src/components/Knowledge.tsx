@@ -20,19 +20,10 @@ import {
   type EvidenceGraph,
 } from "@/lib/evidence";
 import "../evidence.css";
-import { post, useResource } from "@/lib/api";
-import type { JsonRecord } from "@/lib/types";
+import { useResource } from "@/lib/api";
 import { human, id, number } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { AnimatedTabs } from "./ui/animated-tabs";
-import {
-  Disclosure,
-  Empty,
-  ErrorNotice,
-  Loading,
-  Modal,
-  Status,
-} from "./common";
+import { Disclosure, Empty, ErrorNotice, Loading, Status } from "./common";
 
 function EntityNode({
   data,
@@ -50,34 +41,20 @@ function EntityNode({
   );
 }
 const nodeTypes = { entity: EntityNode };
-export function Evidence({ project }: { project: string }) {
-  const [tab, setTab] = useState("relationships");
+export function Knowledge({ project }: { project: string }) {
   return (
     <div className="evidence-page">
       <header className="page-heading">
         <div>
-          <div className="breadcrumb">Research workspace / Evidence</div>
-          <h1>Follow the evidence</h1>
+          <div className="breadcrumb">Research workspace / Knowledge</div>
+          <h1>Explore knowledge</h1>
           <p>
-            Explore literature relationships and review findings before
-            accepting them.
+            Explore literature relationships and inspect their supporting
+            sources.
           </p>
         </div>
-        <AnimatedTabs
-          label="Evidence view"
-          value={tab}
-          onChange={setTab}
-          tabs={[
-            { value: "relationships", label: "Relationships" },
-            { value: "review", label: "Review findings" },
-          ]}
-        />
       </header>
-      {tab === "relationships" ? (
-        <Relationships key={project} project={project} />
-      ) : (
-        <Review key={project} project={project} />
-      )}
+      <Relationships key={project} project={project} />
     </div>
   );
 }
@@ -330,7 +307,7 @@ function Relationships({ project }: { project: string }) {
           <label>
             Collection
             <select
-              aria-label="Evidence collection"
+              aria-label="Knowledge collection"
               value={source || data?.source || ""}
               onChange={(e) => {
                 setSource(e.target.value);
@@ -543,172 +520,5 @@ function Relationships({ project }: { project: string }) {
         </div>
       )}
     </>
-  );
-}
-function Review({ project }: { project: string }) {
-  const queue = useResource<{
-    candidates: JsonRecord[];
-    promo_decided: Record<string, JsonRecord>;
-  }>(`/api/review${project ? `?project=${id(project)}` : ""}`, 10000);
-  const [notes, setNotes] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const [confirm, setConfirm] = useState(false);
-  const [outcome, setOutcome] = useState("");
-  async function decide(card: JsonRecord, decision: string) {
-    setBusy(true);
-    setError("");
-    try {
-      await post("/api/review/promotion", {
-        project: project || null,
-        test_id: card.test_id,
-        decision,
-        note: notes[card.test_id] || "",
-      });
-      queue.refresh();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-  const pending = Object.keys(queue.data?.promo_decided || {}).length;
-  return (
-    <div className="review-page">
-      <div className="section-heading">
-        <div>
-          <h2>Findings awaiting judgment</h2>
-          <p className="muted">
-            A candidate passed automated checks. Your review determines whether
-            it belongs in the accepted evidence.
-          </p>
-        </div>
-        <Button
-          disabled={!pending}
-          variant="default"
-          onClick={() => setConfirm(true)}
-        >
-          Apply {pending || ""} saved decisions
-        </Button>
-      </div>
-      <ErrorNotice message={queue.error || error} />
-      {outcome && (
-        <p role="status" className="notice">
-          {outcome}
-        </p>
-      )}
-      {queue.loading && <Loading />}
-      {queue.data?.candidates.map((c) => (
-        <article className="review-card" key={c.test_id}>
-          <div className="section-heading">
-            <Status
-              label={
-                queue.data?.promo_decided[c.test_id]
-                  ? `Decision saved: ${human(queue.data.promo_decided[c.test_id].decision)}`
-                  : "Needs review"
-              }
-              tone="attention"
-            />
-            <small>{human(c.method)}</small>
-          </div>
-          <h2>{c.hypothesis || `${c.subject} and ${c.object}`}</h2>
-          <dl className="measurements">
-            <div>
-              <dt>
-                Effect <small>Method-specific units</small>
-              </dt>
-              <dd>{number(c.effect)}</dd>
-            </div>
-            <div>
-              <dt>Null-test p-value</dt>
-              <dd>{number(c.p_null)}</dd>
-            </div>
-            <div>
-              <dt>Novelty assessment</dt>
-              <dd>{human(c.novelty_verdict)}</dd>
-            </div>
-          </dl>
-          {c.novelty_detail && (
-            <Disclosure title="Novelty evidence">
-              <pre>
-                {typeof c.novelty_detail === "string"
-                  ? c.novelty_detail
-                  : JSON.stringify(c.novelty_detail, null, 2)}
-              </pre>
-            </Disclosure>
-          )}
-          {c.literature?.quotes?.map((q: string, i: number) => (
-            <blockquote key={i}>{q}</blockquote>
-          ))}
-          <label>
-            Review rationale
-            <textarea
-              rows={3}
-              value={
-                notes[c.test_id] ??
-                queue.data?.promo_decided[c.test_id]?.note ??
-                ""
-              }
-              onChange={(e) =>
-                setNotes((n) => ({ ...n, [c.test_id]: e.target.value }))
-              }
-              placeholder="Explain the evidence supporting your decision."
-            />
-          </label>
-          <div className="review-actions">
-            <Button
-              disabled={busy || !notes[c.test_id]?.trim()}
-              onClick={() => void decide(c, "rejected")}
-            >
-              Reject finding
-            </Button>
-            <Button
-              variant="default"
-              disabled={busy || !notes[c.test_id]?.trim()}
-              onClick={() => void decide(c, "validated")}
-            >
-              Accept finding
-            </Button>
-          </div>
-        </article>
-      ))}
-      {queue.data?.candidates.length === 0 && (
-        <Empty title="No findings awaiting review">
-          When an investigation produces a candidate finding, its evidence and
-          review controls appear here.
-        </Empty>
-      )}
-      <Modal
-        open={confirm}
-        onOpenChange={setConfirm}
-        title="Apply saved review decisions?"
-        description="Accepted findings will be promoted to the master graph. Rejected findings receive your written feedback."
-      >
-        <ErrorNotice message={error} />
-        <Button
-          variant="default"
-          disabled={busy}
-          onClick={async () => {
-            setBusy(true);
-            try {
-              const r = await post<JsonRecord>("/api/review/promotion/apply", {
-                project: project || null,
-              });
-              setOutcome(
-                `${r.promoted} promoted, ${r.rejected} rejected, ${r.skipped} skipped.`,
-              );
-              setConfirm(false);
-              queue.refresh();
-            } catch (e) {
-              setError((e as Error).message);
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          {busy ? "Applying…" : "Apply decisions"}
-        </Button>
-      </Modal>
-    </div>
   );
 }

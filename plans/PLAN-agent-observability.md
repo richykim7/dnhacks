@@ -21,7 +21,10 @@ pane. It is closed by default. The ordinary node view uses structured runtime ev
 terminal text or a model's continuous summaries. Do not create a tmux pane per Python branch merely
 to pretend an SDK agent has its own terminal.
 
-## What the repository currently does
+## Pre-implementation baseline (historical)
+
+This section records the gaps before implementation, not the current runtime. See `docs/runtime.md`
+and root `ARCHITECTURE.md` for implemented behavior.
 
 - `Explorer.step` in `src/dnhacksbio/explorer/explorer.py` awaits `_next_action` and `_dispatch` before
   appending the reasoning trace. Long tool calls therefore have no start/output events in that trace.

@@ -18,6 +18,22 @@ const event = (
   experiment_id: "exp",
 });
 describe("runtime reducer", () => {
+  it("replays human decisions without changing the verifier assessment", () => {
+    const before = reduceRuntime(
+      emptyRuntime(),
+      event(1, "experiment.reviewed", { verification: "CANDIDATE" }),
+    );
+    const after = reduceRuntime(
+      before,
+      event(2, "experiment.human_reviewed", {
+        human_review: "validated",
+        human_review_note: "Checked controls",
+      }),
+    );
+    expect(before.runs.root.experiments.exp.human_review).toBeUndefined();
+    expect(after.runs.root.experiments.exp.verification).toBe("CANDIDATE");
+    expect(after.runs.root.experiments.exp.human_review).toBe("validated");
+  });
   it("deduplicates and rejects gaps and unknown versions", () => {
     const e = event(1, "attempt.started");
     const s = reduceRuntime(emptyRuntime(), e);

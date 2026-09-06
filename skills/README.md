@@ -30,8 +30,10 @@ Every experiment that wants a verdict reports these fields (the falsifier judges
 
 The falsifier's soundness floor, in order: no estimable effect → `invalid`; too few units →
 `underpowered`; a malformed p → `invalid`; direction wrong (when `expected_sign != 0`) → `refuted`;
-p above the null threshold → `inconclusive`; robustness failed → `refuted`; e-BH over the submitted
-family → `inconclusive`. **Gate on the number only when `trust_class == "audited-statistic"`.**
+p above the null threshold → `inconclusive`; robustness failed → `refuted`.
+Missing or invalid required result fields are `malformed-result`; missing robustness never means pass.
+E-value/e-BH helpers are standalone diagnostics, not an active falsifier gate.
+**Gate on the number only when `trust_class == "audited-statistic"`.**
 
 ## SECURITY (non-negotiable, applies to every skill)
 - **No identifying info to any API, ever.** Placeholder email only (`research@example.org`); never a

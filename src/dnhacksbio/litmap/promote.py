@@ -1,7 +1,7 @@
 """Promotion gate: the human seat at the back of the loop.
 
 The engine writes freely to the working graph; nothing reaches the master graph without a human verdict.
-This module writes a graded discovery card per surviving, unreviewed candidate, the UI writes decisions,
+This module writes a graded discovery card per surviving, unreviewed candidate, the API records decisions,
 and `apply_decisions` copies only validated cards into the master store with provenance.
 
 Every decision requires a written `note`, validated and rejected alike; an unexplained verdict is skipped.
@@ -52,6 +52,8 @@ def apply_decisions(working: KGStore, master: KGStore, decisions: dict) -> dict:
             skipped += 1
             continue
         working.set_human_review(test_id, decision, note)
+        from dnhacksbio.explorer.human_review import record_review
+        record_review(working, row, decision, note)
         # route the verdict back to the explorer's exploration entry, outranking the verifier's
         ee = row.get("explore_entry")
         if ee:
