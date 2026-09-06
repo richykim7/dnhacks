@@ -10,6 +10,8 @@ import {
   Handle,
   Position,
   useInternalNode,
+  useViewport,
+  useStore,
   type Edge,
   type EdgeProps,
   type Node,
@@ -216,6 +218,7 @@ type EntityData = GraphNode & {
   r: number;
   selected: boolean;
   dim: boolean;
+  prominent: boolean;
   [key: string]: unknown;
 };
 function shapePath(shape: KindShape, r: number): React.ReactNode {
@@ -267,6 +270,8 @@ function shapePath(shape: KindShape, r: number): React.ReactNode {
   }
 }
 function EntityNode({ data }: NodeProps<Node<EntityData>>) {
+  const { zoom } = useViewport();
+  const showLabel = data.selected || data.prominent || zoom >= 0.8;
   const size = data.r * 2;
   const claims = data.degree === 1 ? "1 claim" : `${data.degree} claims`;
   return (
@@ -284,7 +289,10 @@ function EntityNode({ data }: NodeProps<Node<EntityData>>) {
       >
         {shapePath(kindShape(data.kind), data.r)}
       </svg>
-      <span className="kg-label">
+      <span
+        className={`kg-label ${showLabel ? "" : "quiet-label"}`}
+        style={{ fontSize: Math.min(30, 14 / zoom) }}
+      >
         <strong>{data.label}</strong>
         {data.selected && data.curie && <code>{data.curie}</code>}
       </span>
@@ -398,7 +406,7 @@ export function forceLayout(
       "link",
       forceLink<SimNode, SimulationLinkDatum<SimNode>>(links)
         .id((d) => d.id)
-        .distance(132)
+        .distance(190)
         .strength(0.5),
     )
     .force(
@@ -407,7 +415,7 @@ export function forceLayout(
         .strength(-820)
         .distanceMax(spread * 4),
     )
-    .force("collide", forceCollide<SimNode>((d) => d.r + 34).iterations(2))
+    .force("collide", forceCollide<SimNode>((d) => d.r + 62).iterations(2))
     .force("center", forceCenter(0, 0))
     .force("x", forceX<SimNode>(0).strength(0.04))
     .force("y", forceY<SimNode>(0).strength(0.06))
@@ -420,13 +428,17 @@ export function forceLayout(
 
 function FocusEvidence({ ids }: { ids: string }) {
   const flow = useReactFlow();
+  const width = useStore((state) => state.width);
+  const height = useStore((state) => state.height);
   useEffect(() => {
-    if (!ids) return;
+    if (!width || !height) return;
     const timer = setTimeout(
       () =>
         void flow.fitView({
-          nodes: JSON.parse(ids).map((nodeId: string) => ({ id: nodeId })),
-          padding: 0.45,
+          nodes: ids
+            ? JSON.parse(ids).map((nodeId: string) => ({ id: nodeId }))
+            : undefined,
+          padding: ids ? 0.45 : 0.18,
           maxZoom: 1,
           duration: matchMedia("(prefers-reduced-motion: reduce)").matches
             ? 0
@@ -435,7 +447,7 @@ function FocusEvidence({ ids }: { ids: string }) {
       100,
     );
     return () => clearTimeout(timer);
-  }, [ids, flow]);
+  }, [ids, flow, width, height]);
   return null;
 }
 function useDebounced<T>(value: T, delay = 250): T {
@@ -451,16 +463,6 @@ function useDebounced<T>(value: T, delay = 250): T {
 export function Knowledge({ project }: { project: string }) {
   return (
     <div className="evidence-page">
-      <header className="page-heading">
-        <div>
-          <div className="breadcrumb">Research workspace / Knowledge</div>
-          <h1>Explore knowledge</h1>
-          <p>
-            The literature graph as it is stored: every claim with its sign, its
-            sources and what the engine has done with it.
-          </p>
-        </div>
-      </header>
       <Relationships key={project} project={project} />
     </div>
   );
@@ -476,7 +478,19 @@ function Relationships({ project }: { project: string }) {
   const [selected, setSelected] = useState("");
   const [claimId, setClaimId] = useState("");
   const [browse, setBrowse] = useState(false);
-  const params = new URLSearchParams({ limit: "160" });
+  const [limit, setLimit] = useState("36");
+  useEffect(() => {
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelected("");
+        setClaimId("");
+        setBrowse(false);
+      }
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, []);
+  const params = new URLSearchParams({ limit });
   if (source) params.set("source", source);
   if (filters.status) params.set("status", filters.status);
   if (filters.polarity) params.set("polarity", filters.polarity);
@@ -512,6 +526,12 @@ function Relationships({ project }: { project: string }) {
     [data],
   );
   const anyFocus = Boolean(claimId || selected);
+  const prominent = new Set(
+    [...(data?.nodes || [])]
+      .sort((a, b) => b.degree - a.degree || a.id.localeCompare(b.id))
+      .slice(0, 24)
+      .map((n) => n.id),
+  );
   const nodes: Node<EntityData>[] =
     data?.nodes.map((n) => {
       const r = nodeRadius(n.degree);
@@ -523,13 +543,14 @@ function Relationships({ project }: { project: string }) {
         data: {
           ...n,
           r,
+          prominent: prominent.has(n.id),
           selected: focused.has(n.id),
           dim: anyFocus && !focused.has(n.id),
         },
       };
     }) || [];
   // Every predicate is written out on small graphs; larger ones label the selection, and the
-  // list beside the graph always names every claim.
+  // on-demand browser names every claim in view.
   const labelAll = (data?.edges.length || 0) <= 18;
   // Bow claims that share a pair of endpoints (in either direction) apart from one another. The
   // sign is fixed by the canonical endpoint order so two opposite claims never land on one side.
@@ -564,8 +585,9 @@ function Relationships({ project }: { project: string }) {
         target: e.target,
         type: "claim",
         data: { bow, dim, active },
-        label:
-          active || labelAll ? humanize(e.predicate).toLowerCase() : undefined,
+        label: (claim ? active : labelAll)
+          ? humanize(e.predicate).toLowerCase()
+          : undefined,
         ariaLabel: `${claimSentence(e, labels)}. ${polarityLabel(e.polarity)}, ${humanize(e.status).toLowerCase()}, ${e.n_sources} ${e.n_sources === 1 ? "source" : "sources"}. Inspect evidence`,
         markerEnd: `dn-${polarityMarker(e.polarity)}-${tone}`,
         style: {
@@ -604,6 +626,7 @@ function Relationships({ project }: { project: string }) {
   return (
     <>
       <div className="evidence-toolbar">
+        <h1 className="knowledge-title">Knowledge</h1>
         <label className="search-field">
           <Search size={15} />
           <input
@@ -614,7 +637,7 @@ function Relationships({ project }: { project: string }) {
               setQuery(e.target.value);
               setClaimId("");
               setSelected("");
-              setBrowse(true);
+              setBrowse(false);
             }}
           />
         </label>
@@ -701,6 +724,21 @@ function Relationships({ project }: { project: string }) {
             ))}
           </select>
         </label>
+        <label>
+          View
+          <select
+            aria-label="Graph density"
+            value={limit}
+            onChange={(e) => {
+              setLimit(e.target.value);
+              clear();
+            }}
+          >
+            <option value="36">Overview · 36 claims</option>
+            <option value="160">Expanded · 160 claims</option>
+            <option value="800">Wide · 800 claims</option>
+          </select>
+        </label>
         <span className="muted view-count">
           {data?.shown != null &&
             (filtered
@@ -746,21 +784,23 @@ function Relationships({ project }: { project: string }) {
               <div className="evidence-map-caption">
                 <strong>Literature relationships</strong>
                 <span>
-                  Select a connection to read its evidence, or an entity to see
-                  its claims.
+                  Disputed claims first, then source count. Search the entire
+                  collection. Select an entity or connection to inspect.
                 </span>
               </div>
               <ReactFlowProvider>
                 <ReactFlow
+                  key={`${source}:${q}:${JSON.stringify(filters)}:${limit}`}
                   nodes={nodes}
                   edges={edges}
                   nodeTypes={nodeTypes}
                   edgeTypes={edgeTypes}
                   fitView
-                  fitViewOptions={{ padding: 0.12, maxZoom: 1.1 }}
+                  fitViewOptions={{ padding: 0.18, maxZoom: 1.1 }}
                   minZoom={0.1}
                   maxZoom={2}
                   nodesConnectable={false}
+                  nodesDraggable={false}
                   onNodeClick={(_, n) => choose(n.id)}
                   onEdgeClick={(_, e) => {
                     const found = data.edges.find((c) => claimKey(c) === e.id);
@@ -778,81 +818,91 @@ function Relationships({ project }: { project: string }) {
                 onClick={() => setBrowse(true)}
               >
                 <ListFilter size={15} />
-                Browse {related.length} relationships
+                Browse {related.length}{" "}
+                {related.length === 1 ? "relationship" : "relationships"}
               </Button>
             </div>
             <Legend kinds={kindsInView} />
           </div>
-          <aside
-            className="detail-panel evidence-inspector"
-            aria-label="Relationship evidence"
-          >
-            <div className="detail-head">
-              <span>
-                {claim ? "Claim" : entity ? "Entity" : "Browse relationships"}
-              </span>
-              {(claim || selected || browse) && (
-                <Button
-                  aria-label="Close entity detail"
-                  variant="ghost"
-                  size="icon"
-                  onClick={clear}
-                >
-                  <X size={16} />
-                </Button>
-              )}
-            </div>
-            <div className="detail-scroll">
-              {claim ? (
-                <ClaimView
-                  key={claimKey(claim)}
-                  edge={claim}
-                  source={data.source || source}
-                  labels={labels}
-                  nodesById={nodesById}
-                  edges={data.edges}
-                  onBack={() => setClaimId("")}
-                  onEntity={choose}
-                  onClaim={inspect}
-                />
-              ) : entity ? (
-                <EntityView
-                  node={entity}
-                  edges={related}
-                  labels={labels}
-                  onClaim={inspect}
-                  onEntity={choose}
-                />
-              ) : (
-                <>
-                  <h2>
-                    {q ? "Matching relationships" : "Read the connections"}
-                  </h2>
-                  <p className="muted">
-                    {related.length}{" "}
-                    {related.length === 1 ? "relationship" : "relationships"}
-                    {q
-                      ? ` matching “${q}” across the collection`
-                      : filtered
-                        ? " matching the filters"
-                        : " in view"}
-                    . Choose one to inspect its sources, context and tests.
-                  </p>
-                  {related.length === 0 && (
-                    <p>
-                      No matching relationships in this view. Try another term
-                      or claim filter.
-                    </p>
-                  )}
-                  <ClaimList
+          {browse && (
+            <aside
+              className="detail-panel evidence-inspector"
+              aria-label="Relationship evidence"
+            >
+              <div className="detail-head">
+                <span>
+                  {claim
+                    ? "Claim & sources"
+                    : entity
+                      ? "Entity & relationships"
+                      : "Browse relationships"}
+                </span>
+                {(claim || selected || browse) && (
+                  <Button
+                    aria-label="Close entity detail"
+                    variant="ghost"
+                    size="icon"
+                    onClick={clear}
+                  >
+                    <X size={16} />
+                  </Button>
+                )}
+              </div>
+              <div
+                className="detail-scroll"
+                key={claimId || selected || "browse"}
+              >
+                {claim ? (
+                  <ClaimView
+                    key={claimKey(claim)}
+                    edge={claim}
+                    source={data.source || source}
+                    labels={labels}
+                    nodesById={nodesById}
+                    edges={data.edges}
+                    onBack={() => setClaimId("")}
+                    onEntity={choose}
+                    onClaim={inspect}
+                  />
+                ) : entity ? (
+                  <EntityView
+                    node={entity}
                     edges={related}
                     labels={labels}
                     onClaim={inspect}
+                    onEntity={choose}
                   />
-                </>
-              )}
-            </div>
-          </aside>
+                ) : (
+                  <>
+                    <h2>
+                      {q ? "Matching relationships" : "Read the connections"}
+                    </h2>
+                    <p className="muted">
+                      {related.length}{" "}
+                      {related.length === 1 ? "relationship" : "relationships"}
+                      {q
+                        ? ` matching “${q}” across the collection`
+                        : filtered
+                          ? " matching the filters"
+                          : " in view"}
+                      . Choose one to inspect its sources, context and tests.
+                    </p>
+                    {related.length === 0 && (
+                      <p>
+                        No matching relationships in this view. Try another term
+                        or claim filter.
+                      </p>
+                    )}
+                    <ClaimList
+                      edges={related}
+                      labels={labels}
+                      onClaim={inspect}
+                    />
+                  </>
+                )}
+              </div>
+            </aside>
+          )}
         </div>
       )}
     </>
@@ -870,7 +920,11 @@ function CollectionStrip({ data }: { data: EvidenceGraph }) {
       </span>
     );
   return (
-    <div className="knowledge-strip" aria-label="Collection summary">
+    <div
+      className="knowledge-strip"
+      aria-label="Collection summary"
+      title={`Graph updated ${asOf(data.as_of)}`}
+    >
       {fig(s.claims, "claims", "claim")}
       {fig(s.entities, "entities", "entity")}
       {fig(s.evidence, "evidence records", "evidence record")}
