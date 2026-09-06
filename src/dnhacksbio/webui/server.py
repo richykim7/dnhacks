@@ -53,7 +53,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from . import architecture, assistant, attachments, data, jobs, projects, forecasting, evidence
+from . import architecture, assistant, attachments, data, jobs, projects, evidence
 
 STATIC = Path(__file__).resolve().parent / "static"
 FRONTEND = Path(os.environ.get("DNHACKS_FRONTEND_DIST", Path(__file__).resolve().parents[3] / "frontend" / "dist"))
@@ -141,12 +141,6 @@ class Handler(BaseHTTPRequestHandler):
                 return self._serve_frontend(unquote(path.lstrip("/")))
             if path.startswith("/static/"):
                 return self._serve_static(path[len("/static/"):])
-            if path == "/api/forecasting/demo":
-                return self._send_json(forecasting.demo_packet())
-            if path == "/api/forecasting/reasoning":
-                return self._send_json(forecasting.reasoning_packet())
-            if path == "/api/forecasting/run":
-                return self._send_json(forecasting.saved_run())
             if path.startswith("/api/runtime/"):
                 from . import runtime
                 return runtime.handle(self, unquote(path[len("/api/runtime/"):]), qs)

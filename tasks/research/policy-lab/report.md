@@ -426,32 +426,9 @@ packets deliberately localize sharing and may cut cross-packet reuse; they do
 not validate global tractability. The full context graph has a large shared core
 (384 sources; 68 among multisource contexts before fixing pairs).
 
-No later labels are loaded, no forecasting metrics are computed, and no labels
-are purchased in these deterministic experiments. The separate revealing-action
-simulation deliberately charges observations. Retrospective forecasting requires
-its own sealed historical input, committed predictions, and later evaluator.
-The existing engine's `freeze_year` and cache mounts do not by themselves enforce
-that separation; the packet prototype accepts only the pinned old file.
-
-### Follow-up: actual frozen graph-construction traces
-
-During this research session, the delivery lane landed computed forecasting
-replays. We additionally audited its historical-only input and three saved runs,
-without loading outcomes or evaluating forecast scores. The replay snapshot has
-216 evidence records from 166 source documents; 36 sources supply multiple
-records. Each of the greedy, top-singleton and uniform runs acquires 32 additional
-records representing 30 newly encountered source documents, across four rounds.
-All keep the same 683 candidates. The audit checks monotone evidence acquisition,
-snapshot hashes and recorded acquisition counts.
-
-This is concrete trace evidence of a possible shared document-acquisition stage,
-and modest reuse in these saved selections. Their declared cost unit is one
-abstract evidence-record acquisition; 32 records versus 30 documents is **not**
-a measured compute saving or an error in their cost accounting. Extracting two
-different records may still require separate work. The traces demonstrate graph
-revision but do not record complementary experiment requirements, computational
-prerequisite costs, or newly revealed candidate actions. No live experimental
-trajectories were found. [Trace audit and hashes](results/trace-audit.json)
+No later labels are loaded or purchased in these deterministic experiments. The separate
+revealing-action simulation deliberately charges observations. The packet prototype accepts
+only the pinned old file.
 
 ## 8. Failed approaches and remaining research boundary
 
@@ -495,7 +472,6 @@ display digests when forming coverage or completion patterns.
 | Prerequisite IDs and unique cost by action; incurred/planned cost distinction | Charge shared work consistently; distinguish initial leaf costs from continuation | 2–3 hours once a replay action catalog exists |
 | Frozen pattern ID, one required-action set, weight, verifier definition/version | Make the completion objective checkable and prevent alternative-path double counting | 1–2 hours for explicit fixtures plus scientist review |
 | Candidate/snapshot hash, selected IDs, realized union, lower/upper bound, timing | Reproduce a selection certificate and expose unresolved optimization | 1–2 hours to connect this stdlib prototype |
-| Separate historical input and later outcomes | Keep forecast evaluation distinct from paid label-reveal experiments | Coordinate with the existing forecasting delivery lane |
 
 These are estimates and proposed interfaces, posted to the Board before any
 shared edit. This research does not implement them in production. Domain-specific

@@ -44,6 +44,11 @@ def test_built_frontend_and_assets(http):
     assert get(http, "/assets/app.js")[:2] == (200, "text/javascript; charset=utf-8")
 
 
+@pytest.mark.parametrize("endpoint", ["demo", "reasoning", "run"])
+def test_removed_forecasting_endpoints_are_not_found(http, endpoint):
+    assert get(http, f"/api/forecasting/{endpoint}")[0] == 404
+
+
 def test_runtime_http_scope_cursor_and_blob_integrity(http, tmp_path, monkeypatch):
     from dnhacksbio.explorer.runtime import Journal
     monkeypatch.setattr(data, "PROCESSED", tmp_path / "processed")

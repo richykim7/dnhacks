@@ -1,6 +1,26 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mockApi, investigation, tree } from "./fixtures";
+test("retired forecast route opens investigations without forecast requests", async ({
+  page,
+}) => {
+  const requests: string[] = [];
+  page.on("request", (request) => requests.push(request.url()));
+  await mockApi(page);
+  await page.goto("/#forecast");
+  const navigation = page.getByRole("navigation", { name: "Main navigation" });
+  await expect(navigation.getByRole("link")).toHaveText([
+    "Investigations",
+    "Library",
+    "Evidence",
+  ]);
+  await expect(
+    page.getByRole("heading", { name: investigation.goal, level: 1 }),
+  ).toBeVisible();
+  expect(requests.some((url) => url.includes("/api/forecasting/"))).toBe(false);
+  await page.screenshot({ path: "/tmp/dn-no-forecast.png" });
+});
+
 test("tree, live detail, recorded experiments and theme screenshots", async ({
   page,
 }) => {

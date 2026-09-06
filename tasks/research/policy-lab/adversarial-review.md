@@ -90,10 +90,7 @@ multisource contexts. Shared source acquisition is thus present structurally.
 
 There is no evidence here of measured experimental complementarity or actual
 reusable computational prerequisites. Distinct PMIDs can reuse an experiment.
-At the initial review no live branch/experiment trajectories were found, only
-CIViC snapshots and Dyport cached score tables. Parent follow-up after delivery
-integration audited newly landed frozen graph-construction replays separately;
-the report and `results/trace-audit.json` preserve that distinction.
+At the initial review no live branch/experiment trajectories were found.
 
 The original potential mapping “any two PMIDs complete a context” would be an
 OR-over-pairs objective and would invalidate the single-AND model. The implemented
