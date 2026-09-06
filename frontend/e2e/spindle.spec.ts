@@ -82,7 +82,7 @@ function fixture(): SpindleBundle {
 async function openSpindle(page: Page, withMovie = false) {
   await mockApi(page);
   const root = investigation.root;
-  const movieBytes = withMovie ? readFileSync(new URL("../../docs/spindle-review/movie.webm", import.meta.url)) : null;
+  const movieBytes = withMovie ? readFileSync(new URL("./fixtures/spindle-movie.webm", import.meta.url)) : null;
   const rawBundle = JSON.stringify(fixture());
   const sha = createHash("sha256").update(rawBundle).digest("hex");
   const raw = [
