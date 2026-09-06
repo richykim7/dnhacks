@@ -1,13 +1,18 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { GitBranch, Terminal, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { AnimatedTabs } from "./ui/animated-tabs";
 import { Disclosure, ErrorNotice, Loading, Status } from "./common";
 import { request } from "@/lib/api";
-import { runtimeUrl, type RuntimeEvent } from "@/lib/runtime";
+import {
+  runtimeUrl,
+  runtimeRunSummary,
+  runtimeMilestones,
+  type RuntimeEvent,
+} from "@/lib/runtime";
 import type { JsonRecord } from "@/lib/types";
 import { actionLabel, date, human, number } from "@/lib/utils";
 import "@/runtime.css";
+import CandidateReview from "./CandidateReview";
 import NodeScene, { type SceneChoice } from "./NodeScene";
 const SpindleMetrics = lazy(() => import("./spindle/SpindleMetrics"));
 const SpindleObservatory = lazy(() => import("./spindle/SpindleObservatory"));
@@ -128,400 +133,563 @@ export function RuntimeDetail({
   connection: string;
   onClose: () => void;
 }) {
-  const [tab, setTab] = useState("activity"),
-    [terminal, setTerminal] = useState(false);
+  const [terminal, setTerminal] = useState(false);
+  const [showAllExperiments, setShowAllExperiments] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [chosenScene, setChosenScene] = useState<string | null>(null);
   useEffect(() => setChosenScene(null), [experimentId, runId]);
   useEffect(() => {
-    setTab(experimentId ? "experiments" : "activity");
-  }, [experimentId]);
+    setShowAllExperiments(Boolean(experimentId));
+  }, [experimentId, runId]);
   useEffect(() => {
-    if (experimentId && tab === "experiments")
+    if (experimentId)
       document
         .querySelector(`[data-experiment-id="${CSS.escape(experimentId)}"]`)
         ?.scrollIntoView({ block: "nearest" });
-  }, [experimentId, tab]);
+  }, [experimentId, showAllExperiments]);
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
   const historic = cursor !== null;
-  const stale = run?.heartbeat_at ? now / 1000 - run.heartbeat_at > 20 : true;
+  const summary = runtimeRunSummary(run, now / 1000, historic);
+  const milestones = runtimeMilestones(run);
   const events: RuntimeEvent[] = run?.history || [];
-  const exps = Object.values(run?.experiments || {}) as JsonRecord[];
-  const sceneChoices: SceneChoice[] = exps.flatMap(experiment =>
-    (experiment.artifacts || []).filter((artifact: JsonRecord) => artifact.status === "available" &&
-      ["binder_bundle", "molecular_structure"].includes(artifact.kind)).map((artifact: JsonRecord) => ({
-        key: `${experiment.experiment_id}:${artifact.artifact_id}`, experiment, artifact,
-      })));
-  const activeScene = sceneChoices.find(c => c.key === chosenScene) ||
-    sceneChoices.find(c => c.experiment.experiment_id === experimentId && c.artifact.kind === "binder_bundle") ||
-    sceneChoices.find(c => c.experiment.experiment_id === experimentId) ||
-    sceneChoices.find(c => c.artifact.kind === "binder_bundle") || sceneChoices[0];
+  const exps = (
+    Object.values(run?.experiments || {}) as JsonRecord[]
+  ).reverse();
+  const rankedExps = [...exps].sort(
+    (a, b) =>
+      Number(b.experiment_id === experimentId) -
+        Number(a.experiment_id === experimentId) ||
+      Number(["queued", "running"].includes(b.status)) -
+        Number(["queued", "running"].includes(a.status)) ||
+      Number(b.verification === "CANDIDATE") -
+        Number(a.verification === "CANDIDATE"),
+  );
+  const visibleExps = showAllExperiments ? rankedExps : rankedExps.slice(0, 3);
+  const sceneChoices: SceneChoice[] = exps.flatMap((experiment) =>
+    (experiment.artifacts || [])
+      .filter(
+        (artifact: JsonRecord) =>
+          artifact.status === "available" &&
+          ["binder_bundle", "molecular_structure"].includes(artifact.kind),
+      )
+      .map((artifact: JsonRecord) => ({
+        key: `${experiment.experiment_id}:${artifact.artifact_id}`,
+        experiment,
+        artifact,
+      })),
+  );
+  const activeScene =
+    sceneChoices.find((c) => c.key === chosenScene) ||
+    sceneChoices.find(
+      (c) =>
+        c.experiment.experiment_id === experimentId &&
+        c.artifact.kind === "binder_bundle",
+    ) ||
+    sceneChoices.find((c) => c.experiment.experiment_id === experimentId) ||
+    sceneChoices.find((c) => c.artifact.kind === "binder_bundle") ||
+    sceneChoices[0];
   return (
     <div className={`node-workspace ${activeScene ? "has-scene" : ""}`}>
-      {activeScene && <NodeScene choices={sceneChoices} active={activeScene} onSelect={setChosenScene} onClose={onClose}
-        events={events} runId={runId} project={project} cursor={cursor} />}
-      <section className="node-research" aria-label="Research activity and findings">
-      <div className="detail-head">
-        <span>
-          <GitBranch size={15} />
-          Researcher
-        </span>
-        <Button
-          size="icon"
-          variant="ghost"
-          aria-label="Close researcher detail"
-          onClick={onClose}
-        >
-          <X size={17} />
-        </Button>
-      </div>
-      <div className="detail-intro">
-        <Status
-          label={human(run?.lifecycle || "Not started at this point")}
-          tone={run?.lifecycle === "failed" ? "negative" : "neutral"}
+      {activeScene && (
+        <NodeScene
+          choices={sceneChoices}
+          active={activeScene}
+          onSelect={setChosenScene}
+          onClose={onClose}
+          events={events}
+          runId={runId}
+          project={project}
+          cursor={cursor}
         />
-        <h2>{run?.branch_objective || "Research branch"}</h2>
-        {run?.reason && <p>{run.reason}</p>}
-        {tab === "activity" && (
-          <div className="current-work">
-            <small>Runtime execution</small>
-            <strong>
-              {run?.activity?.label
-                ? actionLabel(run.activity.action || run.activity.label)
-                : "No operation running"}
-            </strong>
-            {run?.intent && (
-              <>
-                <small>Agent’s stated intent</small>
-                <p>{run.intent}</p>
-              </>
+      )}
+      <section
+        className="node-research"
+        aria-label="Research activity and findings"
+      >
+        <div className="detail-head">
+          <span>
+            <GitBranch size={15} />
+            Researcher
+          </span>
+          <Button
+            size="icon"
+            variant="ghost"
+            aria-label="Close researcher detail"
+            onClick={onClose}
+          >
+            <X size={17} />
+          </Button>
+        </div>
+        <div className="detail-intro">
+          <Status
+            label={human(summary.status)}
+            tone={run?.lifecycle === "failed" ? "negative" : "neutral"}
+          />
+          <h2>{run?.branch_objective || "Research branch"}</h2>
+          {run?.reason && <p>{run.reason}</p>}
+          {
+            <div className="current-work">
+              <small>Current activity</small>
+              <strong>
+                {run?.activity?.label
+                  ? actionLabel(run.activity.action || run.activity.label)
+                  : "No operation recorded"}
+              </strong>
+              {run?.intent && (
+                <>
+                  <small>Agent’s stated intent</small>
+                  <p>{run.intent}</p>
+                </>
+              )}
+              <small>
+                {historic
+                  ? "Recorded at playback cursor"
+                  : `${connection} · ${summary.status === "stale" ? "Worker heartbeat stale or unavailable" : "Live research state"}`}
+              </small>
+            </div>
+          }
+          <Disclosure title="Full objective and intent">
+            <p><strong>Research question:</strong> {run?.original_question || "Not recorded"}</p>
+            <p><strong>Branch objective:</strong> {run?.branch_objective || "Not recorded"}</p>
+            {run?.intent && <p><strong>Current intent:</strong> {run.intent}</p>}
+          </Disclosure>
+        </div>
+        <div className="detail-scroll research-overview">
+          <div className="research-section-heading">
+            <h3>
+              Experiments <span>{summary.experimentCount}</span>
+            </h3>
+            {summary.candidateCount > 0 && (
+              <span className="runtime-candidate-badge">
+                {summary.candidateCount} candidate
+                {summary.candidateCount === 1 ? "" : "s"} emitted
+              </span>
             )}
-            <small>
-              {historic
-                ? "Recorded at playback cursor"
-                : `${connection} · ${stale ? "Worker heartbeat stale or unavailable" : "Worker heartbeat current"}`}
-            </small>
           </div>
-        )}
-        <Disclosure title="Original research question">
-          <p>{run?.original_question || "Not recorded"}</p>
-        </Disclosure>
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={historic}
-          onClick={() => setTerminal((s) => !s)}
-        >
-          <Terminal size={14} />
-          {terminal && !historic ? "Hide terminal" : "Show terminal"}
-        </Button>
-        {historic && (
-          <small className="muted">
-            Terminal snapshots are unavailable in playback.
-          </small>
-        )}
-        {terminal && !historic && (
-          <TerminalView key={runId} runId={runId} project={project} />
-        )}
-      </div>
-      <AnimatedTabs
-        label="Researcher detail"
-        value={tab}
-        onChange={setTab}
-        tabs={[
-          { value: "activity", label: "Activity" },
-          { value: "experiments", label: "Experiments" },
-        ]}
-      />
-      <div className="detail-scroll">
-        {tab === "activity" ? (
-          [...events]
-            .reverse()
-            .slice(0, 200)
-            .map((e) => (
-              <article className="activity-entry" key={e.event_id}>
-                <div className="entry-meta">
-                  <span>{human(e.kind.replaceAll(".", " "))}</span>
-                  <time>{date(e.recorded_at)}</time>
-                </div>
-                {e.kind === "intent" ? (
-                  <p>{e.payload.intent}</p>
-                ) : e.payload.error ? (
-                  <p className="notice">{e.payload.error}</p>
-                ) : e.kind === "experiment.output" ? (
-                  <pre>{e.payload.text}</pre>
-                ) : e.payload.reason ? (
-                  <p>{e.payload.reason}</p>
-                ) : typeof e.payload.note === "string" ? (
-                  <p>{e.payload.note}</p>
-                ) : e.kind === "artifact" ? (
-                  <p>{e.payload.name || human(e.payload.kind || "Artifact")} · {human(e.payload.status)}</p>
-                ) : e.kind === "binder.job" ? (
-                  <p>{human(e.payload.state)}</p>
-                ) : null}
-                {typeof e.payload.observation === "string" ? (
-                  <p className="recorded-observation">{e.payload.observation}</p>
-                ) : e.payload.observation?.storage_key ? (
-                  <RecordedDisclosure title="Recorded observation">
+          {exps.length ? (
+            visibleExps.map((exp) => (
+              <article
+                className="experiment-detail"
+                key={exp.experiment_id}
+                data-experiment-id={exp.experiment_id}
+              >
+                <Status
+                  label={human(exp.status)}
+                  tone={exp.status === "failed" ? "negative" : "neutral"}
+                />
+                <h3>{exp.title || exp.method || "Experiment"}</h3>
+                {exp.error && <p className="notice">{exp.error}</p>}
+                <p className="muted">
+                  {exp.method || "Exploratory analysis"}
+                  {exp.exploratory ? " · Not audited" : ""}
+                </p>
+                {exp.result && (
+                  <dl className="measurements">
+                    {[
+                      ["effect", "Method-specific effect"],
+                      ["p_null", "Null-test p-value"],
+                      ["n_units", "Independent samples"],
+                    ].map(([key, label]) =>
+                      typeof exp.result[key] === "number" &&
+                      Number.isFinite(exp.result[key]) ? (
+                        <div key={key}>
+                          <dt>{label}</dt>
+                          <dd>{number(exp.result[key])}</dd>
+                        </div>
+                      ) : null,
+                    )}
+                  </dl>
+                )}
+                {exp.result && (
+                  <Disclosure title="Recorded result">
+                    <pre>{JSON.stringify(exp.result, null, 2)}</pre>
+                  </Disclosure>
+                )}
+                {(exp.verification || exp.human_review) && (
+                  <div className="notice">
+                    <strong>
+                      {exp.human_review === "validated"
+                        ? "Accepted by human review"
+                        : exp.human_review === "rejected"
+                          ? "Rejected by human review"
+                          : exp.verification === "CANDIDATE"
+                            ? "CANDIDATE · automated checks passed, awaiting human review"
+                            : exp.verification === "KILL"
+                              ? "Rejected by verifier"
+                              : "Verification pending"}
+                    </strong>
+                    {exp.verification_reason && (
+                      <p>{exp.verification_reason}</p>
+                    )}
+                    {exp.human_review_note && <p>{exp.human_review_note}</p>}
+                  </div>
+                )}
+                <CandidateReview
+                  runId={runId}
+                  experiment={{ ...exp, candidate_emitted: (run?.history || []).some((e: RuntimeEvent) => e.experiment_id === exp.experiment_id && e.payload.verification === "CANDIDATE") }}
+                  project={project}
+                  cursor={cursor}
+                />
+                {exp.code && (
+                  <RecordedDisclosure title="Analysis code">
                     <BlobText
                       runId={runId}
-                      blob={e.payload.observation}
-                      project={project}
-                      cursor={cursor}
-                    />
-                  </RecordedDisclosure>
-                ) : null}
-                {e.payload.inputs && (
-                  <RecordedDisclosure title="Tool inputs">
-                    <BlobText
-                      runId={runId}
-                      blob={e.payload.inputs}
+                      blob={exp.code}
                       project={project}
                       cursor={cursor}
                     />
                   </RecordedDisclosure>
                 )}
-                {e.kind === "instructions.delivered" && (
-                  <p>
-                    Complete {human(e.payload.name)} guidance supplied to the
-                    model request. Delivery does not prove comprehension.
-                  </p>
+                {exp.stdout && (
+                  <RecordedDisclosure title="Recorded output">
+                    <BlobText
+                      runId={runId}
+                      blob={exp.stdout}
+                      project={project}
+                      cursor={cursor}
+                    />
+                  </RecordedDisclosure>
                 )}
-                {e.kind === "feedback.delivered" && (
-                  <p>
-                    Feedback supplied to the model request. This is not a
-                    measured performance improvement.
-                  </p>
+                {exp.stderr?.byte_length > 0 && (
+                  <RecordedDisclosure title="Error output">
+                    <BlobText
+                      runId={runId}
+                      blob={exp.stderr}
+                      project={project}
+                      cursor={cursor}
+                    />
+                  </RecordedDisclosure>
                 )}
-              </article>
-            ))
-        ) : exps.length ? (
-          exps.map((exp) => (
-            <article
-              className="experiment-detail"
-              key={exp.experiment_id}
-              data-experiment-id={exp.experiment_id}
-            >
-              <Status
-                label={human(exp.status)}
-                tone={exp.status === "failed" ? "negative" : "neutral"}
-              />
-              <h3>{exp.title || "Experiment"}</h3>
-              <p className="muted">
-                {exp.method || "Exploratory analysis"}
-                {exp.exploratory ? " · Not audited" : ""}
-              </p>
-              {exp.result && (
-                <dl className="measurements">
-                  {[
-                    ["effect", "Method-specific effect"],
-                    ["p_null", "Null-test p-value"],
-                    ["n_units", "Independent samples"],
-                  ].map(([key, label]) =>
-                    typeof exp.result[key] === "number" &&
-                    Number.isFinite(exp.result[key]) ? (
-                      <div key={key}>
-                        <dt>{label}</dt>
-                        <dd>{number(exp.result[key])}</dd>
-                      </div>
-                    ) : null,
-                  )}
-                </dl>
-              )}
-              {exp.result && (
-                <Disclosure title="Recorded result">
-                  <pre>{JSON.stringify(exp.result, null, 2)}</pre>
-                </Disclosure>
-              )}
-              {(exp.verification || exp.human_review) && (
-                <div className="notice">
-                  <strong>
-                    {exp.human_review === "validated"
-                      ? "Accepted by human review"
-                      : exp.human_review === "rejected"
-                        ? "Rejected by human review"
-                        : exp.verification === "CANDIDATE"
-                          ? "Passed verifier checks · awaiting human review"
-                          : exp.verification === "KILL"
-                            ? "Rejected by verifier"
-                            : "Verification pending"}
-                  </strong>
-                  {exp.verification_reason && <p>{exp.verification_reason}</p>}
-                  {exp.human_review_note && <p>{exp.human_review_note}</p>}
-                </div>
-              )}
-              {exp.code && (
-                <RecordedDisclosure title="Analysis code">
-                  <BlobText
-                    runId={runId}
-                    blob={exp.code}
-                    project={project}
-                    cursor={cursor}
-                  />
-                </RecordedDisclosure>
-              )}
-              {exp.stdout && (
-                <RecordedDisclosure title="Recorded output">
-                  <BlobText
-                    runId={runId}
-                    blob={exp.stdout}
-                    project={project}
-                    cursor={cursor}
-                  />
-                </RecordedDisclosure>
-              )}
-              {exp.stderr?.byte_length > 0 && (
-                <RecordedDisclosure title="Error output">
-                  <BlobText
-                    runId={runId}
-                    blob={exp.stderr}
-                    project={project}
-                    cursor={cursor}
-                  />
-                </RecordedDisclosure>
-              )}
-              {events.filter(e=>e.kind==='tissue.capture' && e.experiment_id===exp.experiment_id).map(e=>(
-                <RecordedDisclosure key={e.sequence} title={`Agent tissue capture · event ${e.sequence}`}>
-                  <img alt={`Recorded tissue scene, recipe ${e.payload.recipe_sha256}`} style={{width:'100%',borderRadius:8}} src={runtimeUrl(runId,`blob/${e.payload.image_sha256}`,project,cursor)}/>
-                  <p>Scene revision: {e.payload.recipe_sha256}</p>
-                  {events.filter(o=>o.kind==='tissue.observation'&&o.payload.capture_id===e.payload.capture_id).map(o=><p key={o.sequence}>{o.payload.status}: {o.payload.observation}</p>)}
-                </RecordedDisclosure>
-              ))}
-              {(run?.history ?? []).some(
-                (e: RuntimeEvent) =>
-                  e.kind === "binder.job" &&
-                  e.experiment_id === exp.experiment_id,
-              ) && (
-                <RecordedDisclosure title="Binder design activity">
-                  <p>
-                    Recorded job states; queued receipts require an operator
-                    launch. No simulated compute progress.
-                  </p>
-                  <ol>
-                    {(run?.history ?? [])
-                      .filter(
-                        (e: RuntimeEvent) =>
-                          e.kind === "binder.job" &&
-                          e.experiment_id === exp.experiment_id,
-                      )
-                      .map((e: RuntimeEvent) => (
-                        <li key={e.sequence}>
-                          {human(e.payload.state)}
-                          {e.payload.candidate_id
-                            ? ` · ${e.payload.candidate_id}`
-                            : ""}
-                          {e.payload.reason ? ` · ${e.payload.reason}` : ""}
-                          {e.payload.rejection_reason
-                            ? ` · Rejected: ${e.payload.rejection_reason}`
-                            : ""}
-                        </li>
-                      ))}
-                  </ol>
-                </RecordedDisclosure>
-              )}
-              {exp.artifacts.map((artifact: JsonRecord) => (
-                <div className="experiment-artifact" key={artifact.artifact_id}>
-                  {artifact.status === "available" &&
-                  artifact.kind === "tissue_simulation" ? (<Suspense fallback={<Loading label="Opening tissue experiment" />}><TissueWorkbench actions={events.filter(e=>e.kind==='tissue.scene' && e.experiment_id===exp.experiment_id && e.payload.artifact_sha256===artifact.sha256) as any} owner={`${exp.title || "Experiment"} · ${runId}`} url={runtimeUrl(runId, `blob/${artifact.storage_key}`, project, cursor)} /></Suspense>) : artifact.status === "available" && artifact.kind === "filament_trajectory" ? (
-                    <Suspense
-                      fallback={<Loading label="Opening spindle observatory" />}
-                    >
-                      <SpindleObservatory
-                        sha256={artifact.sha256}
-                        sceneActions={(run?.history ?? []).filter((e: RuntimeEvent)=>e.kind==="scene.recipe" && e.experiment_id===exp.experiment_id && e.payload.bundle_sha256===artifact.sha256).map((e:RuntimeEvent)=>({sequence:e.sequence,note:e.payload.note,recipe_sha256:e.payload.recipe.sha256,view:e.payload.view}))}
-                        url={runtimeUrl(
-                          runId,
-                          `blob/${artifact.storage_key}`,
-                          project,
-                          cursor,
-                        )}
-                      />
-                    </Suspense>
-                  ) : artifact.status === "available" &&
-                    ["molecular_structure", "binder_bundle"].includes(
-                      artifact.kind,
-                    ) ? (
-                    <>
-                      <h4>{artifact.name}</h4>
-                      <Status label={human(artifact.provenance.category)} />
-                      <Button size="sm" variant="ghost" onClick={() => setChosenScene(`${exp.experiment_id}:${artifact.artifact_id}`)}>
-                        {activeScene?.artifact.artifact_id === artifact.artifact_id && activeScene?.experiment.experiment_id === exp.experiment_id
-                          ? "Viewing in research scene" : "View in research scene"}
-                      </Button>
-                      <Disclosure title="Structure provenance">
-                        <pre>
-                          {JSON.stringify(artifact.provenance, null, 2)}
-                        </pre>
-                        <small>SHA-256: {artifact.sha256}</small>
-                      </Disclosure>
-                    </>
-                  ) : artifact.kind === "spindle_metrics" && artifact.status === "available" ? (
-                    <Suspense fallback={<Loading label="Opening ensemble metrics" />}><SpindleMetrics url={runtimeUrl(runId,`blob/${artifact.storage_key}`,project,cursor)} /></Suspense>
-                  ) : artifact.status === "available" &&
-                    [
-                      "binder_target",
-                      "binder_epitope",
-                      "binder_protocol",
-                      "binder_comparison",
-                      "binder_followup",
-                    ].includes(artifact.kind) ? (
+                {events
+                  .filter(
+                    (e) =>
+                      e.kind === "tissue.capture" &&
+                      e.experiment_id === exp.experiment_id,
+                  )
+                  .map((e) => (
                     <RecordedDisclosure
-                      title={`Inspect ${human(artifact.kind)}`}
+                      key={e.sequence}
+                      title={`Agent tissue capture · event ${e.sequence}`}
                     >
-                      <p>Immutable exploratory record · {artifact.name}</p>
-                      <a
-                        href={runtimeUrl(
+                      <img
+                        alt={`Recorded tissue scene, recipe ${e.payload.recipe_sha256}`}
+                        style={{ width: "100%", borderRadius: 8 }}
+                        src={runtimeUrl(
                           runId,
-                          `blob/${artifact.storage_key}`,
+                          `blob/${e.payload.image_sha256}`,
                           project,
                           cursor,
                         )}
-                        download={`${artifact.kind}.json`}
-                      >
-                        Download record
-                      </a>
-                      <BlobText
-                        runId={runId}
-                        blob={artifact}
-                        project={project}
-                        cursor={cursor}
                       />
+                      <p>Scene revision: {e.payload.recipe_sha256}</p>
+                      {events
+                        .filter(
+                          (o) =>
+                            o.kind === "tissue.observation" &&
+                            o.payload.capture_id === e.payload.capture_id,
+                        )
+                        .map((o) => (
+                          <p key={o.sequence}>
+                            {o.payload.status}: {o.payload.observation}
+                          </p>
+                        ))}
                     </RecordedDisclosure>
-                  ) : artifact.kind === "scene_movie" && artifact.status === "available" ? (
-                    <video controls preload="metadata" aria-label="Saved spindle trajectory movie" style={{ width:"100%",maxHeight:640 }} src={runtimeUrl(runId,`blob/${artifact.storage_key}`,project,cursor)} />
-                  ) : artifact.kind === "scene_capture" &&
-                    artifact.status === "available" ? (
-                    <figure className="binder-recorded-capture">
-                      <img
+                  ))}
+                {(run?.history ?? []).some(
+                  (e: RuntimeEvent) =>
+                    e.kind === "binder.job" &&
+                    e.experiment_id === exp.experiment_id,
+                ) && (
+                  <RecordedDisclosure title="Binder design activity">
+                    <p>
+                      Recorded job states; queued receipts require an operator
+                      launch. No simulated compute progress.
+                    </p>
+                    <ol>
+                      {(run?.history ?? [])
+                        .filter(
+                          (e: RuntimeEvent) =>
+                            e.kind === "binder.job" &&
+                            e.experiment_id === exp.experiment_id,
+                        )
+                        .map((e: RuntimeEvent) => (
+                          <li key={e.sequence}>
+                            {human(e.payload.state)}
+                            {e.payload.candidate_id
+                              ? ` · ${e.payload.candidate_id}`
+                              : ""}
+                            {e.payload.reason ? ` · ${e.payload.reason}` : ""}
+                            {e.payload.rejection_reason
+                              ? ` · Rejected: ${e.payload.rejection_reason}`
+                              : ""}
+                          </li>
+                        ))}
+                    </ol>
+                  </RecordedDisclosure>
+                )}
+                {(exp.artifacts || []).map((artifact: JsonRecord) => (
+                  <div
+                    className="experiment-artifact"
+                    key={artifact.artifact_id}
+                  >
+                    {artifact.status === "available" &&
+                    artifact.kind === "tissue_simulation" ? (
+                      <Suspense
+                        fallback={<Loading label="Opening tissue experiment" />}
+                      >
+                        <TissueWorkbench
+                          actions={
+                            events.filter(
+                              (e) =>
+                                e.kind === "tissue.scene" &&
+                                e.experiment_id === exp.experiment_id &&
+                                e.payload.artifact_sha256 === artifact.sha256,
+                            ) as any
+                          }
+                          owner={`${exp.title || "Experiment"} · ${runId}`}
+                          url={runtimeUrl(
+                            runId,
+                            `blob/${artifact.storage_key}`,
+                            project,
+                            cursor,
+                          )}
+                        />
+                      </Suspense>
+                    ) : artifact.status === "available" &&
+                      artifact.kind === "filament_trajectory" ? (
+                      <Suspense
+                        fallback={
+                          <Loading label="Opening spindle observatory" />
+                        }
+                      >
+                        <SpindleObservatory
+                          sha256={artifact.sha256}
+                          sceneActions={(run?.history ?? [])
+                            .filter(
+                              (e: RuntimeEvent) =>
+                                e.kind === "scene.recipe" &&
+                                e.experiment_id === exp.experiment_id &&
+                                e.payload.bundle_sha256 === artifact.sha256,
+                            )
+                            .map((e: RuntimeEvent) => ({
+                              sequence: e.sequence,
+                              note: e.payload.note,
+                              recipe_sha256: e.payload.recipe.sha256,
+                              view: e.payload.view,
+                            }))}
+                          url={runtimeUrl(
+                            runId,
+                            `blob/${artifact.storage_key}`,
+                            project,
+                            cursor,
+                          )}
+                        />
+                      </Suspense>
+                    ) : artifact.status === "available" &&
+                      ["molecular_structure", "binder_bundle"].includes(
+                        artifact.kind,
+                      ) ? (
+                      <>
+                        <h4>{artifact.name}</h4>
+                        <Status label={human(artifact.provenance.category)} />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() =>
+                            setChosenScene(
+                              `${exp.experiment_id}:${artifact.artifact_id}`,
+                            )
+                          }
+                        >
+                          {activeScene?.artifact.artifact_id ===
+                            artifact.artifact_id &&
+                          activeScene?.experiment.experiment_id ===
+                            exp.experiment_id
+                            ? "Viewing in research scene"
+                            : "View in research scene"}
+                        </Button>
+                        <Disclosure title="Structure provenance">
+                          <pre>
+                            {JSON.stringify(artifact.provenance, null, 2)}
+                          </pre>
+                          <small>SHA-256: {artifact.sha256}</small>
+                        </Disclosure>
+                      </>
+                    ) : artifact.kind === "spindle_metrics" &&
+                      artifact.status === "available" ? (
+                      <Suspense
+                        fallback={<Loading label="Opening ensemble metrics" />}
+                      >
+                        <SpindleMetrics
+                          url={runtimeUrl(
+                            runId,
+                            `blob/${artifact.storage_key}`,
+                            project,
+                            cursor,
+                          )}
+                        />
+                      </Suspense>
+                    ) : artifact.status === "available" &&
+                      [
+                        "binder_target",
+                        "binder_epitope",
+                        "binder_protocol",
+                        "binder_comparison",
+                        "binder_followup",
+                      ].includes(artifact.kind) ? (
+                      <RecordedDisclosure
+                        title={`Inspect ${human(artifact.kind)}`}
+                      >
+                        <p>Immutable exploratory record · {artifact.name}</p>
+                        <a
+                          href={runtimeUrl(
+                            runId,
+                            `blob/${artifact.storage_key}`,
+                            project,
+                            cursor,
+                          )}
+                          download={`${artifact.kind}.json`}
+                        >
+                          Download record
+                        </a>
+                        <BlobText
+                          runId={runId}
+                          blob={artifact}
+                          project={project}
+                          cursor={cursor}
+                        />
+                      </RecordedDisclosure>
+                    ) : artifact.kind === "scene_movie" &&
+                      artifact.status === "available" ? (
+                      <video
+                        controls
+                        preload="metadata"
+                        aria-label="Saved spindle trajectory movie"
+                        style={{ width: "100%", maxHeight: 640 }}
                         src={runtimeUrl(
                           runId,
                           `blob/${artifact.storage_key}`,
                           project,
-                          historic ? artifact.available_sequence : null,
+                          cursor,
                         )}
-                        alt={artifact.name}
                       />
-                      <figcaption>
-                        Recorded agent view · {artifact.name}
-                      </figcaption>
-                    </figure>
-                  ) : (
-                    <p className="notice">
-                      Artifact {artifact.status}:{" "}
-                      {artifact.failure_reason || "Not available yet"}
-                    </p>
-                  )}
-                </div>
+                    ) : artifact.kind === "scene_capture" &&
+                      artifact.status === "available" ? (
+                      <figure className="binder-recorded-capture">
+                        <img
+                          src={runtimeUrl(
+                            runId,
+                            `blob/${artifact.storage_key}`,
+                            project,
+                            historic ? artifact.available_sequence : null,
+                          )}
+                          alt={artifact.name}
+                        />
+                        <figcaption>
+                          Recorded agent view · {artifact.name}
+                        </figcaption>
+                      </figure>
+                    ) : (
+                      <p className="notice">
+                        Artifact {artifact.status}:{" "}
+                        {artifact.failure_reason || "Not available yet"}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </article>
+            ))
+          ) : (
+            <p className="muted">No experiments at this point.</p>
+          )}
+          {exps.length > 3 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowAllExperiments((value) => !value)}
+            >
+              {showAllExperiments
+                ? "Show fewer experiments"
+                : `Show all ${exps.length} experiments`}
+            </Button>
+          )}
+          <section
+            className="research-milestones"
+            aria-label="Major research steps"
+          >
+            <h3>Major steps</h3>
+            {milestones.length ? (
+              milestones.map((step) => (
+                <article className="activity-entry" key={step.sequence}>
+                  <div className="entry-meta">
+                    <strong>{step.title}</strong>
+                    <time>{date(step.recordedAt)}</time>
+                  </div>
+                  <p>{step.summary}</p>
+                </article>
+              ))
+            ) : (
+              <p className="muted">
+                Meaningful research steps will appear as they are recorded.
+              </p>
+            )}
+          </section>
+          <RecordedDisclosure title="Advanced diagnostics">
+            <p className="muted">
+              Recent public runtime events. Research summaries above omit model
+              and tool noise.
+            </p>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={historic}
+              onClick={() => setTerminal((s) => !s)}
+            >
+              <Terminal size={14} />
+              {terminal && !historic ? "Hide terminal" : "Show terminal"}
+            </Button>
+            {historic && (
+              <p className="muted">
+                Terminal snapshots are unavailable in playback.
+              </p>
+            )}
+            {terminal && !historic && (
+              <TerminalView key={runId} runId={runId} project={project} />
+            )}
+            {events
+              .filter((e) =>
+                /^(attempt|lifecycle|intent|model|tool|experiment|artifact|checkpoint|branch)[.]*?/.test(
+                  e.kind,
+                ),
+              )
+              .slice(-40)
+              .reverse()
+              .map((e) => (
+                <article className="activity-entry" key={e.event_id}>
+                  <div className="entry-meta">
+                    <span>{human(e.kind.replaceAll(".", " "))}</span>
+                    <time>{date(e.recorded_at)}</time>
+                  </div>
+                  {e.payload.error && <p>{e.payload.error}</p>}
+                  {typeof e.payload.observation === "string" ? (
+                    <p>{e.payload.observation}</p>
+                  ) : e.payload.observation?.storage_key ? (
+                    <RecordedDisclosure title="Recorded observation">
+                      <BlobText
+                        runId={runId}
+                        blob={e.payload.observation}
+                        project={project}
+                        cursor={cursor}
+                      />
+                    </RecordedDisclosure>
+                  ) : null}
+                </article>
               ))}
-            </article>
-          ))
-        ) : (
-          <p className="muted">No experiments at this point.</p>
-        )}
-      </div>
+          </RecordedDisclosure>
+        </div>
       </section>
     </div>
   );

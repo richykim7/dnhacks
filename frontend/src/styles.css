@@ -2093,3 +2093,19 @@ select:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* Explicit navigation disclosure works at every viewport width. */
+.navigation[hidden] { display: none; }
+.navigation-toggle { flex-shrink: 0; }
+#workspace.workspace-investigations { overflow: hidden; min-height: 0; }
+@media (min-width: 701px) and (max-width: 1250px) {
+  .navigation-expanded .navigation { width: 180px; }
+  .navigation-expanded .navigation > a { justify-content: flex-start; }
+  .navigation-expanded .navigation > a span,
+  .navigation-expanded .navigation .new-research span { display: inline; }
+  .navigation-expanded .navigation .new-research { justify-content: flex-start; }
+}
+@media (max-width: 700px) {
+  .app-header { gap: 8px; padding-inline: 8px; }
+  .project-picker, .project-picker select { max-width: min(36vw, 190px); }
+}

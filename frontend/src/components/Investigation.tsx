@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ReactFlow,
   Background,
@@ -19,12 +19,15 @@ import {
   GitBranch,
   List,
   Pause,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Sparkles,
   Play,
   Search,
   ShieldCheck,
   X,
 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useAgent, useResource } from "@/lib/api";
 import type {
   Experiment,
@@ -45,34 +48,59 @@ import {
 import { Button } from "./ui/button";
 import { AnimatedTabs } from "./ui/animated-tabs";
 import { Disclosure, Empty, ErrorNotice, Loading, Status } from "./common";
-import { emptyRuntime, reduceRuntime, useRuntime } from "@/lib/runtime";
+import {
+  emptyRuntime,
+  reduceRuntime,
+  runtimeCandidates,
+  runtimeRunSummary,
+  useRuntime,
+} from "@/lib/runtime";
 import { RuntimeDetail } from "./RuntimeDetail";
+import "@/investigation.css";
 
+const NODE_WIDTH = 286;
+const NODE_HEIGHT = 190;
+const EXPANDED_WIDTH = 600;
+const EXPANDED_HEIGHT = 660;
 type AgentData = {
   run: RunSummary;
   title: string;
   count: number;
+  expandedWidth: number;
+  candidates: number;
+  activity: boolean;
+  state: string;
+  elapsed: string;
   selected: boolean;
+  detail: ReactNode;
   onSelect: () => void;
+  onCandidate: () => void;
 };
 function AgentNode({ data }: NodeProps<Node<AgentData>>) {
   const r = data.run;
-  const state = r.lifecycle
-    ? human(r.lifecycle)
-    : r.active
-      ? "Working"
-      : r.last_action === "done"
-        ? "Finished"
-        : "No recent activity";
+  const reducedMotion = useReducedMotion();
   return (
     <div
-      className={`agent-node ${data.selected ? "selected" : ""} ${r.beam?.kept === false ? "closed-branch" : ""}`}
+      style={data.selected ? { width: data.expandedWidth } : undefined}
+      className={`agent-node ${data.selected ? "selected expanded" : ""} ${data.activity ? "is-working" : ""} ${data.candidates ? "has-candidates" : ""} ${r.beam?.kept === false ? "closed-branch" : ""}`}
     >
-      <Handle type="target" position={Position.Left} />
+      <Handle type="target" position={Position.Top} />
+      {data.selected && (
+        <Button
+          className="node-close nodrag"
+          size="icon"
+          variant="ghost"
+          aria-label="Close researcher detail"
+          onClick={data.onSelect}
+        >
+          <X size={15} />
+        </Button>
+      )}
       <button
         onClick={data.onSelect}
-        aria-label={`Inspect ${data.title}`}
-        className="agent-button"
+        aria-label={`${data.selected ? "Collapse" : "Inspect"} ${data.title}`}
+        aria-expanded={data.selected}
+        className="agent-button nodrag"
       >
         <div className="agent-node-top">
           <span className="agent-kind">
@@ -80,70 +108,120 @@ function AgentNode({ data }: NodeProps<Node<AgentData>>) {
               <ShieldCheck size={14} />
             ) : (
               <GitBranch size={14} />
-            )}{" "}
+            )}
             {r.depth === 0
               ? "Lead researcher"
               : r.beam?.adversarial
                 ? "Challenge branch"
                 : `Research branch ${r.run_id.split("~").slice(1).join(".")}`}
           </span>
-          <span className={`activity-dot ${r.active ? "live" : ""}`} />
+          <span className={`activity-dot ${data.activity ? "live" : ""}`} />
         </div>
         <h3>{data.title}</h3>
         <p>
-          {r.runtime
-            ? state
-            : r.active
-              ? actionLabel(r.last_action)
-              : r.beam?.kept === false
-                ? "Not selected to continue"
-                : state}
+          {data.state}
+          {data.elapsed && ` · ${data.elapsed}`}
         </p>
-        <div className="agent-node-bottom">
-          <span>
-            <FlaskConical size={13} />
-            {data.count} {data.count === 1 ? "experiment" : "experiments"}
-          </span>
-          <ArrowUpRight size={15} />
-        </div>
       </button>
-      <Handle type="source" position={Position.Right} />
+      <div className="agent-node-bottom">
+        <span>
+          <FlaskConical size={13} />
+          {data.count} {data.count === 1 ? "experiment" : "experiments"}
+        </span>
+        {data.candidates > 0 && (
+          <button
+            type="button"
+            className="candidate-badge nodrag"
+            onClick={data.onCandidate}
+            title="Open automated candidates; not accepted discoveries"
+          >
+            <Sparkles size={13} />
+            {data.candidates}{" "}
+            {data.candidates === 1 ? "candidate" : "candidates"}
+          </button>
+        )}
+        <ChevronRight size={15} className="node-expand-chevron" />
+      </div>
+      <AnimatePresence initial={false}>
+        {data.selected && (
+          <motion.div
+            key="detail"
+            className="inline-research-detail nodrag nowheel nopan"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: reducedMotion ? 0 : 0.2,
+              delay: reducedMotion ? 0 : 0.08,
+            }}
+          >
+            {data.detail}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }
 const nodeTypes = { agent: AgentNode };
 function FocusSelection({
   selected,
-  count,
+  expandedWidth,
 }: {
   selected: string | null;
-  count: number;
+  expandedWidth: number;
 }) {
   const flow = useReactFlow();
+  const initialized = flow.viewportInitialized;
+  const fitted = useRef(false);
   useEffect(() => {
+    if (!initialized) return;
     const duration = window.matchMedia("(prefers-reduced-motion: reduce)")
       .matches
       ? 0
-      : 200;
-    const timer = setTimeout(() => {
-      if (!selected) {
-        void flow.fitView({
-          padding: 0.18,
-          minZoom: window.innerWidth < 700 ? 0.7 : 0.2,
-          maxZoom: 1,
-          duration,
-        });
-        return;
+      : 360;
+    const canvas = document.querySelector(".investigation-layout .react-flow");
+    const focus = () => {
+      const node = selected ? flow.getNode(selected) : undefined;
+      if (node && canvas) {
+        const zoom = Math.min(
+          1,
+          (canvas.clientHeight - 42) / EXPANDED_HEIGHT,
+          (canvas.clientWidth - 36) / expandedWidth,
+        );
+        void flow.setCenter(
+          node.position.x + expandedWidth / 2,
+          node.position.y + EXPANDED_HEIGHT / 2,
+          { zoom, duration },
+        );
+      } else if (!fitted.current) {
+        void flow.fitView({ padding: 0.18, maxZoom: 1, duration });
       }
-      const node = flow.getNode(selected);
-      if (node)
-        void flow.setCenter(node.position.x + 125, node.position.y + 82, {
-          zoom: Math.max(0.75, flow.getZoom()),
-          duration,
-        });
-    }, 220);
-    return () => clearTimeout(timer);
-  }, [selected, count, flow]);
+      fitted.current = true;
+    };
+    // React Flow commits measured positions after this render. Wait for its layout,
+    // then center once; live event updates never retrigger this effect.
+    let timer = window.setTimeout(focus, 340);
+    let width = canvas?.clientWidth,
+      height = canvas?.clientHeight;
+    const observer = new ResizeObserver(() => {
+      if (
+        !canvas ||
+        (canvas.clientWidth === width && canvas.clientHeight === height)
+      )
+        return;
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      window.clearTimeout(timer);
+      fitted.current = false;
+      timer = window.setTimeout(focus, 180);
+    });
+    if (canvas) observer.observe(canvas);
+    return () => {
+      window.clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [selected, initialized, flow, expandedWidth]);
   return null;
 }
 export const investigationTitle = (inv: InvestigationData) =>
@@ -162,6 +240,29 @@ export function Investigation({
   onRun: (id: string) => void;
   onNew: () => void;
 }) {
+  const [expandedWidth, setExpandedWidth] = useState(() =>
+    window.innerWidth < 700
+      ? Math.max(300, window.innerWidth - 100)
+      : EXPANDED_WIDTH,
+  );
+  useEffect(() => {
+    const resize = () =>
+      setExpandedWidth(
+        window.innerWidth < 700
+          ? Math.max(300, window.innerWidth - 100)
+          : EXPANDED_WIDTH,
+      );
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+  const [railCollapsed, setRailCollapsed] = useState(
+    () => window.innerWidth < 900,
+  );
+  const [now, setNow] = useState(() => Date.now() / 1000);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now() / 1000), 10000);
+    return () => clearInterval(timer);
+  }, []);
   const [includeTests, setIncludeTests] = useState(false);
   const list = useResource<InvestigationData[]>(
     `/api/investigations?all=${includeTests ? 1 : 0}${project ? `&project=${id(project)}` : ""}`,
@@ -173,7 +274,8 @@ export function Investigation({
   );
   const selectAgent = (run: string) => {
     setSelectedExperiment(null);
-    setSelected(run);
+    setSelected((current) => (current === run ? null : run));
+    setView("tree");
   };
   const [view, setView] = useState("tree");
   const [query, setQuery] = useState("");
@@ -267,7 +369,8 @@ export function Investigation({
             beam: r.decision?.decision
               ? {
                   reason: r.decision.decision.reason,
-                  kept: r.decision.decision.action === "prune" ? false : undefined,
+                  kept:
+                    r.decision.decision.action === "prune" ? false : undefined,
                 }
               : r.decision,
           }) as RunSummary,
@@ -298,28 +401,85 @@ export function Investigation({
     if (selected && !visibleRuns.some((r) => r.run_id === selected))
       setSelected(null);
   }, [selected, visibleRuns]);
-  const nodes = useMemo(() => {
+  useEffect(() => {
+    if (!selected) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelected(null);
+        requestAnimationFrame(() =>
+          document
+            .querySelector<HTMLButtonElement>(
+              `.react-flow__node[data-id="${CSS.escape(selected)}"] .agent-button`,
+            )
+            ?.focus(),
+        );
+      }
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [selected]);
+  // Only topology and expansion change geometry; streamed content never moves nodes.
+  const topology = JSON.stringify(visibleRuns.map((r) => [r.run_id, r.parent]));
+  const positions = useMemo(() => {
+    const runs: [string, string | null][] = JSON.parse(topology);
     const g = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
     g.setGraph({
-      rankdir: "LR",
-      nodesep: 40,
-      ranksep: 100,
-      marginx: 50,
-      marginy: 60,
+      rankdir: "TB",
+      nodesep: 36,
+      ranksep: 86,
+      marginx: 36,
+      marginy: 42,
     });
-    visibleRuns.forEach((r) =>
-      g.setNode(r.run_id, { width: 250, height: 164 }),
+    runs.forEach(([run]) =>
+      g.setNode(run, {
+        width: run === selected ? expandedWidth : NODE_WIDTH,
+        height: run === selected ? EXPANDED_HEIGHT : NODE_HEIGHT,
+      }),
     );
-    visibleRuns.forEach((r) => {
-      if (r.parent && visibleRuns.some((p) => p.run_id === r.parent))
-        g.setEdge(r.parent, r.run_id);
+    runs.forEach(([run, parent]) => {
+      if (parent && g.hasNode(parent)) g.setEdge(parent, run);
     });
     dagre.layout(g);
+    return Object.fromEntries(
+      runs.map(([run]) => [
+        run,
+        {
+          x:
+            g.node(run).x - (run === selected ? expandedWidth : NODE_WIDTH) / 2,
+          y:
+            g.node(run).y -
+            (run === selected ? EXPANDED_HEIGHT : NODE_HEIGHT) / 2,
+        },
+      ]),
+    );
+  }, [topology, selected, expandedWidth]);
+  const summaries = Object.fromEntries(
+    visibleRuns.map((r) => [
+      r.run_id,
+      runtimeRunSummary(
+        runtimeState.runs[r.run_id],
+        historic ? visibleEvents.at(-1)?.t || 0 : now,
+        historic,
+      ),
+    ]),
+  );
+  const candidates = Object.values(runtimeState.runs).flatMap((r) =>
+    runtimeCandidates(r).map((experiment) => ({ run: r, experiment })),
+  );
+  const openCandidate = (runId: string, experimentId: string) => {
+    setView("tree");
+    setSelected(runId);
+    setSelectedExperiment(experimentId);
+  };
+  const nodes = useMemo(() => {
     return visibleRuns.map((r) => ({
       id: r.run_id,
       type: "agent",
-      position: { x: g.node(r.run_id).x - 125, y: g.node(r.run_id).y - 82 },
+      position: positions[r.run_id],
+      width: r.run_id === selected ? expandedWidth : NODE_WIDTH,
+      height: r.run_id === selected ? EXPANDED_HEIGHT : NODE_HEIGHT,
       data: {
+        expandedWidth,
         run: r,
         title:
           r.objective ||
@@ -336,13 +496,66 @@ export function Investigation({
             : tree.data?.nodes.filter(
                 (e) => e.run_id === r.run_id && e.kind === "experiment",
               ).length || 0,
+        candidates: summaries[r.run_id].candidateCount,
+        onCandidate: () => {
+          const choices = runtimeCandidates(runtimeState.runs[r.run_id]);
+          const first =
+            choices.find(
+              (e) => !["validated", "rejected"].includes(e.human_review),
+            ) || choices[0];
+          if (first) openCandidate(r.run_id, first.experiment_id);
+        },
+        activity: investigation?.runtime
+          ? summaries[r.run_id].freshActivity
+          : !historic && r.active && now - r.updated_at < 90,
+        state: investigation?.runtime
+          ? summaries[r.run_id].status === "stale"
+            ? "Waiting for heartbeat"
+            : human(summaries[r.run_id].status)
+          : human(r.lifecycle || r.last_action || "Idle"),
+        elapsed:
+          summaries[r.run_id].elapsedSeconds != null
+            ? duration(summaries[r.run_id].elapsedSeconds!)
+            : "",
         selected: r.run_id === selected,
+        detail:
+          r.run_id === selected ? (
+            investigation?.runtime ? (
+              <RuntimeDetail
+                experimentId={selectedExperiment}
+                runId={r.run_id}
+                run={runtimeState.runs[r.run_id]}
+                project={project}
+                cursor={historic ? runtimeState.sequence : null}
+                connection={runtime.connection}
+                onClose={() => setSelected(null)}
+              />
+            ) : (
+              <AgentDetail
+                initialTab="experiments"
+                runId={r.run_id}
+                summary={r}
+                experiments={
+                  tree.data?.nodes.filter((n) => n.run_id === r.run_id) || []
+                }
+                onClose={() => setSelected(null)}
+                historic={historic}
+                events={visibleEvents}
+              />
+            )
+          ) : null,
         onSelect: () => selectAgent(r.run_id),
       },
       draggable: false,
     }));
   }, [
     visibleRuns,
+    positions,
+    expandedWidth,
+    now,
+    project,
+    selectedExperiment,
+    runtime.connection,
     tree.data,
     selected,
     investigation,
@@ -371,72 +584,101 @@ export function Investigation({
         .includes(query.toLowerCase()),
     ) || [];
   return (
-    <div className="investigation-layout">
-      <aside className="run-rail">
-        <div className="rail-title">
-          <h2>Investigations</h2>
-          <Button
-            size="icon"
-            variant="ghost"
-            aria-label="New investigation"
-            onClick={onNew}
-          >
-            <span className="plus">+</span>
-          </Button>
-        </div>
-        <label className="search-field">
-          <Search size={15} />
-          <input
-            aria-label="Find investigation"
-            placeholder="Find an investigation"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </label>
-        <div className="run-list">
-          {list.loading && <Loading label="Loading investigations" />}
-          <ErrorNotice message={list.error} retry={list.refresh} />
-          {filtered.map((t, index) => (
-            <button
-              className={`run-row ${t.root === root ? "selected" : ""}`}
-              key={t.root}
-              onClick={() => onRun(t.root)}
-            >
-              <span className="run-row-heading">
-                <span className={`activity-dot ${t.active ? "live" : ""}`} />
-                {t.active
-                  ? "In progress"
-                  : t.last_action === "done"
-                    ? "Recorded"
-                    : "Paused"}
-              </span>
-              <strong>
-                {investigationTitle(t) === "Untitled investigation"
-                  ? `Investigation ${list.data!.length - index}`
-                  : investigationTitle(t)}
-              </strong>
-              <span>{date(t.updated_at)}</span>
-              <span className="run-row-foot">
-                {t.n_runs} researchers <ChevronRight size={13} />
-              </span>
-            </button>
-          ))}
-          {!list.loading && !filtered.length && (
-            <p className="rail-empty">
-              {query
-                ? "No matching investigations."
-                : "Your investigations will appear here."}
-            </p>
+    <div
+      className={`investigation-layout investigation-redesign ${railCollapsed ? "rail-collapsed" : ""}`}
+    >
+      <aside className="run-rail" aria-label="Investigation navigation">
+        <Button
+          className="rail-collapse"
+          size="icon"
+          variant="ghost"
+          aria-label={
+            railCollapsed
+              ? "Expand investigation list"
+              : "Collapse investigation list"
+          }
+          aria-expanded={!railCollapsed}
+          aria-controls="investigation-navigation"
+          onClick={() => setRailCollapsed((value) => !value)}
+        >
+          {railCollapsed ? (
+            <PanelLeftOpen size={17} />
+          ) : (
+            <PanelLeftClose size={17} />
           )}
+        </Button>
+        <div
+          id="investigation-navigation"
+          className="run-rail-content"
+          hidden={railCollapsed}
+        >
+          <div className="rail-title">
+            <h2>Investigations</h2>
+            <Button
+              size="icon"
+              variant="ghost"
+              aria-label="New investigation"
+              onClick={onNew}
+            >
+              <span className="plus">+</span>
+            </Button>
+          </div>
+          <label className="search-field">
+            <Search size={15} />
+            <input
+              aria-label="Find investigation"
+              placeholder="Find an investigation"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </label>
+          <div className="run-list">
+            {list.loading && <Loading label="Loading investigations" />}
+            <ErrorNotice message={list.error} retry={list.refresh} />
+            {filtered.map((t, index) => (
+              <button
+                className={`run-row ${t.root === root ? "selected" : ""}`}
+                key={t.root}
+                onClick={() => onRun(t.root)}
+              >
+                <span className="run-row-heading">
+                  <span
+                    className={`activity-dot ${t.active && now - t.updated_at < 20 ? "live" : ""}`}
+                  />
+                  {t.active
+                    ? "In progress"
+                    : t.last_action === "done"
+                      ? "Recorded"
+                      : "Paused"}
+                </span>
+                <strong>
+                  {investigationTitle(t) === "Untitled investigation"
+                    ? `Investigation ${list.data!.length - index}`
+                    : investigationTitle(t)}
+                </strong>
+                <span>{date(t.updated_at)}</span>
+                <span className="run-row-foot">
+                  {t.n_runs} researchers <ChevronRight size={13} />
+                </span>
+              </button>
+            ))}
+            {!list.loading && !filtered.length && (
+              <p className="rail-empty">
+                {query
+                  ? "No matching investigations."
+                  : "Your investigations will appear here."}
+              </p>
+            )}
+          </div>
+          <label className="rail-option">
+            <input
+              type="checkbox"
+              checked={includeTests}
+              onChange={(e) => setIncludeTests(e.target.checked)}
+            />
+            Include test runs
+          </label>
         </div>
-        <label className="rail-option">
-          <input
-            type="checkbox"
-            checked={includeTests}
-            onChange={(e) => setIncludeTests(e.target.checked)}
-          />
-          Include test runs
-        </label>
       </aside>
       <section className="investigation-main">
         {!investigation ? (
@@ -487,10 +729,17 @@ export function Investigation({
                   historic
                     ? "History playback"
                     : investigation.active
-                      ? "Receiving activity"
+                      ? Object.values(summaries).some((s) => s.freshActivity)
+                        ? "Live research"
+                        : "Waiting for activity"
                       : "Recorded investigation"
                 }
-                tone={investigation.active && !historic ? "live" : "neutral"}
+                tone={
+                  Object.values(summaries).some((s) => s.freshActivity) &&
+                  !historic
+                    ? "live"
+                    : "neutral"
+                }
               />
             </header>
             <ErrorNotice message={runtime.error} />
@@ -506,8 +755,11 @@ export function Investigation({
                 onChange={setView}
                 tabs={[
                   { value: "tree", label: "Search tree" },
-                  { value: "activity", label: "Activity" },
                   { value: "experiments", label: "Experiments" },
+                  ...(investigation.runtime
+                    ? [{ value: "candidates", label: "Candidates" }]
+                    : []),
+                  { value: "activity", label: "Diagnostics" },
                 ]}
               />
               <div className="toolbar-note">
@@ -523,6 +775,25 @@ export function Investigation({
                         .reduce((total, e) => total + (e.n ?? 1), 0)
                     : (tree.data?.counts.experiments ?? "—")}{" "}
                 experiments
+                {investigation.runtime && (
+                  <button
+                    className="candidate-badge summary-candidates"
+                    onClick={() => setView("candidates")}
+                    title="Review automated candidates separately from accepted discoveries"
+                  >
+                    <Sparkles size={13} />
+                    {candidates.length} candidates
+                  </button>
+                )}
+                {Object.values(summaries).some((s) => s.acceptedCount > 0) && (
+                  <span>
+                    {Object.values(summaries).reduce(
+                      (sum, s) => sum + s.acceptedCount,
+                      0,
+                    )}{" "}
+                    accepted
+                  </span>
+                )}
               </div>
             </div>
             <ErrorNotice message={tree.error || events.error} />
@@ -554,7 +825,7 @@ export function Investigation({
                         <small>Select a researcher to inspect its work</small>
                       </span>
                     </div>
-                    <ReactFlowProvider>
+                    <ReactFlowProvider key={root}>
                       <ReactFlow
                         key={root}
                         nodes={nodes}
@@ -566,7 +837,7 @@ export function Investigation({
                         maxZoom={1.5}
                         nodesDraggable={false}
                         nodesConnectable={false}
-                        onNodeClick={(_, n) => selectAgent(n.id)}
+                        autoPanOnNodeFocus={false}
                         colorMode="system"
                       >
                         <Background
@@ -578,15 +849,70 @@ export function Investigation({
                         <Controls showInteractive={false} />
                         <FocusSelection
                           selected={selected}
-                          count={nodes.length}
+                          expandedWidth={expandedWidth}
                         />
                       </ReactFlow>
                     </ReactFlowProvider>
                   </>
                 )}
+                {view === "candidates" && (
+                  <div className="activity-page candidate-queue">
+                    <h2>Candidate review</h2>
+                    <p className="muted">
+                      Automated candidate emissions await human review.
+                      Accepting a candidate records a review decision; it does
+                      not confirm a discovery.
+                    </p>
+                    {historic && (
+                      <p className="muted">
+                        Candidate state at this playback position. Return to
+                        Latest state to review.
+                      </p>
+                    )}
+                    {candidates.map(({ run, experiment }) => (
+                      <button
+                        className="experiment-row"
+                        key={`${run.run_id}:${experiment.experiment_id}`}
+                        onClick={() =>
+                          openCandidate(run.run_id, experiment.experiment_id)
+                        }
+                      >
+                        <Sparkles size={17} />
+                        <span>
+                          <strong>
+                            {experiment.title || "Candidate experiment"}
+                          </strong>
+                          <small>
+                            {run.branch_objective ||
+                              (run.parent_run_id
+                                ? "Research branch"
+                                : "Lead researcher")}{" "}
+                            · {experiment.verification || "Candidate emitted"}
+                          </small>
+                        </span>
+                        <Status
+                          label={
+                            experiment.human_review === "validated"
+                              ? "Accepted"
+                              : experiment.human_review === "rejected"
+                                ? "Rejected"
+                                : "Needs review"
+                          }
+                        />
+                        <ArrowUpRight size={14} />
+                      </button>
+                    ))}
+                    {!candidates.length && (
+                      <Empty title="No candidates at this point">
+                        Candidate emissions appear here and on the researcher
+                        that produced them.
+                      </Empty>
+                    )}
+                  </div>
+                )}
                 {view === "activity" && (
                   <div className="activity-page">
-                    <h2>Investigation activity</h2>
+                    <h2>Advanced event diagnostics</h2>
                     <p className="muted">
                       Recorded actions across every research branch.
                     </p>
@@ -624,6 +950,7 @@ export function Investigation({
                             data-scene-run={r.run_id}
                             data-scene-experiment={exp.experiment_id}
                             onClick={() => {
+                              setView("tree");
                               setSelected(r.run_id);
                               setSelectedExperiment(exp.experiment_id);
                             }}
@@ -650,6 +977,7 @@ export function Investigation({
                             className="experiment-row"
                             key={n.entry_id}
                             onClick={() => {
+                              setView("tree");
                               setSelected(n.run_id);
                               setSelectedExperiment(String(n.entry_id));
                             }}
@@ -669,6 +997,7 @@ export function Investigation({
                         ))
                     )}
                     {!historic &&
+                      !investigation.runtime &&
                       !tree.data?.nodes.some(
                         (n) => n.kind === "experiment",
                       ) && (
@@ -680,49 +1009,6 @@ export function Investigation({
                   </div>
                 )}
               </div>
-              <AnimatePresence mode="wait">
-                {selected && (
-                  <motion.aside
-                    className="detail-panel"
-                    initial={{ opacity: 0, x: 14 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 14 }}
-                    transition={{ duration: 0.18 }}
-                    key={selected}
-                  >
-                    {investigation.runtime ? (
-                      <RuntimeDetail
-                        experimentId={selectedExperiment}
-                        key={selected}
-                        runId={selected}
-                        run={runtimeState.runs[selected]}
-                        project={project}
-                        cursor={historic ? runtimeState.sequence : null}
-                        connection={runtime.connection}
-                        onClose={() => setSelected(null)}
-                      />
-                    ) : (
-                      <AgentDetail
-                        initialTab={
-                          selectedExperiment ? "experiments" : "activity"
-                        }
-                        runId={selected}
-                        summary={investigation.runs.find(
-                          (r) => r.run_id === selected,
-                        )}
-                        experiments={
-                          tree.data?.nodes.filter(
-                            (n) => n.run_id === selected,
-                          ) || []
-                        }
-                        onClose={() => setSelected(null)}
-                        historic={historic}
-                        events={visibleEvents}
-                      />
-                    )}
-                  </motion.aside>
-                )}
-              </AnimatePresence>
             </div>
             <footer className="playback">
               <Button

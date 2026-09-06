@@ -39,7 +39,7 @@ The development helper calls the official 21st HTTP MCP endpoint using an authen
 
 ## User-facing behavior
 
-- Investigations: project-scoped roster and spatial agent tree. New runs use ordered runtime events for lifecycle, actual model/tool execution, concise agent intent, worker heartbeat, streaming experiment output and deterministic playback. Select a node for its experiments and artifacts; Show terminal is opt-in and reports unavailable for SDK branches without a dedicated pane. Streams reconnect by cursor and close on navigation. Legacy trace-only runs are explicitly partial. See [runtime contract](runtime.md).
+- Investigations: project-scoped roster and a full-viewport vertical researcher tree. Both left navigation panels have accessible collapse controls. Selecting a researcher expands it inline with smooth layout transitions; polling preserves the viewport. Experiments appear above bounded major steps, with raw diagnostics collapsed. The Candidates queue and producing-node badges open the owning experiment for explicit human review. New runs use ordered runtime events for lifecycle, actual model/tool execution, concise agent intent, worker heartbeat, streaming experiment output and deterministic playback. Select a node for its experiments and artifacts; Show terminal is opt-in and reports unavailable for SDK branches without a dedicated pane. Streams reconnect by cursor and close on navigation. Legacy trace-only runs are explicitly partial. See [runtime contract](runtime.md).
 - Library: populated collections open to a scrollable paper browser with title, stored authors, publication year, local text/figure availability, title/author/DOI search, year/topic/availability filters and sorting. Selecting a paper opens a reading pane with stored text, section navigation and local figures; missing text, metadata and images are explicit. The reader can expand, and mobile returns to the list with Back to papers. The accent New collection action is visible with or without existing collections. Add papers is directly in the paper toolbar; each row has Read paper and Remove actions. Manage collection contains settings, supplemental documents, assistant and history; New collection is separate from the scoped New investigation action. Settings use chips for anchor DOIs/exclusions and progressive disclosure for advanced fields. Editing membership of a script-built source creates a separate collection; the source and its investigations are preserved. Busy or externally linked graphs reject membership writes.
 - Knowledge: a full-height graph workspace with a compact toolbar and no permanent side panel. The initial overview shows up to 36 claims, ordered by the backend (disputed first, then source count); density controls expand to 160 or 800, the API cap. Counts state the displayed subset honestly, and database search/filters reach the whole collection. The 24 highest-degree entities retain labels at overview scale; zoom reveals the rest, and selecting an entity highlights its neighbors. Labels compensate for zoom for readability. The source inspector opens on entity/claim selection or explicit Browse, scrolls independently, and closes with Escape, its close button or the canvas. No review, combining or approval controls are mounted. The literature graph as stored, with nothing invented on the way to the screen, laid out as a force-directed graph (d3-force, deterministic, run to rest before first paint) rather than layered ranks. Each entity is a shape for its kind, sized by how many claims touch it in view, with its label beneath and its ontology identifier (linked through Bioregistry) in the inspector and on the selected node; edges carry the claim's sign in biological notation (arrowhead enables, bar represses, open dot for an unsigned predicate), line weight by distinct source count, and a dashed amber stroke for corpus-disputed claims. Claims between the same two entities fan apart so a dispute is visible as two edges. Search runs in the database over the whole collection; status, sign, entity kind and relation class filters are closed-vocabulary and show real counts. A summary strip states claims, entities, evidence records, papers (full text), reported experiments and engine tests with the graph file's modification time. Selecting a claim shows its status with what the word may mean (a source count, never approval or proof), the subject → predicate → object spine with entity state and variant, aspect, sources, first mention, mechanism and dispute kind, the other claims answering the same question, every engine test on the claim (predicted versus observed sign, effect, p, verifier outcome, reviewer decision and note, novelty), then each evidence record: paper with DOI/PubMed/PMC links, full-text and licence status, section, quotation, evidence type, study type, attribution and certainty with checker agreement, the source's own wording, what it cites, the experiment it reports, and biological context with provenance. Identifiers and extraction metadata sit in disclosures. Missing values say so. Review controls are not shown; backend decision and promotion APIs remain available.
 - Molecular structures: only a selected node's collected experiment artifacts, inline in that experiment. No standalone Structures route, remote demo lookup or unrelated file picker. PDB/mmCIF coordinates are validated before durable collection; ribbon/atomic/surface modes, ambient occlusion, chain/residue controls, camera preservation and optional rotation use the public 3Dmol API without a fork. Artifact provenance distinguishes reference, prediction, derived geometry and illustration. No invented docking, confidence, mutation or binding scores.
@@ -168,9 +168,9 @@ See the binder guide for mesh approximation and exact source-picking semantics.
 
 ### Persistent researcher scenes
 
-A researcher with an available binder or molecular structure now opens a split workspace:
-one selected collected source on the left, research activity and experiment records on the right.
-The scene remains mounted when switching Activity/Experiments. The scene selector is restricted
+A researcher with an available binder or molecular structure opens a persistent inline workspace:
+one selected collected source above its experiment records and major research steps.
+The scene remains mounted while browsing the researcher’s records. The scene selector is restricted
 to that researcher's available artifacts at the current cursor; rewinding removes later sources.
 The selected experiment's binder is preferred, then its reference structure. Choosing another
 source is a local viewing action and does not rewrite recorded agent activity. Mobile stacks the
@@ -184,7 +184,7 @@ remains separate from physical simulation time. The projection selector also off
 constant-scale comparison; its height/zoom travel with the saved camera and captures.
 
 The reference viewer's Open inhibitor workbench action replaces that viewer inline in the same
-left scene. Research activity remains alongside it, and Return to reference restores the original
+inline scene. Research activity remains in the same expanded node, and Return to reference restores the original
 viewer. Only one molecular viewer is mounted. Embedded inhibitor controls open as an overlay;
 its recorded-action Follow/Replay behavior is unchanged.
 
@@ -250,3 +250,27 @@ and orphan claim vectors, and recomputes support/disputes. Other papers' support
 unrelated engine claims remain. Original assets and historical records are retained;
 manifest/count/card updates describe current membership. A durable removed-source marker
 prevents an older failed addition retry from resurrecting a removed paper.
+
+### Investigation candidate review
+
+Automated candidate emissions are deduplicated by recorded experiment/submission and retry identities.
+Candidate badges never mean human acceptance. Fresh heartbeats permit restrained activity animation;
+stale workers, idle researchers and historical playback do not animate progress. Replay derives counts,
+experiments, human decisions and artifact access from the same event cursor.
+
+`GET /api/review/candidate?run=<run>&experiment=<experiment>&project=<project>` resolves the exact
+runtime provenance association to the collection's candidate test. It exposes the submitted claim,
+result/code, recorded verification, linked literature quotations and existing decision. Missing or
+ambiguous associations remain unavailable instead of guessing. The review view loads only in Latest state.
+`POST /api/review/candidate` accepts `run`, `experiment`, optional `project`, `decision` (`validated` or
+`rejected`) and a required note of at most 400 characters. It saves the decision and applies only that card
+through the established promotion gate. Acceptance copies supported source records into master; rejection
+records a correction. Writer locks or publication failures leave a visible saved decision with an explicit
+Apply saved decision retry. Identical retries are idempotent, conflicting decisions are rejected, and
+applied decisions publish cursor-scoped human-review events. Existing bulk promotion endpoints remain
+available and share the same decision lock. Graph application also holds the Library/build/run collection
+lease; busy collections retain saved decisions. No decisions are submitted automatically by opening a view.
+
+Focused coverage: `npm --prefix frontend run e2e -- e2e/investigation.spec.ts` and
+`uv run pytest tests/test_candidate_review.py`. The latter uses a temporary project, master graph and
+runtime journal to exercise real persistence; it never submits decisions to a live investigation.

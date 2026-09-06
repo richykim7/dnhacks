@@ -192,19 +192,19 @@ test("node execution, opt-in terminal, inline real geometry and replay boundary"
     "Inspect the reference fold",
   );
   expect(reads.terminalReads()).toBe(0);
+  await expect(page.locator(".experiment-detail")).toContainText("Reference fold inspection");
+  await page.getByText("Advanced diagnostics", { exact: true }).click();
   await page.getByRole("button", { name: "Show terminal" }).click();
   await expect(
     page.getByText("Terminal unavailable for this agent."),
   ).toBeVisible();
   await page.getByRole("button", { name: "Hide terminal" }).click();
-  await page
-    .getByRole("tablist", { name: "Researcher detail" })
-    .getByRole("tab", { name: "Experiments" })
-    .click();
+  await page.getByText("Advanced diagnostics", { exact: true }).click();
   await expect(page.locator(".artifact-canvas canvas")).toBeVisible({
     timeout: 20000,
   });
   await expect(page.getByText("Preparing experiment structure")).toHaveCount(0);
+  await page.locator(".artifact-canvas").scrollIntoViewIfNeeded();
   await page.waitForTimeout(700);
   await page.screenshot({ path: test.info().outputPath("dn-runtime-molecule-dark.png") });
   await page.getByRole("tab", { name: "Surface", exact: true }).click();
@@ -217,12 +217,13 @@ test("node execution, opt-in terminal, inline real geometry and replay boundary"
   await page.getByLabel("Activity playback position").fill("7");
   await expect(page.locator(".artifact-viewer")).toHaveCount(0);
   await expect(page.locator(".experiment-detail")).toContainText("Running");
+  await page.getByText("Advanced diagnostics", { exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Show terminal" }),
   ).toBeDisabled();
   await page.getByLabel("Activity playback position").fill("1");
   await expect(page.locator(".agent-node")).toHaveCount(1);
-  await expect(page.locator(".detail-panel")).toHaveCount(0);
+  await expect(page.locator(".inline-research-detail")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 test("inhibitor workbench opens from its owning experiment", async ({ page }) => {
@@ -247,7 +248,6 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   });
   await page.goto('/?sceneReview=1');
   await page.getByRole('button', {name:'Inspect Inspect the experimental fold'}).click();
-  await page.getByRole('tablist', {name:'Researcher detail'}).getByRole('tab', {name:'Experiments'}).click();
   await page.getByRole('button', {name:'Open inhibitor workbench'}).click();
   // The lazy Three/R3F module may compile cold during the full browser gate.
   await expect(page.getByRole('region', {name:'Inhibitor workbench'})).toBeVisible({timeout:20_000});
@@ -327,10 +327,6 @@ test("malformed experiment structure is an explicit error", async ({
   await page
     .getByRole("button", { name: "Inspect Inspect the experimental fold" })
     .click();
-  await page
-    .getByRole("tablist", { name: "Researcher detail" })
-    .getByRole("tab", { name: "Experiments" })
-    .click();
   await expect(page.getByRole("alert")).toContainText("No atoms could be read");
 });
 test("human review status follows the playback cursor", async ({ page }) => {
@@ -339,12 +335,9 @@ test("human review status follows the playback cursor", async ({ page }) => {
   await page
     .getByRole("button", { name: "Inspect Inspect the experimental fold" })
     .click();
-  await page
-    .getByRole("tablist", { name: "Researcher detail" })
-    .getByRole("tab", { name: "Experiments" })
-    .click();
-  await expect(page.getByText("Accepted by human review")).toBeVisible();
-  await expect(page.getByText("Checked independent controls")).toBeVisible();
+  const verification = page.locator(".experiment-detail > .notice");
+  await expect(verification.getByText("Accepted by human review")).toBeVisible();
+  await expect(verification.getByText("Checked independent controls")).toBeVisible();
   await page.getByLabel("Activity playback position").fill("12");
   await expect(page.getByText("Accepted by human review")).toHaveCount(0);
   await expect(page.getByText("Checked independent controls")).toHaveCount(0);
@@ -362,11 +355,7 @@ test("experiment list opens its owning experiment and navigation preserves inves
     .getByRole("tab", { name: "Experiments" })
     .click();
   await page.getByRole("button", { name: /Reference fold inspection/ }).click();
-  await expect(
-    page
-      .getByRole("tablist", { name: "Researcher detail" })
-      .getByRole("tab", { name: "Experiments" }),
-  ).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator(".inline-research-detail")).toBeVisible();
   await expect(page.locator('[data-experiment-id="exp1"]')).toBeVisible();
   await page.getByRole("link", { name: "Library", exact: true }).click();
   await page.getByRole("link", { name: "Investigations", exact: true }).click();
@@ -378,10 +367,6 @@ test("mobile node-specific geometry remains usable", async ({ page }) => {
   await page.goto("/");
   await page
     .getByRole("button", { name: "Inspect Inspect the experimental fold" })
-    .click();
-  await page
-    .getByRole("tablist", { name: "Researcher detail" })
-    .getByRole("tab", { name: "Experiments" })
     .click();
   await expect(page.locator(".artifact-canvas canvas")).toBeVisible({
     timeout: 20000,
