@@ -1,5 +1,7 @@
 # Donor-level cellular ecosystems
 
+**Research route cancelled and plan deprecated, 2026-09-06.** Insufficient accessible independent eligible donors left the biological power gate unmet. Models, data, results, audits and reusable code are preserved. The workflows below document retained capabilities; they do not authorize further research or autonomous resumption. See the [deprecated plan](../plans/evalue-tool-council/PLAN-cellular-ecosystems.md).
+
 The `ecosystem` command implements exposed development preparation, separate
 compartment count encoders, donor profiles, exploratory coupling/comparison and
 segmented-cell spatial summaries. Private registration/scoring is an operator
@@ -7,8 +9,7 @@ surface that uses the [shared native core](native-evidence.md). Public Peng and 
 and real compartment models trained and evaluated; see the [initial training report](ecosystem-training.md).
 The [expanded CUDA run](ecosystem-expansion.md) adds Werba, Steele and Zhang: 72 donor
 records, 338,900 prepared cells, three-seed neural models and exact GPU PCA controls.
-Confirmation remains unavailable
-until a separate operator audits and approves every design gate.
+Confirmation remains unavailable; the research route is cancelled.
 
 ## Development workflow
 
@@ -16,7 +17,7 @@ Install normally, then run `ecosystem --help`, or use
 `PYTHONPATH=src uv run python scripts/ecosystem.py --help` from the repository.
 PCA uses NumPy; optional NB/set training requires the `evalue` extra (Torch).
 Source preparation and figure export use the `ecosystem` extra (SciPy/Matplotlib/h5py).
-For current GPU training use the [expanded workflow](ecosystem-expansion.md#reproduce);
+For historical GPU training reproduction, see the [expanded workflow](ecosystem-expansion.md#reproduce);
 its CUDA-only scripts include GPU PCA and hold the shared GPU lease. The original
 CLI examples below describe the earlier CPU-capable artifact format. Expanded
 checkpoints use a separate development schema and are not native registrations.
