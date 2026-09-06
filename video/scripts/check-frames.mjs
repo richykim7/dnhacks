@@ -100,31 +100,77 @@ try {
       errors.push(`Frame ${frame}: cursor outside canvas`);
     results.push({ seconds, frame, filename, ...state });
   }
+  await page.evaluate(() => window.seekVideo(3180));
+  await page.waitForFunction(() => window.videoFrame === 3180);
+  const treeGeometry = await page.evaluate(() => {
+    const b = document.querySelector(".tree-stage").getBoundingClientRect();
+    return {
+      bounds: { x: b.x, y: b.y, width: b.width, height: b.height },
+      nodes: [...document.querySelectorAll(".movie-agent")].map((n) => {
+        const r = n.getBoundingClientRect();
+        return { x: r.x, y: r.y, width: r.width, height: r.height };
+      }),
+    };
+  });
+  await writeFile(
+    path.join(output, "tree-geometry.json"),
+    JSON.stringify(treeGeometry, null, 2),
+  );
+  const tb = treeGeometry.bounds;
+  if (
+    treeGeometry.nodes.some(
+      (n) =>
+        n.x < tb.x ||
+        n.y < tb.y ||
+        n.x + n.width > tb.x + tb.width ||
+        n.y + n.height > tb.y + tb.height,
+    )
+  )
+    errors.push("Final overview clips a research node");
+  for (let i = 0; i < treeGeometry.nodes.length; i++)
+    for (let j = i + 1; j < treeGeometry.nodes.length; j++) {
+      const a = treeGeometry.nodes[i],
+        b = treeGeometry.nodes[j];
+      if (
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
+      )
+        errors.push(`Final overview nodes ${i}/${j} overlap`);
+    }
   const clicks = [
-    [162, '.welcome-empty .button', 0],
-    [284, '.movie-modal .field-box', 0],
-    [391, '.movie-modal .field-box', 1],
-    [709, '.movie-modal .button', 0],
-    [794, '.movie-heading .button', 0],
-    [1207, '.movie-header nav>div', 2],
-    [1775, '.graph-top .button', 0],
-    [1834, '.movie-modal .field-box', 0],
-    [2116, '.movie-modal .button', 0],
-    [2215, '.movie-agent', 0],
-    [2352, '.movie-agent', 1],
+    [162, ".welcome-empty .button", 0],
+    [284, ".movie-modal .field-box", 0],
+    [391, ".movie-modal .field-box", 1],
+    [709, ".movie-modal .button", 0],
+    [794, ".movie-heading .button", 0],
+    [1207, ".movie-header nav>div", 2],
+    [1775, ".graph-top .button", 0],
+    [1834, ".movie-modal .field-box", 0],
+    [2116, ".movie-modal .button", 0],
+    [2215, ".movie-agent", 0],
+    [2352, ".movie-agent", 1],
   ];
-  const clickResults=[];
-  for(const [frame,selector,index] of clicks){
-    await page.evaluate(f=>window.seekVideo(f),frame);
-    await page.waitForFunction(f=>window.videoFrame===f,frame);
-    const target=await page.locator(selector).nth(index).boundingBox();
-    const cursor=await page.locator('.movie-cursor').boundingBox();
-    const hit=cursor&&target&&cursor.x+4>=target.x&&cursor.x+4<=target.x+target.width&&cursor.y+3>=target.y&&cursor.y+3<=target.y+target.height;
-    clickResults.push({frame,selector,index,hit,target,cursor});
-    if(!hit)errors.push(`Cursor misses ${selector}[${index}] at frame ${frame}`);
-    await page.screenshot({path:path.join(output,`click-${frame}.png`)});
+  const clickResults = [];
+  for (const [frame, selector, index] of clicks) {
+    await page.evaluate((f) => window.seekVideo(f), frame);
+    await page.waitForFunction((f) => window.videoFrame === f, frame);
+    const target = await page.locator(selector).nth(index).boundingBox();
+    const cursor = await page.locator(".movie-cursor").boundingBox();
+    const hit =
+      cursor &&
+      target &&
+      cursor.x + 4 >= target.x &&
+      cursor.x + 4 <= target.x + target.width &&
+      cursor.y + 3 >= target.y &&
+      cursor.y + 3 <= target.y + target.height;
+    clickResults.push({ frame, selector, index, hit, target, cursor });
+    if (!hit)
+      errors.push(`Cursor misses ${selector}[${index}] at frame ${frame}`);
+    await page.screenshot({ path: path.join(output, `click-${frame}.png`) });
   }
-    // Seek backwards and verify the frame is independent of playback history.
+  // Seek backwards and verify the frame is independent of playback history.
   await page.evaluate(() => window.seekVideo(990));
   await page.waitForFunction(() => window.videoFrame === 990);
   await page.evaluate(
@@ -137,7 +183,11 @@ try {
     errors.push("Frame 990 changes after backwards seeking");
   await writeFile(
     path.join(output, "report.json"),
-    JSON.stringify({ framesChecked: results.length, errors, clickResults, results }, null, 2),
+    JSON.stringify(
+      { framesChecked: results.length, errors, clickResults, results },
+      null,
+      2,
+    ),
   );
   await writeFile(
     path.join(output, "index.html"),
