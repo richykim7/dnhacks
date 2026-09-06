@@ -354,10 +354,11 @@ This did not change tools or establish disease-specific validation of the existi
 Separately, the complete E-valuator v2 paper (27 pages including appendices) was downloaded with
 readable page-marked text and source metadata into ignored local `data/research/e-valuator/`.
 The [tree-search assessment](evaluator-tree-search-review.md) maps the paper to completed-action
-checkpoints, the existing sibling judge, resumable branches and runtime lineage. An independent
-statistical review recommends whole-investigation alarms as the simplest first measurement; a separate
-branch study needs complete PDAC leaf rollouts. Both need independent success labels, separate
-fitting/calibration/test investigations and observation-only replay before changing allocation.
+checkpoints, the existing sibling judge, resumable branches and runtime lineage. The user clarified
+that the intended intervention is to stop individual children, so the proposed pilot records child
+alarms and obtains full continuations before changing live allocation. Whole investigations group
+related data for fitting/calibration/test splits; they are not the proposed stopping target.
+Independent success labels and additional validation of adaptive branch selection remain necessary.
 The key limitations are missing full outcomes for
 pruned branches, correlated/adaptively selected descendants, and keeping both numerical scoring systems
 outside discovery feedback. No trajectory monitor, new training, GPU run or new evaluation was performed.
@@ -365,3 +366,21 @@ outside discovery feedback. No trajectory monitor, new training, GPU run or new 
 For slides: the implemented result is still private biological scoring with the recorded validation.
 The next research question is whether a separately calibrated progress monitor can save compute while
 rarely discarding useful research branches. Success-versus-cost and false-stop plots remain to be measured.
+
+## Parallel integration planning
+
+At the user's request, three reviewers worked concurrently on concrete implementation plans for
+[dependency/CRISPR](../plans/evalue-dependency-integration.md),
+[drug response/combinations](../plans/evalue-drug-response-integration.md), and
+[pathway/TF/differential expression](../plans/evalue-expression-integration.md).
+The parent aligned a single shared queue/transport prerequisite with method-specific validators,
+operator-frozen protocols, private cohort references and canonical experiment identity across retries.
+The command emits a receipt; the agent never computes or reports numerical evidence.
+
+The first proposed endpoints use fixed-data randomization/permutation evidence where their design
+assumptions are justified. MAGeCK/PyDESeq2 model-based outputs and descriptive synergy do not acquire
+exact guarantees merely by conversion. Each plan specifies data needs, null/unit, code seams and
+validation; named cohorts/endpoints are proposals, not performed experiments or selected confirmation.
+The existing tools and private expression service were not changed. The trajectory document now
+targets child-branch stopping explicitly, with complete continuations for evaluation and root-grouped
+data splits; whole-investigation stopping is not the intended intervention.
