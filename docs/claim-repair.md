@@ -2,17 +2,39 @@
 
 `extract_paper` reads with Opus, checks direction with Sonnet, and resolves names
 against each category's owner. Unresolved claims and the reader's upfront omissions
-then go to independent Sonnet repair sessions (at most four per paper), grouped by
-failed term, category and species. These replace the old serial Opus choice menus.
+then enter the shared repair queue in configured ingestion runs. The queue combines
+pending records across papers into batches of ten and runs at most ten repair workers.
+Every record retains its source owner; quotes are validated against that paper only.
+A final partial batch is flushed only when producers are blocked and cannot supply
+more work, rather than dispatching undersized batches on a timer. Per-record responses
+are cached durably, so a resumed producer can reuse completed repair work.
 
-Repair reads the source and can correct names, categories, species context, direction
-and representation. It receives the same claim menus and a reviewed vocabulary
-supplement. Corrected quotes must occur in the source (whitespace changes and ordered
+Local repair grouping also caps each request at ten records; it does not cap a paper
+at four total requests. Local concurrency controls submission, while the shared queue
+controls model-worker concurrency across papers. The queue receives compact schema
+instructions on both initial submissions and retries. Retry records contain only
+pending corrections and their latest validation errors; original records remain in
+the local audit rather than being duplicated in model input.
+
+The full paper is not sent to repair. Missing source-supported quotations trigger a
+bounded local passage lookup, with up to 4,000 characters of nearby source context per
+record. Successful claims are not resubmitted merely because another record needs a retry.
+These replace the old serial Opus choice menus.
+
+Repair reads quotations and retrieved source passages and can correct names, categories, species context, direction
+and representation. Its dedicated repair schema stays below 8,000 characters and includes
+closed menus, the corrected-claim shape, scientific-scope constraints and inline-experiment
+rules. It does not reuse the full extraction prompt or send the complete vocabulary
+supplement; validation feedback supplies relevant canonical labels and definitions. Corrected quotes must occur in the source (whitespace changes and ordered
 ellipsis-separated spans are allowed). Python resolves names and constructs the
 existing EntityRef, ClaimSpine, Evidence and Experiment models. Concrete lookup or
 schema errors go back for a second attempt, with retrieved alternative labels where
 available. This structural check cannot by itself prove that a claim follows from its
 quote; that remains the source-reading model's responsibility.
+
+Ambiguous perturbation/treatment quotes and flagged direction errors also receive
+bounded neighboring passages on the first attempt, so a naming repair does not
+guess the intervention direction.
 
 Repair sessions have no filesystem, shell, web or MCP tools. The application performs
 ontology lookups. They cannot create arbitrary ontology identifiers or edit the
