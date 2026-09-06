@@ -82,3 +82,38 @@ from125 collected cases. Its protocol uses survival-blocked preparation batches 
 MaxLFQ protein quantification. Actual grade counts and processing independence remain
 to be audited. These sample ceilings do not yet supply the384 pairs in this modeled
 successful fixed-module case. The goal stays active.
+
+## Prespecified calibration-efficiency follow-up
+
+Retain the grid study above. A separate continuous calibration policy maximizes
+average log payoff on2,048 Gaussian calibration pairs only, with stakes bounded
+between0 and2 and a zero-stake fallback. Fit on CUDA with LBFGS (80 iterations);
+do not change effect0.4, burn-in, final-wealth threshold or the saved rank kernel.
+Calibration seed830101 and fresh validation seeds separate this run from the grid
+study. Evaluate60,192,384 pairs with10,000 streams per null/effect case. Add a
+Student-t3 sensitivity case with unit-variance factor/residual noise, retaining
+the same Gaussian-calibrated stakes. This keeps module mean difference0.4 SD
+without adding signal dimensions or tuning on the heavy-tail validation result.
+The patient-data and independent-review requirements remain unchanged.
+
+### Completed continuous-calibration results
+
+The Gaussian-calibrated module stake is0.17956284; the rank-kernel stake is0.00695475.
+Both noise studies use those identical stakes and fresh evaluation seeds. Each
+study evaluates60,000 streams (10,000 per null/effect/budget combination) on CUDA.
+Full results and artifact hashes: [continuous power](protein-continuous-power.json).
+
+| Pairs | Module final power, Gaussian | Module final power, Student-t3 |
+|---|---:|---:|
+|60|20.15%|23.39%|
+|192|88.08% (87.43–88.70%)|90.13% (89.53–90.70%)|
+|384|99.15%|99.15%|
+
+Intervals are pointwise95% Wilson intervals. At192 pairs, module null anytime
+rejection is4.15% under Gaussian noise and3.09% under Student-t3 noise. The rank
+kernel rejects no validation streams under either law at any tested budget.
+Thus calibration improves the module's modeled192-pair result beyond80%; it does
+not establish the kernel's power, biological validity of the generator, or access
+to192 pairs of eligible fresh patients. The original grid results remain above.
+Gaussian and Student-t3 jobs took43.9 and49.4 seconds respectively. Generator and
+witness artifacts remain local in `data/interim/protein/continuous-v1/`.
