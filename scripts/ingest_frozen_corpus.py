@@ -275,16 +275,16 @@ def repair_model_call(run):
         # A batch's records carry distinct source owners; no evidence crosses papers.
         system = _SYSTEM + "\nEach record belongs to source_owner. Use only that record's quoted evidence and source_context; never borrow evidence from another record or paper. Use its schema_id to select the supplied schema."
         session = llm.Session(system=system, model=REPAIR, effort="medium", max_turns=1,
-                              tools_disabled=True, max_output_tokens=12000)
+                              tools_disabled=True)
         options = llm._opts(REPAIR, system, "medium", 1, tools_disabled=True,
-                            max_output_tokens=12000, cwd=str(empty))
+                            cwd=str(empty))
         options.mcp_servers = {}
         options.skills = []
         options.settings = json.dumps({"disableAllHooks": True})
         options.extra_args = {"no-session-persistence": None, "disable-slash-commands": None}
         session._client = CheckedClient(options)
         record({"type": "request", "model": REPAIR, "effort": "medium",
-                "prompt_chars": len(prompt), "output_limit": 12000,
+                "prompt_chars": len(prompt), "output_limit": llm.MAX_OUTPUT_TOKENS,
                 "claims": len(json.loads(prompt)["records"])})
         async with session:
             answer = await session.ask(prompt)

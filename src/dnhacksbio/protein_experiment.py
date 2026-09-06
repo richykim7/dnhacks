@@ -21,7 +21,7 @@ class EvidenceUnavailable(ValueError):
 
 def availability():
     return {"method": METHOD, "status": "unavailable", "blockers": [
-        "Current CPTAC development audit has only 26 grade pairs, before treatment exclusions",
+        "CPTAC development has 26 grade pairs; Fudan external benchmark has 65 before coverage filtering, 60 after",
         "No approved independent confirmation cohort/processing/identity review",
         "No deployed distinct-identity private worker or passed declared-effect power report"]}
 

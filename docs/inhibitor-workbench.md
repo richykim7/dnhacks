@@ -1,36 +1,118 @@
 # Inhibitor workbench
 
-Open Investigations, select a researcher, open its Experiments tab, and choose
-**Open inhibitor workbench** on a collected PDB/mmCIF artifact. No structure
-artifact means no workbench button. This does not add a top-level route or
-populate an investigation with demo data.
+Open an investigation's **Experiments** tab and choose **Open inhibitor workbench**
+on its collected molecular structure. The workbench belongs to that exact run,
+project, experiment and immutable structure. No artifact means no workbench button.
+Merging source does not restart a deployed server or manufacture experiment data.
 
-The first implementation normalizes deposited coordinates through Gemmi and
-provides residue selection, canonical distances, proximity contacts, matte and
-luminous displays, clipping, and PNG/JSON export. The original artifact remains
-immutable; the existing run/project and playback-cursor checks guard geometry
-requests. Exported JSON is a local report, not a registered evidence artifact.
+## Run and view a real example
 
-Preparation reports a blocker rather than modifying chemistry. Docking, candidate
-comparison, molecular dynamics, scientific solvent surfaces, and runtime-agent
-image delivery are not implemented. Display bonds and CA traces are illustrative.
-Proximity is not an assigned hydrogen bond; affinity and inhibition are unmeasured.
-This is a partial implementation of the inhibitor plan, not completion of all
-its visual, scientific, performance, and agent-vision milestones.
+```sh
+uv sync --extra dev --extra inhibitor
+npm --prefix frontend ci
+npm --prefix frontend run build
+uv run --extra inhibitor python -m playwright install chromium
+uv run --extra inhibitor python scripts/inhibitor_demo.py --trace-dir /tmp/inhibitor-example --serve --port 8787
+```
 
-For local viewing, build with `npm --prefix frontend run build`, then run
-`uv run python scripts/serve_ui.py --port 8765` from the checkout containing the
-desired investigation data. Open http://127.0.0.1:8765. Deployment of a running
-shared instance is separate from merging source code.
+The command performs actual CPU docking, prints the result and a direct browser
+link, then serves the isolated example. It leaves your usual research data alone.
+The prepared inputs, immutable result blobs, logs and journal remain under the
+chosen directory. Repeating the same request reuses its durable receipt. Use a
+new directory for a deliberate new demonstration. The initial demo bookmark is
+labelled as an operator action; it does not impersonate agent research.
 
-The development-only `?sceneReview=1` controller permits deterministic camera,
-style and selection review and rejects stale capture revisions. It is excluded
-from production builds.
+The owning-view URL uses `project`, `experiment`, `artifact`, `sceneTool=inhibitor`
+and `#investigations/<run>`. Add `sceneRevision` and `sceneActor` for a recorded
+view. `through` also restricts artifact/event availability for historical playback.
+Return to experiment retains the owning run and project.
 
-Integration review opened actual 1600×1000 and 390×844 browser captures. The
-first pair exposed a blank scene: OrbitControls initialized after camera setup
-and reset its target. Initializing the controls before positioning the camera
-restored the molecule in both viewports. A second review found atom geometry
-behind the lower caption and top metadata; opaque label backgrounds improve
-legibility. This limited integration review does not certify all of the plan's
-visual-selection or performance milestones.
+## Interact or watch
+
+- **Explore myself:** orbit, pan, zoom, choose a pose, search/select atoms, change
+  treatment/cutaway, compare original/prepared structures and measure coordinates.
+- **Watch agent live:** follow its latest recorded scene.
+- **Replay agent actions:** play, pause, seek and change speed from 0.5× to 8×.
+  Action time is not physical molecular-dynamics time. Exploring stops replay and
+  preserves the agent history. Saved user bookmarks have their own revision stream.
+- **Docking:** inspect/edit the frozen protocol, start preparation and docking,
+  follow the durable receipt, cancel, and download completed output files.
+- **Evidence plate:** records a user bookmark, captures the actual composed
+  workbench, and exports its PNG with a JSON scientific report. Historical,
+  read-only playback permits a local canvas export without new journal events.
+
+## Agent instructions and vision
+
+The runtime method guide is [inhibitor-interface](../skills/inhibitor-interface/SKILL.md).
+Explorer requires delivery of that skill before executing `inhibitor` actions.
+The same scoped adapter serves the UI, `scripts/inhibitor_tool.py`, and Explorer.
+It offers structure resolution, durable docking/cancellation, bundle access,
+revision-checked scene mutation/capture, canonical measurements and visual review.
+`inspect_scene_capture` sends actual bounded PNG bytes through the existing model
+transport. Capture IDs are checked against the owning experiment; counterchecks
+must reference the same source, bundle and pose as the prompting capture.
+
+The runtime's run/project identity is supplied by the runner. HTTP mutations are
+always user-authored. Model-authored and user-authored scene events are append-only
+and do not modify immutable structures. Camera/clip changes never modify scientific
+coordinates. Capture rejects stale revisions and has a 24-image experiment budget;
+numerical tools remain usable after the image budget is exhausted.
+
+## Scientific protocol and limits
+
+V1 is a known-ligand recovery workflow using deposited mmCIF chemistry, a selected
+deposited chain, explicit water/additive/alternate choices, Meeko template
+protonation and optional seeded PDBFixer missing-atom reconstruction. It does not
+expand biological assemblies or invent missing loops. Unsupported chemistry,
+metals/covalent attachments and preparation failures produce failed receipts.
+The user must justify exclusion choices; the adapter cannot establish biological
+suitability automatically. PDB files remain viewable but lack the required deposited
+ligand dictionary for automatic chemistry preparation.
+
+RDKit creates a seeded de novo conformer; the deposited pose is withheld from
+initialization. Vina uses one CPU, bounded seeds/exhaustiveness/poses, a 4 GiB
+address-space cap and a declared wall budget including queue wait. At most four
+jobs may be pending per experiment. Completed
+bundles contain inputs, mapped SDF poses, native-unit score tables, preparation
+deltas, controls, contacts, protocol/version hashes, JSON/Markdown reports and
+an approximate solvent-accessible pocket mesh. Cancelled, timed-out and failed
+jobs never publish partial completed bundles. Deployment leases persist through
+worker/child lifetimes when a deployment lock is configured.
+
+RMSD is symmetry-aware in the fixed receptor coordinate frame; recovery is
+predefined at 2 Å. Displaced/clashing controls are geometric counterchecks, not
+measured inactive compounds. Contacts measure proximity, not hydrogen bonds.
+Scores are not affinities or evidence of cellular inhibition. This does not
+produce audited p-values or promote a candidate through the human-review gate.
+
+The surface is marching tetrahedra on the union of vdW spheres inflated by a
+1.4 Å solvent probe, locally selected within 8 Å. Its algorithm, source frame,
+0.6 Å grid spacing and triangle-to-atom map are exported. Finite grid resolution
+and the pocket-local selection limit its accuracy. It is approximate SAS, not SES.
+CA tubes, distance-inferred display bonds and luminous atom envelopes are
+illustrative representations. No optional dynamics trajectory is generated.
+
+## Observed validation
+
+Two real three-seed runs of the frozen 3VQU protocol completed. The initial run's
+best-ranked scores were approximately −8.73, −8.69 and −8.66 kcal/mol; none recovered
+the deposited ligand within 2 Å. This is a negative exploratory benchmark, not a
+reason to tune the metric after observing results. See the exported report for
+all poses and each seed's result.
+
+[The PDAC study](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0174863)
+provides a TTK target rationale with heterogeneous cell-line responses to AZ3146.
+The [3VQU structure](https://www.rcsb.org/structure/3VQU) contains O22, a different
+compound. Docking O22 does not reproduce the AZ3146 cellular experiment.
+
+Actual image-bearing review of the first workbench PNG identified occlusion by
+bright backbone traces and foreground atoms. A clipped second view, subdued
+traces and reduced display clutter improved ligand visibility. The model chose
+a grounded O22 N2 / GLN670 OE1 countercheck; canonical prepared-receptor measurement
+was 2.713622 Å, supporting proximity without assigning a hydrogen bond. The journal
+links both captures, the requested view change, the measurement and review outcome.
+
+The rendering is demand-driven with instanced atom meshes and bounded geometry.
+50k-atom/60-fps and laptop/mobile throughput remain performance targets requiring
+hardware-specific measurement; they are not claims established by the small
+3VQU software-rendering validation.

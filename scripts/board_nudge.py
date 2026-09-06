@@ -14,8 +14,9 @@ sanitises to the same name (`ian/graph-plan` == `ian-graph-plan`), and that pane
     Board: <poster> mentioned you: "<first line>" Run `python3 scripts/board.py show` and answer on the board.
 
 followed by Enter. A busy pane is retried on later polls (up to --max-tries) and then dropped: typing
-into a working agent interleaves with its own input. Idle detection is a heuristic on the pane text
-(unchanged for two seconds, no "esc to interrupt"/spinner line). A mention only reaches an agent whose
+into a working agent interleaves with its own input. Delivery additionally requires a recognized empty
+composer, no menu, and a shared input lock with the popup watcher (docs/board-popup-watcher.md).
+A mention only reaches an agent whose
 tmux session name IS its board name, which is the default (`board.py` names you after your session).
 
 On the machine that runs `board_mirror.py`, do not also run this: the mirror already nudges there.
@@ -34,6 +35,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import board  # noqa: E402
+from tmux_input import Tmux, menu_or_busy, send_board_message  # noqa: E402
 
 MENTION_RE = re.compile(r"@([A-Za-z0-9_./-]+)")
 # Pane text that means "still working". Both TUIs print "esc to interrupt" next to a live spinner;
@@ -67,6 +69,11 @@ def pane_text(session: str) -> str | None:
 
 def session_idle(session: str) -> bool:
     """Heuristic: no busy marker, and the pane text has not changed for two seconds."""
+    try:
+        if menu_or_busy(Tmux().screen("=" + session + ":")):
+            return False
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return False
     a = pane_text(session)
     if a is None or BUSY_RE.search(a):
         return False
@@ -79,13 +86,7 @@ def nudge(session: str, text: str, dry: bool) -> bool:
     if dry:
         log("DRY nudge ->", session, "|", text[:140])
         return True
-    # -l: literal keys, so nothing in the text is read as a key name. Enter separately.
-    p = tmux("send-keys", "-t", "=" + session + ":", "-l", text)
-    if p.returncode != 0:
-        log("send-keys failed for", session, p.stderr.strip()[:120])
-        return False
-    tmux("send-keys", "-t", "=" + session + ":", "Enter")
-    return True
+    return send_board_message(session, text)
 
 
 def nudge_text(p: dict) -> str:
@@ -153,6 +154,8 @@ def main(argv=None):
             if session_idle(sess):
                 if nudge(sess, text, a.dry_run):
                     log("nudged", sess)
+                elif tries < a.max_tries:
+                    still.append((sess, text, tries + 1))
             elif tries < a.max_tries:
                 if tries == 0:
                     log("busy, will retry:", sess)
