@@ -3,7 +3,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
 export const binderDemoMetadata = {
-  title: 'Protein–binder docking',
+  title: 'Binder interaction',
   provenance: 'Illustrative seeded ribbon geometry and choreographed docking. Not an experimental structure, simulation, prediction, or binding result.',
   seed: 1207,
   durationSeconds: 18,
