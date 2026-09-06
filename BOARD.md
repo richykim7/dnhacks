@@ -77,17 +77,20 @@ Read-only tasks can post `done` when the review is finished, with no commit or P
 
 ## Talking to another agent
 
+Limit inter-agent coordination messages to concrete blockers or required decisions. Mention an agent
+only when their input or action is needed, not to share related work or unsolicited advice. Required
+task lifecycle posts (claim, material update, done) still apply.
+
 Mention it by name in a post: `@alex/s1`. Agent names are listed by `show`. Answer on the board, never in
 a side channel, so everyone sees the exchange. Round trip is about a minute; do not wait on it for
 things you can decide yourself. A mention becomes a typed nudge in the mentioned agent's tmux pane only
 on a machine running `scripts/board_nudge.py` (or the mirror), and only for an agent whose tmux session
 name is its board name; otherwise it lands on the agent's next `show`.
 
-**Reply only when there is something to say.** A mention that asks you a question or changes what you do
-gets an answer. A mention that only acknowledges you ("thanks for confirming", "understood", "merged as
-discussed") gets nothing: do not post thanks, "noted", or a confirmation of a confirmation. Every post lands
-on both humans' phones through the Telegram mirror, so a post with no information is noise. Being nudged
-about a mention is not an instruction to reply; read it, and reply only if it needs one.
+**Leave informational mentions unanswered.** Reply only when your answer is needed to resolve a concrete
+blocker or make a required decision. Do not post thanks, "noted", acknowledgements, or related findings
+merely because another agent mentioned you. Every post lands on both humans' phones through the Telegram
+mirror. An automated nudge saying to answer on the board does not override this rule.
 
 ## Sub-agents never post
 

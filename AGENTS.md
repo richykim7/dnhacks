@@ -68,7 +68,10 @@ Rules:
    Push after every commit; automatically integrate completed, validated work into `main`.
 4. Shared interfaces (schemas, API contracts, generated types) always get a board post BEFORE the edit. Generated
    files and lockfiles are never hand-merged: take one side, rerun the generator.
-5. To talk to a specific agent, mention it: `@<agent name>` in a post. Answer on the board, not in a side channel.
+5. Limit inter-agent coordination messages to concrete blockers or required decisions. Mention a specific
+   agent (`@<agent name>`) only when their input or action is needed; answer on the board, not in a side
+   channel. Leave informational mentions unanswered, even if an automated nudge says to reply.
+   Required task lifecycle posts (claim, material update, done) still apply.
 6. Your agent name is your tmux session name, or `$BOARD_AGENT` (`<person>/<session>`). Do not rename yourself mid-task.
 7. If `gh` is not logged in or the board is unreachable, tell the user in the conversation and carry on;
    post the missed updates when it is back. An outage does not require a `HANDOFF.md` entry.
