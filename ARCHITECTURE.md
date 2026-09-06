@@ -428,6 +428,8 @@ confirmation data and cross-assay transforms are rejected by discovery operation
 The operator-only audit preserves grade eligibility and the 48-pair policy.
 `protein_experiment.py` conditionally registers operator-reviewed independent-group
 finite replay through `native_group_replay.py` and the shared canonical donor ledger.
+The explicitly versioned frozen-linear route binds source-fitted witness coefficients
+and feature order, preserves16 unscored pairs, and requires matching final-power review.
 Real CPTAC development models are trained. A subsequent Fudan external benchmark
 provides 60 grade pairs after coverage filtering and CUDA-fitted transfer comparisons;
 independent confirmation review and model-specific power remain release gates. No native wealth
