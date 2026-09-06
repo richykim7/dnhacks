@@ -1,18 +1,13 @@
-"""Claim extraction: closed menus, three reads of the paper, deferral instead of guessing.
+"""Full-text extraction, owner-scoped grounding and parallel source-backed Sonnet repair.
 
-Pass 1 reads the paper and returns every claim from closed menus with a verbatim quote. Pass 2, in a
-separate session that sees only the claim and its quote, checks direction. Pass 3 resolves the process
-and entity names that did not match deterministically by offering retrieved candidate terms and letting
-the reader pick one while the paper is still in context. Context is not its own pass; it is captured
-in the same sentence as the claim.
-
-Large vocabularies (GO, HP, MONDO, NCIT) cannot be written into a prompt, so their menus are built per
-term from retrieved candidates. In every pass the model picks a letter or a menu word and never types an
-identifier; grounding is deterministic and happens in this module.
+Ordinary validation checks typed claims and resolved owners; model repair reads the source,
+corrects the proposal and receives concrete errors for another attempt. Rejected claims,
+unresolved failures and warnings on retained claims are reported separately.
 """
 from __future__ import annotations
 
 import asyncio
+from dataclasses import asdict
 import hashlib
 import json
 import re
@@ -37,7 +32,7 @@ from dnhacksbio.litmap.vocab import (
 # The strong model does extraction: nothing downstream catches a collapsed subject, whereas an invented
 # predicate is caught by the deferral gate.
 EXTRACT_MODEL = llm.OPUS
-PROMPT_VERSION = "1.0"
+PROMPT_VERSION = "1.1"
 
 _JSON = re.compile(r"\{.*\}", re.S)
 
@@ -176,8 +171,8 @@ correlation is a first-class claim here.
   If no predicate fits, put the claim in "deferred" with the wording you would have wanted. Do not fall
   back to `associated_with`; that is reserved for genuine correlation.
 
-SUBJECT. A tangible, nameable thing an identifier exists for: a gene, protein, chemical, or a named part
-of one. It does not have to act (a histone mark is enriched at a place, a gene is conserved in a lineage).
+SUBJECT. A named entity, process, cellular phenotype or cell population from a supported category.
+A process or cell population can be the subject when the paper asserts a relation about it. It does not have to act (a histone mark is enriched at a place, a gene is conserved in a lineage).
   Yes   "EGFR", "GRB2", "arsenic trioxide", "EGFR exon 19", "EGFR T790M"
         (write the gene with its variant; the gene grounds and the variant becomes state)
   No    "EGFR mutation frequency", "EGFR mutation heterogeneity", "EGFR-SHC1 complex stabilization",
@@ -195,7 +190,10 @@ look. You have the paper; a dictionary does not.
   wrong category costs the claim rather than producing a wrong answer, so choose the accurate category
   rather than the commonest one.
   `gene` vs `family`: one gene product is `gene`; a group with members (NCORs, AKT, NF-kappaB) is
-  `family`. Do not resolve a family down to a guessed member.
+  `family`. Preserve the name in the source: ERK1/2 is a family, not a guessed MAPK3;
+  NADPH oxidases are a family, not a guessed NOX1. ROS names chemical species, not a process.
+  Do not resolve a family down to a guessed member. Preserve stated species in context; never
+  invent a human ortholog for a species-specific gene with no human equivalent.
   `process` vs `pathological_process`: ordinary cell biology vs a disease process. Apoptosis and
   proliferation are `process` even in a cancer paper; tumorigenesis and metastasis are
   `pathological_process` even in a healthy tissue.
@@ -605,15 +603,23 @@ def _entity(surface: str, state: dict | None, category: str,
     st = EntityState(**{k: (state or {}).get(k, "") or ("unspecified" if k == "functional" else "")
                         for k in ("functional", "variant", "isoform", "protein_construct")})
     # The category decides both which resolver handles this and which namespaces may answer.
+    category = (category or "").strip().lower()
+    if category not in CATEGORIES:
+        raise DeferralError(f"unknown or missing category {category!r}; choose a supported category")
     kind_hint = _path_for(category)
-    ns = CATEGORY_NS.get((category or "").strip().lower()) or None
+    ns = CATEGORY_NS[category] or None
+    def checked(hit):
+        if hit and ns and hit.get("curie", "").split(":", 1)[0] not in ns:
+            raise DeferralError(f"identifier {hit.get('curie')!r} is outside owner for {category}")
+        return hit
     # A closed-vocabulary token is an endpoint whichever category it arrived under; there is nothing to
     # ground.
     if kind_hint == "endpoint" or _norm(surface) in EXPERIMENTAL_PHENOTYPES \
             or _norm(surface) in CLINICAL_ENDPOINTS:
         return EntityRef.endpoint(surface)
     if kind_hint == "process":
-        hit = (process_map or {}).get(_norm(surface))
+        hit = checked((process_map or {}).get(_resolution_key(surface, category, organism))
+                      or (process_map or {}).get(_norm(surface)))
         if not hit:
             raise DeferralError(f"process {surface!r} matched no ontology term (and no candidate was "
                                 "accepted)")
@@ -632,14 +638,14 @@ def _entity(surface: str, state: dict | None, category: str,
             raise DeferralError(f"non-human gene {surface!r} is not in the {organism or '?'} table "
                                 "(symbol miss, not a veto)")
         return EntityRef(curie=hit["curie"], label=surface.strip(), kind="entity", state=st)
-    feat = _feature(surface, state)
+    feat = _feature(surface, state) if category == "feature" else None
     if feat:
         return feat.model_copy(update={"state": st})
     bare = _strip_state(surface)
     hit = G.ground_curie(bare, namespaces=ns) or G.ground_curie(surface or "", namespaces=ns)
     if not hit:
         # Repeat/TE families last.
-        rep = G.resolve_repeat(surface) or G.resolve_repeat(bare)
+        rep = (G.resolve_repeat(surface) or G.resolve_repeat(bare)) if category == "repeat" else None
         if rep:
             return EntityRef(curie=rep["curie"], label=surface.strip(), kind="repeat_family",
                              feature_tier=rep["tier"], state=st)
@@ -648,10 +654,16 @@ def _entity(surface: str, state: dict | None, category: str,
         # confident grounding. Keys are normalised on both sides (`_entity_surfaces` uses `_norm`).
         chosen = (entity_map or {}).get(_norm(bare)) or (entity_map or {}).get(_norm(surface))
         if chosen:
+            checked(chosen)
             return EntityRef(curie=chosen["curie"], label=surface.strip(),
                              kind=chosen.get("kind") or "entity", state=st)
         raise DeferralError(f"entity {surface!r} did not ground to any identifier")
+    checked(hit)
     return EntityRef(curie=hit["curie"], label=surface.strip(), kind=hit["kind"], state=st)
+
+
+def _resolution_key(surface: str, category: str, organism: str = "") -> str:
+    return json.dumps([_norm(surface), category, organism], separators=(",", ":"))
 
 
 def _norm(s: str) -> str:
@@ -870,7 +882,7 @@ async def _resolve_entities(session, surfaces: list[tuple[str, str]] | list[str]
     pairs = [(s, "") if isinstance(s, str) else (s[0], s[1]) for s in surfaces]
     menus = []
     for surface, category in pairs:
-        prior = _DECISIONS.get(f"entity::{surface}")
+        prior = _DECISIONS.get("entity::" + _resolution_key(surface, category, organism))
         if prior:
             resolved[surface] = dict(prior, chosen_by="sticky")
             notes.append(f"entity {surface!r}: reused earlier decision {prior['curie']}")
@@ -900,7 +912,7 @@ async def _resolve_entities(session, surfaces: list[tuple[str, str]] | list[str]
             continue
         hit = dict(cand_list[idx], chosen_by="menu")
         resolved[surface] = hit
-        _record_decision(f"entity::{surface}", hit)
+        _record_decision("entity::" + _resolution_key(surface, next(cat for surf, cat in pairs if surf == surface), organism), hit)
         notes.append(f"entity {surface!r}: reader chose {hit['curie']} ({hit['label']})")
     return resolved, notes
 
@@ -926,7 +938,7 @@ async def _resolve_processes(session, surfaces: list[tuple[str, str]] | list[str
     # not re-decided, checked before any lookup.
     pending = []
     for s in surfaces:
-        prior = _DECISIONS.get(s)
+        prior = _DECISIONS.get("process::" + _resolution_key(s, ",".join(ns_of.get(s) or ())))
         if prior:
             resolved[s] = dict(prior, chosen_by="sticky")
             notes.append(f"process {s!r}: reused earlier decision {prior['curie']}")
@@ -959,7 +971,7 @@ async def _resolve_processes(session, surfaces: list[tuple[str, str]] | list[str
         else:
             resolved[s] = None
             notes.append(f"process {s!r}: no exact match and no candidates retrieved — the ontologies "
-                         "have no term for it")
+                         "lookup did not establish whether an appropriate term exists")
     if not menus:
         return resolved, notes
 
@@ -990,7 +1002,7 @@ async def _resolve_processes(session, surfaces: list[tuple[str, str]] | list[str
             dict(chosen, kind=G.kind_from_curie(chosen.get("curie", ""), default="process"),
                  chosen_by="menu"))
         resolved[surface] = hit
-        _record_decision(surface, hit)     # decided once; every later paper reuses it
+        _record_decision("process::" + _resolution_key(surface, ",".join(ns_of.get(surface) or ())), hit)
         notes.append(f"process {surface!r}: chose {hit['curie']} ({hit.get('label')}) from a menu of "
                      f"{len(cand_list)}")
     return resolved, notes
@@ -1068,239 +1080,276 @@ def _experiment(raw: dict, source_ref: int) -> Experiment | None:
 
 async def extract_paper(text: str, *, source_ref: int, source_label: str = "", field: str,
                         doc_type: str = "primary_research", model: str = EXTRACT_MODEL,
-                        direction_pass: bool = True) -> dict:
-    """Extract one paper. Returns {claims, deferrals, experiments, processes, stats}."""
-    claims: list[Claim] = []
-    deferrals: list[Deferral] = []
-    experiments: list[Experiment] = []
+                        direction_pass: bool = True, repair: bool = True,
+                        repair_model: str = llm.SONNET,
+                        raw_extraction: dict | None = None) -> dict:
+    """Read, ground and repair a paper. raw_extraction replays a saved reader output for audits.
 
-    def defer(reason: str, raw, quote="", candidates=None):
-        """Record a deferral. This path must not itself raise: every value is coerced to the shape the
-        model requires and the original is preserved in `raw`."""
-        try:
-            deferrals.append(Deferral(
-                source_ref=source_ref, reason=str(reason)[:2000],
-                raw=raw if isinstance(raw, dict) else {"value": repr(raw)[:2000]},
-                quote=quote if isinstance(quote, str) else repr(quote)[:2000],
-                candidates=[str(c) for c in (candidates or [])],
-                extractor=model, prompt_version=PROMPT_VERSION))
-        except Exception as e:                     # last resort: never lose the paper over bookkeeping
-            deferrals.append(Deferral(source_ref=source_ref, extractor=model,
-                                      prompt_version=PROMPT_VERSION,
-                                      reason=f"deferral could not be recorded ({e}); "
-                                             f"original reason: {reason}"))
+    Replayed input still undergoes the same direction, grounding, evidence and repair checks.
+    The returned repair audit preserves original claims, corrections and explicit outcomes.
+    """
+    from dnhacksbio.litmap.repair import repair_claims, quote_supported
+    from dnhacksbio.litmap.lexicon_supplement import SUPPLEMENT, VERSION as LEXICON_VERSION, supplement_lookup
 
-    # Parsed ONCE per paper, never per claim. Returns {} for a paper with no reference list, which is a
-    # normal outcome: citation identities then degrade to the local tier.
+    def supplement_category(term):
+        prefix = term.curie.split(":", 1)[0]
+        if prefix == "GO":
+            return "cellular_component" if term.kind == "entity" else "process"
+        return next(category for category, spec in CATEGORIES.items() if prefix in spec["ns"])
+
+    supplement_menu = [{**asdict(term), "category": supplement_category(term)} for term in SUPPLEMENT]
+    claims, deferrals, experiments, warnings = [], [], [], []
+    process_map, emap, pnotes = {}, {}, []
+    failures = []
+    seen_experiments = set()
+
+    def defer(reason, raw, quote=""):
+        deferrals.append(Deferral(source_ref=source_ref, reason=str(reason)[:2000],
+            raw=raw if isinstance(raw, dict) else {"value": str(raw)}, quote=str(quote or ""),
+            extractor=model, prompt_version=PROMPT_VERSION))
+
+    if raw_extraction is None:
+        _tick(source_ref, f"pass 1 START ({len(text):,} chars)")
+        async with llm.Session(system=SYSTEM, model=model, effort="medium", max_turns=6,
+                               thinking=bool(TRACE)) as session:
+            answer = ""
+            for attempt in range(3):
+                cap = {}
+                answer = await (session.ask(build_prompt(field, doc_type, text), capture=cap)
+                                if TRACE else session.ask(build_prompt(field, doc_type, text)))
+                _traced(source_ref, "pass1", cap, answer)
+                if (answer or "").strip():
+                    break
+                await asyncio.sleep(2 + 3 * attempt)
+            if not (answer or "").strip():
+                raise ApiUnavailable(f"three empty reader responses for ref {source_ref}")
+            try:
+                got = _parse(answer)
+            except DeferralError as exc:
+                defer(f"pass 1 failed: {exc}", {})
+                return {"claims": [], "experiments": [], "deferrals": deferrals,
+                        "processes": {}, "process_notes": [], "warnings": [], "repair_audit": {},
+                        "stats": {"raw": 0, "kept": 0, "deferred": 1, "pass1_failed": True}}
+            if session.truncated:
+                defer("pass 1 truncated; paper extraction is incomplete", {})
+    else:
+        got = raw_extraction
+    if got.get("_salvaged"):
+        defer("pass 1 partially recovered from invalid JSON; paper extraction is incomplete", {})
+    raw_claims = [r for r in (got.get("claims") or []) if isinstance(r, dict)]
+    paper_org = _corpus_organism(raw_claims)
     refs = A.parse_references(text) or A.parse_references_author_year(text) or {}
     superscript_ok = not A.uses_bracket_citations(text)
     glued_ok = superscript_ok and A.uses_glued_superscripts(text, refs)
 
-    seen_experiments: set[str] = set()
-    raw_claims: list[dict] = []
-    flipped: set[int] = set()
-    wrong_sign: set[int] = set()
-    unsure: set[int] = set()
-    process_map: dict[str, dict | None] = {}
-    pnotes: list[str] = []
-    _tick(source_ref, f"pass 1 START ({len(text):,} chars)")
-    # Medium effort on pass 1: it copies from fixed menus and pulls verbatim quotes, and the judgement
-    # calls (whose finding, which form of the protein) are decided from the quote afterwards. `max_turns`
-    # leaves room for the model to reason before answering; a hit on the output ceiling is reported through
-    # `s.truncated`.
-    async with llm.Session(system=SYSTEM, model=model, effort="medium", max_turns=6,
-                           thinking=bool(TRACE)) as s:
+    # Group identical lookups by owner and species, but never share a model's contextual judgment
+    # across papers. Failed terms remain eligible for a corrected name/category in repair.
+    lookup_tasks = {}
+    candidate_tasks = {}
+    async def resolve(rc):
+        org = _claim_organism(rc, paper_org)
+        for side in ("subject", "object"):
+            surface, category = rc.get(side, ""), _category_of(rc, side)
+            key = _resolution_key(surface, category, org)
+            if _path_for(category) == "process":
+                if key not in lookup_tasks:
+                    lookup_tasks[key] = asyncio.create_task(asyncio.to_thread(
+                        G.resolve_process, surface, CATEGORY_NS.get(category)))
+                hit = await lookup_tasks[key]
+                # Exact labels and reviewed supplemental aliases resolve immediately. Other
+                # ontology synonyms can generalize a finding: repair chooses their canonical label.
+                if hit and hit.get("match") == "label" and not hit.get("regulation_term_kept"):
+                    process_map[key] = hit
+
+    def build(rc, reader):
+        if not quote_supported(rc.get("quote", ""), text):
+            raise DeferralError("quote does not match the source text; restore the verbatim passage")
+        rc_org = _claim_organism(rc, paper_org)
+        subj = _entity(rc.get("subject", ""), rc.get("subject_state"),
+                       _category_of(rc, "subject"), process_map, entity_map=emap,
+                       organism=rc_org)
+        obj = _entity(rc.get("object", ""), rc.get("object_state"),
+                      _category_of(rc, "object"), process_map, entity_map=emap,
+                      organism=rc_org)
+        is_phen = "HP:" in (subj.curie or "") or "HP:" in (obj.curie or "")
+        ctx, notes = _context(rc.get("context"), doc_type, phenotype=is_phen,
+                              paper_organism=paper_org)
+        pred = (rc.get("predicate") or "").strip().lower()
+        # `relation_class` and `polarity` are derived from the predicate.
+        spine = ClaimSpine(subject=subj, predicate=pred, object=obj,
+                            object_aspect=rc.get("object_aspect") or "")
+        exp = _experiment(_experiment_for(rc, got), source_ref)
+        if exp and (rc.get("study_type") == "review_statement"):
+            exp = None                      # a restatement has no experiment of its own
+        quote = rc.get("quote") or ""
+
+        # Whose finding is this: the model's call, made with the paper in context.
+        cites = A.cited_sources(quote, refs, source_ref, superscript=superscript_ok, glued=glued_ok)
+        verdict = A.classify(rc.get("evidence_type") or "")
+        cert = A.classify_certainty(rc.get("certainty") or "")
+        if verdict.value == A.PRIOR and exp:
+            # A restated result is not this paper's experiment to report; drop it and record why.
+            notes.append("experiment dropped: a restated finding has no experiment of its own")
+            exp = None
+        if exp and not quote_supported(exp.quote, text):
+            raise DeferralError("experiment quote does not occur in source; restore its source passage")
+        ev = Evidence(claim_id=spine.claim_id(), source_ref=source_ref,
+                       source_label=source_label,
+                       experiment_id=exp.experiment_id if exp else None,
+                       quote=quote, section=rc.get("section") or "",
+                       predicate_said=pred,
+                       evidence_type=(rc.get("evidence_type") or "unspecified"),
+                       study_type=(rc.get("study_type") or "unspecified"),
+                       attribution=verdict.value, attribution_basis=verdict.basis,
+                       attribution_agreed=verdict.agreed_with_model,
+                       quantifier=(rc.get("quantifier") or ""),
+                       certainty=cert.value, certainty_basis=cert.basis,
+                       certainty_agreed=cert.agreed_with_model,
+                       cites=[c.sid for c in cites], cite_markers=[c.marker for c in cites],
+                       context=ctx, extractor=reader, prompt_version=PROMPT_VERSION)
+        return Claim(spine=spine, mechanism=rc.get("mechanism") or "", evidence=[ev]), exp, notes
+
+    async def validate(rc):
+        if rc.get("experiment") is not None and not isinstance(rc["experiment"], dict):
+            return "repair must provide an inline source-supported experiment or omit it; numeric experiment pointers are not accepted"
+        if not quote_supported(rc.get("quote", ""), text):
+            return "quote must be actual source text (ordered ellipsis-separated spans are allowed)"
+        await resolve(rc)
         try:
-            # An empty response is a service fault, not an empty paper; it is retried and then raised.
-            prompt = build_prompt(field, doc_type, text)
-            raw = ""
-            for attempt in range(3):
-                # The capture kwarg is passed only when tracing, so the session signature is unchanged
-                # otherwise.
-                _cap: dict = {}
-                raw = await (s.ask(prompt, capture=_cap) if TRACE else s.ask(prompt))
-                _traced(source_ref, "pass1", _cap, raw)
-                if (raw or "").strip():
-                    break
-                _tick(source_ref, f"empty response on attempt {attempt + 1}/3 — retrying")
-                await asyncio.sleep(2 + 3 * attempt)
-            if not (raw or "").strip():
-                raise ApiUnavailable(
-                    f"paper not read: three empty responses for ref {source_ref} "
-                    f"({len(text):,} chars). This is an API fault, not an empty paper; re-run it.")
-            got = _parse(raw)
-        except DeferralError as e:
-            defer(f"pass 1 failed: {e}", {})
-            return {"claims": [], "deferrals": deferrals, "experiments": [], "processes": {},
-                    "process_notes": [],
-                    "stats": {"raw": 0, "kept": 0, "deferred": len(deferrals), "flipped": 0,
-                              "experiments": 0, "proc_seen": 0, "proc_resolved": 0, "proc_by_menu": 0,
-                              "pass1_failed": True}}
-        raw_claims = got.get("claims") or []
-        if s.truncated:
-            # The paper is marked so nobody reads the count as complete.
-            defer(f"pass 1 truncated at the {llm.MAX_OUTPUT_TOKENS:,}-token output ceiling; this paper is "
-                  f"incomplete and an unknown number of claims were never emitted. Recovered "
-                  f"{len(raw_claims)} so far.", {})
-        if got.get("_salvaged"):
-            defer(f"pass 1 partially recovered: response was invalid JSON ({got['_salvaged']}); "
-                  f"salvaged {len(raw_claims)} claim objects; this paper is incomplete", {})
-        # `d` is not guaranteed to be an object.
-        for d in (got.get("deferred") or []):
-            if isinstance(d, dict):
-                defer(f"extractor deferred: {d.get('reason', '')}", d, d.get("quote", ""))
-            else:
-                defer(f"extractor deferred: {d}", {})
-        raw_claims = [rc for rc in raw_claims if isinstance(rc, dict)] or []
-        # Computed once from what pass 1 declared: the species hint for the entity menu and the organism
-        # backfilled onto phenotype claims. '' for a silent or mixed paper.
-        paper_org = _corpus_organism(raw_claims)
+            build(rc, repair_model)
+        except (DeferralError, ValueError, TypeError, KeyError) as exc:
+            suggestions = []
+            for side in ("subject", "object"):
+                category, surface = _category_of(rc, side), rc.get(side, "")
+                if category == "gene" and _claim_organism(rc, paper_org):
+                    try:
+                        nonhuman = await asyncio.to_thread(G.nonhuman_gene_lookup, surface,
+                                                            _claim_organism(rc, paper_org))
+                    except LookupError:
+                        nonhuman = None
+                    if nonhuman:
+                        suggestions.append({"side": side, "label": surface,
+                                            "category": "non_human_gene",
+                                            "definition": "Verified gene in the stated species table; preserve organism context"})
+                reviewed = supplement_lookup(surface)
+                if reviewed:
+                    entry = next(t for t in supplement_menu if t["curie"] == reviewed["curie"])
+                    suggestions.append({"side": side, "label": entry["label"],
+                                        "category": entry["category"], "definition": entry["definition"]})
+                if category not in CATEGORIES:
+                    continue
+                key = _resolution_key(surface, category, _claim_organism(rc, paper_org))
+                if key not in candidate_tasks:
+                    if _path_for(category) == "process":
+                        candidate_tasks[key] = asyncio.create_task(asyncio.to_thread(
+                            G.process_candidates, surface, 8, CATEGORY_NS[category]))
+                    elif _path_for(category) == "entity":
+                        candidate_tasks[key] = asyncio.create_task(asyncio.to_thread(
+                            G.entity_candidates, surface, _claim_organism(rc, paper_org),
+                            namespaces=CATEGORY_NS[category]))
+                if key in candidate_tasks:
+                    candidates = await candidate_tasks[key]
+                    suggestions.extend({"side": side, "label": c["label"], "definition": c.get("definition", "")}
+                                       for c in candidates)
+            return str(exc) + ("; retrieved candidate names (choose only if source meaning matches): "
+                               + json.dumps(suggestions) if suggestions else "")
+        return None
 
-        _tick(source_ref, f"pass 1 done — {len(raw_claims)} raw claims")
-        if direction_pass and raw_claims:
-            # The auditor is shown the stored form, so a rewritten aspect is not a false positive.
-            def _as_stored(c: dict) -> tuple[str, str]:
-                asp = str(c.get("object_aspect") or "").strip().lower().replace(" ", "_")
-                pred = str(c.get("predicate") or "")
-                rule = ASPECT_REWRITES.get(asp)
-                if rule:
-                    asp, _mech, flip = rule
-                    canon = canonical_predicate(pred)
-                    if flip and canon:
-                        pred = invert_predicate(canon) or canon
-                return pred, asp
+    def keep(rc, reader):
+        claim, exp, notes = build(rc, reader)
+        claims.append(claim)
+        if exp and exp.experiment_id not in seen_experiments:
+            seen_experiments.add(exp.experiment_id)
+            experiments.append(exp)
+        warnings.extend({"reason": n, "raw": rc, "claim_id": claim.spine.claim_id()} for n in notes)
 
-            rows = []
-            for i, c in enumerate(raw_claims):
-                pred, asp = _as_stored(c)
-                rows.append(f"[{i}] subject={c.get('subject')!r} predicate={pred!r} "
-                            f"object={c.get('object')!r}"
-                            + (f" [{asp}]" if asp else "")
-                            + f"\n     quote: {(c.get('quote') or '')[:300]}")
-            rows = "\n".join(rows)
-            # A separate session, so the audit is independent of the extraction.
-            _tick(source_ref, f"pass 2 START (independent session, {len(raw_claims)} claims)")
+    _tick(source_ref, f"pass 1 done — {len(raw_claims)} raw claims")
+    direction = {}
+    if direction_pass and raw_claims:
+        rows = []
+        for i, c in enumerate(raw_claims):
+            asp = str(c.get("object_aspect") or "").strip().lower().replace(" ", "_")
+            pred = str(c.get("predicate") or "")
+            rule = ASPECT_REWRITES.get(asp)
+            if rule:
+                asp, _, flip = rule
+                canon = canonical_predicate(pred)
+                if flip and canon:
+                    pred = invert_predicate(canon) or canon
+            rows.append(f"[{i}] subject={c.get('subject')!r} predicate={pred!r} object={c.get('object')!r}"
+                        f" [{asp}]\nquote: {c.get('quote', '')}")
+        _tick(source_ref, "direction audit START (Sonnet)")
+        async with llm.Session(system=DIRECTION_SYSTEM, model=repair_model, effort="medium") as audit_s:
             try:
-                async with llm.Session(system=DIRECTION_SYSTEM, model=model, effort="medium") as audit_s:
-                    audit = _parse(await audit_s.ask(DIRECTION_PROMPT.format(rows=rows)),
-                                   whole_paper=False)
-            except DeferralError as e:
-                defer(f"direction pass failed, claims kept unaudited: {e}", {})
-                audit = {}
-            def _idx(key):
-                return {int(i) for i in (audit.get(key) or []) if str(i).isdigit()}
-            flipped = _idx("swapped")
-            wrong_sign = _idx("wrong_sign")
-            unsure = _idx("unsure")
-            for i in sorted(unsure):
-                if i < len(raw_claims):
-                    defer("direction unsure", raw_claims[i], raw_claims[i].get("quote", ""))
-            flipped -= unsure
-            wrong_sign -= (unsure | flipped)     # a swap verdict already sends it to the queue
+                audit = _parse(await audit_s.ask(DIRECTION_PROMPT.format(rows="\n".join(rows))),
+                               whole_paper=False)
+                for key in ("swapped", "wrong_sign", "unsure"):
+                    for i in audit.get(key) or []:
+                        if str(i).isdigit():
+                            direction[int(i)] = "direction audit: " + key
+            except DeferralError as exc:
+                direction = {i: f"direction audit failed: {exc}" for i in range(len(raw_claims))}
 
-        _tick(source_ref, "pass 2 done — resolving processes")
-        process_map, pnotes = await _resolve_processes(
-            s, _process_surfaces(raw_claims, flipped | wrong_sign | unsure))
-        # Entities ride in the same pass; only surfaces that failed deterministic grounding are offered.
-        emap, enotes = await _resolve_entities(
-            s, _entity_surfaces(raw_claims, flipped | wrong_sign | unsure),
-            paper_org)
-        pnotes += enotes
-
-    # Only failures become deferrals; the success phrases are listed so a new one shows up as an
-    # unrecognised note rather than silently inflating the queue. Each deferral carries the claim that used
-    # the surface, so the queue is reviewable.
-    _RESOLVED = ("chose ", "reused earlier decision", "exact label match")
-    for n in pnotes:
-        if any(ok in n for ok in _RESOLVED):
-            continue
-        m = re.search(r"'([^']+)'", n)
-        surf = m.group(1).strip().lower() if m else ""
-        src = {}
-        if surf:
-            for rc in raw_claims:
-                fields = " | ".join(str(rc.get(k, "")) for k in ("subject", "object")).lower()
-                if surf in fields:
-                    src = rc
-                    break
-        defer(n, src, str(src.get("quote", "")) if src else "")
-
+    _tick(source_ref, "grounding START")
+    await asyncio.gather(*(resolve(rc) for rc in raw_claims))
     for i, rc in enumerate(raw_claims):
-        if i in unsure:
-            continue                                # already deferred above, with its own reason
-        if i in flipped:
-            defer("direction audit says subject and object are reversed", rc, rc.get("quote", ""),
-                  candidates=[f"{rc.get('object')} {rc.get('predicate')} {rc.get('subject')}"])
-            continue
-        if i in wrong_sign and (canonical_predicate(rc.get("predicate") or "") or "") \
-                and PREDICATES[canonical_predicate(rc.get("predicate"))][1] != 0:
-            # Deferred rather than auto-flipped: a knockout sentence carries the opposite direction word to
-            # the claim it proves, so only a reader can settle it.
-            canon = canonical_predicate(rc.get("predicate") or "")
-            defer("direction audit says the effect points the wrong way", rc, rc.get("quote", ""),
-                  candidates=[f"{rc.get('subject')} {invert_predicate(canon) or canon} "
-                              f"{rc.get('object')}" if canon else ""])
-            continue
-        try:
-            rc_org = _claim_organism(rc, paper_org)
-            subj = _entity(rc.get("subject", ""), rc.get("subject_state"),
-                           _category_of(rc, "subject"), process_map, entity_map=emap,
-                           organism=rc_org)
-            obj = _entity(rc.get("object", ""), rc.get("object_state"),
-                          _category_of(rc, "object"), process_map, entity_map=emap,
-                          organism=rc_org)
-            is_phen = "HP:" in (subj.curie or "") or "HP:" in (obj.curie or "")
-            ctx, notes = _context(rc.get("context"), doc_type, phenotype=is_phen,
-                                  paper_organism=paper_org)
-            pred = (rc.get("predicate") or "").strip().lower()
-            # `relation_class` and `polarity` are derived from the predicate.
-            spine = ClaimSpine(subject=subj, predicate=pred, object=obj,
-                                object_aspect=rc.get("object_aspect") or "")
-            exp = _experiment(_experiment_for(rc, got), source_ref)
-            if exp and (rc.get("study_type") == "review_statement"):
-                exp = None                      # a restatement has no experiment of its own
-            quote = rc.get("quote") or ""
+        reason = direction.get(i)
+        if not reason:
+            try:
+                keep(rc, model)
+            except (DeferralError, ValueError, TypeError, KeyError) as exc:
+                reason = str(exc)
+        if reason:
+            failures.append({"id": f"claim:{i}", "raw": rc, "reason": reason})
+    for i, d in enumerate(got.get("deferred") or []):
+        d = d if isinstance(d, dict) else {"reason": str(d)}
+        failures.append({"id": f"reader:{i}", "raw": d,
+                         "reason": "reader deferred: " + str(d.get("reason", ""))})
 
-            # Whose finding is this: the model's call, made with the paper in context.
-            cites = A.cited_sources(quote, refs, source_ref, superscript=superscript_ok, glued=glued_ok)
-            verdict = A.classify(rc.get("evidence_type") or "")
-            cert = A.classify_certainty(rc.get("certainty") or "")
-            if verdict.value == A.PRIOR and exp:
-                # A restated result is not this paper's experiment to report; drop it and record why.
-                defer(f"experiment dropped: attribution={A.PRIOR} ({', '.join(verdict.basis)}) but an "
-                      f"experiment was reported; a restatement has no experiment of its own", rc, quote)
-                exp = None
-            if exp and exp.experiment_id not in seen_experiments:
-                seen_experiments.add(exp.experiment_id)
-                experiments.append(exp)     # one row per distinct RUN, however many claims cite it
-            ev = Evidence(claim_id=spine.claim_id(), source_ref=source_ref,
-                           source_label=source_label,
-                           experiment_id=exp.experiment_id if exp else None,
-                           quote=quote, section=rc.get("section") or "",
-                           predicate_said=pred,
-                           evidence_type=(rc.get("evidence_type") or "unspecified"),
-                           study_type=(rc.get("study_type") or "unspecified"),
-                           attribution=verdict.value, attribution_basis=verdict.basis,
-                           attribution_agreed=verdict.agreed_with_model,
-                           quantifier=(rc.get("quantifier") or ""),
-                           certainty=cert.value, certainty_basis=cert.basis,
-                           certainty_agreed=cert.agreed_with_model,
-                           cites=[c.sid for c in cites], cite_markers=[c.marker for c in cites],
-                           context=ctx, extractor=model, prompt_version=PROMPT_VERSION)
-            claims.append(Claim(spine=spine, mechanism=rc.get("mechanism") or "", evidence=[ev]))
-            for n in notes:
-                defer(f"context slot dropped: {n}", rc, rc.get("quote", ""))
-        except DeferralError as e:
-            # Keep the reason, not pydantic's headline line.
-            defer(" | ".join(ln.strip() for ln in str(e).splitlines()
-                             if ln.strip() and not ln.startswith("1 validation error"))[:400]
-                  or str(e)[:300], rc, rc.get("quote", ""))
-
+    repaired = {"accepted": [], "rejected": [], "unresolved": [], "audit": []}
+    if repair and failures:
+        _tick(source_ref, f"Sonnet repair START ({len(failures)} unique failed claim records)")
+        # Expand the original reader's experiment reference so repair never guesses what an index
+        # means. Original fields remain in the audit; corrected experiments must be inline.
+        for failure in failures:
+            original_raw = failure["raw"]
+            failure["original_raw"] = original_raw
+            failure["raw"] = dict(original_raw)
+            if "experiment" in original_raw:
+                experiment = _experiment_for(original_raw, got)
+                if experiment:
+                    failure["raw"]["experiment"] = experiment
+                else:
+                    failure["raw"].pop("experiment", None)
+        instructions = build_prompt(field, doc_type, "[Source is supplied separately below]")
+        instructions += ("\nREPAIR EXPERIMENT OVERRIDE: Never output numeric experiment references. "
+                         "Use an inline experiment with its actual source passage only when it supports "
+                         "this specific finding, readout and experimental system; otherwise omit it. "
+                         "An intervention assay cannot support an unrelated expression or cell-line "
+                         "correlation claim merely because it is in the same paper. "
+                         "Check all copied experiment metadata against the corrected claim. "
+                         "Original reader experiment table for reference: " + json.dumps(got.get("experiments", [])))
+        instructions += "\nVerified vocabulary supplement (local IDs are explicitly local definitions):\n" + json.dumps(supplement_menu)
+        repaired = await repair_claims(text, failures, model=repair_model, validate=validate,
+                                      instructions=instructions, max_concurrency=4)
+        for row in repaired["accepted"]:
+            keep(row["raw"], repair_model)
+        for row in repaired["unresolved"]:
+            unresolved_raw = row.get("last_raw") or row["original"].get("raw", {})
+            defer(row["reason"], unresolved_raw, unresolved_raw.get("quote", ""))
+    else:
+        for failure in failures:
+            defer(failure["reason"], failure["raw"], failure["raw"].get("quote", ""))
     return {"claims": claims, "deferrals": deferrals, "experiments": experiments,
-            "processes": process_map, "process_notes": pnotes,
+            "processes": process_map, "process_notes": pnotes, "warnings": warnings,
+            "repair_audit": repaired, "raw_extraction": got,
+            "extraction_metadata": {"source_sha256": hashlib.sha256(text.encode()).hexdigest(),
+                "reader_model": model, "repair_model": repair_model, "prompt_version": PROMPT_VERSION,
+                "lexicon_version": LEXICON_VERSION, "replayed": raw_extraction is not None},
             "stats": {"raw": len(raw_claims), "kept": len(claims), "deferred": len(deferrals),
-                      "flipped": len(flipped), "experiments": len(experiments),
-                      "proc_seen": len(process_map),
-                      "proc_resolved": sum(1 for v in process_map.values() if v),
-                      "proc_by_menu": sum(1 for v in process_map.values()
-                                          if v and v.get("chosen_by") == "menu")}}
+                      "repair_attempted": len(failures) if repair else 0,
+                      "repaired": len(repaired["accepted"]), "rejected": len(repaired["rejected"]),
+                      "warnings": len(warnings), "flipped": sum(v == "direction audit: swapped" for v in direction.values()),
+                      "direction_flagged": len(direction),
+                      "experiments": len(experiments), "proc_seen": len(lookup_tasks),
+                      "proc_resolved": len(process_map), "proc_by_menu": 0}}

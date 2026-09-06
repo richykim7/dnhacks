@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import uuid
 import re
 import sys
 import time
@@ -72,7 +73,8 @@ def _rank_by_theme(cands: list[find.Candidate], theme: str, prog: jobs.Progress)
 
 
 async def _extract_with_progress(docs: list[Document], concurrency: int,
-                                 prog: jobs.Progress, field: str = "") -> dict[int, dict]:
+                                 prog: jobs.Progress, field: str = "",
+                                 audit_dir: Path | None = None) -> dict[int, dict]:
     """Extract every paper with bounded concurrency, consuming results as they complete so the UI can
     count them. Returns {ref: {claims, experiments, deferrals, ...}}; a failed paper yields an empty
     extraction rather than killing the build."""
@@ -101,6 +103,16 @@ async def _extract_with_progress(docs: list[Document], concurrency: int,
                       done=done, total=total)
             continue
         out[d.ref] = res
+        if audit_dir is not None:
+            audit_dir.mkdir(parents=True, exist_ok=True)
+            audit_path = audit_dir / f"{d.ref}.json"
+            temporary = audit_path.with_suffix(".json.tmp")
+            temporary.write_text(json.dumps({
+                "source_ref": d.ref, "stats": res.get("stats", {}),
+                "metadata": res.get("extraction_metadata", {}), "reader": res.get("raw_extraction"),
+                "repair": res.get("repair_audit", {}), "warnings": res.get("warnings", [])
+            }, indent=2), encoding="utf-8")
+            temporary.replace(audit_path)
         claims += len(res.get("claims", []))
         prog.emit("extract", "progress", f"{d.label}: {len(res.get('claims', []))} claims "
                                          f"({len(res.get('deferrals', []))} deferred)",
@@ -353,7 +365,9 @@ async def build(project_id: str, prog: jobs.Progress, *, dry: bool = False) -> d
     prog.start("extract", f"reading {len(docs)} papers with the extraction model "
                           f"({spec['concurrency']} at a time) — this is the slow, paid step",
                total=len(docs))
-    extractions = await _extract_with_progress(docs, spec["concurrency"], prog, spec.get("theme", ""))
+    audit_dir = out_dir / "extraction_audits" / uuid.uuid4().hex
+    extractions = await _extract_with_progress(docs, spec["concurrency"], prog,
+                                               spec.get("theme", ""), audit_dir=audit_dir)
     n_claims = sum(len(e.get("claims", [])) for e in extractions.values())
     n_empty = sum(1 for e in extractions.values() if not e.get("claims"))
     prog.done("extract", f"{n_claims} claims from {len(docs) - n_empty} papers "
