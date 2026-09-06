@@ -9,6 +9,7 @@ import {
   Plus,
   Sun,
   CircleHelp,
+  Telescope,
 } from "lucide-react";
 import { useResource } from "./lib/api";
 import type { Project } from "./lib/types";
@@ -16,11 +17,13 @@ import { safeStorage, saveStorage } from "./lib/utils";
 import { Investigation } from "./components/Investigation";
 import { Library, LaunchInvestigation } from "./components/Library";
 import { Evidence } from "./components/Evidence";
+import { Forecasting } from "./components/Forecasting";
 import { ResearchProcess } from "./components/ResearchProcess";
 import { Button } from "./components/ui/button";
 import { ErrorNotice, Loading } from "./components/common";
 const Structures = lazy(() => import("./components/Structures"));
-type View = "investigations" | "library" | "evidence" | "structures";
+type View =
+  "forecast" | "investigations" | "library" | "evidence" | "structures";
 function readRoute() {
   const [path, run = ""] = window.location.hash.slice(1).split("/");
   const map: Record<string, View> = {
@@ -34,9 +37,13 @@ function readRoute() {
     new: "library",
   };
   return {
-    view: (["investigations", "library", "evidence", "structures"].includes(
-      path,
-    )
+    view: ([
+      "forecast",
+      "investigations",
+      "library",
+      "evidence",
+      "structures",
+    ].includes(path)
       ? path
       : map[path] || "investigations") as View,
     run: decodeURIComponent(run),
@@ -88,6 +95,7 @@ export default function App() {
     else go("library");
   };
   const nav = [
+    { view: "forecast" as const, label: "Forecast", icon: Telescope },
     {
       view: "investigations" as const,
       label: "Investigations",
@@ -203,6 +211,7 @@ export default function App() {
               projects.
             </div>
           )}
+          {route.view === "forecast" && <Forecasting />}
           {route.view === "investigations" && (
             <Investigation
               project={project}
