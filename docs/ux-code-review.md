@@ -9,7 +9,6 @@ This review supersedes the standalone backtesting prototype as a product directi
 3. `run_experiments` saves the hypothesis, analysis code, structured result, branch, and subject/object/method provenance in the exploration log. Submission and verification preserve the experiment-entry link.
 4. The UI's investigation tree shows researchers. Its experiment cards draw on exploration entries joined to submission and verification results. These records are useful research outputs already available to the frontend.
 5. The literature graph is a separate layer: `/api/kg` reads `claim_edges`. `fetch_papers` explicitly stores text without running claim extraction. Experiments write tested results; they do not automatically become literature claims.
-6. Forecast is a separately prepared historical scenario with its own runner and packets. The global project picker is not an input to that endpoint.
 
 The important product gap is **connecting what a researcher did to what was learned and what should happen next**. Merely animating the literature graph cannot establish that connection.
 
@@ -22,9 +21,8 @@ The important product gap is **connecting what a researcher did to what was lear
 | 3 | Click a literature relationship and read **what supports it, in what context**. Search and follow connected entities within the existing graph. | Quotes, source reference, attribution, `evidence_context` and `papers` were stored already. The graph API selected `claim_id` but discarded it; the frontend stopped at source counts. | **Implemented in this change.** Read-only API plus existing Evidence screen; no new visual shell. |
 | 4 | Preserve the selected investigation when moving to Evidence/Library; an experiment click should open **that experiment**, not the agent's default Activity tab. | Project, run ID and experiment entry ID are already available; sidebar links discard the run, and experiment clicks previously selected only the agent. | Runtime owner confirmed both fixes are in their active slice. This task does not duplicate those edits. |
 | 5 | Make Library's ready state lead to **Explore evidence / Ask a research question**. After Build, show the returned job's live progress and a clear Open investigation action. | Ready/built/stale status, collection counts, job ID and run ID are present. Today ready/imported collections foreground settings, and a build request can leave the user on that form. | Small follow-up in `Library.tsx` with App callback wiring. No new setup framework needed. |
-| 6 | Identify Forecast as the prepared historical case and preserve a return path to current research. | `<Forecasting />` takes no selected-project argument and reads the demo endpoint; the global picker can suggest a relationship that does not exist. | Proposal to Forecast/App owner; retain the already built historical demo. |
 
-For a judge-facing demonstration, lead with a real research objective, then show the recorded branching work, one substantive finding, its experiment and evidence, and the next question. Historical replay can substantiate the forecast capability as a separate segment. The existing workspace contains more useful material than the rejected standalone storyboard exposed.
+For a judge-facing demonstration, lead with a real research objective, then show the recorded branching work, one substantive finding, its experiment and evidence, and the next question. The existing workspace contains more useful material than the rejected standalone storyboard exposed.
 
 ## Implemented evidence interaction
 

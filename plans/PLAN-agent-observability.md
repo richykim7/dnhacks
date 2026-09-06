@@ -174,7 +174,7 @@ summary truncation; bounded display previews can still offer full recorded outpu
 
 Index/checkpoint long streams with schema versions and snapshot sequence. Handle duplicates, gaps,
 reconnects, restarts, pruned branches, and concurrent operations. Label legacy histories as partial;
-do not synthesize missing events or confuse execution playback with forecasting's biological time axis.
+do not synthesize missing events.
 
 ## Optional tmux view
 
@@ -206,7 +206,6 @@ do not synthesize missing events or confuse execution playback with forecasting'
    Structures tab. Playwright screenshots and real rendering inspection across dark/light/mobile,
    missing/failed artifacts, live execution, terminal closed/open, and playback.
 
-Coordinate before editing the shared `webui/server.py` and `frontend/src/App.tsx` with the forecasting
-session. Use existing record adapters where compatible, without treating forecasting records as this
-runtime's already-implemented event contract. Run the repository's full gates before integration.
+Coordinate shared `webui/server.py` and `frontend/src/App.tsx` edits on the board.
+Run the repository's full gates before integration.
 Evaluation dashboards and model-backed performance studies remain in the explicit-approval backlog.

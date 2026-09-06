@@ -14,10 +14,6 @@ DNHacks 2026 team repo. Fill in the one-paragraph project description here once 
 
 ## Layout
 
-Before planning or changing investigation/graph behavior, read `docs/architecture/README.md`
-and its knowledge contract. They distinguish the intended approval-controlled graph from
-current working memory and identify which existing Investigations/Evidence components to reuse.
-
 - `src/`: Python discovery engine, literature graph, and local web API.
 - `frontend/`: React/TypeScript research workspace, Vite build, and browser tests.
 - `scripts/`: local launchers, data workflows, and coordination board.

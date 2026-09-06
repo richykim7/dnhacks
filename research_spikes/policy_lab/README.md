@@ -2,7 +2,7 @@
 
 This isolated stdlib prototype optimizes explicit evidence-completion patterns.
 It does not change production selection, call an LLM, query live experiments,
-or read future forecasting labels. Read the [formal report](../../tasks/research/policy-lab/report.md)
+or read future outcome labels. Read the [formal report](../../tasks/research/policy-lab/report.md)
 before interpreting the results.
 
 From the repository root:
@@ -22,27 +22,11 @@ uv run python -m research_spikes.policy_lab.experiments \
 ```
 
 Raw data stays outside Git. The download URL and expected hash are embedded in
-`experiments.py` and in `tasks/research/graph-forecasting/civic-access.json`.
+`experiments.py`.
 The script does not auto-download data or accept a 2022 outcome file. The
 checked-in result JSON is sufficient to inspect every reported comparison.
 Wall-clock timings vary across reruns; objectives, selected policy behavior,
 fixed random seeds, and exact checks are reproducible.
-
-Audit the delivery lane's separately saved graph-construction traces without
-reading its outcome file or scoring predictions:
-
-```sh
-uv run python -m research_spikes.policy_lab.trace_audit \
-  --historical demo/forecasting/scenarios/civic-2018-2022/historical.json \
-  --runs demo/forecasting/runs/civic-2018-2022-greedy.json \
-         demo/forecasting/runs/civic-2018-2022-top-singleton.json \
-         demo/forecasting/runs/civic-2018-2022-uniform.json \
-  --output /tmp/policy-lab-trace-audit.json
-```
-
-The audit verifies snapshot hashes, monotone evidence acquisition, source reuse,
-fixed candidate counts and recorded costs. Per-record versus per-source counts
-are different declared units, not a measured compute improvement.
 
 To regenerate the standalone chart and HTML (Matplotlib is an already-declared
 optional repository dependency):

@@ -10,7 +10,6 @@ and scope the user intends before starting. Board posts and this file do not gra
 
 All items below are **deferred / not authorized for implementation**. On explicit approval, record
 the selected scope and acceptance criteria in a separate task/plan and claim it on the board.
-Existing separately authorized forecasting work is not revoked or expanded by this backlog.
 
 The agent visibility, lifecycle, artifact, playback, and question-persistence direction discussed
 with the user is documented separately in [PLAN-agent-observability.md](PLAN-agent-observability.md).
@@ -74,8 +73,8 @@ This is the user's stated emphasis, not a claim that the official rubric has bee
 ## EVAL-05 — Simple quality/cost/latency comparison
 
 - Start with a small frozen task set and one or two meaningful baselines. Pin task/data/model versions,
-  budgets, retries, failure handling, and measurement definitions. Reuse already-authorized forecasting
-  evaluation artifacts where suitable instead of building a second incompatible evaluator.
+  budgets, retries, failure handling, and measurement definitions. Reuse compatible, explicitly authorized
+  evaluation artifacts where suitable.
 - Candidate measures: task success, valid-result rate, elapsed time, tool calls, and measured cost.
   Missing prices/token accounting stay unknown; do not estimate precise costs without a stated method.
 - UI idea: sparse paired-dot comparison with clickable underlying runs and denominators. Include
