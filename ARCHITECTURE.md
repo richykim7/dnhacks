@@ -421,11 +421,13 @@ and forking possible; a `UsageLedger` records tokens and cache hits per run.
 `protein_design.py`, `protein_encoder.py` and `protein_tools.py` provide exploratory
 protein profiles, coverage, module means, nearest development profiles, context
 comparisons and localization-aware site tables. Frozen mask-aware PCA and optional
-CPU denoising artifacts use donor-disjoint non-PDAC training/validation cohorts;
+CPU/CUDA denoising artifacts use donor-disjoint non-PDAC training/validation cohorts;
 confirmation data and cross-assay transforms are rejected by discovery operations.
 The operator-only audit preserves grade eligibility and the 48-pair policy.
-`protein_experiment.py` blocks native registration until shared ledger, sampling,
-privacy and validation prerequisites are implemented and reviewed. No native wealth
+`protein_experiment.py` conditionally registers operator-reviewed independent-group
+finite replay through `native_group_replay.py` and the shared canonical donor ledger.
+Real CPTAC development models are trained; the audited grade budget and simulated
+declared-effect power fail release gates, so biological confirmation stays unavailable. No native wealth
 or verification verdict is exposed. See [protein signaling](docs/protein-signaling.md).
 
 ## 9. The console
