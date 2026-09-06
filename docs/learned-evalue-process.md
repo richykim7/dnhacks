@@ -341,3 +341,27 @@ expression-distribution e-value does not establish gene-effect direction or a ca
 The user-requested independent review of candidate follow-on tools is recorded separately in
 [the tool council](evalue-tool-council.md). It proposes future work and does not authorize or claim
 implementation of those integrations.
+
+## PDAC scope and trajectory-monitoring assessment
+
+The user clarified that future tools should serve pancreatic-cancer therapeutic discovery or relevant
+basic science. Two council reviewers independently reassessed the original candidates: both prioritize
+functional dependency/resistance; measured drug response rises, while expression/pathway analysis
+remains core and survival/co-essentiality become supporting options. Their remaining disagreements,
+biological examples and evidence-unit requirements are in the [PDAC reassessment](evalue-tool-council.md#pancreatic-cancer-reassessment).
+This did not change tools or establish disease-specific validation of the existing neutrophil benchmark.
+
+Separately, the complete E-valuator v2 paper (27 pages including appendices) was downloaded with
+readable page-marked text and source metadata into ignored local `data/research/e-valuator/`.
+The [tree-search assessment](evaluator-tree-search-review.md) maps the paper to completed-action
+checkpoints, the existing sibling judge, resumable branches and runtime lineage. An independent
+statistical review recommends whole-investigation alarms as the simplest first measurement; a separate
+branch study needs complete PDAC leaf rollouts. Both need independent success labels, separate
+fitting/calibration/test investigations and observation-only replay before changing allocation.
+The key limitations are missing full outcomes for
+pruned branches, correlated/adaptively selected descendants, and keeping both numerical scoring systems
+outside discovery feedback. No trajectory monitor, new training, GPU run or new evaluation was performed.
+
+For slides: the implemented result is still private biological scoring with the recorded validation.
+The next research question is whether a separately calibrated progress monitor can save compute while
+rarely discarding useful research branches. Success-versus-cost and false-stop plots remain to be measured.

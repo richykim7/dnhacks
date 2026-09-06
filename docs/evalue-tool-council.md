@@ -1,6 +1,7 @@
 # Candidate computational-biology tools for background e-value scoring
 
 Research review, 2026-09-05. No integrations below have been implemented or benchmarked here.
+The later [PDAC reassessment](#pancreatic-cancer-reassessment) qualifies the original generic ranking.
 The existing expression tool is a biological two-sample diagnostic. Genentech's E-valuator is a
 separate agent-trajectory method; see [the source-paper clarification](learned-evalue-process.md#source-paper-identification).
 
@@ -112,3 +113,35 @@ The council also flagged existing co-essentiality rank/enrichment language and u
 observational permutations as potential sources of overclaiming. Those skills were not modified in
 this research task; a future adapter must resolve the precise sampling/null contracts rather than
 inherit an informal description as a guarantee.
+
+## Pancreatic-cancer reassessment
+
+The user clarified that candidates should suit pancreatic-cancer therapeutic discovery or relevant
+basic science. Two original reviewers independently reassessed relevance without seeing one another's
+new rankings. Both moved functional dependency ahead of pathway activity. They agreed on relevance
+more strongly than ordering: A placed drug response second; B placed it fourth behind expression tools.
+This supersedes pathway-first as a disease-specific priority, while preserving its lower integration
+effort as a separate consideration. No tools or scientific workflows were changed.
+
+| Candidate | PDAC assessment and example | Evidence contract to establish before integration |
+| --- | --- | --- |
+| DepMap/Chronos; treatment CRISPR screens with MAGeCK | Highest shared priority: target dependencies and modifiers of KRAS-inhibitor response. [PDAC resistance study](https://pmc.ncbi.nlm.nih.gov/articles/PMC10821578/) | Unique donor-derived model for cross-model generalization; biological screen replicate for within-model effects. Guides are nested observations. Baseline observational association, knockout effects and drug-by-knockout interactions require different nulls. |
+| PharmacoGx; SynergyFinder | Raise measured drug-response analysis: organoid sensitivity and biomarker associations are directly useful. [PDAC organoid pharmacotyping](https://pubmed.ncbi.nlm.nih.gov/29853643/) | Start with a frozen per-model response summary and a justified association test. Dose points and wells are not independent models. A combination claim needs a prespecified additivity reference and uncertainty in single-agent response; Bliss/Loewe scores are not e-values. |
+| decoupler and PyDESeq2 | Retain as core tools: resistance programs, classical/basal states and fibroblast responses. [IL1/JAK/STAT versus TGF-beta in PDAC fibroblasts](https://pubmed.ncbi.nlm.nih.gov/30366930/) | Fixed activity scores or raw-count gene analysis on independent donor/model units. Donor-by-cell-type pseudobulk avoids counting cells as donors. Paired perturbations need the appropriate paired design; mixture differences are not automatically regulatory changes. |
+| Co-essentiality | Retain as supporting target/module discovery; treatment-anchored perturbation evidence is more direct for resistance questions. | Correlation can reflect lineage/batch. Freeze targets and distinguish marginal from conditional independence; verify model independence and shared preprocessing. |
+| scCODA composition | Retain for immune/fibroblast abundance changes, generally as a supporting readout. | Donor-level replication and a clear compositional contrast; posterior inclusion probabilities do not become e-values by renaming. |
+| Safe logrank | Still relevant for a defined outcome/response question, lower priority for mechanism discovery. | Independent endpoint-bearing patients, appropriate risk sets/censoring and fixed groups. Prognostic association alone does not identify a therapeutic vulnerability. |
+
+Two useful omissions emerged. Both reviewers proposed [chromVAR](https://www.nature.com/articles/nmeth.4401)
+for motif-associated accessibility and regulatory-state plasticity; [PDAC work](https://pmc.ncbi.nlm.nih.gov/articles/PMC9511995/)
+provides a biological example. A also proposed [NicheNet](https://www.nature.com/articles/s41592-019-0667-5)
+for tumor–stroma ligand hypotheses, motivated by the fibroblast study above. These remain discovery
+readouts unless frozen motif/receiver-target scores are tested on appropriate independent units.
+Motif accessibility does not prove TF binding, and inferred ligand activity does not prove communication.
+Peak definitions, motif backgrounds and ligand/target choices must respect the confirmation boundary.
+
+Published examples establish biological relevance, not availability of a suitable local validation
+cohort. The original expression benchmark used neutrophil data, so its results do not establish PDAC
+utility. Assessment priorities are dependency/resistance, measured drug response, and expression
+mechanisms; data design and valid nulls decide which evidence adapter can actually be built first.
+Trajectory monitoring is assessed separately in [the E-valuator/tree-search review](evaluator-tree-search-review.md).
