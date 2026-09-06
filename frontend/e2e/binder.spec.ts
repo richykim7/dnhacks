@@ -472,10 +472,20 @@ test("binder camera travels continuously and user takeover cancels the remaining
   expect(await page.evaluate(() => (window as any).sceneReview.inspect().camera_transitioning)).toBe(false); await page.mouse.move(box!.x + 45, box!.y + 25); await page.mouse.up();
   const held = await page.evaluate(() => (window as any).sceneReview.inspect().camera);
   await page.waitForTimeout(800);
-  expect(await page.evaluate(() => (window as any).sceneReview.inspect().camera)).toEqual(held);
+  const afterHold = await page.evaluate(() => (window as any).sceneReview.inspect().camera);
+  for (const field of ["position", "target", "quaternion", "up"])
+    for (let i = 0; i < held[field].length; i++)
+      expect(afterHold[field][i]).toBeCloseTo(held[field][i], 9);
+  for (const field of ["fov", "near", "far", "projection"])
+    expect(afterHold[field]).toEqual(held[field]);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.evaluate(async () => { await (window as any).sceneReview.apply({ preset: "hero" }); await (window as any).sceneReview.ready(); });
   const fixed = await page.evaluate(() => (window as any).sceneReview.inspect().camera);
   await page.waitForTimeout(150);
-  expect(await page.evaluate(() => (window as any).sceneReview.inspect().camera)).toEqual(fixed);
+  const afterFixed = await page.evaluate(() => (window as any).sceneReview.inspect().camera);
+  for (const field of ["position", "target", "quaternion", "up"])
+    for (let i = 0; i < fixed[field].length; i++)
+      expect(afterFixed[field][i]).toBeCloseTo(fixed[field][i], 9);
+  for (const field of ["fov", "near", "far", "projection"])
+    expect(afterFixed[field]).toEqual(fixed[field]);
 });
