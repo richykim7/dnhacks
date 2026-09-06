@@ -235,3 +235,45 @@ invalid shared-control, current-block fitting and pseudoreplication controls.
 The proposed 80% power target is unmet. No audited fresh PDO denominator, reviewed
 sampling/normalization proof, or deployed private OS boundary is claimed. These
 remain explicit scientific release requirements rather than manufactured results.
+
+## Nonlinear critic feasibility on CUDA
+
+The previous synthetic nonlinear failure is partly structural. For symmetric
+X with Y = X² + independent noise, reflecting X leaves the joint distribution
+unchanged while negating every score of the scalar critic tanh(wXY).
+Consequently its native factor has conditional expectation one even under this
+dependent alternative, including when w is chosen from past blocks. More donors
+cannot give that critic 80% rejection power at a valid 5% anytime threshold.
+
+The [separate feasibility report](pharmacotype-critic-power.json) compares a
+bounded 2–32–32–1 tanh MLP, trained entirely on CUDA, with that bilinear baseline.
+For each relation and each of three seeds, it uses 1,024 synthetic training and
+256 external development-validation donors. Training has 100 logistic
+initialization epochs and 200 native mean-log-factor epochs; the best external
+validation checkpoint freezes before any evaluation stream is generated.
+All seeds are reported independently. Each model is tested on 10,000 fresh
+streams per case with 32 donors, stake 0.9 and threshold 20. Every evaluation
+block cross-checks a scored factor against the scalar production arithmetic.
+
+| Critic | Simple alternative anytime power | Quadratic alternative anytime power |
+| --- | ---: | ---: |
+| Fixed scalar bilinear | 35.90% | 0% |
+| Relation-specific externally trained MLP, three seeds | 99.97–99.98% | 99.04–99.21% |
+
+MLP IID-null rejection ranges from 0.16% to 0.41%, and independent heavy-tail
+null rejection from 0.16% to 0.23%; the report contains Wilson intervals and
+detection delays. The alternatives deliberately have strong signal (noise SD
+0.25), and each MLP is trained on synthetic examples of its target relation.
+This establishes synthetic feasibility, not power against an unknown biological
+alternative. The run took 7.36 seconds and reserved 24 MiB on the L40S.
+The fixed bilinear baseline does not receive the MLP's optimization budget, so
+the simple-alternative improvement does not isolate architecture from training.
+The quadratic blind-spot argument applies to every scalar bilinear weight.
+
+Reproduce on CUDA with `python scripts/validate_pharmacotype_critic_cuda.py
+--output data/interim/pharmacotype/critic-power.json`. The pre-run design is
+written separately; the report retains the six frozen model weights and hashes.
+The experimental MLP is not integrated into the private process ledger, does
+not replace the existing adaptive report, and does not establish real PDO
+utility, sufficient fresh donors, or confirmation eligibility. Those gates
+remain open despite the successful synthetic comparison.
