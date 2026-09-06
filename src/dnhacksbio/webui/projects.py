@@ -365,7 +365,7 @@ def _adopted() -> dict[str, dict]:
             continue
         st = path.stat()
         out[pid] = {
-            "id": pid, "name": label, "description": "Existing corpus (read-only).",
+            "id": pid, "name": label, "description": "",
             "created": st.st_mtime, "updated": st.st_mtime, "status": "ready",
             "spec": default_spec(), "attachments": [], "chat": [], "runs": [], "build": {},
             "kg_db": str(path), "adopted": True, "n_attachments": 0,

@@ -57,7 +57,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from . import architecture, assistant, attachments, data, jobs, projects, evidence, library
+from . import architecture, assistant, attachments, data, jobs, projects, evidence, library, membership
 
 STATIC = Path(__file__).resolve().parent / "static"
 FRONTEND = Path(os.environ.get("DNHACKS_FRONTEND_DIST", Path(__file__).resolve().parents[3] / "frontend" / "dist"))
@@ -205,7 +205,7 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         # An attachment upload is bytes, not JSON. It is read here, before the JSON parse below
         # would choke on a PDF, and it is the only route that reads a raw body.
-        if parsed.path.startswith("/api/projects/") and parsed.path.endswith("/attachments"):
+        if parsed.path.startswith("/api/projects/") and parsed.path.endswith(("/attachments", "/papers/upload")):
             return self._upload(parsed.path)
         try:
             length = int(self.headers.get("Content-Length", 0))
@@ -323,6 +323,13 @@ class Handler(BaseHTTPRequestHandler):
         if len(parts) == 1:
             return self._send_json(projects.update(pid, payload))
         tail = parts[1]
+        if tail == "papers":
+            if len(parts) == 3 and parts[2] == "add":
+                return self._send_json(membership.add_dois(pid, payload.get("dois")), status=202)
+            if len(parts) == 4 and parts[3] == "remove":
+                return self._send_json(membership.remove_paper(pid, parts[2]))
+        if tail == "jobs" and len(parts) == 4 and parts[3] == "retry":
+            return self._send_json(membership.retry(pid, parts[2]), status=202)
         if tail == "delete":
             return self._send_json(projects.delete(pid, purge=bool(payload.get("purge"))))
         if tail == "build":
@@ -342,13 +349,14 @@ class Handler(BaseHTTPRequestHandler):
         if tail == "jobs" and len(parts) == 4 and parts[3] == "cancel":
             return self._send_json(jobs.cancel(pid, parts[2]))
         if tail == "attachments" and len(parts) == 4 and parts[3] == "delete":
-            return self._send_json(attachments.remove(pid, parts[2]))
+            return self._send_json(membership.remove_attachment(pid, parts[2]))
         return self._error(404, "not found")
 
     def _upload(self, path: str):
         """Raw-body upload: the filename rides in X-Filename, the bytes are the body. Not multipart: a
         single-file drop needs exactly one name and one blob."""
-        pid = unquote(path[len("/api/projects/"):-len("/attachments")])
+        suffix = "/papers/upload" if path.endswith("/papers/upload") else "/attachments"
+        pid = unquote(path[len("/api/projects/"):-len(suffix)])
         try:
             self._project_or_404(pid)
             length = int(self.headers.get("Content-Length", 0))
@@ -358,11 +366,17 @@ class Handler(BaseHTTPRequestHandler):
                 return self._error(413, f"file too large (max {attachments.MAX_BYTES // 10**6} MB)")
             filename = unquote(self.headers.get("X-Filename", "") or "upload.txt")
             body = self.rfile.read(length)
-            return self._send_json(attachments.add(pid, filename, body), status=201)
+            if suffix == "/papers/upload":
+                return self._send_json(membership.add_upload(pid, filename, body), status=202)
+            with membership.project_lease(pid):
+                membership.assert_idle(pid)
+                return self._send_json(attachments.add(pid, filename, body), status=201)
         except FileNotFoundError as exc:
             return self._error(404, str(exc))
         except ValueError as exc:
             return self._error(400, str(exc))
+        except RuntimeError as exc:
+            return self._error(409, str(exc))
         except Exception as exc:
             traceback.print_exc()
             return self._error(500, f"{type(exc).__name__}: {exc}")

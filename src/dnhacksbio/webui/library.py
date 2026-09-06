@@ -73,7 +73,8 @@ def _manifest(root):
     if not path.is_file():
         return {}
     obj = json.loads(path.read_text())
-    return {str(p["ref"]): p for p in obj.get("papers", []) if isinstance(p, dict) and "ref" in p}
+    rows = obj.get("papers") if isinstance(obj.get("papers"), list) else obj.get("papers_meta", [])
+    return {str(p["ref"]): p for p in rows if isinstance(p, dict) and "ref" in p}
 
 
 def _database(pid):
@@ -104,7 +105,11 @@ def _decorate(row, manifest, root):
     row = dict(row)
     meta = manifest.get(str(row.get("source_ref")), {})
     raw = _local(root, meta.get("raw_file"))
-    row["authors"] = list(_authors(str(raw), raw.stat().st_mtime_ns, raw.stat().st_size)) if raw and raw.suffix.lower() in (".html", ".htm", ".xml") else []
+    recorded_authors = meta.get("authors")
+    row["authors"] = ([a for a in recorded_authors if isinstance(a, str) and a.strip()]
+                      if isinstance(recorded_authors, list) else
+                      list(_authors(str(raw), raw.stat().st_mtime_ns, raw.stat().st_size))
+                      if raw and raw.suffix.lower() in (".html", ".htm", ".xml") else [])
     row["category"] = meta.get("category") or None
     row["figure_count"] = sum(_local(root, f.get("path")) is not None for f in meta.get("figures", []))
     row["is_full_text"] = bool(row.get("is_full_text") and row.get("has_text"))
