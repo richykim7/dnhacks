@@ -1,8 +1,14 @@
 # Dependency and CRISPR background evidence
 
-Proposed plan, 2026-09-05. Planning only; no implementation, ingestion or experiments performed.
-Prepared by the dependency reviewer concurrently with the drug-response and expression reviewers;
-parent review aligned the transport requirements. Implementation requires a subsequent request.
+Plan prepared 2026-09-05; implementation requested and completed 2026-09-06 for the first adapter.
+The shared queue, receipt-only dependency command, private frozen registrations, blocked permutation
+kernel, canonical retry aliases, attempt audit, operator export and invocation guide are implemented.
+Synthetic calibration/power, transport, recovery and explorer-leakage tests are in
+`tests/test_dependency_evalue.py` and `tests/test_dependency_scoring.py`; expression compatibility is
+covered by its existing integration suite. See `docs/dependency-scoring.md` for the exact contract.
+No real confirmation ingestion or biological pilot has run. Actual cohort/deletion annotation,
+exchangeability justification and power remain operator decisions; MAGeCK remains a later extension.
+The sections below retain the design rationale and implementation requirements.
 
 ## First endpoint and validity
 
@@ -76,7 +82,7 @@ blocks, unequal counts, ties and tiny attainable evidence; selective-dependency 
 confounding cases exposing invalid global shuffling; aliases, missing calls and altered hashes.
 Integration checks cover lost acknowledgements, concurrent/conflicting/renamed retries, restart
 mid-score and one durable result. Inspect HTTP, stdout/stderr, journal, artifacts and recall for leakage.
-These are planned checks, not measured results. No automatic e-BH or multiplication of overlapping tests.
+These checks now have synthetic software coverage; they are not biological confirmation results. No automatic e-BH or multiplication of overlapping tests.
 
 ## Data and MAGeCK extension
 

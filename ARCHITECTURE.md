@@ -334,6 +334,12 @@ These are in the package and tested, and deliberately not connected to the falsi
   receipt only. `expression_scoring.py` runs the private queue and numerical worker separately;
   it has no result-reading HTTP endpoint or feedback callback. See `docs/expression-scoring.md`
   for operator setup and the required filesystem separation when agents run unrestricted code.
+- `dependency_experiment.py`: receipt-only registered Chronos submission; `dependency_scoring.py`
+  privately validates frozen operator protocols/cohort manifests and scores blocked label permutations
+  through `dependency_evalue.py`. Unsupported exchangeability, overlap, development exposure and
+  insufficient units yield private unavailable results. No confirmation cohort is bundled.
+  Both adapters use `experiment_transport.py` for durable acceptance, canonical receipt aliases,
+  worker ownership/restart recovery and output-suppressed subprocesses. See `docs/dependency-scoring.md`.
 - `expr_encoder.py`: frozen PCA or masked-gene autoencoder encoders with recorded training provenance,
   trained by `scripts/train_expr_encoder.py`.
 - `evalues.py`: p-to-e calibration, merging and e-BH helpers. Inputs must already be valid.
