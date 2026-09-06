@@ -1,0 +1,3812 @@
+{
+  "attempt_rule": "one attempt per query; no retries, repair or outcome-based tuning",
+  "budget": {
+    "calls_per_query": 1,
+    "effort": "low",
+    "evidence_records": 0,
+    "max_attempts_per_call": 1,
+    "max_turns_per_call": 1,
+    "thinking": false,
+    "tools_disabled": true
+  },
+  "candidate_count": 683,
+  "created_at": "2026-09-06T00:25:13.053425+00:00",
+  "evaluation_rule": "load outcomes only after every query artifact is saved and hash-sealed; compare only complete queries, on identical rows for every comparator",
+  "historical_packet_sha256": "0ee32041d2e677a1f9d4d55525adfd36a79e6b493cbdd08cdf9a43ac1308664c",
+  "max_concurrent_queries": 3,
+  "model": "claude-sonnet-5",
+  "origin": "model",
+  "queries": [
+    {
+      "candidate_ids": [
+        "civic:candidate:0c72aa2ca32c342d6514",
+        "civic:candidate:11cf9cb2becdeab8f4bf",
+        "civic:candidate:1a0b19f152624fd542d2",
+        "civic:candidate:1a9262fedcfc7f58964a",
+        "civic:candidate:24ab8dcb3f4bdc625d3a",
+        "civic:candidate:36fc4f6d7ecc27ebab6e",
+        "civic:candidate:3c51de8f8648e9cb55e5",
+        "civic:candidate:4464fe952df38e13ecce",
+        "civic:candidate:4b5dc111d849f6daf51d",
+        "civic:candidate:539aafb05bc1b372ce3b",
+        "civic:candidate:56a00736925a4382f7b0",
+        "civic:candidate:67b4a15f241751c73f52",
+        "civic:candidate:6ab18d51d4c059b8fc03",
+        "civic:candidate:6b41ee114ea3e8523261",
+        "civic:candidate:6e1bb0b211492bbed3f9",
+        "civic:candidate:74c61a73e0891e90df28",
+        "civic:candidate:76fdb265f04091ee3aa7",
+        "civic:candidate:82387e561e2ff2c3a976",
+        "civic:candidate:847538becfb7e510e76c",
+        "civic:candidate:8514f5f0a234325bb723",
+        "civic:candidate:96d7ffc9dd4a170799d2",
+        "civic:candidate:9b38e977b41cc838e248",
+        "civic:candidate:a000f7d7d650192a89a1",
+        "civic:candidate:a54ec5c7dac5678fa242",
+        "civic:candidate:bb1f8578ccb5e4691fe5",
+        "civic:candidate:c0d2a44004c4cb5238b3",
+        "civic:candidate:c235f50d3542c083aff9",
+        "civic:candidate:d36e8d50b4dff2d23f11",
+        "civic:candidate:d375228626184a420b3d",
+        "civic:candidate:e6dbd7f80edc79411cff",
+        "civic:candidate:ea720fcd65658cfe1e1c",
+        "civic:candidate:f5197755658d36fb3957",
+        "civic:candidate:fc260416033ddea90d4d",
+        "civic:candidate:fd4749a89045131f7bbe"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:0c72aa2ca32c342d6514",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:11cf9cb2becdeab8f4bf",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:1a0b19f152624fd542d2",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:1a9262fedcfc7f58964a",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:24ab8dcb3f4bdc625d3a",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:36fc4f6d7ecc27ebab6e",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:3c51de8f8648e9cb55e5",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:4464fe952df38e13ecce",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:4b5dc111d849f6daf51d",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:539aafb05bc1b372ce3b",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:56a00736925a4382f7b0",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:67b4a15f241751c73f52",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:6ab18d51d4c059b8fc03",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:6b41ee114ea3e8523261",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:6e1bb0b211492bbed3f9",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:74c61a73e0891e90df28",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:76fdb265f04091ee3aa7",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:82387e561e2ff2c3a976",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:847538becfb7e510e76c",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:8514f5f0a234325bb723",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:96d7ffc9dd4a170799d2",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:9b38e977b41cc838e248",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:a000f7d7d650192a89a1",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:a54ec5c7dac5678fa242",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:bb1f8578ccb5e4691fe5",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:c0d2a44004c4cb5238b3",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c235f50d3542c083aff9",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:d36e8d50b4dff2d23f11",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d375228626184a420b3d",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e6dbd7f80edc79411cff",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:ea720fcd65658cfe1e1c",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:f5197755658d36fb3957",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:fc260416033ddea90d4d",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:fd4749a89045131f7bbe",
+            "therapy": "Alectinib (CH5424802)"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:103",
+          "label": "PIK3CA E542K"
+        }
+      },
+      "prompt_sha256": "19afa5706e68d3f1151b0ff2bb6724b9f65ae413f4dc00cbfe22644aa4715468",
+      "query_id": "civic:variant:103"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:09e165ae74a24706b5ce",
+        "civic:candidate:101782544db050d18b37",
+        "civic:candidate:1a6a5b771d32b01da9cc",
+        "civic:candidate:27f977685d1e27b39093",
+        "civic:candidate:37664efa755cadc66cc4",
+        "civic:candidate:421427339e9f757c8a91",
+        "civic:candidate:4fbf8ea4a1f32c7c6519",
+        "civic:candidate:62fd2fd71e052254c412",
+        "civic:candidate:6ec06f0ab9607cb2222c",
+        "civic:candidate:7a57d2cd076b27157f79",
+        "civic:candidate:7ea506900428aabc4318",
+        "civic:candidate:8aa1083339cf1f7a4b31",
+        "civic:candidate:908e9f233d68e5f96af8",
+        "civic:candidate:90b5cafb78aeeaba7894",
+        "civic:candidate:9c867634e52b5b5b2a34",
+        "civic:candidate:a250d5eefd699cafa619",
+        "civic:candidate:aa0a0c09f9e91f449240",
+        "civic:candidate:afa55f57d28635acd58b",
+        "civic:candidate:b98b9f375ab08a34d82e",
+        "civic:candidate:bb3d1703a988eca42064",
+        "civic:candidate:bb71e219018c9e1d6a1f",
+        "civic:candidate:bc97116b099a1de460ea",
+        "civic:candidate:c26e4b34a50ff672875d",
+        "civic:candidate:c3f7d5360dec4e450540",
+        "civic:candidate:c710880de0941d57f90b",
+        "civic:candidate:c9f02c6694e9d920ac45",
+        "civic:candidate:cf4aee368b56aabb8920",
+        "civic:candidate:d912067632f3acc610b5",
+        "civic:candidate:ecc904cbbba483500769",
+        "civic:candidate:fd579d598565abef719b",
+        "civic:candidate:fe9e1d7b8889b44d5b30"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:09e165ae74a24706b5ce",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:101782544db050d18b37",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:1a6a5b771d32b01da9cc",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:27f977685d1e27b39093",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:37664efa755cadc66cc4",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:421427339e9f757c8a91",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:4fbf8ea4a1f32c7c6519",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:62fd2fd71e052254c412",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:6ec06f0ab9607cb2222c",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:7a57d2cd076b27157f79",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:7ea506900428aabc4318",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:8aa1083339cf1f7a4b31",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:908e9f233d68e5f96af8",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:90b5cafb78aeeaba7894",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:9c867634e52b5b5b2a34",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:a250d5eefd699cafa619",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:aa0a0c09f9e91f449240",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:afa55f57d28635acd58b",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:b98b9f375ab08a34d82e",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:bb3d1703a988eca42064",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:bb71e219018c9e1d6a1f",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:bc97116b099a1de460ea",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:c26e4b34a50ff672875d",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c3f7d5360dec4e450540",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c710880de0941d57f90b",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c9f02c6694e9d920ac45",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:cf4aee368b56aabb8920",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d912067632f3acc610b5",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:ecc904cbbba483500769",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:fd579d598565abef719b",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:fe9e1d7b8889b44d5b30",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:104",
+          "label": "PIK3CA E545K"
+        }
+      },
+      "prompt_sha256": "91d7797298fdfff3a3b0de4a9f13f0816ed6d5fd13cffb44108602b02a639c0e",
+      "query_id": "civic:variant:104"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:00d5629a828745200c48",
+        "civic:candidate:062c6a6efd7919697c85",
+        "civic:candidate:165d6a6e82b5135db0c7",
+        "civic:candidate:1ea962dfb0d853dec4d1",
+        "civic:candidate:3b6b2396e8147d7d1a79",
+        "civic:candidate:3c8f744728e6fadee792",
+        "civic:candidate:3ca42d01f9056499706d",
+        "civic:candidate:3cdbbdc5047de01e99a5",
+        "civic:candidate:59095798dc11b6961061",
+        "civic:candidate:5d4d71a2fd441d2a293b",
+        "civic:candidate:6307548844e4b1cf8ec9",
+        "civic:candidate:63e8259dc391d5cd3598",
+        "civic:candidate:6dd043ff957af5eb222f",
+        "civic:candidate:74b410237e583e42702c",
+        "civic:candidate:77a8255d7599024b6be2",
+        "civic:candidate:7e018aec5d89ec6dc81a",
+        "civic:candidate:809cc31b8c9dd3a0384a",
+        "civic:candidate:8becfb8ba3d704ed094a",
+        "civic:candidate:966b72d86b8ef30d1972",
+        "civic:candidate:9d0f91ac50dfe2de3d11",
+        "civic:candidate:9d1e5dad19406b842a59",
+        "civic:candidate:a918d98c3fb4c2a0404d",
+        "civic:candidate:b7b67d3024374df474eb",
+        "civic:candidate:bd9c1158893051053458",
+        "civic:candidate:c360e7785eda64ff5917",
+        "civic:candidate:c67b1ce843076adcbdce",
+        "civic:candidate:c7dc9150424b49d18fad",
+        "civic:candidate:cb13a9ddbe25cf34bfaa",
+        "civic:candidate:d45d272c7ab96bb60708",
+        "civic:candidate:dfd226c2c96decd6c9d1",
+        "civic:candidate:f44e757f963a763b4182"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:00d5629a828745200c48",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:062c6a6efd7919697c85",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:165d6a6e82b5135db0c7",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:1ea962dfb0d853dec4d1",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:3b6b2396e8147d7d1a79",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:3c8f744728e6fadee792",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:3ca42d01f9056499706d",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:3cdbbdc5047de01e99a5",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:59095798dc11b6961061",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:5d4d71a2fd441d2a293b",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:6307548844e4b1cf8ec9",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:63e8259dc391d5cd3598",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:6dd043ff957af5eb222f",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:74b410237e583e42702c",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:77a8255d7599024b6be2",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:7e018aec5d89ec6dc81a",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:809cc31b8c9dd3a0384a",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:8becfb8ba3d704ed094a",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:966b72d86b8ef30d1972",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:9d0f91ac50dfe2de3d11",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:9d1e5dad19406b842a59",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:a918d98c3fb4c2a0404d",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:b7b67d3024374df474eb",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:bd9c1158893051053458",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:c360e7785eda64ff5917",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:c67b1ce843076adcbdce",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c7dc9150424b49d18fad",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:cb13a9ddbe25cf34bfaa",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d45d272c7ab96bb60708",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:dfd226c2c96decd6c9d1",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:f44e757f963a763b4182",
+            "therapy": "Alectinib (CH5424802)"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:107",
+          "label": "PIK3CA H1047R"
+        }
+      },
+      "prompt_sha256": "8378f09d486f980a7e7b1a320ea09a1e089502f56dfbbc02af7e813ff4d95db2",
+      "query_id": "civic:variant:107"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:0625afc7bd6fce2bd2f3",
+        "civic:candidate:12ad9669bb083001575a",
+        "civic:candidate:20922a094a810277e710",
+        "civic:candidate:23e9b4aa4dc866b0e948",
+        "civic:candidate:2a23279edd817459b5e8",
+        "civic:candidate:2a6232af03f6484cb66a",
+        "civic:candidate:2bdec72a070c5c524451",
+        "civic:candidate:380daa1d4bb768554726",
+        "civic:candidate:41b1884827a27bfacae3",
+        "civic:candidate:49717c6b26489d0eaac7",
+        "civic:candidate:49b2ee627f6b6dd422ac",
+        "civic:candidate:4a36603bf591a5741052",
+        "civic:candidate:5a7c34d544878db11d5d",
+        "civic:candidate:61a179ab85ba9cbb77d8",
+        "civic:candidate:7e66040ba726d53aec70",
+        "civic:candidate:850db51b8600edd5b660",
+        "civic:candidate:8626390e3f15905976b0",
+        "civic:candidate:8b9681fa579f2af5e846",
+        "civic:candidate:9a4f480f89c1fadcf79c",
+        "civic:candidate:b1ff91c6fb15bd91ea6f",
+        "civic:candidate:b6a61e982c39dcc5b69c",
+        "civic:candidate:bf68de78370b3a3cd6f3",
+        "civic:candidate:c1b926ae67ec662c9e8b",
+        "civic:candidate:c6493459a16871ee6f74",
+        "civic:candidate:d09a573a0f8a24a3faae",
+        "civic:candidate:d6828dd413dd95e925c1",
+        "civic:candidate:dae4cd3abceaae164002",
+        "civic:candidate:e27c69987cba6333251d",
+        "civic:candidate:e2cd64ce11094abd0cde"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:0625afc7bd6fce2bd2f3",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:12ad9669bb083001575a",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:20922a094a810277e710",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:23e9b4aa4dc866b0e948",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:2a23279edd817459b5e8",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:2a6232af03f6484cb66a",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:2bdec72a070c5c524451",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:380daa1d4bb768554726",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:41b1884827a27bfacae3",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:49717c6b26489d0eaac7",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:49b2ee627f6b6dd422ac",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:4a36603bf591a5741052",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:5a7c34d544878db11d5d",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:61a179ab85ba9cbb77d8",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:7e66040ba726d53aec70",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:850db51b8600edd5b660",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:8626390e3f15905976b0",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:8b9681fa579f2af5e846",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:9a4f480f89c1fadcf79c",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:b1ff91c6fb15bd91ea6f",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:b6a61e982c39dcc5b69c",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:bf68de78370b3a3cd6f3",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c1b926ae67ec662c9e8b",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:c6493459a16871ee6f74",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:d09a573a0f8a24a3faae",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:d6828dd413dd95e925c1",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:dae4cd3abceaae164002",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:e27c69987cba6333251d",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e2cd64ce11094abd0cde",
+            "therapy": "Trastuzumab"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:12",
+          "label": "BRAF V600E"
+        }
+      },
+      "prompt_sha256": "e35799689e5dd0dc4ce396bd6bff85dc7137ee1bb07da239c9d03ab87f94a957",
+      "query_id": "civic:variant:12"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:00139dbf7dc9fc312c05",
+        "civic:candidate:0767829ba057b0406542",
+        "civic:candidate:0aef224a192c374cac2d",
+        "civic:candidate:0d552d3597a66bb2b9f5",
+        "civic:candidate:106a03a6cd9cab1fb1b8",
+        "civic:candidate:130e15224802ed237f8c",
+        "civic:candidate:172149b47e8c59f46137",
+        "civic:candidate:187f8e8ab3b697929750",
+        "civic:candidate:2005be3d21c543058656",
+        "civic:candidate:282189498d887eabbc34",
+        "civic:candidate:2daac3a6e3a0debe26da",
+        "civic:candidate:3eb0407aeb894699965f",
+        "civic:candidate:5419d353b5077408a525",
+        "civic:candidate:5a2c90065c84dc9dac6e",
+        "civic:candidate:5a2edc995cf9fc78df6e",
+        "civic:candidate:692e742fb7cd0046dd8e",
+        "civic:candidate:798007537dc0f8fdfd8c",
+        "civic:candidate:930c3c9ba2d35f5e9749",
+        "civic:candidate:96771510b3357322ece9",
+        "civic:candidate:9da3b7ea6ef1a312a79e",
+        "civic:candidate:af474f8b6737340d1f80",
+        "civic:candidate:b5460f730a4fa01fb9f7",
+        "civic:candidate:b9870fe437e4907ef464",
+        "civic:candidate:c4f91a7fa5089d543fe7",
+        "civic:candidate:c8f877c503a937fd9062",
+        "civic:candidate:cd2653edd7aff032da37",
+        "civic:candidate:e4e34d49468f0c7feabc",
+        "civic:candidate:ea479f2f021c867e38a5",
+        "civic:candidate:f7109fb06d27ce1dac30"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:00139dbf7dc9fc312c05",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:0767829ba057b0406542",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:0aef224a192c374cac2d",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:0d552d3597a66bb2b9f5",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:106a03a6cd9cab1fb1b8",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:130e15224802ed237f8c",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:172149b47e8c59f46137",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:187f8e8ab3b697929750",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:2005be3d21c543058656",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:282189498d887eabbc34",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:2daac3a6e3a0debe26da",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:3eb0407aeb894699965f",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5419d353b5077408a525",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:5a2c90065c84dc9dac6e",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:5a2edc995cf9fc78df6e",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:692e742fb7cd0046dd8e",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:798007537dc0f8fdfd8c",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:930c3c9ba2d35f5e9749",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:96771510b3357322ece9",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:9da3b7ea6ef1a312a79e",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:af474f8b6737340d1f80",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:b5460f730a4fa01fb9f7",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:b9870fe437e4907ef464",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:c4f91a7fa5089d543fe7",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:c8f877c503a937fd9062",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:cd2653edd7aff032da37",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e4e34d49468f0c7feabc",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:ea479f2f021c867e38a5",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:f7109fb06d27ce1dac30",
+            "therapy": "Cetuximab"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:17",
+          "label": "BRAF V600"
+        }
+      },
+      "prompt_sha256": "ae7936608ccaff25a9a4e02ebfd6014c011ce70ce636bf608403530c89871b4b",
+      "query_id": "civic:variant:17"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:383aa8cf9ca61d8f80f4",
+        "civic:candidate:38baa9ffd06a4f3a0021",
+        "civic:candidate:4f55035677ceb6792016",
+        "civic:candidate:54d5609851abcfc632b3",
+        "civic:candidate:5cf1f63df94c85a9b703",
+        "civic:candidate:6e7cfea9aacb68aad76e",
+        "civic:candidate:7036722fd3d21b2e26aa",
+        "civic:candidate:70f74fc8c369b215eaeb",
+        "civic:candidate:73459a4debe3de371dc2",
+        "civic:candidate:7619fba0d39c7a989b4e",
+        "civic:candidate:79994033489a12bbfc42",
+        "civic:candidate:8505b289787f3bca4512",
+        "civic:candidate:8ce0054c0b5e06d07bbf",
+        "civic:candidate:a0ddc7a3b0b33256c797",
+        "civic:candidate:a309459c76aa12e1ab31",
+        "civic:candidate:a96d63e8f4851074aa6f",
+        "civic:candidate:ace97e5b57a336e5b39f",
+        "civic:candidate:b4a62c82b2f03eacd91b",
+        "civic:candidate:b621489867b634a600be",
+        "civic:candidate:bcb1ed710be29b1953eb",
+        "civic:candidate:c45af767b9663e9c8987",
+        "civic:candidate:ce1d35ceee8e199e68ed",
+        "civic:candidate:ce24604f38e339f51c7b",
+        "civic:candidate:ce8ec258b4eab074d49f",
+        "civic:candidate:cfd02a200330d5043aa3",
+        "civic:candidate:d34a7e721ce70e94a498",
+        "civic:candidate:d5b4d6a80f19e527d4a2",
+        "civic:candidate:daa141527c1a924a163a",
+        "civic:candidate:daed04ad4399c2b3602c",
+        "civic:candidate:e40053ea4a05f4b8b5e6",
+        "civic:candidate:f2a7db6090aebd6fd690",
+        "civic:candidate:ff23682eecf86553860f"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:383aa8cf9ca61d8f80f4",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:38baa9ffd06a4f3a0021",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:4f55035677ceb6792016",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:54d5609851abcfc632b3",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5cf1f63df94c85a9b703",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:6e7cfea9aacb68aad76e",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:7036722fd3d21b2e26aa",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:70f74fc8c369b215eaeb",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:73459a4debe3de371dc2",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:7619fba0d39c7a989b4e",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:79994033489a12bbfc42",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:8505b289787f3bca4512",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:8ce0054c0b5e06d07bbf",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:a0ddc7a3b0b33256c797",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:a309459c76aa12e1ab31",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:a96d63e8f4851074aa6f",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:ace97e5b57a336e5b39f",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:b4a62c82b2f03eacd91b",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:b621489867b634a600be",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:bcb1ed710be29b1953eb",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c45af767b9663e9c8987",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:ce1d35ceee8e199e68ed",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:ce24604f38e339f51c7b",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:ce8ec258b4eab074d49f",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:cfd02a200330d5043aa3",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:d34a7e721ce70e94a498",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:d5b4d6a80f19e527d4a2",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:daa141527c1a924a163a",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:daed04ad4399c2b3602c",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:e40053ea4a05f4b8b5e6",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:f2a7db6090aebd6fd690",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:ff23682eecf86553860f",
+            "therapy": "Dabrafenib, Trametinib"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:208",
+          "label": "NRAS MUTATION"
+        }
+      },
+      "prompt_sha256": "b119cced04d8945be21c07f8932f7f60511e00fa8aa84987bb9c21d8efe46236",
+      "query_id": "civic:variant:208"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:0433a989571c51458384",
+        "civic:candidate:0937f6291b5652a57c1d",
+        "civic:candidate:0be98bd9a80ae928d32f",
+        "civic:candidate:15e2b13cd172cde5c7f1",
+        "civic:candidate:1dc71ddea8467dbb317e",
+        "civic:candidate:1f90b24343216e1c7036",
+        "civic:candidate:3446c5b021d6ece52300",
+        "civic:candidate:6fb9ca6c6e6ef2dbe548",
+        "civic:candidate:727fe71480f541660604",
+        "civic:candidate:73529078c4634c013f89",
+        "civic:candidate:7b72d32099c21dc87c4b",
+        "civic:candidate:7bc0ac22a619c8e89d7f",
+        "civic:candidate:8091bfd697820c5e513a",
+        "civic:candidate:823db7d8b34af113915b",
+        "civic:candidate:839505071f7c8e2eb48c",
+        "civic:candidate:8f26a0368af530ea4f8b",
+        "civic:candidate:9ae9803cbaa3b0f40e1b",
+        "civic:candidate:a470575c5a8043bf52a5",
+        "civic:candidate:a843911d136f91df37af",
+        "civic:candidate:b46c5c351663634058e0",
+        "civic:candidate:c1197b8db9f4547b5877",
+        "civic:candidate:c7753af64aea92c466ab",
+        "civic:candidate:ca59aa2cc40a9dbd9eef",
+        "civic:candidate:cae7a5becb294d16c641",
+        "civic:candidate:d6f4b7d5b1cf4056ce6c",
+        "civic:candidate:db2d916ef84393cde79a",
+        "civic:candidate:dd44d518b2e62b651074",
+        "civic:candidate:e455380e7af858f92ab3",
+        "civic:candidate:face397b053698352f6b"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:0433a989571c51458384",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:0937f6291b5652a57c1d",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:0be98bd9a80ae928d32f",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:15e2b13cd172cde5c7f1",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:1dc71ddea8467dbb317e",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:1f90b24343216e1c7036",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:3446c5b021d6ece52300",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:6fb9ca6c6e6ef2dbe548",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:727fe71480f541660604",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:73529078c4634c013f89",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:7b72d32099c21dc87c4b",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:7bc0ac22a619c8e89d7f",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:8091bfd697820c5e513a",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:823db7d8b34af113915b",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:839505071f7c8e2eb48c",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:8f26a0368af530ea4f8b",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:9ae9803cbaa3b0f40e1b",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:a470575c5a8043bf52a5",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:a843911d136f91df37af",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:b46c5c351663634058e0",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:c1197b8db9f4547b5877",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:c7753af64aea92c466ab",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:ca59aa2cc40a9dbd9eef",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:cae7a5becb294d16c641",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:d6f4b7d5b1cf4056ce6c",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:db2d916ef84393cde79a",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:dd44d518b2e62b651074",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e455380e7af858f92ab3",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:face397b053698352f6b",
+            "therapy": "Lapatinib"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:214",
+          "label": "PTEN LOSS"
+        }
+      },
+      "prompt_sha256": "d6cef1bb91c9a23c81b46e250398f85b0d7ef692b06b0d4d090cc2d84987e8f7",
+      "query_id": "civic:variant:214"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:0bdc733c3c2d04f9ad2d",
+        "civic:candidate:10d6715e4c3d5fd32ea1",
+        "civic:candidate:1d6947bb7998967139e0",
+        "civic:candidate:220c7c8ac7908ef47e78",
+        "civic:candidate:23dd60e33aba7dec5094",
+        "civic:candidate:3d53cf0ae38f44c987c7",
+        "civic:candidate:3f3986a619410dc17b46",
+        "civic:candidate:49582dd2d1bb83e6c34f",
+        "civic:candidate:502188a63c3877794379",
+        "civic:candidate:549df959205664ef93f9",
+        "civic:candidate:557c2adaf92e865e4fa7",
+        "civic:candidate:57c58165878e99f61181",
+        "civic:candidate:587ddff78d60659f58e9",
+        "civic:candidate:5a697a0111f89b9d9aec",
+        "civic:candidate:5af68a3568acb39007a2",
+        "civic:candidate:611b272e2a88b7fab5ec",
+        "civic:candidate:70490daf707aeb2310ed",
+        "civic:candidate:7145bc122127184d2836",
+        "civic:candidate:729f41504e8d8f0f52d3",
+        "civic:candidate:74048b70625116290ff3",
+        "civic:candidate:7b3ca51a8d827211524e",
+        "civic:candidate:90746bdc67e1456cd684",
+        "civic:candidate:975efe46173e33b8a63a",
+        "civic:candidate:9f8e8ea05dd77d6bfb53",
+        "civic:candidate:a91ae6fdb949d6bb0356",
+        "civic:candidate:a9808dcd42e99822fbb5",
+        "civic:candidate:b28ad53ad90ea7df1f54",
+        "civic:candidate:bc0ed08a933ce7a6c4fa",
+        "civic:candidate:c93aa663050895440f2c",
+        "civic:candidate:ce7cc30c10c5ae2d295e",
+        "civic:candidate:cf11e618ba81e632bfa4",
+        "civic:candidate:d027f2cf7eb63ca6fc68",
+        "civic:candidate:d7d6c9ffad4ca5c9b85a",
+        "civic:candidate:f519a7c8dd37c0a75457"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:0bdc733c3c2d04f9ad2d",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:10d6715e4c3d5fd32ea1",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:1d6947bb7998967139e0",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:220c7c8ac7908ef47e78",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:23dd60e33aba7dec5094",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:3d53cf0ae38f44c987c7",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:3f3986a619410dc17b46",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:49582dd2d1bb83e6c34f",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:502188a63c3877794379",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:549df959205664ef93f9",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:557c2adaf92e865e4fa7",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:57c58165878e99f61181",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:587ddff78d60659f58e9",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:5a697a0111f89b9d9aec",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:5af68a3568acb39007a2",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:611b272e2a88b7fab5ec",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:70490daf707aeb2310ed",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:7145bc122127184d2836",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:729f41504e8d8f0f52d3",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:74048b70625116290ff3",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:7b3ca51a8d827211524e",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:90746bdc67e1456cd684",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:975efe46173e33b8a63a",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:9f8e8ea05dd77d6bfb53",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:a91ae6fdb949d6bb0356",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:a9808dcd42e99822fbb5",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:b28ad53ad90ea7df1f54",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:bc0ed08a933ce7a6c4fa",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:c93aa663050895440f2c",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:ce7cc30c10c5ae2d295e",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:cf11e618ba81e632bfa4",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:d027f2cf7eb63ca6fc68",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d7d6c9ffad4ca5c9b85a",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:f519a7c8dd37c0a75457",
+            "therapy": "Erlotinib, Gefitinib"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:222",
+          "label": "TP53 MUTATION"
+        }
+      },
+      "prompt_sha256": "6801d22537494b08011ad0a885a948a10261c6cfb088728fb860069ff4762423",
+      "query_id": "civic:variant:222"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:004a810ccbaeb7eb342e",
+        "civic:candidate:1156b500a9c8004e66c3",
+        "civic:candidate:1218a0c5290baf27ed6b",
+        "civic:candidate:1df630a64c6d2b817519",
+        "civic:candidate:1e24ecaced1dcb5509a9",
+        "civic:candidate:1fdacdc97ee7ddadf546",
+        "civic:candidate:2b34a472f914a52ee8b9",
+        "civic:candidate:2be630d968437ac48ab2",
+        "civic:candidate:2c085c0f887df3b6c5c1",
+        "civic:candidate:41a7d0d9fa682744d2f4",
+        "civic:candidate:42538406cf3f43cab0e2",
+        "civic:candidate:42d3f3aabfc5d99bb5f1",
+        "civic:candidate:48389e2e0999e6541887",
+        "civic:candidate:4b5ea135cfb1905c4e92",
+        "civic:candidate:5533fac5679279c1581e",
+        "civic:candidate:5eb21703712815ef8758",
+        "civic:candidate:655b3080ff59a58542f0",
+        "civic:candidate:6945540e9f70752ddd08",
+        "civic:candidate:6bda435d222d14766eb7",
+        "civic:candidate:6cefefe54b32e31b6094",
+        "civic:candidate:7249f0fed97742f22b26",
+        "civic:candidate:a4deb3b61e3e73a40d68",
+        "civic:candidate:b59c2422ba12c7ff7916",
+        "civic:candidate:b645c29af953d600485b",
+        "civic:candidate:cdfeddbb29779f56df57",
+        "civic:candidate:d0612f64f6eec80c80f0",
+        "civic:candidate:d3accbff9ca939f447cd",
+        "civic:candidate:d7a325474832e1214dd0",
+        "civic:candidate:daee90308414123664d9",
+        "civic:candidate:dfa4d2f8de00222eaec7",
+        "civic:candidate:ee9124e11e062eb72227",
+        "civic:candidate:f1e53a27c1ec9e40aa3a",
+        "civic:candidate:f3fc1d17e1df1bff99e5",
+        "civic:candidate:fe0cf7d003529554d93c",
+        "civic:candidate:fe728ea94e7a71d487b9"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:004a810ccbaeb7eb342e",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:1156b500a9c8004e66c3",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:1218a0c5290baf27ed6b",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:1df630a64c6d2b817519",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:1e24ecaced1dcb5509a9",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:1fdacdc97ee7ddadf546",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:2b34a472f914a52ee8b9",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:2be630d968437ac48ab2",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:2c085c0f887df3b6c5c1",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:41a7d0d9fa682744d2f4",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:42538406cf3f43cab0e2",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:42d3f3aabfc5d99bb5f1",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:48389e2e0999e6541887",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:4b5ea135cfb1905c4e92",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5533fac5679279c1581e",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5eb21703712815ef8758",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:655b3080ff59a58542f0",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:6945540e9f70752ddd08",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:6bda435d222d14766eb7",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:6cefefe54b32e31b6094",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:7249f0fed97742f22b26",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:a4deb3b61e3e73a40d68",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:b59c2422ba12c7ff7916",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:b645c29af953d600485b",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:cdfeddbb29779f56df57",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d0612f64f6eec80c80f0",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d3accbff9ca939f447cd",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d7a325474832e1214dd0",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:daee90308414123664d9",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:dfa4d2f8de00222eaec7",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:ee9124e11e062eb72227",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:f1e53a27c1ec9e40aa3a",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:f3fc1d17e1df1bff99e5",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:fe0cf7d003529554d93c",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:fe728ea94e7a71d487b9",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:267",
+          "label": "FGFR1 AMPLIFICATION"
+        }
+      },
+      "prompt_sha256": "eecc89cad479fb9c4698d132c4b93164d9dd74ebb8f67f4e82a7965ad636f076",
+      "query_id": "civic:variant:267"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:112f4774aac29de48cc2",
+        "civic:candidate:1b7267cceaba15cd933b",
+        "civic:candidate:22ccbbec1c82ba93c4de",
+        "civic:candidate:30cfedff8efc398c7ba2",
+        "civic:candidate:325c47248d8ddd6203c4",
+        "civic:candidate:3595e13f76f9feeadc72",
+        "civic:candidate:3aee50e786bb249282b7",
+        "civic:candidate:5144a20c46e134fc56cd",
+        "civic:candidate:5929a378eafad50e1ede",
+        "civic:candidate:5e8e629e17b006fa55c1",
+        "civic:candidate:628fb1ee4e48f517986d",
+        "civic:candidate:672ced286fda33cc8d55",
+        "civic:candidate:6dad0825961fd880ba8e",
+        "civic:candidate:6f844077e77da6488680",
+        "civic:candidate:727f7a1d7dbda25364a3",
+        "civic:candidate:824be82f0999a88a4ba2",
+        "civic:candidate:90826c0c3aa279c3384c",
+        "civic:candidate:945e8871c43451304b12",
+        "civic:candidate:aaa78957b4d238d45961",
+        "civic:candidate:aeab7025ef1410255d1c",
+        "civic:candidate:b899e93a2b5e9777ea8d",
+        "civic:candidate:c1a082cfe2cfd6bfcd36",
+        "civic:candidate:c5da2304c661601fe868",
+        "civic:candidate:c79bb60158c72f6d8d3c",
+        "civic:candidate:ca59a7ef8566545c843f",
+        "civic:candidate:d2e1dfacdfb7a0cbef1d",
+        "civic:candidate:d5fa8e7200521c0e95d4",
+        "civic:candidate:d60b167d07c2f49aa9ea",
+        "civic:candidate:d74d9156c97ee3f4ac8e",
+        "civic:candidate:e11bc4fc6a9fcba3c367",
+        "civic:candidate:ed689a7ebfaf507b8492",
+        "civic:candidate:f2e17be8fc1c084156b0",
+        "civic:candidate:f780ff9774f012d68e71"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:112f4774aac29de48cc2",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:1b7267cceaba15cd933b",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:22ccbbec1c82ba93c4de",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:30cfedff8efc398c7ba2",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:325c47248d8ddd6203c4",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:3595e13f76f9feeadc72",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:3aee50e786bb249282b7",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:5144a20c46e134fc56cd",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:5929a378eafad50e1ede",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:5e8e629e17b006fa55c1",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:628fb1ee4e48f517986d",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:672ced286fda33cc8d55",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:6dad0825961fd880ba8e",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:6f844077e77da6488680",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:727f7a1d7dbda25364a3",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:824be82f0999a88a4ba2",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:90826c0c3aa279c3384c",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:945e8871c43451304b12",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:aaa78957b4d238d45961",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:aeab7025ef1410255d1c",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:b899e93a2b5e9777ea8d",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:c1a082cfe2cfd6bfcd36",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:c5da2304c661601fe868",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c79bb60158c72f6d8d3c",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:ca59a7ef8566545c843f",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:d2e1dfacdfb7a0cbef1d",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:d5fa8e7200521c0e95d4",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d60b167d07c2f49aa9ea",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:d74d9156c97ee3f4ac8e",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e11bc4fc6a9fcba3c367",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:ed689a7ebfaf507b8492",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:f2e17be8fc1c084156b0",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:f780ff9774f012d68e71",
+            "therapy": "Docetaxel"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:270",
+          "label": "MET AMPLIFICATION"
+        }
+      },
+      "prompt_sha256": "161f8d97780b1ec12f83609bf13dcf1a7802518c4ba557ee61b949f7e11c7552",
+      "query_id": "civic:variant:270"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:0729f159c828218f52b4",
+        "civic:candidate:10285b1f20372913f4cb",
+        "civic:candidate:211b2c81022fc91d3377",
+        "civic:candidate:24da3701baa48148d137",
+        "civic:candidate:3361aee9292b437b402b",
+        "civic:candidate:46d850bfcc5752ea0330",
+        "civic:candidate:482cdff50da3514cb3bd",
+        "civic:candidate:4f60dcd718eeae225dd4",
+        "civic:candidate:57857e6aa58dfeae9382",
+        "civic:candidate:5bb0be794472bfa57f06",
+        "civic:candidate:5dec38aebae9d8cfac26",
+        "civic:candidate:5f1e5774332b4f5d876a",
+        "civic:candidate:6b36d1076955544d818e",
+        "civic:candidate:74e20af677cccbd48747",
+        "civic:candidate:9216198dbbd9bd07f274",
+        "civic:candidate:a18ab6a18287434531d4",
+        "civic:candidate:a5e6d07872e6bc37f0f5",
+        "civic:candidate:a72a41acafec82122c73",
+        "civic:candidate:b852ffce2ab79afbf336",
+        "civic:candidate:c5120f360117c09069d6",
+        "civic:candidate:d38c7df00d881ef22be8",
+        "civic:candidate:e100356eb37398c3356a",
+        "civic:candidate:e8a275e7c4ffb6db5b9e",
+        "civic:candidate:f058e6428d5361c4e4fa",
+        "civic:candidate:f8c3477b5e32d833a999",
+        "civic:candidate:fc224996b94bcdc3ea55"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:0729f159c828218f52b4",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:10285b1f20372913f4cb",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:211b2c81022fc91d3377",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:24da3701baa48148d137",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:3361aee9292b437b402b",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:46d850bfcc5752ea0330",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:482cdff50da3514cb3bd",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:4f60dcd718eeae225dd4",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:57857e6aa58dfeae9382",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5bb0be794472bfa57f06",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:5dec38aebae9d8cfac26",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:5f1e5774332b4f5d876a",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:6b36d1076955544d818e",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:74e20af677cccbd48747",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:9216198dbbd9bd07f274",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:a18ab6a18287434531d4",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:a5e6d07872e6bc37f0f5",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:a72a41acafec82122c73",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:b852ffce2ab79afbf336",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:c5120f360117c09069d6",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d38c7df00d881ef22be8",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e100356eb37398c3356a",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e8a275e7c4ffb6db5b9e",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:f058e6428d5361c4e4fa",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:f8c3477b5e32d833a999",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:fc224996b94bcdc3ea55",
+            "therapy": "Melphalan"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:306",
+          "label": "ERBB2 AMPLIFICATION"
+        }
+      },
+      "prompt_sha256": "2d7a91168be6d27a20458dd82bd8afde9aadaba51edebc40c84b754f3917b333",
+      "query_id": "civic:variant:306"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:02330746f2a013b71d15",
+        "civic:candidate:0bbb21e04da7d8e9ee91",
+        "civic:candidate:1a41ecd0d9ecb8c56467",
+        "civic:candidate:1d7f27b2c3b9a07100b1",
+        "civic:candidate:22a973ca1231e0b8d3c7",
+        "civic:candidate:29bd8edd7a5166fbdf08",
+        "civic:candidate:3987177f7429760369bd",
+        "civic:candidate:44fb257b3638d5294a2a",
+        "civic:candidate:5411f43810e8d7c7af57",
+        "civic:candidate:54a0c899065c10b97853",
+        "civic:candidate:54fb805e2dce7c2a7437",
+        "civic:candidate:5aa0a19530cf85d9878a",
+        "civic:candidate:64087f221d1f7ced71e4",
+        "civic:candidate:677c36b1a98c29bdb6b5",
+        "civic:candidate:6c3897808ee3c130c754",
+        "civic:candidate:7b30570d9a6a0521d5bc",
+        "civic:candidate:86aebed8e111ff515d2f",
+        "civic:candidate:91b1ffade7460f582db8",
+        "civic:candidate:93943de1a1235cb5cb21",
+        "civic:candidate:9b6f32f50297edf330c4",
+        "civic:candidate:c84590d00571229d0013",
+        "civic:candidate:cbccd93c41403a336647",
+        "civic:candidate:cd4b42eca05945560682",
+        "civic:candidate:d2ad2d0ef6fa40bb1e5a",
+        "civic:candidate:d35724cf4f6c1ff30b5e",
+        "civic:candidate:f7ba95d9c414255f4a9e",
+        "civic:candidate:fbba0d58f192baa392ca",
+        "civic:candidate:fd674731fa55b8d508ed"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:02330746f2a013b71d15",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:0bbb21e04da7d8e9ee91",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:1a41ecd0d9ecb8c56467",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:1d7f27b2c3b9a07100b1",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:22a973ca1231e0b8d3c7",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:29bd8edd7a5166fbdf08",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:3987177f7429760369bd",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:44fb257b3638d5294a2a",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:5411f43810e8d7c7af57",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:54a0c899065c10b97853",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:54fb805e2dce7c2a7437",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:5aa0a19530cf85d9878a",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:64087f221d1f7ced71e4",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:677c36b1a98c29bdb6b5",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:6c3897808ee3c130c754",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:7b30570d9a6a0521d5bc",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:86aebed8e111ff515d2f",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:91b1ffade7460f582db8",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:93943de1a1235cb5cb21",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:9b6f32f50297edf330c4",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c84590d00571229d0013",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:cbccd93c41403a336647",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:cd4b42eca05945560682",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:d2ad2d0ef6fa40bb1e5a",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:d35724cf4f6c1ff30b5e",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:f7ba95d9c414255f4a9e",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:fbba0d58f192baa392ca",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:fd674731fa55b8d508ed",
+            "therapy": "Cetuximab, Panitumumab"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:311",
+          "label": "PIK3CA MUTATION"
+        }
+      },
+      "prompt_sha256": "290a0a1eeaed19110e1caddd69d2bc51b770c58e529008f00c19964017734de3",
+      "query_id": "civic:variant:311"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:01d1a81ecedbdfe4b4a6",
+        "civic:candidate:047f0257231ab584a15c",
+        "civic:candidate:110d915baabd9d173bcd",
+        "civic:candidate:11204427667fe1ac9a2a",
+        "civic:candidate:11faab0781d532e08a17",
+        "civic:candidate:3f9afa8fe31f1cd875da",
+        "civic:candidate:448766e518f403e99091",
+        "civic:candidate:4b9dfcde86c2282a30aa",
+        "civic:candidate:4c051f7c36ea8712a07e",
+        "civic:candidate:4d9cf234a1f5fd5cef81",
+        "civic:candidate:4de0ad049edb719a2bca",
+        "civic:candidate:504134fd9187f413a7cf",
+        "civic:candidate:54f4e6c751b6e60e52e4",
+        "civic:candidate:57850d56b94092e1bfd6",
+        "civic:candidate:5a658ebdd8d0895a9e36",
+        "civic:candidate:5be3429837cf50922277",
+        "civic:candidate:5fac711bf5c072bc8525",
+        "civic:candidate:62d43abbebb9cc679a59",
+        "civic:candidate:64b4660182dfca28b7db",
+        "civic:candidate:6fb9ff7833b2048233b2",
+        "civic:candidate:7b9476ad8b1fa146f2a7",
+        "civic:candidate:81342a021bbe6a2285ce",
+        "civic:candidate:85e681eff4440c331c81",
+        "civic:candidate:8ccc08863900c252deca",
+        "civic:candidate:8f82ff9abc45683c17ec",
+        "civic:candidate:a1850b673733d76a57e5",
+        "civic:candidate:ab1311d32261b5c1fc93",
+        "civic:candidate:ad3d939d398ad46653ac",
+        "civic:candidate:cb02889e3e41f4db2e98",
+        "civic:candidate:d2975058a77406529683",
+        "civic:candidate:d3e1ee2287fa132f2c0c",
+        "civic:candidate:da10079cadf6577bcb02",
+        "civic:candidate:eaf40869738efd97d8f1"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:01d1a81ecedbdfe4b4a6",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:047f0257231ab584a15c",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:110d915baabd9d173bcd",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:11204427667fe1ac9a2a",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:11faab0781d532e08a17",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:3f9afa8fe31f1cd875da",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:448766e518f403e99091",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:4b9dfcde86c2282a30aa",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:4c051f7c36ea8712a07e",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:4d9cf234a1f5fd5cef81",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:4de0ad049edb719a2bca",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:504134fd9187f413a7cf",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:54f4e6c751b6e60e52e4",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:57850d56b94092e1bfd6",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:5a658ebdd8d0895a9e36",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5be3429837cf50922277",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:5fac711bf5c072bc8525",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:62d43abbebb9cc679a59",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:64b4660182dfca28b7db",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:6fb9ff7833b2048233b2",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:7b9476ad8b1fa146f2a7",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:81342a021bbe6a2285ce",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:85e681eff4440c331c81",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:8ccc08863900c252deca",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:8f82ff9abc45683c17ec",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:a1850b673733d76a57e5",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:ab1311d32261b5c1fc93",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:ad3d939d398ad46653ac",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:cb02889e3e41f4db2e98",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:d2975058a77406529683",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d3e1ee2287fa132f2c0c",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:da10079cadf6577bcb02",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:eaf40869738efd97d8f1",
+            "therapy": "Ponatinib"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:312",
+          "label": "EGFR VIII"
+        }
+      },
+      "prompt_sha256": "961efa27962fa4de5ff677f484118bc6747348331b11cfc5afd990562b5021a8",
+      "query_id": "civic:variant:312"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:012e441b485ca0979071",
+        "civic:candidate:0d08af54f7584e6902c1",
+        "civic:candidate:1a49b494478ad22d4fe9",
+        "civic:candidate:1e03ddd7ab60d13a5831",
+        "civic:candidate:2750969bbb61569d3a28",
+        "civic:candidate:294fc6ccd94937ebc1f1",
+        "civic:candidate:296ddde0338a3574036a",
+        "civic:candidate:3af83fa95d0a89b2f990",
+        "civic:candidate:43afe4a3fcf1f778b5db",
+        "civic:candidate:4cdc58f56c85cb4ff681",
+        "civic:candidate:564f1449208164de83c1",
+        "civic:candidate:580fc32090436699163a",
+        "civic:candidate:6ea598f05f24ca29fdbc",
+        "civic:candidate:74c17b87200da12a67f9",
+        "civic:candidate:77719e1b499ab8000899",
+        "civic:candidate:8a50aded3fd200166553",
+        "civic:candidate:90df7a482d87566f2a30",
+        "civic:candidate:94a10776d72f5a198519",
+        "civic:candidate:a9fd1c80f44486717e77",
+        "civic:candidate:ae13511d8b02d71d9a9c",
+        "civic:candidate:b36420f66c325ae51ab1",
+        "civic:candidate:be416d83a7bd3f4c6463",
+        "civic:candidate:c9c26e142eb8ba2f9cfa",
+        "civic:candidate:ce3296ae1119ae9244a6",
+        "civic:candidate:db4756fe9bb823737e1d",
+        "civic:candidate:e29e65ff0ac979fd1d98",
+        "civic:candidate:f8abc5aefee5601ef4b7"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:012e441b485ca0979071",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:0d08af54f7584e6902c1",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:1a49b494478ad22d4fe9",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:1e03ddd7ab60d13a5831",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:2750969bbb61569d3a28",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:294fc6ccd94937ebc1f1",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:296ddde0338a3574036a",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:3af83fa95d0a89b2f990",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:43afe4a3fcf1f778b5db",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:4cdc58f56c85cb4ff681",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:564f1449208164de83c1",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:580fc32090436699163a",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:6ea598f05f24ca29fdbc",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:74c17b87200da12a67f9",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:77719e1b499ab8000899",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:8a50aded3fd200166553",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:90df7a482d87566f2a30",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:94a10776d72f5a198519",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:a9fd1c80f44486717e77",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:ae13511d8b02d71d9a9c",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:b36420f66c325ae51ab1",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:be416d83a7bd3f4c6463",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c9c26e142eb8ba2f9cfa",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:ce3296ae1119ae9244a6",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:db4756fe9bb823737e1d",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:e29e65ff0ac979fd1d98",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:f8abc5aefee5601ef4b7",
+            "therapy": "Melphalan"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:336",
+          "label": "KRAS MUTATION"
+        }
+      },
+      "prompt_sha256": "f74aa7bc1e0daf1e60d68ed5efc5816da681276834393fc015ceb6d28577316f",
+      "query_id": "civic:variant:336"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:0939b2116632892a18bd",
+        "civic:candidate:13558c1795f751844daa",
+        "civic:candidate:25971285594283d1df03",
+        "civic:candidate:38168603484ba1aaf0ff",
+        "civic:candidate:3c3ab78583f1871d070e",
+        "civic:candidate:4125c4145c1593450703",
+        "civic:candidate:462a125c85e8a4d74340",
+        "civic:candidate:4c6bd02e23ad6677e0d1",
+        "civic:candidate:54dd6ccbab5b42eb7f91",
+        "civic:candidate:622aa68b182354e099a0",
+        "civic:candidate:6a9467c07f8ccb575fb6",
+        "civic:candidate:8058f1f55823373bc3b1",
+        "civic:candidate:88729d1cd2b8feb0ff0d",
+        "civic:candidate:8bc8375895d3e28ac2c4",
+        "civic:candidate:8da6228e3033b2de892f",
+        "civic:candidate:8e0e72e552036d0cbfc4",
+        "civic:candidate:9c6de4df5b052b2c0aa0",
+        "civic:candidate:a79583395117b2702222",
+        "civic:candidate:ae5a5e2176493b801a5f",
+        "civic:candidate:b121bd48e8e3a1cf5248",
+        "civic:candidate:bc4964412c8986df3c43",
+        "civic:candidate:c2ec0836ffac88658806",
+        "civic:candidate:c4d3fab7b826fffb7a0b",
+        "civic:candidate:e7712f81200faee8ef1b",
+        "civic:candidate:e79b474719acc571e0ba",
+        "civic:candidate:f5d6cd56986b74adf910",
+        "civic:candidate:f653504a7d366ecaac22",
+        "civic:candidate:ff481de35617a9d41098"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:0939b2116632892a18bd",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:13558c1795f751844daa",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:25971285594283d1df03",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:38168603484ba1aaf0ff",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:3c3ab78583f1871d070e",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:4125c4145c1593450703",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:462a125c85e8a4d74340",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:4c6bd02e23ad6677e0d1",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:54dd6ccbab5b42eb7f91",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:622aa68b182354e099a0",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:6a9467c07f8ccb575fb6",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:8058f1f55823373bc3b1",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:88729d1cd2b8feb0ff0d",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:8bc8375895d3e28ac2c4",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:8da6228e3033b2de892f",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:8e0e72e552036d0cbfc4",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:9c6de4df5b052b2c0aa0",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:a79583395117b2702222",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:ae5a5e2176493b801a5f",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:b121bd48e8e3a1cf5248",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:bc4964412c8986df3c43",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:c2ec0836ffac88658806",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:c4d3fab7b826fffb7a0b",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:e7712f81200faee8ef1b",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:e79b474719acc571e0ba",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:f5d6cd56986b74adf910",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:f653504a7d366ecaac22",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:ff481de35617a9d41098",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:34",
+          "label": "EGFR T790M"
+        }
+      },
+      "prompt_sha256": "95b78f7f4ce3e809604159e010354b13d476b1bda0c4fe79a58c01859057f47e",
+      "query_id": "civic:variant:34"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:00b32e58448824aa16cf",
+        "civic:candidate:049cc619437913d9d850",
+        "civic:candidate:10b47eae04d9c18dcddc",
+        "civic:candidate:14c0ec9204b922078eae",
+        "civic:candidate:17ca764f364a63ae3577",
+        "civic:candidate:1d5392ada9ae4f2f455e",
+        "civic:candidate:2ba7e41b03b95306137d",
+        "civic:candidate:3348d65fd0097d745be1",
+        "civic:candidate:3f179406f46fe31daccf",
+        "civic:candidate:4742f9e26415d737da5f",
+        "civic:candidate:4a2225ca2756285a9551",
+        "civic:candidate:4a52e19b713f2268bacc",
+        "civic:candidate:4c85e0bc38849d2c263b",
+        "civic:candidate:5807582f336477c5bc34",
+        "civic:candidate:64d1705778e77622faae",
+        "civic:candidate:682211b37398ad38e572",
+        "civic:candidate:7d3b84808565b57feaf6",
+        "civic:candidate:883a46a8ecacce455af9",
+        "civic:candidate:8a73ebbd7e8f40195caf",
+        "civic:candidate:8f188074db338f5c3a93",
+        "civic:candidate:92a2a19d5cf28ef33322",
+        "civic:candidate:954c6064fd4f875660ba",
+        "civic:candidate:b7845139fdf8f7a9c270",
+        "civic:candidate:bd2a212d7e61d64a2ed6",
+        "civic:candidate:c27554d408c89273855b",
+        "civic:candidate:dc43251aa2100eeceda9",
+        "civic:candidate:e7160fbae26bf01de43b",
+        "civic:candidate:e8ce00f0603a847f1996",
+        "civic:candidate:f6f29c018d337fda139a"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:00b32e58448824aa16cf",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:049cc619437913d9d850",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:10b47eae04d9c18dcddc",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:14c0ec9204b922078eae",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:17ca764f364a63ae3577",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:1d5392ada9ae4f2f455e",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:2ba7e41b03b95306137d",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:3348d65fd0097d745be1",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:3f179406f46fe31daccf",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:4742f9e26415d737da5f",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:4a2225ca2756285a9551",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:4a52e19b713f2268bacc",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:4c85e0bc38849d2c263b",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5807582f336477c5bc34",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:64d1705778e77622faae",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:682211b37398ad38e572",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:7d3b84808565b57feaf6",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:883a46a8ecacce455af9",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:8a73ebbd7e8f40195caf",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:8f188074db338f5c3a93",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:92a2a19d5cf28ef33322",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:954c6064fd4f875660ba",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:b7845139fdf8f7a9c270",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:bd2a212d7e61d64a2ed6",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:c27554d408c89273855b",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:dc43251aa2100eeceda9",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:e7160fbae26bf01de43b",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:e8ce00f0603a847f1996",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:f6f29c018d337fda139a",
+            "therapy": "Docetaxel"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:425",
+          "label": "KRAS G12V"
+        }
+      },
+      "prompt_sha256": "4a12a5102492a9c8aed5786347fe6c3377db4366eab67eda63deb2838e28feca",
+      "query_id": "civic:variant:425"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:009fccc91288156054bc",
+        "civic:candidate:02fa18b973955a30dce1",
+        "civic:candidate:03aa95fe3a682d044f1a",
+        "civic:candidate:0c6ff4a22e8c5d0fe7e7",
+        "civic:candidate:133a927a510271d5baff",
+        "civic:candidate:1df09f9aeaaf3f564d1a",
+        "civic:candidate:31339abc9ecf29be1d68",
+        "civic:candidate:352caa5d26130bab0434",
+        "civic:candidate:39f81656075ada8959ec",
+        "civic:candidate:4216a16a697eee461f37",
+        "civic:candidate:47b4355dfe340d375247",
+        "civic:candidate:5069b0734f143dc358e7",
+        "civic:candidate:5d8b3f56bc281042f9bd",
+        "civic:candidate:5f9f4831bde094f3aa81",
+        "civic:candidate:5fbdc214c5e5ed01322a",
+        "civic:candidate:61923a7e4e974a0589e2",
+        "civic:candidate:6471431a930f45d9a738",
+        "civic:candidate:67e32c8dfdf3b718454e",
+        "civic:candidate:6eb42e1e362be8dd910a",
+        "civic:candidate:75bf6aacebaa05e5b0f9",
+        "civic:candidate:7dee0a512944d727201b",
+        "civic:candidate:8ca1479523380dafbb25",
+        "civic:candidate:956d682efc3ecfce2197",
+        "civic:candidate:9b76bbdb6bfda6de690d",
+        "civic:candidate:ad92e4b1443199091fd4",
+        "civic:candidate:cd0428cc9f40a74e1a2c",
+        "civic:candidate:cf79ea9001af002fcef6",
+        "civic:candidate:d9dfd8f5790c7cfba5b0",
+        "civic:candidate:dfadb9987ce775c4f00e",
+        "civic:candidate:e4e4f200ce83572afad0",
+        "civic:candidate:e52a3ea206f106dd0690",
+        "civic:candidate:eb9f804e2cb92e177821",
+        "civic:candidate:f26a934101b732660e09",
+        "civic:candidate:f86ead499cf3c691d5d1"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:009fccc91288156054bc",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:02fa18b973955a30dce1",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:03aa95fe3a682d044f1a",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:0c6ff4a22e8c5d0fe7e7",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:133a927a510271d5baff",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:1df09f9aeaaf3f564d1a",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:31339abc9ecf29be1d68",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:352caa5d26130bab0434",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:39f81656075ada8959ec",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:4216a16a697eee461f37",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:47b4355dfe340d375247",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5069b0734f143dc358e7",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5d8b3f56bc281042f9bd",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:5f9f4831bde094f3aa81",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:5fbdc214c5e5ed01322a",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:61923a7e4e974a0589e2",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:6471431a930f45d9a738",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:67e32c8dfdf3b718454e",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:6eb42e1e362be8dd910a",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:75bf6aacebaa05e5b0f9",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:7dee0a512944d727201b",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:8ca1479523380dafbb25",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:956d682efc3ecfce2197",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:9b76bbdb6bfda6de690d",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:ad92e4b1443199091fd4",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:cd0428cc9f40a74e1a2c",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:cf79ea9001af002fcef6",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:d9dfd8f5790c7cfba5b0",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:dfadb9987ce775c4f00e",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e4e4f200ce83572afad0",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:e52a3ea206f106dd0690",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:eb9f804e2cb92e177821",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:f26a934101b732660e09",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:f86ead499cf3c691d5d1",
+            "therapy": "Trastuzumab Emtansine"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:499",
+          "label": "ALK ALK FUSIONS"
+        }
+      },
+      "prompt_sha256": "a00e7564d163368f072f7f57916fad05922e0ad196ef4516dfb71fc4ed839960",
+      "query_id": "civic:variant:499"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:04a1c53f9fea65855191",
+        "civic:candidate:0742a2a5bea80e2cdc2b",
+        "civic:candidate:0a0be9d276710ef6bf6f",
+        "civic:candidate:194e3178917b62612883",
+        "civic:candidate:19d34dd1d832185d52ee",
+        "civic:candidate:2dab35fa937774b752ab",
+        "civic:candidate:33b814f00f8d355c2cc3",
+        "civic:candidate:48bf6ede3fd30364ddc8",
+        "civic:candidate:514d194e8c69ae6f8b93",
+        "civic:candidate:54c383cc61ec1e1f4b37",
+        "civic:candidate:5531bda821066d972fde",
+        "civic:candidate:5c93c9f4819275aa0944",
+        "civic:candidate:5fcf381251d2fa0be740",
+        "civic:candidate:6283b463d9384e8c72ed",
+        "civic:candidate:65b9e3edbc6a1783ac26",
+        "civic:candidate:66728b8cc27793b3e267",
+        "civic:candidate:703a1963401e894fc3e8",
+        "civic:candidate:754ad9f10dde4f701063",
+        "civic:candidate:7eca8b2fc2fe5a4b3f2f",
+        "civic:candidate:823291a09af8a8efcd1b",
+        "civic:candidate:83507d4a9206bf672839",
+        "civic:candidate:86c78cef6802d1cd3d28",
+        "civic:candidate:93d4b5452aca91c69fc3",
+        "civic:candidate:99f7eb3fa85d8ebd8e65",
+        "civic:candidate:ac96dc4047aaa9168e00",
+        "civic:candidate:b987e2574daf614da217",
+        "civic:candidate:c9cfeb11367fd3be0ed2",
+        "civic:candidate:cf694cd1c9ea35c79191",
+        "civic:candidate:d7b0a4392750d0960b8e",
+        "civic:candidate:dc878eb9d34db3e07c81",
+        "civic:candidate:e2e31cd9978585891d1c",
+        "civic:candidate:f316e656814130c8c694",
+        "civic:candidate:f3ea8753646edba3225e",
+        "civic:candidate:f9a4f328c205a53bf61a",
+        "civic:candidate:fc5577ad0b97b252322a"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:04a1c53f9fea65855191",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:0742a2a5bea80e2cdc2b",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:0a0be9d276710ef6bf6f",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:194e3178917b62612883",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:19d34dd1d832185d52ee",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:2dab35fa937774b752ab",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:33b814f00f8d355c2cc3",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:48bf6ede3fd30364ddc8",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:514d194e8c69ae6f8b93",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:54c383cc61ec1e1f4b37",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:5531bda821066d972fde",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5c93c9f4819275aa0944",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:5fcf381251d2fa0be740",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:6283b463d9384e8c72ed",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:65b9e3edbc6a1783ac26",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:66728b8cc27793b3e267",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:703a1963401e894fc3e8",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:754ad9f10dde4f701063",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:7eca8b2fc2fe5a4b3f2f",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:823291a09af8a8efcd1b",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:83507d4a9206bf672839",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:86c78cef6802d1cd3d28",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:93d4b5452aca91c69fc3",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:99f7eb3fa85d8ebd8e65",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:ac96dc4047aaa9168e00",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:b987e2574daf614da217",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:c9cfeb11367fd3be0ed2",
+            "therapy": "Regorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:cf694cd1c9ea35c79191",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d7b0a4392750d0960b8e",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:dc878eb9d34db3e07c81",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:e2e31cd9978585891d1c",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:f316e656814130c8c694",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:f3ea8753646edba3225e",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:f9a4f328c205a53bf61a",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:fc5577ad0b97b252322a",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:55",
+          "label": "FLT3 ITD"
+        }
+      },
+      "prompt_sha256": "29faa568bf252d210d4a7cb250c0f6b1ce0e9420a0501298dc03deb26e8d0247",
+      "query_id": "civic:variant:55"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:020c53e3a928ef1e31d8",
+        "civic:candidate:09407640dc59bfcfbdb6",
+        "civic:candidate:1db6501469381942731e",
+        "civic:candidate:2ae3b2120161d5b13417",
+        "civic:candidate:2b9bffabcdd6595ac3f8",
+        "civic:candidate:320d6279a249dbe00bdf",
+        "civic:candidate:452e2501db13becb6580",
+        "civic:candidate:51e5ba13aab3b433151b",
+        "civic:candidate:522e2aa3902870906893",
+        "civic:candidate:5b3764a07819fc529932",
+        "civic:candidate:5f1630da51d1c449a0c6",
+        "civic:candidate:617396c881725a68f98f",
+        "civic:candidate:67e06978302ed19cef02",
+        "civic:candidate:6a6862cf905ccb2a4e44",
+        "civic:candidate:6bc0fba847b0f5d78827",
+        "civic:candidate:79f860439a57245ce06d",
+        "civic:candidate:7d678e652499003c71d5",
+        "civic:candidate:82a6056273e51d948311",
+        "civic:candidate:9007542aad088ce56e3d",
+        "civic:candidate:96f0350083f0d0c57a86",
+        "civic:candidate:97393e78df25a2160d22",
+        "civic:candidate:acd5dfccf23d920c0292",
+        "civic:candidate:baeb1d8877f8e3736063",
+        "civic:candidate:beef783b86d01e09c0d1",
+        "civic:candidate:bf811a990e6edc7cb7be",
+        "civic:candidate:c15658e0d853eb765464",
+        "civic:candidate:d75b2a12c6d28599a7c2",
+        "civic:candidate:e6123f3023e9c34e99ac",
+        "civic:candidate:eabbb61a1f5638561f7e",
+        "civic:candidate:f2839cb0a01200d1a922",
+        "civic:candidate:f44f29fff98b5c5e4a6a",
+        "civic:candidate:f5433945ba3b68528a06",
+        "civic:candidate:fc9c481d6ffd3ed77830",
+        "civic:candidate:fcba03e94271108dda36",
+        "civic:candidate:fe906f30c538b1776ba9"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:020c53e3a928ef1e31d8",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:09407640dc59bfcfbdb6",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:1db6501469381942731e",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:2ae3b2120161d5b13417",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:2b9bffabcdd6595ac3f8",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:320d6279a249dbe00bdf",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:452e2501db13becb6580",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:51e5ba13aab3b433151b",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:522e2aa3902870906893",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5b3764a07819fc529932",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5f1630da51d1c449a0c6",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:617396c881725a68f98f",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:67e06978302ed19cef02",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:6a6862cf905ccb2a4e44",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:6bc0fba847b0f5d78827",
+            "therapy": "Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:79f860439a57245ce06d",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:7d678e652499003c71d5",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:82a6056273e51d948311",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:9007542aad088ce56e3d",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:96f0350083f0d0c57a86",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:97393e78df25a2160d22",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:acd5dfccf23d920c0292",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:baeb1d8877f8e3736063",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:beef783b86d01e09c0d1",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:bf811a990e6edc7cb7be",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:c15658e0d853eb765464",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:d75b2a12c6d28599a7c2",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e6123f3023e9c34e99ac",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:eabbb61a1f5638561f7e",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:f2839cb0a01200d1a922",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:f44f29fff98b5c5e4a6a",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:f5433945ba3b68528a06",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:fc9c481d6ffd3ed77830",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:fcba03e94271108dda36",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:fe906f30c538b1776ba9",
+            "therapy": "Regorafenib"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:59",
+          "label": "IDH1 R132C"
+        }
+      },
+      "prompt_sha256": "feda7ae8cd5f98ea6a3b195c3efaefe5f47012353ebbf5180f9faf57a1219316",
+      "query_id": "civic:variant:59"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:0bb87697c655108a6ed3",
+        "civic:candidate:0f63393f0b3308f4fd08",
+        "civic:candidate:12aa782dd9189fb01b0e",
+        "civic:candidate:220bf423eead7e9a7336",
+        "civic:candidate:27e6401abe040d965263",
+        "civic:candidate:2e6edc0c37c5ef8181f9",
+        "civic:candidate:3e8bc64b139b31c9f382",
+        "civic:candidate:4121e154bc29745df623",
+        "civic:candidate:4673eb635851c1d5523d",
+        "civic:candidate:4b2884a45c308ac03e30",
+        "civic:candidate:5144e9418e5a477e7aca",
+        "civic:candidate:5cf237db65ba57a173d8",
+        "civic:candidate:609f2cd3967a6a96ebb7",
+        "civic:candidate:6cc842642d944bf34314",
+        "civic:candidate:72b5707747180554f94b",
+        "civic:candidate:7546c0ff9305c5926a8b",
+        "civic:candidate:7984fd1a1197fc45101c",
+        "civic:candidate:798eefcc193c472cf0dd",
+        "civic:candidate:8fb37ebbb72c5220906a",
+        "civic:candidate:9ffe676d75d72d227b3c",
+        "civic:candidate:a18d9dab1907e53908d1",
+        "civic:candidate:b14c0273741e777711b3",
+        "civic:candidate:b5d94a7c2f5c62b1cdab",
+        "civic:candidate:b9113c5731a593fbb8a6",
+        "civic:candidate:bd602131db9d019e4465",
+        "civic:candidate:c665d2ac124c8c5f6d75",
+        "civic:candidate:c6f47e6576b65cb3bbff",
+        "civic:candidate:cb12614ba4198d8a88c1",
+        "civic:candidate:df6ccfa0cace4e446ac8",
+        "civic:candidate:ec064f60efb496d13f02",
+        "civic:candidate:f1d50954507d3b302c7d",
+        "civic:candidate:fff9f37beff9f0b32515"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:0bb87697c655108a6ed3",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:0f63393f0b3308f4fd08",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:12aa782dd9189fb01b0e",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:220bf423eead7e9a7336",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:27e6401abe040d965263",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:2e6edc0c37c5ef8181f9",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:3e8bc64b139b31c9f382",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:4121e154bc29745df623",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:4673eb635851c1d5523d",
+            "therapy": "BEZ235, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:4b2884a45c308ac03e30",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:5144e9418e5a477e7aca",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:5cf237db65ba57a173d8",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:609f2cd3967a6a96ebb7",
+            "therapy": "Melphalan"
+          },
+          {
+            "candidate_id": "civic:candidate:6cc842642d944bf34314",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:72b5707747180554f94b",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:7546c0ff9305c5926a8b",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:7984fd1a1197fc45101c",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:798eefcc193c472cf0dd",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:8fb37ebbb72c5220906a",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:9ffe676d75d72d227b3c",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:a18d9dab1907e53908d1",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:b14c0273741e777711b3",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:b5d94a7c2f5c62b1cdab",
+            "therapy": "Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:b9113c5731a593fbb8a6",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:bd602131db9d019e4465",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:c665d2ac124c8c5f6d75",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c6f47e6576b65cb3bbff",
+            "therapy": "Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:cb12614ba4198d8a88c1",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:df6ccfa0cace4e446ac8",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:ec064f60efb496d13f02",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:f1d50954507d3b302c7d",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:fff9f37beff9f0b32515",
+            "therapy": "AZD5363"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:75",
+          "label": "KRAS EXON 2 MUTATION"
+        }
+      },
+      "prompt_sha256": "05425fb29c94b5e403d646b55974847b4df8fc733bc98cf80c0dcf50b3caaaca",
+      "query_id": "civic:variant:75"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:02c8c1a8285ceb02db7f",
+        "civic:candidate:0a56631c2fdb42816c70",
+        "civic:candidate:16983e5b0754ce6e3efe",
+        "civic:candidate:1cf06328717d48c438d5",
+        "civic:candidate:1fe44be4efba3c7826b9",
+        "civic:candidate:21e27ded08eb9c4163dd",
+        "civic:candidate:23140cbd64abe2803c3d",
+        "civic:candidate:23e59bb1685891aa42f4",
+        "civic:candidate:25f77476ccc610937d4d",
+        "civic:candidate:36400bbd6c457bef5b19",
+        "civic:candidate:3670c6f4c8229ef3be5e",
+        "civic:candidate:37aa83f0bbc9e56c04dc",
+        "civic:candidate:5eda32c634061a0d2b3e",
+        "civic:candidate:62a5af55aa935790a2eb",
+        "civic:candidate:63f3b751954dbaaf3106",
+        "civic:candidate:645a3d5d7823dbeb660c",
+        "civic:candidate:70a0bfd2b8bdf46712ec",
+        "civic:candidate:72828c81ecee25e4bb36",
+        "civic:candidate:7675950f21224888895c",
+        "civic:candidate:7b7ee4a4f19aec45e8ef",
+        "civic:candidate:9f64d13a24aeb614e748",
+        "civic:candidate:a5614bad5725eb8b5c3d",
+        "civic:candidate:ae2e0c08a48d10c082cd",
+        "civic:candidate:c91a351cfe53b8979b49",
+        "civic:candidate:d329cc80297df26840d0",
+        "civic:candidate:e3a4d2dcbbb730c23348",
+        "civic:candidate:ec53cccad8be4719b359",
+        "civic:candidate:f27a55dd9bea6fe79ee0",
+        "civic:candidate:ffe0ebdd7a11308b78a2"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:02c8c1a8285ceb02db7f",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:0a56631c2fdb42816c70",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:16983e5b0754ce6e3efe",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:1cf06328717d48c438d5",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:1fe44be4efba3c7826b9",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:21e27ded08eb9c4163dd",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:23140cbd64abe2803c3d",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:23e59bb1685891aa42f4",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:25f77476ccc610937d4d",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:36400bbd6c457bef5b19",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:3670c6f4c8229ef3be5e",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:37aa83f0bbc9e56c04dc",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:5eda32c634061a0d2b3e",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:62a5af55aa935790a2eb",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:63f3b751954dbaaf3106",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:645a3d5d7823dbeb660c",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:70a0bfd2b8bdf46712ec",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:72828c81ecee25e4bb36",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:7675950f21224888895c",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:7b7ee4a4f19aec45e8ef",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:9f64d13a24aeb614e748",
+            "therapy": "Vemurafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:a5614bad5725eb8b5c3d",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:ae2e0c08a48d10c082cd",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:c91a351cfe53b8979b49",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d329cc80297df26840d0",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:e3a4d2dcbbb730c23348",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:ec53cccad8be4719b359",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:f27a55dd9bea6fe79ee0",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:ffe0ebdd7a11308b78a2",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:78",
+          "label": "KRAS G12C"
+        }
+      },
+      "prompt_sha256": "448dfc40e9c3939592dc979a264c0cdd1af94e05f0260436a0eda2cc005ddd29",
+      "query_id": "civic:variant:78"
+    },
+    {
+      "candidate_ids": [
+        "civic:candidate:02a102daa560b73161d1",
+        "civic:candidate:03ddb36cb47b29e9cd2b",
+        "civic:candidate:1c13adb61888389b9171",
+        "civic:candidate:349d411961e650a934be",
+        "civic:candidate:34b0cae50d1b4eca2b32",
+        "civic:candidate:51fa6347f671ea2385a1",
+        "civic:candidate:581e6f3e45abeb946653",
+        "civic:candidate:615a84f520d431fc12e4",
+        "civic:candidate:658c5b11830c96aa28e8",
+        "civic:candidate:6f0d31de7191327edf9d",
+        "civic:candidate:71a97513888e420d07bb",
+        "civic:candidate:7a289b01b924a1e93e66",
+        "civic:candidate:7c098192fc5c1783a1a5",
+        "civic:candidate:7ea8d706534fdf1cd48d",
+        "civic:candidate:8ffabb4e884a47833efb",
+        "civic:candidate:918987567635fd543538",
+        "civic:candidate:99b652ad48a837fc5328",
+        "civic:candidate:a37c7140d6b7176bc44a",
+        "civic:candidate:a79abc8f93a8969a1d44",
+        "civic:candidate:ac7e68c62ebdffb89de6",
+        "civic:candidate:ba9b0c221a170b270cf1",
+        "civic:candidate:bcdd31c9b1c664b6f0d1",
+        "civic:candidate:d6d5e77777a049917db0",
+        "civic:candidate:de989243ebadbf21b284",
+        "civic:candidate:e081d0cf29b5fd9fa544",
+        "civic:candidate:e3798cc0ab9d2c495dd6",
+        "civic:candidate:e6353d9f70878136881c",
+        "civic:candidate:e65d88b5c15dc4d8ceed",
+        "civic:candidate:e9564b804969d5535077",
+        "civic:candidate:f6bd5ac37243259ce090"
+      ],
+      "prompt": {
+        "candidates": [
+          {
+            "candidate_id": "civic:candidate:02a102daa560b73161d1",
+            "therapy": "BEZ235 (NVP-BEZ235, Dactolisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:03ddb36cb47b29e9cd2b",
+            "therapy": "Everolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:1c13adb61888389b9171",
+            "therapy": "Sorafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:349d411961e650a934be",
+            "therapy": "Pictilisib"
+          },
+          {
+            "candidate_id": "civic:candidate:34b0cae50d1b4eca2b32",
+            "therapy": "Osimertinib"
+          },
+          {
+            "candidate_id": "civic:candidate:51fa6347f671ea2385a1",
+            "therapy": "Ridaforolimus, Temsirolimus"
+          },
+          {
+            "candidate_id": "civic:candidate:581e6f3e45abeb946653",
+            "therapy": "Alectinib (CH5424802)"
+          },
+          {
+            "candidate_id": "civic:candidate:615a84f520d431fc12e4",
+            "therapy": "Dabrafenib"
+          },
+          {
+            "candidate_id": "civic:candidate:658c5b11830c96aa28e8",
+            "therapy": "Trastuzumab Emtansine"
+          },
+          {
+            "candidate_id": "civic:candidate:6f0d31de7191327edf9d",
+            "therapy": "Erlotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:71a97513888e420d07bb",
+            "therapy": "Lapatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:7a289b01b924a1e93e66",
+            "therapy": "Cetuximab"
+          },
+          {
+            "candidate_id": "civic:candidate:7c098192fc5c1783a1a5",
+            "therapy": "Crizotinib"
+          },
+          {
+            "candidate_id": "civic:candidate:7ea8d706534fdf1cd48d",
+            "therapy": "BYL719 (Alpelisib)"
+          },
+          {
+            "candidate_id": "civic:candidate:8ffabb4e884a47833efb",
+            "therapy": "Lapatinib, Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:918987567635fd543538",
+            "therapy": "Dabrafenib, Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:99b652ad48a837fc5328",
+            "therapy": "RO4987655"
+          },
+          {
+            "candidate_id": "civic:candidate:a37c7140d6b7176bc44a",
+            "therapy": "BAY 86-9766"
+          },
+          {
+            "candidate_id": "civic:candidate:a79abc8f93a8969a1d44",
+            "therapy": "AZD5363"
+          },
+          {
+            "candidate_id": "civic:candidate:ac7e68c62ebdffb89de6",
+            "therapy": "Trastuzumab"
+          },
+          {
+            "candidate_id": "civic:candidate:ba9b0c221a170b270cf1",
+            "therapy": "Afatinib, Erlotinib, Gefitinib"
+          },
+          {
+            "candidate_id": "civic:candidate:bcdd31c9b1c664b6f0d1",
+            "therapy": "Ponatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:d6d5e77777a049917db0",
+            "therapy": "Afatinib"
+          },
+          {
+            "candidate_id": "civic:candidate:de989243ebadbf21b284",
+            "therapy": "Docetaxel, Selumetinib (AZD6244)"
+          },
+          {
+            "candidate_id": "civic:candidate:e081d0cf29b5fd9fa544",
+            "therapy": "Neratinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e3798cc0ab9d2c495dd6",
+            "therapy": "Trametinib"
+          },
+          {
+            "candidate_id": "civic:candidate:e6353d9f70878136881c",
+            "therapy": "Dabrafenib, Trametinib DMSO"
+          },
+          {
+            "candidate_id": "civic:candidate:e65d88b5c15dc4d8ceed",
+            "therapy": "Docetaxel"
+          },
+          {
+            "candidate_id": "civic:candidate:e9564b804969d5535077",
+            "therapy": "Cetuximab, Panitumumab"
+          },
+          {
+            "candidate_id": "civic:candidate:f6bd5ac37243259ce090",
+            "therapy": "Erlotinib, Gefitinib"
+          }
+        ],
+        "cutoff": "2018-01-01",
+        "evidence": [],
+        "horizon": "2022-03-01",
+        "query": {
+          "id": "civic:variant:79",
+          "label": "KRAS G12D"
+        }
+      },
+      "prompt_sha256": "2694283e219995512099e076b54e1f8c478fcc2257e496d760c9836a87c4b741",
+      "query_id": "civic:variant:79"
+    }
+  ],
+  "scenario_id": "civic-2018-01-01-2022-03-01",
+  "schema_version": "forecast-memory-control/v1"
+}
