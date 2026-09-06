@@ -663,7 +663,7 @@ function Relationships({ project }: { project: string }) {
       .map((n) => n.id),
   );
   const visibleEdges = (data?.edges || []).filter(
-    (e) => !hiddenNodes.has(e.source) && !hiddenNodes.has(e.target),
+    (e) => e.source !== e.target && !hiddenNodes.has(e.source) && !hiddenNodes.has(e.target),
   );
   const visibleNodeCount = (data?.nodes.length || 0) - hiddenNodes.size;
   const labels = useMemo(
@@ -783,7 +783,7 @@ function Relationships({ project }: { project: string }) {
         source: e.source,
         target: e.target,
         type: "claim",
-        hidden: hiddenNodes.has(e.source) || hiddenNodes.has(e.target),
+        hidden: e.source === e.target || hiddenNodes.has(e.source) || hiddenNodes.has(e.target),
         data: { bow, dim, active },
         label: (claim ? active : labelAll)
           ? humanize(e.predicate).toLowerCase()
