@@ -537,3 +537,12 @@ is implemented. These commands do not yet provide a Docker-free experiment runti
   database is not held by an active run. Builds and runs are subprocesses.
 - `docs/CAPABILITIES.md` and `webui/architecture.py` are generated from or checked against source. Rename
   a constant and the test tells you.
+
+## Native association core
+
+`native_evidence.py` implements the shared bounded two-view association kernel
+and private atomic frozen-critic donor ledger. Receipt aliases share one process;
+identical replay does not add wealth, and consumed canonical donors cannot be
+reused across processes in one shared store. This infrastructure does not itself
+satisfy biological access, sampling or power gates and does not alter discovery
+promotion. Adaptive critics are not implemented. See [native evidence](docs/native-evidence.md).
