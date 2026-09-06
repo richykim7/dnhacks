@@ -9,6 +9,20 @@ import time
 from dnhacksbio.pharmacotype_data import digest
 
 
+def inputs(raw,pathways=None):
+    """Separate-view, sample-local ranks; ties receive their average rank."""
+    import torch
+    if pathways is None:return torch.log2(raw+1)
+    rows=[]
+    for row in raw:
+        _,inverse,counts=torch.unique(row,sorted=True,return_inverse=True,return_counts=True)
+        counts=counts.to(raw.dtype)
+        average=(counts.cumsum(0)-counts*.5+.5)/len(row)
+        ranks=average[inverse]
+        rows.append(torch.stack([ranks[members].mean() for members in pathways['members']]))
+    return torch.stack(rows).double()
+
+
 def predict_auc(raw_fpkm,model):
     """Apply a frozen AUC kernel artifact to rows in its declared gene order."""
     import torch
@@ -19,14 +33,14 @@ def predict_auc(raw_fpkm,model):
     raw=tensor(raw_fpkm)
     if raw.ndim!=2 or raw.shape[1]!=len(model['genes']) or not torch.isfinite(raw).all() or (raw<0).any():
         raise ValueError('Finite nonnegative FPKM in declared gene order required')
-    query=(torch.log2(raw[:,model['features']]+1)-tensor(model['mean']))/tensor(model['scale'])
+    query=(inputs(raw,model.get('pathways'))[:,model['features']]-tensor(model['mean']))/tensor(model['scale'])
     reference=tensor(model['reference']);setting=model['setting']
     cross=query@reference.T/query.shape[1] if setting['kernel']=='linear' else torch.exp(-setting['gamma']*torch.cdist(query,reference).square()/model['bandwidth'])
     centered=cross-cross.mean(1,keepdim=True)-tensor(model['kernel_column_mean'])[None,:]+model['kernel_grand_mean']
     return centered@tensor(model['coef'])+tensor(model['target_mean'])
 
 
-def run(directory):
+def run(directory,*,pathways=None):
     import torch
     if not torch.cuda.is_available():
         raise RuntimeError('CUDA required; no CPU fitting fallback')
@@ -42,8 +56,21 @@ def run(directory):
     train=[donors.index(d) for d in splits['train']]
     ordered=sorted(train,key=lambda i:hashlib.sha256(('cv-v1:'+donors[i]).encode()).hexdigest())
     folds=[ordered[i::3] for i in range(3)]
+    pathway_map=None
+    if pathways:
+        source=Path(pathways);lookup={g:i for i,g in enumerate(data['genes'])}
+        names=[];members=[]
+        for line in source.read_text().splitlines():
+            fields=line.split('\t')
+            match=sorted({lookup[g] for g in fields[2:] if g in lookup})
+            if len(match)<5:raise ValueError('Each frozen program needs five measured genes')
+            names.append(fields[0]);members.append(match)
+        if len(set(names))!=len(names) or not 2<=len(names)<=256:raise ValueError('Invalid program library')
+        pathway_map=dict(library_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),names=names,members=members)
+    output=directory/'pathways' if pathway_map else directory
+    output.mkdir(parents=True,exist_ok=True)
     grid=[dict(features=n,kernel=kernel,gamma=g,penalty=p)
-          for n in (128,512,1000) for kernel,gammas in (('linear',(1.,)),('rbf',(.25,1.,4.)))
+          for n in ((len(pathway_map['names']),) if pathway_map else (128,512,1000)) for kernel,gammas in (('linear',(1.,)),('rbf',(.25,1.,4.)))
           for g in gammas for p in (.01,.1,1.,10.,100.)]
     design=dict(schema='pharmacotype.auc-cv-design.v1',input_integrity=integrity,
                 selection='minimum pooled training-only three-fold CV MSE; grid order breaks ties',
@@ -51,12 +78,18 @@ def run(directory):
                 evaluation='fixed validation; previously inspected test remains development only',
                 preprocessing='fold-training log-FPKM variance, center and population standard deviation',
                 target='all five registered chemotherapy AUC outputs, equally weighted')
-    (directory/'cv-design.json').write_text(json.dumps(design,indent=2)+'\n')
+    if pathway_map:
+        design.update(pathway_library_sha256=pathway_map['library_sha256'],programs=pathway_map['names'],
+                      preprocessing='sample-local average percentile ranks then fixed program means; fold-training program scaling')
+    (output/'cv-design.json').write_text(json.dumps(design,indent=2)+'\n')
     started=time.monotonic()
     with open('/tmp/dnhacks-gpu.lock','a') as lease:
         fcntl.flock(lease,fcntl.LOCK_EX|fcntl.LOCK_NB)
         torch.cuda.reset_peak_memory_stats()
-        x=torch.log2(torch.as_tensor(data['x'],dtype=torch.float64,device='cuda')+1)
+        raw=torch.as_tensor(data['x'],dtype=torch.float64,device='cuda')
+        if not torch.isfinite(raw).all() or (raw<0).any():
+            raise ValueError('Finite nonnegative FPKM required')
+        x=inputs(raw,pathway_map)
         y=torch.as_tensor(data['y'],dtype=torch.float64,device='cuda')
         if not torch.isfinite(x).all() or not torch.isfinite(y).all():
             raise ValueError('Nonfinite input')
@@ -103,13 +136,14 @@ def run(directory):
         setting=grid[selected]
         # Freeze choice before accessing validation/test prediction errors.
         frozen=dict(design_hash=digest(design),selected=setting,selection_trial=selected)
-        (directory/'cv-selection.json').write_text(json.dumps(frozen,indent=2)+'\n')
+        (output/'cv-selection.json').write_text(json.dumps(frozen,indent=2)+'\n')
         held=[donors.index(d) for name in ('validation','test') for d in splits[name]]
         pred,artifact=fit_predict(train,held,setting,export=True)
         artifact.update(schema='pharmacotype.auc-kernel-model.v1',setting=setting,genes=data['genes'],panel=data['panel'],
                         source_hash=data['source_hash'],input_integrity=integrity,selection=frozen)
+        if pathway_map:artifact['pathways']=pathway_map
         artifact['sha256']=digest(artifact)
-        (directory/'cv-model.json').write_text(json.dumps(artifact,allow_nan=False)+'\n')
+        (output/'cv-model.json').write_text(json.dumps(artifact,allow_nan=False)+'\n')
         # Check portable inference before reporting held-out accuracy.
         replay=predict_auc([data['x'][i] for i in held],artifact)
         if not torch.allclose(replay,pred,atol=1e-10,rtol=1e-10):raise ValueError('Portable prediction mismatch')
@@ -125,10 +159,11 @@ def run(directory):
                     split_counts={k:len(v) for k,v in splits.items()},seconds=time.monotonic()-started,
                     torch=torch.__version__,device='cuda',peak_allocated_bytes=torch.cuda.max_memory_allocated(),
                     peak_reserved_bytes=torch.cuda.max_memory_reserved(),confirmation_enabled=False)
-        (directory/'cv-report.json').write_text(json.dumps(report,indent=2)+'\n')
+        (output/'cv-report.json').write_text(json.dumps(report,indent=2)+'\n')
         print(json.dumps({k:v for k,v in report.items() if k not in ('design','trials')},indent=2))
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--data',required=True)
-    run(parser.parse_args().data)
+    parser.add_argument('--pathways',help='Frozen GMT gene programs; all programs are retained')
+    args=parser.parse_args();run(args.data,pathways=args.pathways)

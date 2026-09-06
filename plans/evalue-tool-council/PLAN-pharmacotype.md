@@ -1,11 +1,17 @@
 # Learned pharmacotype association
 
 Implementation status (2026-09-06): development operations, audited public PRISM/CCLE
-acquisition, real CPU and three-seed GPU training/evaluation, and private frozen or
-adaptive score-before-train replay are implemented. See the [model card](../../docs/pharmacotype-training.md)
+acquisition, real GPU training/evaluation, and private frozen or adaptive
+score-before-train replay are implemented. The original CPU pilot is preserved
+as historical provenance; subsequent production fitting is CUDA-only. Public
+Shi 2022 RNA and paired AUC data from 38 PDOs have been acquired and audited.
+Nine baseline fits, a 60-setting gene-level search and a 20-setting fixed
+Hallmark pathway search retain all results. See the [model card](../../docs/pharmacotype-training.md)
 and [operations and remaining gates](../../docs/pharmacotype.md). PCA remains selected;
-PDAC utility and the synthetic power target are not established. Paired PDO access,
-fresh independent donor audit and reviewed scientific confirmation remain required.
+PDAC utility and the synthetic power target are not established. The PDO mean
+baseline remains selected because learned alternatives have worse validation
+error. Paired PDO full-dose-curve/RNA access, fresh independent donor audit and
+reviewed scientific confirmation remain required; AUC cannot replace curves.
 The specification below retains the full target and original source proposals.
 
 Original planning specification, 2026-09-06. The document itself did not authorize implementation, acquisition, training or confirmation; subsequent user instruction authorized the implementation described above. Read together with [the shared native evidence contract](native-evidence-contract.md). The target interfaces below extend beyond the current implementation.

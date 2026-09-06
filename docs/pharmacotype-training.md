@@ -79,6 +79,33 @@ The test set was inspected in the earlier benchmark and remains development
 data. No endpoint, donor or drug subset was selected using the new test results.
 The measured search took 0.65 seconds and reserved 22 MiB on the L40S.
 
+### Fixed pathway follow-up
+
+The [pathway report](pharmacotype-pathways.json) preserves all 20 CUDA fits
+using all 50 programs from the [Enrichr MSigDB Hallmark 2020 library](https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=text&libraryName=MSigDB_Hallmark_2020).
+The frozen GMT SHA256 is
+`4275592957a1587652092bb398cf77216fde5b8daa2aedaa0e016f7d10bbdb81`.
+Features are mean within-sample percentile ranks, with average ranks for ties.
+Every source program is retained, requiring at least five measured genes;
+program selection never uses response outcomes. Fold-training scaling and the
+same training-only CV rule select among linear/RBF kernels and penalties.
+Portable artifacts include the exact gene-to-program mapping and library hash.
+
+The selected RBF model (gamma 4, penalty 0.01) has validation RMSE 0.1692 versus
+the mean baseline 0.1562, and test RMSE 0.1087 versus 0.1162. The approximately
+6.4% test-error reduction does not overcome worse validation or make the
+previously inspected test set fresh. Retain the mean baseline; no verified PDO
+model success or full-curve confirmation is claimed. This is another recorded
+development experiment, not an independent replication of the earlier search.
+The run took 0.68 seconds and reserved 22 MiB on the L40S. GPU tests verify
+sample-local ranks, average ties, monotone rescaling invariance, portable
+prediction equivalence, and unchanged selection when held-out outcomes change.
+
+Reproduce with `scripts/tune_pharmacotype_cuda.py --data
+data/interim/pharmacotype/shi2022 --pathways
+data/raw/pharmacotype/hallmark2020.gmt`. Results are written under the data
+directory's `pathways/` subdirectory, preserving the previous gene-level search.
+
 ### PRISM/CCLE source details
 
 Acquired the secondary dose-response release from [PRISM 19Q4](https://api.figshare.com/v2/articles/9393293),
@@ -187,6 +214,16 @@ and audited directly. Shi 2022 supplies open RNA (GSE194249) and paired drug AUC
 Table S4 is also AUC. Yin 2025 supplies dose-level CFTR-drug measurements; its
 cross-study RNA join and dose-label consistency require audit before use.
 These are development candidates; the cell-line pilot cannot substitute for PDOs.
+
+Additional source checks found that Tiriac Table S3 contains subtype gene lists,
+not the missing sample-expression matrix. The [Tian 2023 Dryad release](https://datadryad.org/dataset/doi:10.5061/dryad.dbrv15f7s)
+lists organoid viability and gene-read-count spreadsheets; direct file downloads
+returned HTTP 403 during this audit. Its [GSE225011](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225011)
+record has 32 sequencing samples from two organoid identities, U123M15-T and
+U049MAI, across treated/untreated timepoints and replicates. Those 32 samples
+cannot supply 32 independent donors or a training/validation/test cohort.
+Untreated replicates may support an assay example after verifying the original
+curve files, but no successful predictive benchmark is inferred from metadata.
 
 Adaptive diagnostics use 10,000 streams per case at a synthetic 32-donor budget.
 Anytime rejection: IID null 0.01%, heavy-tail null 0.10%, simple alternative
