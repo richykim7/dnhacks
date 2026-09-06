@@ -9,8 +9,8 @@ export async function evidenceApi(page: Page) {
     source: project.id,
     sources: [project.id],
     shown: 2,
-    matched: 842,
-    total_claims: 842,
+    matched: 2,
+    total_claims: 2,
     status_counts: { disputed: 24, established: 400, reported: 418 },
     facets: {
       polarity: [

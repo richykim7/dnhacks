@@ -535,7 +535,9 @@ to the JSON and SSE API. A project selector in the header scopes every view. The
   jobs, external writers and shared graph paths are guarded. Collection selection/creation is separate
   from starting a scoped investigation.
 - **Knowledge.** The project's literature claim graph with entity-kind shapes, signed relationships,
-  collection-wide database search and vocabulary filters, collection totals and a capped graph view.
+  collection-wide database search and vocabulary filters, and complete claim/endpoint retrieval.
+  The initial camera focuses a structurally connected region; fit-all reveals every component.
+  Zoom-aware labels and edge styling reduce clutter without truncating the graph.
   Claim inspection shows entity forms, exact quotations, source papers, biological context, reported
   experiments, related claims and engine-test outcomes. Review controls are not exposed in the frontend.
   Backend review endpoints and human-decision persistence remain available.

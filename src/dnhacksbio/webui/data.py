@@ -679,11 +679,13 @@ _KG_RELATION_CLASSES = ("causal", "correlational", "temporal", "predictive", "un
 
 def kg_graph(source: str, limit: int = 220, status: str | None = None, q: str | None = None,
              polarity: str | int | None = None, kind: str | None = None,
-             relation_class: str | None = None, predicate: str | None = None) -> dict:
+             relation_class: str | None = None, predicate: str | None = None,
+             complete: bool = False) -> dict:
     """Nodes (entities) + edges (claims) for the Evidence view.
 
-    Disputed claims come first, then the most-supported, so a capped view stays legible rather than a
-    hairball. Every filter but `q` is an equality test on a closed vocabulary (unknown values are
+    Complete mode returns every matching claim and endpoint, without a row limit. The schema stores
+    entities in claim endpoints, not a separate entity table. Claim-ID ordering is status-neutral.
+    Every filter but `q` is an equality test on a closed vocabulary (unknown values are
     ignored, never guessed); `q` is a case-insensitive substring match over labels, identifiers,
     predicate, aspect and mechanism, run in the database so search covers the whole collection and
     not just the rows already loaded. Facets and the summary describe the unfiltered collection, the
@@ -721,7 +723,7 @@ def kg_graph(source: str, limit: int = 220, status: str | None = None, q: str | 
             where.append("(" + " or ".join(f"lower({c}) like ?" for c in cols) + ")")
             params += [like] * len(cols)
         clause = ("where " + " and ".join(where)) if where else ""
-        limit = max(10, min(int(limit), 800))
+        limit_clause = "" if complete else f"limit {max(10, min(int(limit), 800))}"
         claims = _rows(
             con,
             f"""
@@ -731,8 +733,8 @@ def kg_graph(source: str, limit: int = 220, status: str | None = None, q: str | 
                    object_function, relation_class, polarity, mechanism,
                    n_sources, first_year, status, dispute_kind, confidence
             from claim_edges {clause}
-            order by (status='disputed') desc, n_sources desc, claim_id
-            limit {limit}
+            order by claim_id
+            {limit_clause}
             """,
             params,
         )
@@ -809,6 +811,8 @@ def kg_graph(source: str, limit: int = 220, status: str | None = None, q: str | 
         "summary": summary,
         "as_of": as_of,
         "shown": len(edges),
+        "complete": len(edges) == matched,
+        "loaded_entities": len(nodes),
     }
 
 

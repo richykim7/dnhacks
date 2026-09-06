@@ -520,7 +520,8 @@ class Handler(BaseHTTPRequestHandler):
         pick = lambda key: (qs.get(key) or [None])[0]          # noqa: E731
         try:
             return self._send_json(data.kg_graph(
-                source, limit=limit, status=pick("status"), q=pick("q"), polarity=pick("polarity"),
+                source, limit=limit, complete=pick("complete") == "1",
+                status=pick("status"), q=pick("q"), polarity=pick("polarity"),
                 kind=pick("kind"), relation_class=pick("relation_class"), predicate=pick("predicate"),
             ))
         except KeyError:

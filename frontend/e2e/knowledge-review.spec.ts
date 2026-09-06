@@ -2,8 +2,11 @@ import { test, expect } from "@playwright/test";
 import { readFileSync } from "node:fs";
 const path = process.env.KNOWLEDGE_REVIEW_SNAPSHOT;
 const graph = path ? JSON.parse(readFileSync(path, "utf8")) : null;
-test.skip(!graph, "Requires local read-only real corpus snapshot");
-test("populated knowledge workspace visual review", async ({ page }) => {
+test.skip(!graph, "Requires local read-only complete corpus snapshot");
+test("complete knowledge graph default focus and fit-all visual review", async ({
+  page,
+}) => {
+  test.setTimeout(180000); // Complete-graph traces include thousands of SVG records.
   await page.setViewportSize({ width: 1920, height: 1080 });
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -24,14 +27,14 @@ test("populated knowledge workspace visual review", async ({ page }) => {
         },
       });
     if (url.pathname === "/api/kg") {
-      if (url.searchParams.has("claim"))
-        return route.fulfill({
-          json: graph._details[url.searchParams.get("claim")!],
-        });
-      const edges = graph.edges.slice(
-        0,
-        Number(url.searchParams.get("limit") || 160),
-      );
+      const claim = url.searchParams.get("claim");
+      if (claim) return route.fulfill({ json: graph._details[claim] });
+      expect(url.searchParams.get("complete")).toBe("1");
+      expect(url.searchParams.has("limit")).toBe(false);
+      const status = url.searchParams.get("status");
+      const edges = status
+        ? graph.edges.filter((e: any) => e.status === status)
+        : graph.edges;
       const ids = new Set(edges.flatMap((e: any) => [e.source, e.target]));
       return route.fulfill({
         json: {
@@ -39,40 +42,84 @@ test("populated knowledge workspace visual review", async ({ page }) => {
           edges,
           nodes: graph.nodes.filter((n: any) => ids.has(n.id)),
           shown: edges.length,
+          matched: edges.length,
         },
       });
     }
     return route.fulfill({ json: [] });
   });
-  await page.goto(`/?project=${graph.source}#knowledge`);
-  await expect(page.locator(".kg-node").first()).toBeVisible();
-  await page.waitForTimeout(800);
-  await page.screenshot({
-    path: test
-      .info()
-      .outputPath(
-        process.env.KNOWLEDGE_BEFORE
-          ? "knowledge-before.png"
-          : "knowledge-after.png",
-      ),
+  await page.goto(`/?project=${graph.source}&sceneReview=1#knowledge`);
+  const loaded = () =>
+    page.evaluate(() => {
+      const review = (window as any).knowledgeReview;
+      if (!review) return null;
+      return {
+        nodes: review.nodes().length,
+        edges: review.edges().length,
+        uniqueNodes: new Set(review.nodes().map((n: any) => n.id)).size,
+        uniqueEdges: new Set(review.edges().map((e: any) => e.id)).size,
+      };
+    });
+  await expect.poll(loaded, { timeout: 30000 }).toEqual({
+    nodes: graph.summary.entities,
+    edges: graph.total_claims,
+    uniqueNodes: graph.summary.entities,
+    uniqueEdges: graph.total_claims,
   });
-  if (process.env.KNOWLEDGE_BEFORE) return;
-  await expect(page.getByLabel("Relationship evidence")).toHaveCount(0);
-  const canvas = await page.locator(".relationship-map").boundingBox();
-  expect(canvas!.height).toBeGreaterThan(650);
-  expect(canvas!.width).toBeGreaterThan(1500);
-  await page.locator(".react-flow__node").first().click();
+  expect(graph.edges.length).toBe(graph.total_claims);
+  await page.waitForTimeout(1200);
+  const view = page.locator(".react-flow__viewport");
+  const defaultTransform = await view.getAttribute("style");
+  await page.screenshot({ path: test.info().outputPath("knowledge.png") });
+  await page.getByRole("button", { name: "Fit all", exact: true }).click();
+  await page.waitForTimeout(600);
+  expect(await view.getAttribute("style")).not.toBe(defaultTransform);
+  await page.screenshot({ path: test.info().outputPath("knowledge-all.png") });
+  await expect(page.locator(".react-flow__node")).toHaveCount(
+    graph.summary.entities,
+    { timeout: 30000 },
+  );
+  await expect(page.locator(".react-flow__edge")).toHaveCount(
+    graph.total_claims,
+    { timeout: 30000 },
+  );
+  // No graph ID is removed by camera motion; bounding boxes all fit after the explicit action.
+  const map = await page.locator(".relationship-map").boundingBox();
+  const outside = await page.locator(".react-flow__node").evaluateAll(
+    (ns, box: any) =>
+      ns.filter((n) => {
+        const r = n.getBoundingClientRect();
+        return (
+          r.left < box.x - 1 ||
+          r.right > box.x + box.width + 1 ||
+          r.top < box.y - 1 ||
+          r.bottom > box.y + box.height + 1
+        );
+      }).length,
+    map,
+  );
+  expect(outside).toBe(0);
+  await page
+    .getByLabel("Claim status", { exact: true })
+    .selectOption("reported");
+  await expect
+    .poll(async () => (await loaded())?.edges, { timeout: 30000 })
+    .toBe(graph.status_counts.reported);
+  await page.getByLabel("Claim status", { exact: true }).selectOption("");
+  await expect
+    .poll(async () => (await loaded())?.edges, { timeout: 30000 })
+    .toBe(graph.total_claims);
+  await page.getByRole("button", { name: "Fit all", exact: true }).click();
+  await expect(page.locator(".react-flow__edge")).toHaveCount(
+    graph.total_claims,
+    { timeout: 30000 },
+  );
+  // Open this exact source through its graph edge; list browsing has separate focused coverage.
+  await page
+    .locator(`.react-flow__edge[data-id="${graph.edges[0].claim_id}"]`)
+    .dispatchEvent("click");
   await expect(page.getByLabel("Relationship evidence")).toBeVisible();
-  await page.waitForTimeout(500);
-  await page.screenshot({
-    path: test.info().outputPath("knowledge-selection.png"),
-  });
-  await page.locator(".claim-result").first().click();
   await expect(page.locator(".source-evidence").first()).toBeVisible();
-  await page.waitForTimeout(500);
-  await page.screenshot({
-    path: test.info().outputPath("knowledge-sources.png"),
-  });
   const scroll = page.locator(".evidence-inspector .detail-scroll");
   await scroll.evaluate((e) => {
     e.scrollTop = e.scrollHeight;
@@ -80,24 +127,5 @@ test("populated knowledge workspace visual review", async ({ page }) => {
   expect(await scroll.evaluate((e) => e.scrollTop)).toBeGreaterThan(0);
   await page.keyboard.press("Escape");
   await expect(page.getByLabel("Relationship evidence")).toHaveCount(0);
-  await page.waitForTimeout(600);
-  await page.getByRole("button", { name: "Switch to light theme" }).click();
-  await page.waitForTimeout(500);
-  await page.screenshot({
-    path: test.info().outputPath("knowledge-light.png"),
-  });
-  await page.getByLabel("Graph density").selectOption("800");
-  await expect(page.locator(".react-flow__edge")).toHaveCount(800);
-  await page.getByLabel("Graph density").selectOption("36");
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.waitForTimeout(600);
-  await page.screenshot({
-    path: test.info().outputPath("knowledge-mobile.png"),
-  });
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-  ).toBe(true);
   expect(errors).toEqual([]);
 });
