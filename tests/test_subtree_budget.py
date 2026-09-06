@@ -175,3 +175,45 @@ def test_standalone_child_resume_inherits_existing_ancestor_budget(tmp_path, mon
         assert resumed.control.budgets("study~1")[0]["actions"] == 1
     finally:
         resumed.close(); ex.close()
+
+
+def test_action_only_contract_keeps_action_horizon_without_timeouts(tmp_path):
+    s = ControlStore(tmp_path)
+    s.freeze_budget('actions', dict(budget.ACTION_CONTRACT, actions=2))
+    s.start('actions', 2)
+    for _ in range(2):
+        op = s.reserve_operation('actions', 'research')
+        assert op['seconds'] is None
+        s.settle_operation(op, 100000.)
+        s.consume('actions')
+    assert not s.research_available('actions')
+    with pytest.raises(budget.BudgetUnavailable):
+        s.reserve_operation('actions', 'research')
+    op = s.reserve_operation('actions', 'report')
+    assert op['seconds'] is None
+    s.settle_operation(op, 100000.)
+    b = s.budgets('actions')[0]
+    assert b['actions'] == 2 and b['spent'] == 300000. and not b['violation']
+    assert ControlStore(tmp_path).budgets('actions')[0]['contract']['actions'] == 2
+    with pytest.raises(ValueError, match='frozen'):
+        s.freeze_budget('actions', dict(budget.ACTION_CONTRACT, actions=3))
+
+
+def test_default_action_only_reporting_keeps_checkpoint_protocol(tmp_path, monkeypatch):
+    import asyncio, json
+    from dnhacksbio.explorer.explorer import Explorer
+    from dnhacksbio.explorer import embed
+    monkeypatch.setattr(embed, 'embed_one', lambda *_: None)
+    async def answer(_):
+        await asyncio.sleep(.02)
+        return json.dumps(report())
+    ex = Explorer('actions', 'Question', db_path=tmp_path/'kg.duckdb', trace_dir=tmp_path, complete_fn=answer)
+    monkeypatch.setattr(ex, '_state', lambda:'Question')
+    try:
+        assert ex.model_timeout_s is None
+        result = asyncio.run(ex.run(0))
+        assert result['status'] == 'awaiting_parent' and result['steps'] == 0
+        assert ex.control.budgets('actions')[0]['contract']['actions'] == 2880
+        assert 'no wall-clock cutoff' in ex._budget_line()
+    finally:
+        ex.close()

@@ -148,8 +148,9 @@ async def main() -> dict:
     summary["usage"] = usage
     print(summary)
     if prog:
-        prog.emit("finish", "done",
-                  f"run complete — {summary.get('steps')} steps, queue {summary.get('queue')}",
+        finished = summary.get("status") in {"completed", "pruned"}
+        prog.emit("finish" if finished else "fail", "done" if finished else "error",
+                  f"investigation {summary.get('status')} — {summary.get('steps')} actions, queue {summary.get('queue')}",
                   run_id=args.run_id, summary={"run_id": args.run_id, **summary})
         prog.close()
     return summary

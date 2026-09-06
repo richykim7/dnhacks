@@ -30,7 +30,7 @@ from dnhacksbio.explorer import embed as EMB
 from dnhacksbio.explorer import lineage as LIN
 from dnhacksbio.explorer import skills as SK
 from dnhacksbio.explorer.runtime import Journal, process_identity, safe_id
-from dnhacksbio.explorer.budget import BudgetUnavailable
+from dnhacksbio.explorer.budget import BudgetUnavailable, ACTION_CONTRACT
 from dnhacksbio.explorer.control import ControlStore, REPORT_PROMPT, validate_report, validate_decision
 from dnhacksbio.explorer.exploration import ExplorationLog
 from dnhacksbio.explorer.fulltext import FullTextStore
@@ -340,9 +340,10 @@ class Explorer:
         if share_from is None:
             existing_budget = self.control.budgets(self.run_id)
             if subtree_budget is not None or not existing_budget:
-                self.control.freeze_budget(self.run_id, subtree_budget)
+                self.control.freeze_budget(self.run_id, subtree_budget if subtree_budget is not None else ACTION_CONTRACT)
         elif subtree_budget is not None:
             self.control.freeze_budget(self.run_id, subtree_budget)
+        self._action_only = all(b["contract"]["version"] == 2 for b in self.control.budgets(self.run_id))
         self._allocation_fn = allocation_fn if allocation_fn is not None else (share_from._allocation_fn if share_from else None)
         self._report_reason = "allowance_exhausted"
         self.vq.runtime_journal = self.journal
@@ -364,7 +365,7 @@ class Explorer:
         self._pending_feedback: list[dict] = []
         self._cancel_sandbox = threading.Event()
         self._degraded = False
-        self.model_timeout_s = 600
+        self.model_timeout_s = None if self._action_only else 600
         existing = [m["run_id"] for m in self.journal.manifests() if m.get("parent_run_id") == run_id]
         self._forks_spawned = max([int(r.rsplit("~", 1)[-1]) for r in existing if r.rsplit("~", 1)[-1].isdigit()] or [0])
 
@@ -591,7 +592,8 @@ class Explorer:
         if limits:
             left = min(left, *(b["action_holds"].get(self.run_id, 0) for b in limits))
         shared = " ".join(f"Subtree {b['run_id']}: {b['contract']['actions'] - b['actions']} total actions and "
-                          f"{max(0., b['contract']['seconds'] - b['spent']):.1f} accounted seconds remain, shared with descendants."
+                          + ("no wall-clock cutoff, shared with descendants." if b["contract"]["seconds"] is None else
+                           f"{max(0., b['contract']['seconds'] - b['spent']):.1f} accounted seconds remain, shared with descendants.")
                           for b in limits)
         return (shared + f" RESEARCH ALLOWANCE: {left} actions remain before mandatory reporting. "
                 "checkpoint reports early; done requests completion; neither means automatic pruning. "
@@ -945,7 +947,7 @@ class Explorer:
                         + repr(json.dumps({"project_id": self.manifest.get("project_id"),
                                            "run_id": self.run_id, "experiment_id": expid})) + "\nexec(compile(" + repr(code) + ", '<experiment>', 'exec'))"
                         for code, expid in zip(codes, identities)]
-            run = lambda codes: run_many(scoped_codes(codes), max_parallel=self.max_parallel, timeout=600,
+            run = lambda codes: run_many(scoped_codes(codes), max_parallel=self.max_parallel, timeout=None if self._action_only else 600,
                                          network=self.network, cache_dir=self.cache_dir,
                                          scratch_dir=self.scratch_dir, pool=self.sandbox_pool,
                                          progress=progress, journal=self.journal,
@@ -1250,7 +1252,7 @@ class Explorer:
                 self._event("lifecycle", {"lifecycle": "reporting_blocked", "reason": "No saved child session"})
                 return
             report_session = llm.Session(system=_SYS, model=self.model, resume=sid,
-                                         max_turns=1, tools_disabled=True, max_output_tokens=4096)
+                                         max_turns=1, tools_disabled=True, max_output_tokens=None if self._action_only else 4096)
         error = ""
         report_connected = False
         try:
@@ -1267,10 +1269,10 @@ class Explorer:
                         if report_session and not report_connected:
                             await report_session.__aenter__()
                             report_connected = True
-                        return await asyncio.wait_for(self._inject_complete(prompt) if self._inject_complete
-                            else report_session.ask(prompt, capture=cap), timeout=min(90, self.model_timeout_s))
+                        return await (self._inject_complete(prompt) if self._inject_complete
+                            else report_session.ask(prompt, capture=cap))
                     raw = await self._funded("report", ask_report)
-                    report = validate_report(json.loads(raw))
+                    report = validate_report(llm.parse_json(raw))
                     if report_session and report_session.truncated:
                         raise ValueError("Report output limit reached")
                     self.control.cost(self.run_id, "report", time.monotonic() - started, _capture_usage(cap))
@@ -1283,8 +1285,8 @@ class Explorer:
                     return
                 except (ValueError, TypeError) as exc:
                     error = "Repair the report format: " + str(exc)
-                except Exception:
-                    error = "Report generation unavailable; progress remains paused"
+                except Exception as exc:
+                    error = f"Report generation unavailable ({type(exc).__name__}); progress remains paused"
                     break
                 finally:
                     if not report_cost_saved:
@@ -1361,8 +1363,8 @@ class Explorer:
                 if inspect.isawaitable(result):
                     result = await result
             else:
-                raw = await asyncio.wait_for(llm.acomplete(prompt, model=self.model, tools_disabled=True,
-                    max_output_tokens=4096, max_turns=1, max_attempts=1, capture=cap), timeout=90)
+                raw = await llm.acomplete(prompt, model=self.model, tools_disabled=True,
+                    max_output_tokens=None if child._action_only else 4096, max_turns=1, max_attempts=1, capture=cap)
                 result = json.loads(raw)
             return validate_decision(result)
         finally:

@@ -80,7 +80,7 @@ def _build_run_argv(name: str, image: str, jobdir: str, data_dir: str | None, ti
         argv += ["-v", f"{scratch_dir}:/scratch"]
     for host, cont, ro in (extra_mounts or []):
         argv += ["-v", f"{host}:{cont}" + (":ro" if ro else "")]
-    argv += [image, "timeout", "--signal=KILL", str(timeout), "python", "/work/code.py"]
+    argv += [image] + (["timeout", "--signal=KILL", str(timeout)] if timeout is not None else []) + ["python", "/work/code.py"]
     return argv
 
 
@@ -174,7 +174,7 @@ def stream_process(cmd, timeout, *, on_output=None, cancel=None, stop=None):
                 for name in tails:
                     selector.register(getattr(proc, name), selectors.EVENT_READ, name)
                 while selector.get_map():
-                    if not stopped and ((cancel and cancel.is_set()) or time.monotonic() - start > timeout):
+                    if not stopped and ((cancel and cancel.is_set()) or (timeout is not None and time.monotonic() - start > timeout)):
                         stopped = True
                         timed_out = not (cancel and cancel.is_set())
                         if stop:
@@ -207,7 +207,7 @@ def stream_process(cmd, timeout, *, on_output=None, cancel=None, stop=None):
     return proc.returncode, tails["stdout"], tails["stderr"], timed_out
 
 
-def run_code(code: str, *, image: str = IMAGE, timeout: int = 600, memory: str = "8g", cpus=4,
+def run_code(code: str, *, image: str = IMAGE, timeout: int | None = 600, memory: str = "8g", cpus=4,
              network: str = "none", data_dir: Path | str | None = DATA_DIR,
              extra_mounts: list[tuple[str, str, bool]] | None = None,
              cache_dir: Path | str | None = None, job_base: str | None = None,
@@ -247,10 +247,10 @@ def run_code(code: str, *, image: str = IMAGE, timeout: int = 600, memory: str =
         timed_out = False
         if progress:
             progress("experiment.started", {"status": "running"})
-        rc, out, err, timed_out = stream_process(cmd, timeout + 30, cancel=cancel, stop=lambda: _kill(name),
+        rc, out, err, timed_out = stream_process(cmd, None if timeout is None else timeout + 30, cancel=cancel, stop=lambda: _kill(name),
                     on_output=(lambda payload: progress("experiment.output", payload)) if progress else None)
         dur = round(time.monotonic() - t0, 2)
-        if rc == 124 or (rc == 137 and dur >= timeout):  # early 137 may be OOM/cancel, not timeout
+        if timeout is not None and (rc == 124 or (rc == 137 and dur >= timeout)):  # early 137 may be OOM/cancel, not timeout
             timed_out = True
         artifacts = []
         if journal:
