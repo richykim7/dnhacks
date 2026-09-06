@@ -46,6 +46,26 @@ def test_replay_avoids_reader_and_preserves_input(monkeypatch):
     assert raw == original
 
 
+def test_plural_experiments_routes_to_repair_with_actionable_feedback(monkeypatch):
+    async def fix(text, failures, *, validate, instructions, **kwargs):
+        assert len(failures) == 1
+        assert "singular `experiment`" in failures[0]['reason']
+        assert "singular `experiment`" in await validate(claim(experiments=[]))
+        corrected = claim(experiment={'quote': 'EGFR increases KRAS activity.',
+                                      'readout': 'KRAS activity'})
+        assert await validate(corrected) is None
+        assert "preserving the actual organism" in instructions
+        assert "mutant state" in instructions
+        assert "does not establish no_effect_on" in instructions
+        return {'accepted': [{'raw': corrected}], 'unresolved': [], 'rejected': [], 'audit': []}
+
+    monkeypatch.setattr(repair, 'repair_claims', fix)
+    result = replay({'claims': [claim(experiments=[{'quote': 'EGFR increases KRAS activity.'}])]})
+    assert result['stats']['repair_attempted'] == 1
+    assert len(result['experiments']) == 1
+    assert result['claims'][0].evidence[0].experiment_id == result['experiments'][0].experiment_id
+
+
 def test_failed_raw_and_reader_deferred_repaired_once_each(monkeypatch):
     observed = []
     async def fix(text, failures, *, validate, **kwargs):
