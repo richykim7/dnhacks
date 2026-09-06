@@ -70,11 +70,12 @@ Neural replay tests separately verify deterministic restart, aliases, exact disj
 critic sets, private queue operation and donor reuse rejection.
 
 The real CPTAC development audit yields 26 G3 versus G1/G2 pairs before treatment
-exclusions. Fudan's larger published cohort is not an automatically valid substitute:
-its published matrices use cohort-wide detection filtering and published analyses
-already examined proliferation/grade relationships. Raw iProX accessions and the
-assay/processing review are recorded in the plan; no Fudan numerical confirmation
-data were opened. Raw reprocessing would require the separately scoped processing
-audit and compute estimate. Thus the engineering and real development training
-deliver measurable results, while independent confirmation and its reviewed sampling,
-processing, identity, privacy and model-specific power remain unsatisfied.
+exclusions. The subsequently authorized [Fudan external benchmark](protein-external.md)
+acquired 65 grade pairs, with 60 surviving the fixed coverage filter, and evaluated
+frozen CUDA-fitted models. The sample-count shortage is therefore resolved for that
+benchmark. Its published matrices use cohort-wide detection filtering, and published
+analyses already examined proliferation/grade relationships; evaluated Fudan inputs
+are not unopened confirmation data. No raw spectra were reprocessed. The secondary
+rank-kernel transfer result is promising, while the primary rank-PCA result is weak.
+Independent confirmation and reviewed sampling, processing, privacy and model-specific
+power remain unsatisfied; additional patients alone do not settle those requirements.

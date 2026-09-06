@@ -101,6 +101,9 @@ The [Fudan primary study](https://link.springer.com/article/10.1186/s13045-022-0
 reports treatment-naive primary tumors and pathologist-assigned grades. Its published
 matrix is cohort-filtered (detection in at least one sixth of samples), and prior
 analyses already concern proliferation. Raw proteomics is deposited as IPX0002796002.
-No numerical Fudan matrices have been opened. Untouched-cohort history and per-sample
-processing/sampling review remain necessary for confirmation. Raw reprocessing needs
-its separately authorized storage/CPU budget; the plan does not grant it implicitly.
+The subsequently authorized [external benchmark](protein-external.md) downloaded
+the Fudan clinical/protein supplements and evaluated CUDA-fitted source-only models.
+It found 65 grade pairs, or 60 after the fixed 80% coverage filter. This resolves
+the external sample-count shortage; untouched-cohort history and per-sample
+processing/sampling review remain necessary for confirmation. No raw mass spectra
+were reprocessed.
