@@ -8,6 +8,7 @@ import {
   type SceneState,
   type SceneAction,
   type SurfaceMesh,
+  type CameraRecipe,
   label,
 } from "./types";
 import "./binder.css";
@@ -605,6 +606,24 @@ export default function Workbench({
               <option value="ribbon" disabled={!traceSupported}>
                 Cα backbone trace{!traceSupported ? " · unavailable" : ""}
               </option>
+            </select>
+          </label>
+          <label>
+            Camera projection
+            <select aria-label="Camera projection" value={state.camera?.projection ?? "PerspectiveCamera"}
+              onChange={e => {
+                const c = handle.current?.inspect().camera as CameraRecipe | undefined;
+                if (!c) return;
+                const projection = e.target.value;
+                const distance = Math.hypot(...c.position.map((v, i) => v - c.target[i]));
+                const height = c.height ?? 2 * distance * Math.tan((c.fov ?? 38) * Math.PI / 360);
+                explore(); setState(s => ({ ...s, camera: { position: c.position, target: c.target, up: c.up,
+                  near: c.near, far: c.far, projection,
+                  ...(projection === "OrthographicCamera" ? { height, zoom: 1 } : { fov: 38 }) },
+                  revision: s.revision + 1 }));
+              }}>
+              <option value="PerspectiveCamera">Perspective</option>
+              <option value="OrthographicCamera">Orthographic · constant scale</option>
             </select>
           </label>
           <label>

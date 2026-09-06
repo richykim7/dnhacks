@@ -24,6 +24,9 @@ const radius: Record<string, number> = {
   S: 1.8,
   P: 1.8,
 };
+export function orthographicCamera() {
+  return Object.assign(new THREE.OrthographicCamera(-40, 40, 40, -40, .1, 2000), { manual: true });
+}
 export type SceneInspection = {
   camera_transitioning: boolean;
   camera: unknown;
@@ -221,7 +224,7 @@ export function Scene({
     const fromUp = camera.up.clone(), fromFov = (camera as THREE.PerspectiveCamera).fov;
     transition.current = null;
     const finishPose = () => {
-      if (initialized.current && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (camera instanceof THREE.PerspectiveCamera && initialized.current && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
         transition.current = { started: performance.now(), from, fromTarget, fromUp, fromFov,
           to: camera.position.clone(), toTarget: controls.current.target.clone(),
           toUp: camera.up.clone(), toFov: (camera as THREE.PerspectiveCamera).fov };
@@ -241,6 +244,12 @@ export function Scene({
       camera.lookAt(...c.target);
       (camera as THREE.PerspectiveCamera).fov = c.fov || 38;
       (camera as THREE.PerspectiveCamera).aspect = size.width / size.height;
+      if (camera instanceof THREE.OrthographicCamera) {
+        const half = (c.height ?? 80) / 2;
+        camera.top = half; camera.bottom = -half;
+        camera.left = -half * size.width / size.height; camera.right = -camera.left;
+        camera.zoom = c.zoom ?? 1;
+      }
       camera.near = Math.max(0.01, c.near || 0.1);
       camera.far = Math.max(camera.near + 0.1, c.far || 2000);
       camera.updateProjectionMatrix();
@@ -387,7 +396,9 @@ export function Scene({
           up: camera.up.toArray(),
           target: controls.current.target.toArray(),
           projection: camera.type,
-          fov: (camera as THREE.PerspectiveCamera).fov,
+          ...(camera instanceof THREE.OrthographicCamera
+            ? { height: camera.top - camera.bottom, zoom: camera.zoom }
+            : { fov: (camera as THREE.PerspectiveCamera).fov }),
           near: camera.near,
           far: camera.far,
         },
@@ -574,10 +585,13 @@ export default function Stage(props: {
   onPick: (id: string) => void;
   onHandle: (h: StageHandle | null) => void;
 }) {
+  const orthographic = props.state.camera?.projection === "OrthographicCamera";
+  const camera = useMemo(orthographicCamera, []);
   return (
     <Canvas
+      key={orthographic ? "orthographic" : "perspective"}
       frameloop="demand"
-      camera={{ fov: 38, near: 0.1, far: 2000 }}
+      camera={orthographic ? camera : { fov: 38, near: 0.1, far: 2000 }}
       dpr={[1, 1.5]}
       gl={{ antialias: true, preserveDrawingBuffer: true }}
     >

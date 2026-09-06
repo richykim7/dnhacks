@@ -279,7 +279,10 @@ ambiguous launch failure. A revised decision/operator recovery is needed for blo
 
 Operational limits remain depth 6, 72 total descendant slots, six continuation rounds and 96 research
 actions per node. In addition, `explorer/budget.py` enforces a frozen shared action/operation-time
-contract across descendants and continuations. Research grants reserve reporting first; fork grants,
+contract across descendants and continuations. New investigations default to 2,880 research actions
+and 43,200 summed operation seconds (12 aggregate hours); existing frozen contracts retain their
+original allowances. The CLI `--budget-spec` can set an explicit contract before a run starts.
+Research grants reserve reporting first; fork grants,
 consumption and refunds share the controller transaction. Restart never refreshes the endpoint or
 refunds ambiguous operations. Async operation deadlines mark backend overrun/cancellation uncertainty
 as operational violations; summed operation wall time is not an OS CPU/GPU quota or calibrated horizon.
@@ -661,8 +664,10 @@ See [tumor–stroma](docs/tumor-stroma.md).
 
 `spindle/` validates source-linked numerical protocols and executes an operator-pinned
 3D Cytosim CPU build with durable scoped receipts, cancellation, budgets and raw
-archives. The registered `spindle` action publishes complete saved trajectories and
-ensemble metrics into their owning experiment. New scientific hypotheses use new
+archives. The registered `spindle` action archives complete scientific trajectories
+and publishes separately bounded display frames with full-ensemble metrics into
+their owning experiment. Temporal display sampling retains all entities in each
+selected frame and records the source hash and exact frame mapping. New scientific hypotheses use new
 experiment identities; scene revisions do not rerun mechanics. The inline spindle
 observatory preserves source coordinates and physical samples, displays pole IDs
 and comparison, and replays recorded scene actions separately from human exploration.

@@ -29,7 +29,7 @@ def configuration(protocol: dict, condition: dict, seed: int) -> str:
     v={k:x['value'] for k,x in p['parameters'].items()}
     def block(command, fields):
         return command+'\n{\n'+''.join(f'    {k} = {value}\n' for k,value in fields.items())+'}\n\n'
-    s=block('set simul system',{'time_step':v['time_step_s'],'viscosity':v['viscosity_pn_s_um2'],'random_seed':seed,'kT':v['thermal_energy_pn_um']})
+    s=block('set simul system',{'time_step':v['time_step_s'],'viscosity':v['viscosity_pn_s_um2'],'random_seed':seed,'kT':v['thermal_energy_pn_um'],**({'tolerance':1e-6} if v['thermal_energy_pn_um']==0 else {})})
     s+=block('set space cell',{'shape':'ellipse'})
     s+=block('new cell',{'diameter':', '.join(str(2*r) for r in p['radius_um'])})
     s+=block('set fiber microtubule',{
