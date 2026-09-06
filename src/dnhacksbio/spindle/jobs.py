@@ -62,6 +62,7 @@ class SpindleStore:
             if old:
                 if old['spec_hash']!=h or old['budget']!=b:raise ValueError('Idempotency key reused with changed science or budget')
                 return {'receipt':old['receipt'],'spec_ref':h,'state':old['state']}
+            if con.execute("SELECT COUNT(*) FROM jobs WHERE state='queued'").fetchone()[0]>=4:raise ValueError('Spindle pending-job queue is full')
             receipt=uuid4().hex;t=time.time()
             con.execute('INSERT INTO jobs VALUES(?,?,?,?,?,?,?,NULL,0,?,?)',(receipt,sc,idempotency_key,h,spec,b,'queued',t,t))
             self._event(con,receipt,{'state':'queued','spec_ref':h})
@@ -129,12 +130,12 @@ class SpindleStore:
             job=self._job(con,receipt,scope)
             if job['state']!='queued':raise ValueError('Job already claimed or terminal; no silent rerun')
             if con.execute("SELECT 1 FROM jobs WHERE state='running'").fetchone():raise ValueError('One worker per spindle store')
+            protocol=json.loads(job['spec']);validate_protocol(protocol)
+            if digest(protocol)!=job['spec_hash']:raise ValueError('Frozen protocol corruption')
             con.execute("UPDATE jobs SET state='running',owner=?,updated=? WHERE receipt=?",(owner,time.time(),receipt))
             self._event(con,receipt,{'state':'running','build':build_manifest})
-        protocol=json.loads(job['spec']);validate_protocol(protocol)
-        if digest(protocol)!=job['spec_hash']:raise ValueError('Frozen protocol corruption')
         budget=json.loads(job['budget']);deadline=time.monotonic()+budget['wall_seconds']
-        directory=self.root/'runs'/receipt;directory.mkdir(parents=True,exist_ok=False)
+        directory=self.root/'runs'/receipt
         terminal='failed';reason='Worker failed';archive={};runs=[]
         def check():
             with self.connect() as con:
@@ -160,6 +161,7 @@ class SpindleStore:
                         try:process.wait(timeout=2)
                         except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);process.wait()
         try:
+            directory.mkdir(parents=True,exist_ok=False)
             for seed in protocol['seeds']:
                 for index,condition in enumerate(protocol['conditions']):
                     check();run_dir=directory/f'{seed}-{index}';run_dir.mkdir()

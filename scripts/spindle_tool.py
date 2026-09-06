@@ -12,6 +12,9 @@ from dnhacksbio.spindle.analysis import analyze_ensemble
 
 def dispatch(request):
     action=request['action'];args=request.get('args',{})
+    if action=='describe_model':
+        from dnhacksbio.spindle.protocol import describe_model
+        return describe_model()
     if action=='prepare_spindle_experiment':return prepare_spindle_experiment(**args)
     if action=='analyze_spindle_ensemble':
         store=SpindleStore(request['store']);scope=args['scope'];receipt=args['receipt']

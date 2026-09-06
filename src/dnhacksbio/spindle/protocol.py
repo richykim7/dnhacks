@@ -121,3 +121,14 @@ def prepare_spindle_experiment(protocol: dict) -> dict:
         'steps_per_replicate':round(v['duration_s']/v['time_step_s']),
         'frames_per_replicate':1+round(v['duration_s']/v['sampling_interval_s']),
         'wall_time':'unmeasured; enforced by declared worker budget'},'status':'prepared'}
+
+
+def describe_model():
+    return {'schema':'spindle_protocol.v1','model_id':'cytosim-3d-aster-v1','solver_commit':CYTOSIM_COMMIT,
+        'dimensionality':3,'units':{'length':'um','time':'s','force':'pN'},'scientific_status':'provisional_uncalibrated',
+        'parameters':{k:{'bounds':list(v),'entry':{'value':'finite number','source':'citation or explicit assumption','status':['assumed','measured','fitted']}} for k,v in PARAMETERS.items()},
+        'radius_um':'three semiaxes in [2,50]', 'seeds':'1-16 unique integers in [1,2^31)',
+        'conditions':{'count':'2-4','fields':{'name':'unique identifier','initial_positions_um':'2-8 nonoverlapping 3D centers, inside 0.8 ellipsoid radius',
+            'fibers_per_aster':'integer 4-128','cortical_motors':'integer 0-1000','crosslink_motors':'integer 0-1000','localization':['uniform','positive_x_crescent']}},
+        'analysis_plan':{'threshold_um':'[0.01,10]','dwell_s':'between sampling interval and duration','sensitivity_thresholds_um':'up to 8 thresholds in [0.01,10]'},
+        'source_ids':'nonempty list of source references','limits':'engineering bounds, not biological parameter estimates; duration/sampling divide into integer timesteps; <=100000 steps and <=1000 intervals'}
