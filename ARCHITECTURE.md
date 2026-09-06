@@ -602,7 +602,8 @@ See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limi
 ### Exploratory binder interfaces
 
 `binder/` adds bounded coordinate inspection, exact residue maps, contact/SASA diagnostics and
-portable `binder_bundle.v1` artifacts. The existing collector and explorer enforce source/hash,
+portable `binder_bundle.v1` artifacts with optional rebuilt source-derived surface meshes.
+Worker-parsed surfaces and labeled Cα traces remain visual representations of immutable coordinates. The existing collector and explorer enforce source/hash,
 provenance and experiment-scope checks before publication. RuntimeDetail opens those collected
 artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
 Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
