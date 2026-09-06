@@ -90,3 +90,8 @@ changes. Fill in:
   window (gh + tmux only). It turns `@name` mentions into a typed nudge in
   that agent's pane when the pane is idle. Without it, your agents only see
   mentions when they next read the board.
+- Rich's machine only: `scripts/pr_digest.py --author iantinney` in its own
+  tmux session (`dnhacks/pr-digest`). When a PR by that author merges, it
+  reads the diff, has `claude -p` write a plain-prose summary of what the
+  code actually changed, and sends it to the session's Telegram topic.
+  Needs `gh`, `claude`, and the local Telegram harness.
