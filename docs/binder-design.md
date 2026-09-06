@@ -11,7 +11,8 @@ Use `python -m dnhacksbio.binder request.json --output response.json`. Requests 
 `action` and `args`; receipt operations also contain an operator-selected `store` directory.
 Supported actions: `binder.prepare_target`, `binder.define_interface`, `binder.import_candidate`,
 `binder.evaluate_interface`, `binder.plan_design`, `binder.start_design`,
-`binder.collect_candidates`, `binder.cancel`, `binder.compare`, `binder.propose_followup`.
+`binder.collect_candidates`, `binder.cancel`, `binder.recover`, `binder.attach_candidate`,
+`binder.compare`, `binder.propose_followup`.
 Python functions in `dnhacksbio.binder` expose the same geometry and bundle operations.
 The agent must use the existing `exploratory` method and receive the complete agent-runtime
 instructions before execution. This does not specify the pending replacement for Docker.
@@ -171,3 +172,29 @@ unavailable, and interface-close/reverse always use the labeled atomic contact-o
 The surface review fixture is `frontend/e2e/binder-surface-fixture.json`, the same explicitly
 illustrative translated-1CRN pair. `BINDER_SURFACE_REVIEW_DIR` controls its browser capture directory.
 The measured/visual review remains separate from reference-hardware performance acceptance.
+
+
+## Worker recovery and reviewed partial output
+
+`binder.recover` takes `receipt` and `scope`. It marks a running receipt interrupted only when
+its recorded boot/PID namespace matches this process and the original PID/start identity is gone.
+Live or inaccessible workers, different namespaces and different boot identities fail explicitly.
+Recovery never launches inference or reclaims the receipt. Reboots/remote hosts require explicit
+operator reconciliation; elapsed time alone is not proof of a dead worker.
+
+After a terminal outcome, `binder.attach_candidate` accepts `bundle_path`, `receipt`, `scope`,
+optional `rejection_reason`, and `mapping_review` with `source_sha256`, the protocol's
+`target_sha256`, and a concise `policy` describing the reviewed source/target identity mapping.
+This is an operator declaration, not automatic validation of a generator's renumbering or alignment.
+The complete bundle still passes source reconstruction, scope, protocol and output-budget checks.
+Duplicate bundle hashes are idempotent and retain the first immutable review/rejection annotation.
+Collection can resume after its cursor; a late import never changes failed/canceled/interrupted
+into completed. Partial candidates remain exploratory and may carry explicit rejection reasons.
+
+The default adapter acquires both `/tmp/dnhacks-gpu.lock` and the earlier
+`/tmp/dnhacks-shared-gpu.lock` alias nonblockingly during migration. Both descriptors travel to
+children and remain held through process-tree cleanup. A custom operator lock path replaces these
+names. Setup errors after claim record interruption; every exit terminates descendants, including
+when the generator leader has already exited. Fast exits also receive final byte/trajectory checks.
+These are polled caps, so a short-lived output overshoot is detected and rejected, not prevented
+by a filesystem quota. No dependency deployment or live design run is implied by lifecycle tests.

@@ -50,3 +50,11 @@ contact/SASA protocol. The scene accepts `representation:"surface"` only when th
 missing traces fail explicitly. Close/reverse presets select atomic cutaways for contact inspection.
 Surface picking reports a source-atom association. Check its residue and distances in the table,
 and inspect the recorded approximation protocol before treating a surface feature as informative.
+
+
+If a worker disappears, request `binder.recover` from its original host/PID namespace. Do not retry
+inference on the same receipt. Different boot/namespace or inaccessible process identity requires
+operator reconciliation. `binder.attach_candidate` can attach reviewed partial bundles after a
+terminal outcome; supply the exact source hash, pinned target hash and mapping policy in
+`mapping_review`. This declaration does not excuse unreviewed chain renumbering. Preserve the
+original failure/cancellation and rejection annotation when collecting later artifacts.
