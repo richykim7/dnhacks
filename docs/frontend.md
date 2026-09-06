@@ -126,6 +126,11 @@ atom-pair distances. Artifact hash checks precede rendering and historical avail
 existing event cursor. See [binder interface workbench](binder-design.md) for supported metrics,
 provenance, visual-review records and incomplete live-design acceptance.
 
+The comparison selector resolves another available binder in the same experiment. Exact target
+coordinates, residue mapping and metric protocol must agree. One canvas and camera drive equal-size
+views; picks return the candidate identity and its own contact metrics. Captures retain both source
+hashes and viewport metadata, and historical playback removes unavailable comparison sources.
+
 ### Spindle trajectory development
 
 Selected experiments can display validated `filament_trajectory` JSON artifacts

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import Stage, { type StageHandle } from "./Stage";
+import CompareStage, { type ComparisonHandle } from "./CompareStage";
+import { requireComparable } from "./comparison";
 import {
   type Bundle,
   type Preset,
@@ -61,10 +63,12 @@ export default function Workbench({
   url,
   sha256,
   sceneActions = [],
+  candidates = [],
 }: {
   url: string;
   sha256: string;
   sceneActions?: SceneAction[];
+  candidates?: { sha256: string; name: string; url: string }[];
 }) {
   const [bundle, setBundle] = useState<Bundle | null>(null),
     [error, setError] = useState("");
@@ -79,13 +83,38 @@ export default function Workbench({
     selected: null,
     revision: 0,
   });
+  const [comparison, setComparison] = useState<null | { key: string; bundle: Bundle; meshes: Record<string, SurfaceMesh> }>(null);
+  const [comparisonError, setComparisonError] = useState("");
+  const comparisonSource = candidates.find(c => c.sha256 === state.comparison_bundle_sha256 && c.sha256 !== sha256);
+  useEffect(() => {
+    const controller = new AbortController();
+    setComparison(null); setComparisonError("");
+    if (!state.comparison_bundle_sha256 || !bundle) return () => controller.abort();
+    if (!comparisonSource) { setComparisonError("Comparison source unavailable at this experiment cursor."); return () => controller.abort(); }
+    void (async () => {
+      const response = await fetch(comparisonSource.url, { signal: controller.signal });
+      if (!response.ok) throw Error("Comparison source unavailable at this cursor.");
+      const parsed = await parseBundle(await response.text(), comparisonSource.sha256, controller.signal);
+      requireComparable(bundle, parsed.bundle);
+      const bothSurfaces = meshes.target && meshes.binder && parsed.meshes.target && parsed.meshes.binder;
+      if (state.representation === "surface" && !bothSurfaces) throw Error("Matching surface meshes unavailable; choose atoms for comparison.");
+      if (state.representation === "ribbon" && !hasBackboneTrace(parsed.bundle)) throw Error("Matching backbone traces unavailable; choose atoms for comparison.");
+      if (!state.representation && !bothSurfaces) setState(s => ({ ...s, representation: "atoms" }));
+      if (!controller.signal.aborted) setComparison({ key: comparisonSource.sha256, ...parsed });
+    })().catch(e => { if (!controller.signal.aborted) setComparisonError(e.message); });
+    return () => controller.abort();
+  }, [bundle, state.comparison_bundle_sha256, comparisonSource?.url, sha256, state.representation, meshes]);
+  const paired = comparisonSource && comparison?.key === state.comparison_bundle_sha256 ? comparison : null;
+  const comparisonRef = useRef({ paired, error: comparisonError });
+  comparisonRef.current = { paired, error: comparisonError };
   const stageElement = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<"follow" | "replay" | "explore">("follow");
   const [playing, setPlaying] = useState(false),
     [speed, setSpeed] = useState(1),
     [frame, setFrame] = useState(0);
   const recorded = useMemo(
-    () => sceneActions.filter((a) => presets.includes(a.view.preset)),
+    () => sceneActions.filter((a) => presets.includes(a.view.preset)).map(a => ({ ...a,
+      view: { comparison_bundle_sha256: null, comparison_selected: null, ...a.view } })),
     [sceneActions],
   );
   const previousRecordedCount = useRef(0);
@@ -117,6 +146,8 @@ export default function Workbench({
           style: "pearl",
           selected: null,
           camera: null,
+          comparison_bundle_sha256: null,
+          comparison_selected: null,
         }),
         revision: s.revision + 1,
       }));
@@ -148,7 +179,7 @@ export default function Workbench({
       revision: s.revision + 1,
     }));
   };
-  const handle = useRef<StageHandle | null>(null),
+  const handle = useRef<StageHandle | ComparisonHandle | null>(null),
     stateRef = useRef(state);
   stateRef.current = state;
   const [loaded, setLoaded] = useState(false),
@@ -176,7 +207,7 @@ export default function Workbench({
     });
     return () => controller.abort();
   }, [url, sha256]);
-  const onHandle = useCallback((h: StageHandle | null) => {
+  const onHandle = useCallback((h: StageHandle | ComparisonHandle | null) => {
     handle.current = h;
     h?.ready().then(() => {
       if (handle.current === h) setLoaded(true);
@@ -185,10 +216,13 @@ export default function Workbench({
   const onPick = useCallback(
     (id: string) => {
       explore();
-      setState((s) => ({ ...s, selected: id }));
+      setState((s) => ({ ...s, selected: id, comparison_selected: null }));
     },
     [explore],
   );
+  const onOtherPick = useCallback((id: string) => {
+    explore(); setState(s => ({ ...s, selected: null, comparison_selected: id }));
+  }, [explore]);
   useEffect(() => {
     if (!bundle || !stageElement.current) return;
     const w = window as unknown as { sceneReview?: unknown };
@@ -240,12 +274,20 @@ export default function Workbench({
       },
       ready: async () => {
         const deadline = performance.now() + 30000;
-        while (!handle.current) {
-          if (performance.now() > deadline)
-            throw Error("Scene initialization timed out");
+        for (;;) {
+          if (comparisonRef.current.error) throw Error(comparisonRef.current.error);
+          if (performance.now() > deadline) throw Error("Scene initialization timed out");
+          const requested = stateRef.current.comparison_bundle_sha256 || undefined;
+          const current = handle.current;
+          if (current && (current as ComparisonHandle).comparisonSource === requested &&
+            (!requested || comparisonRef.current.paired)) {
+            if (stateRef.current.comparison_selected && !comparisonRef.current.paired?.bundle.structure.residues.some(r => r.id === stateRef.current.comparison_selected))
+              throw Error("Unknown comparison residue selection");
+            await current.ready();
+            if (current === handle.current && requested === (stateRef.current.comparison_bundle_sha256 || undefined)) return;
+          }
           await new Promise(requestAnimationFrame);
         }
-        await handle.current.ready();
       },
       inspect: () => {
         const {
@@ -261,7 +303,9 @@ export default function Workbench({
       },
       pick: (x: number, y: number) => {
         const id = handle.current?.pick(x, y);
-        if (id) onPick(id);
+        if (id && typeof id === "object") {
+          if (id.bundle_sha256 === sha256) onPick(id.residue_id); else onOtherPick(id.residue_id);
+        } else if (id) onPick(id);
         return id;
       },
       capture: () => handle.current?.capture(),
@@ -279,22 +323,24 @@ export default function Workbench({
       if (w.sceneReview === bridge) delete w.sceneReview;
       if (element.binderController === bridge) delete element.binderController;
     };
-  }, [sha256, onPick, bundle, meshes, traceSupported]);
+  }, [sha256, onPick, onOtherPick, bundle, meshes, traceSupported]);
   if (error) return <p role="alert">{error}</p>;
   if (!bundle) return <p role="status">Opening candidate coordinates…</p>;
-  const residues = new Map(bundle.structure.residues.map((r) => [r.id, r]));
-  const contacts = bundle.metrics.contacts.filter(
+  const inspectedBundle = state.comparison_selected && paired ? paired.bundle : bundle;
+  const inspectedSelection = (paired ? state.comparison_selected : null) ?? state.selected;
+  const residues = new Map(inspectedBundle.structure.residues.map((r) => [r.id, r]));
+  const contacts = inspectedBundle.metrics.contacts.filter(
     (c) => c.distance_angstrom <= 4.5,
   );
   const ids = [
     ...new Set(contacts.flatMap((c) => [c.target_residue, c.binder_residue])),
   ];
-  const selected = state.selected ? residues.get(state.selected) : null;
-  const rows = state.selected
+  const selected = inspectedSelection ? residues.get(inspectedSelection) : null;
+  const rows = inspectedSelection
     ? contacts.filter(
         (c) =>
-          c.target_residue === state.selected ||
-          c.binder_residue === state.selected,
+          c.target_residue === inspectedSelection ||
+          c.binder_residue === inspectedSelection,
       )
     : contacts;
   return (
@@ -389,6 +435,16 @@ export default function Workbench({
           </small>
         )}
       </div>
+      {(candidates.some(c => c.sha256 !== sha256) || state.comparison_bundle_sha256) && <label className="binder-compare-select">Compare candidate
+        <select aria-label="Compare candidate" value={state.comparison_bundle_sha256 ?? ""}
+          onChange={e => { explore(); setState(s => ({ ...s, comparison_bundle_sha256: e.target.value || null,
+            comparison_selected: null, camera: null, preset: e.target.value ? "candidate-compare" : "hero", revision: s.revision + 1 })); }}>
+          <option value="">Single candidate</option>
+          {candidates.filter(c => c.sha256 !== sha256).map(c => <option key={c.sha256} value={c.sha256}>{c.name}</option>)}
+        </select>
+      </label>}
+      {comparisonError && <p role="alert">{comparisonError}</p>}
+      {state.comparison_bundle_sha256 && !paired && !comparisonError && <p role="status">Loading aligned comparison…</p>}
       <div className="binder-layout">
         <div className="binder-specimen">
           <div
@@ -399,6 +455,9 @@ export default function Workbench({
             data-testid="binder-stage"
             aria-label="Interactive target and binder; exact contacts in table below"
           >
+            {paired ? <CompareStage bundle={bundle} other={paired.bundle} sha256={sha256}
+              otherSha256={paired.key} meshes={meshes} otherMeshes={paired.meshes} state={state}
+              onHandle={onHandle} onPick={onPick} onOtherPick={onOtherPick} /> : (
             <Stage
               meshes={meshes}
               bundle={bundle}
@@ -406,11 +465,15 @@ export default function Workbench({
               onHandle={onHandle}
               onPick={onPick}
             />
+            )}
+            {paired && <div className="binder-compare-names">
+              {[bundle, paired.bundle].map((b, i) => <span key={i}>{b.manifest.candidate_id} · {b.manifest.provenance.category.replaceAll("_", " ")}</span>)}
+            </div>}
             <div className="binder-caption">
               <span className="binder-badge">
-                {bundle.manifest.provenance.category.replaceAll("_", " ")}
+                {paired ? "Exploratory comparison" : bundle.manifest.provenance.category.replaceAll("_", " ")}
               </span>
-              <strong>{bundle.manifest.candidate_id}</strong>
+              <strong>{paired ? "Shared camera · aligned target · same Å scale" : bundle.manifest.candidate_id}</strong>
               <small>
                 {state.preset === "exploded"
                   ? "Illustrative separation · measurements use original pose"
@@ -469,8 +532,8 @@ export default function Workbench({
             {ids.map((id) => (
               <button
                 key={id}
-                aria-pressed={state.selected === id}
-                onClick={() => onPick(id)}
+                aria-pressed={inspectedSelection === id}
+                onClick={() => inspectedBundle === bundle ? onPick(id) : onOtherPick(id)}
               >
                 {label(residues.get(id)!)}
               </button>
@@ -478,6 +541,7 @@ export default function Workbench({
           </div>
         </div>
         <aside className="binder-inspector">
+          <p className="binder-inspected-candidate">Inspecting {inspectedBundle.manifest.candidate_id}</p>
           <span className="binder-eyebrow">INTERFACE INSPECTOR</span>
           <h4>{selected ? label(selected) : "A contact is a measurement"}</h4>
           <p>
@@ -488,19 +552,19 @@ export default function Workbench({
           <dl>
             <div>
               <dt>Heavy-atom pairs ≤4.5 Å</dt>
-              <dd>{bundle.metrics.counts["4.5"]}</dd>
+              <dd>{inspectedBundle.metrics.counts["4.5"]}</dd>
             </div>
             <div>
               <dt>Total buried area</dt>
               <dd>
-                {bundle.metrics.total_buried_area_angstrom2?.toFixed(0) ??
+                {inspectedBundle.metrics.total_buried_area_angstrom2?.toFixed(0) ??
                   "Not measured"}{" "}
                 Å²
               </dd>
             </div>
             <div>
               <dt>Pairs below 2.0 Å</dt>
-              <dd>{bundle.metrics.clash_count}</dd>
+              <dd>{inspectedBundle.metrics.clash_count}</dd>
             </div>
             <div>
               <dt>Binding affinity</dt>
@@ -587,18 +651,31 @@ export default function Workbench({
           </button>
         </aside>
       </div>
-      {state.preset === "candidate-compare" && (
+      {state.preset === "candidate-compare" && !paired && (
         <p className="binder-context">
           Comparison needs a second collected candidate evaluated with the same
           protocol. No second candidate is present in this bundle.
         </p>
       )}
+      {paired && <div className="binder-comparison-metrics">
+        <table aria-label="Candidate geometry trade-offs">
+          <caption>Geometry trade-offs for these two candidates · exploratory, not an affinity rank</caption>
+          <thead><tr><th>Candidate</th><th>Pairs ≤4.5 Å</th><th>Pairs &lt;2 Å</th><th>Buried area (Å²)</th><th>Contact/clash Pareto status</th></tr></thead>
+          <tbody>{[bundle, paired.bundle].map((b, i, both) => {
+            const m = b.metrics, o = both[1-i].metrics;
+            const dominated = o.counts["4.5"] >= m.counts["4.5"] && o.clash_count <= m.clash_count &&
+              (o.counts["4.5"] > m.counts["4.5"] || o.clash_count < m.clash_count);
+            return <tr key={i}><td>{b.manifest.candidate_id}</td><td>{m.counts["4.5"]}</td><td>{m.clash_count}</td>
+              <td>{m.total_buried_area_angstrom2?.toFixed(0) ?? "Unavailable"}</td><td>{dominated ? "Dominated on these axes" : "Nondominated among these two"}</td></tr>;
+          })}</tbody>
+        </table>
+      </div>}
       <details className="binder-table" open={Boolean(selected)}>
         <summary>Exact contacts · {rows.length} atom pairs</summary>
         <p>
           Interchain heavy-atom distance rule v1. Sensitivity:{" "}
-          {bundle.metrics.counts["4.0"]} pairs at 4.0 Å;{" "}
-          {bundle.metrics.counts["5.0"]} at 5.0 Å. Buried area: SASA(target) +
+          {inspectedBundle.metrics.counts["4.0"]} pairs at 4.0 Å;{" "}
+          {inspectedBundle.metrics.counts["5.0"]} at 5.0 Å. Buried area: SASA(target) +
           SASA(binder) − SASA(complex), no division by two; 1.4 Å probe, 256
           sphere samples.
         </p>
@@ -617,14 +694,14 @@ export default function Workbench({
                   <td>
                     {label(residues.get(c.target_residue)!)} /{" "}
                     {
-                      bundle.structure.atoms.find((a) => a.id === c.target_atom)
+                      inspectedBundle.structure.atoms.find((a) => a.id === c.target_atom)
                         ?.name
                     }
                   </td>
                   <td>
                     {label(residues.get(c.binder_residue)!)} /{" "}
                     {
-                      bundle.structure.atoms.find((a) => a.id === c.binder_atom)
+                      inspectedBundle.structure.atoms.find((a) => a.id === c.binder_atom)
                         ?.name
                     }
                   </td>

@@ -80,7 +80,8 @@ try {
       throw Error("Capture geometry changed before picking");
     picked = await stage.evaluate(
       (el, xy) => el.binderController.pick(...xy),
-      request.pick,
+      [request.pick[0] * box.width / request.image_size[0],
+       request.pick[1] * box.height / request.image_size[1]],
     );
   }
   await writeFile(
