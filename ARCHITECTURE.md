@@ -500,8 +500,11 @@ d3-force for the literature graph, Dagre for investigation trees, and 3Dmol for 
 to the JSON and SSE API. A project selector in the header scopes every view. The views:
 
 - **Investigations.** The project's runs grouped into fork trees. The selected investigation shows its
-  full-viewport vertical search tree with collapsible navigation and animated inline researcher expansion.
-  Each researcher shows its objective, experiments and artifacts above bounded major research steps;
+  full-viewport vertical search tree with collapsible navigation and a shared-layout researcher expansion.
+  The clicked node expands into the available workspace while its origin and tree remain mounted for
+  collapse. Collected visual artifacts float on the left; concise objective, experiments, candidate review
+  and bounded major research steps occupy the right. Mobile stacks these areas; missing visuals remain
+  explicit rather than being fabricated. Each researcher shows experiments above major research steps;
   raw runtime diagnostics are opt-in. Activity requires fresh heartbeat evidence, and candidate counts
   deduplicate recorded submission/retry identities at the live or historical cursor. A discoverable candidate
   queue opens the owning experiment for human Accept/Reject review with required notes and source context.
@@ -649,8 +652,8 @@ portable `binder_bundle.v1` artifacts with optional rebuilt source-derived surfa
 Worker-parsed surfaces and labeled Cα traces remain visual representations of immutable coordinates. The existing collector and explorer enforce source/hash,
 provenance and experiment-scope checks before publication. RuntimeDetail opens those collected
 artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
-A persistent inline node workspace keeps one selected molecular/binder source above the researcher’s
-experiments and major steps; source availability follows the exact event cursor. Binder cameras transition smoothly
+A persistent expanded node workspace keeps one selected molecular/binder source floating to the left of
+experiments and major steps, stacking on mobile; source availability follows the exact event cursor. Binder cameras transition smoothly
 and yield immediately to manual orbit; reduced motion and saved captures remain deterministic.
 Paired candidates use two scissored views with one actual camera, matching target coordinates and
 metric protocol. Captures retain both source hashes; saved-pixel picks resolve the exact candidate

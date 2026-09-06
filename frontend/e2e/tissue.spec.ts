@@ -103,13 +103,7 @@ test("living tissue renders scoped artifact, synchronized views and exact-frame 
   await page
     .getByRole("button", { name: "Inspect Inspect alanine exchange" })
     .click();
-  await page
-    .getByRole("tablist", { name: "Researcher detail" })
-    .getByRole("tab", { name: "Experiments" })
-    .click();
-  await page
-    .getByRole("button", { name: /Open living tissue/ })
-    .click({ timeout: 15000 });
+  await expect(page.locator(".workspace-render .tissue-embedded")).toBeVisible({ timeout: 15000 });
   const ready = async () => {
     await page.waitForFunction(() => Boolean((window as any).tissueReview));
     await page.evaluate(() => (window as any).tissueReview.ready());
@@ -168,7 +162,7 @@ test("living tissue renders scoped artifact, synchronized views and exact-frame 
   await expect(page.getByRole('button',{name:'Restore tissue scene'})).toBeVisible();
   await page.getByRole('button',{name:'Restore tissue scene'}).click();
   await ready();
-  await page.getByRole("button", { name: "Return to experiment" }).click();
+  await page.locator(".researcher-workspace-overlay > .workspace-titlebar").getByRole("button", { name: "Close researcher detail" }).click();
   const pickFixture=structuredClone(tissue);
   for(const condition of pickFixture.conditions)for(const frame of condition.frames){
     frame.cells=[{id:73,position:[0,0,0],radius:20,type:'tumor',state:'alive',parent_id:null,alanine:.125}];
@@ -178,15 +172,14 @@ test("living tissue renders scoped artifact, synchronized views and exact-frame 
   await page.reload();
   await page.getByRole('tablist',{name:'Investigation view'}).getByRole('tab',{name:'Experiments',exact:true}).click();
   await page.getByRole('button',{name:/Paired tissue experiment/}).click();
-  await page.getByRole('button',{name:/Open living tissue/}).click();await ready();
+  await expect(page.locator('.workspace-render .tissue-embedded')).toBeVisible();await ready();
   const canvas=page.locator('.tissue-canvas canvas').first();const box=await canvas.boundingBox();
   await canvas.click({position:{x:box!.width/2,y:box!.height/2}});
   await expect(page.getByLabel('Selected cell')).toHaveValue('73');
   await expect(page.locator('.tissue-inspection')).toContainText('0.1250 mM');
-  await page.getByRole('button',{name:'Return to experiment'}).click();
   await page.getByLabel("Activity playback position").fill("2");
   await expect(
-    page.getByRole("button", { name: /Open living tissue/ }),
+    page.locator(".tissue-embedded"),
   ).toHaveCount(0);
   expect(errors).toEqual([]);
 });

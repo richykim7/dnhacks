@@ -145,7 +145,7 @@ async function fixture(page: Page) {
   return decisions;
 }
 
-test("vertical inline research, candidate review and historical boundary", async ({
+test("full-canvas researcher morph, stable origin and candidate replay", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -169,8 +169,20 @@ test("vertical inline research, candidate review and historical boundary", async
   await page.screenshot({
     path: test.info().outputPath("investigation-dark.png"),
   });
+  await page.waitForTimeout(900);
+  const stage = await page.locator(".research-stage").boundingBox();
+  await page.mouse.move(stage!.x + 45, stage!.y + 80);
+  await page.mouse.down();
+  await page.mouse.move(stage!.x + 75, stage!.y + 60, { steps: 5 });
+  await page.mouse.up();
+  const origin = await branch.boundingBox();
+  const initialViewport = await page
+    .locator(".react-flow__viewport")
+    .getAttribute("style");
   await branch.locator(".candidate-badge").click();
-  const detail = branch.locator(".inline-research-detail");
+  const detail = page.getByRole("article", {
+    name: "Expanded researcher workspace",
+  });
   await expect(detail).toBeVisible();
   await expect(page.locator(".detail-panel")).toHaveCount(0);
   const headings = await detail.locator("h3").allTextContents();
@@ -181,12 +193,14 @@ test("vertical inline research, candidate review and historical boundary", async
     detail.getByRole("button", { name: "Review candidate", exact: true }),
   ).toBeVisible();
   await page.waitForTimeout(900);
-  const expanded = await branch.boundingBox();
+  const expanded = await detail.boundingBox();
+  await expect(page.locator(".agent-node")).toHaveCount(2);
+  expect(await branch.boundingBox()).toEqual(origin);
   const canvas = await page.locator(".research-stage").boundingBox();
-  expect(expanded!.y).toBeGreaterThanOrEqual(canvas!.y);
-  expect(expanded!.y + expanded!.height).toBeLessThanOrEqual(
-    canvas!.y + canvas!.height,
-  );
+  expect(Math.abs(expanded!.x - canvas!.x)).toBeLessThan(2);
+  expect(Math.abs(expanded!.y - canvas!.y)).toBeLessThan(2);
+  expect(Math.abs(expanded!.width - canvas!.width)).toBeLessThan(2);
+  expect(Math.abs(expanded!.height - canvas!.height)).toBeLessThan(2);
   const viewport = page.locator(".react-flow__viewport");
   const before = await viewport.getAttribute("style");
   await page.waitForTimeout(5500); // One investigation poll must preserve the user's viewport.
@@ -217,10 +231,16 @@ test("vertical inline research, candidate review and historical boundary", async
   });
   await page.keyboard.press("Escape");
   await expect(detail).toHaveCount(0);
+  expect(await branch.boundingBox()).toEqual(origin);
+  expect(
+    await page.locator(".react-flow__viewport").getAttribute("style"),
+  ).toBe(initialViewport);
+  await expect(branch.locator(".agent-button")).toBeFocused();
   await page.locator(".summary-candidates").click();
   await expect(
     page.getByRole("heading", { name: "Candidate review", exact: true }),
   ).toBeVisible();
+  await expect(page.locator(".agent-node")).toHaveCount(2);
   await page.locator(".candidate-queue .experiment-row").click();
   await expect(detail).toBeVisible();
   await page.getByLabel("Activity playback position").fill("7");
@@ -333,7 +353,9 @@ test("public investigation snapshot screenshots", async ({ page }) => {
   await expect(page.locator(".inline-research-detail")).toBeVisible();
   await page.waitForTimeout(1000);
   await page.screenshot({ path: test.info().outputPath("node.png") });
-  await page.locator(".agent-node.expanded .candidate-badge").click();
+  await page.locator("[data-workspace-close]").click();
+  await expect(page.locator(".researcher-workspace-overlay")).toHaveCount(0);
+  await page.locator(".agent-node .candidate-badge").first().click();
   const review = page
     .getByRole("button", { name: "Review candidate", exact: true })
     .first();
