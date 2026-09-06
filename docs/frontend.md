@@ -135,3 +135,8 @@ Binder scene history supports following the agent, action replay at 0.25–4× a
 local exploration. Replay uses only recipes visible at the current runtime cursor. The production
 workbench element provides a bounded controller for the local capture worker; only its convenient
 window alias requires `?sceneReview=1`. Scene replay is not physical simulation time.
+
+The browser backend explicitly rebinds application journal, project, corpus, KG and
+cache paths to its temporary data directory. Changing only the process cwd would
+leave source-rooted application state visible; the runner regression checks that
+a pre-existing journal cannot leak into the empty-backend test.

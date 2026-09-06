@@ -16,9 +16,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 @contextmanager
-def browser_slot():
+def browser_slot(path=None):
     # Shared by all worktrees; do not unlink a flock file while waiters may hold it.
-    path = Path(f"/tmp/dnhacks-browser-{os.getuid()}.lock")
+    path = Path(path) if path is not None else Path(f"/tmp/dnhacks-browser-{os.getuid()}.lock")
     fd = os.open(path, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     with os.fdopen(fd, "w") as lock:
         try:
@@ -57,10 +57,25 @@ def wait_ready(process, path, timeout=60):
     raise RuntimeError(f"Server startup timed out; inspect {path.parent} logs")
 
 
+def configure_backend(data_root):
+    # Application paths are rooted at the source checkout, not cwd. Rebind state
+    # explicitly so an empty test process cannot expose an operator's journal/KG.
+    from dnhacksbio.webui import data, projects, jobs
+    root=Path(data_root).resolve()
+    data.ROOT=root;data.PROCESSED=root/'data'/'processed';data.CORPORA=root/'data'/'corpora'
+    data.WORKING_KG=data.PROCESSED/'litmap_kg.duckdb'
+    data.MASTER_KG=data.PROCESSED/'litmap_master_kg.duckdb'
+    data.PROMOTION_DECISIONS_PATH=data.PROCESSED/'promotion_decisions.json'
+    data._CACHE=root/'cache'
+    projects.ROOT=root;projects.PROJECTS=root/'data'/'projects';projects.CORPORA=data.CORPORA
+    jobs.ROOT=root
+
+
 def backend(ready):
     from http.server import ThreadingHTTPServer
     from dnhacksbio.webui.server import Handler
 
+    configure_backend(Path.cwd())
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     server.daemon_threads = True
     temporary = ready.with_suffix(".tmp")
