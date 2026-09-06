@@ -8,9 +8,13 @@ available, search by question, and pull the full guidance before writing an expe
 from __future__ import annotations
 
 import re
+import hashlib
 from pathlib import Path
 
 SKILLS_DIR = Path(__file__).resolve().parents[3] / "skills"
+# Existing learned-evalue guidance explicitly depends on these repository references.
+REFERENCE_PATHS = ("plans/PLAN-learned-evalue.md", "research/deep-anytime-valid-hypothesis-testing/README.md",
+                   "research/deep-anytime-valid-hypothesis-testing/paper.txt")
 
 _FIELD = {
     "one_line": re.compile(r"^\*\*One line:\*\*\s*(.+)$", re.M | re.I),
@@ -46,8 +50,50 @@ def list_skills() -> list[dict]:
 
 def get_skill(name: str) -> str | None:
     """The full SKILL.md text — what the explorer reads before writing code for that method."""
-    p = SKILLS_DIR / name / "SKILL.md"
-    return p.read_text(errors="replace") if p.exists() else None
+    if name not in {d.name for d in _skill_dirs()} or not re.fullmatch(r"[a-z0-9_-]+", name):
+        return None
+    p = (SKILLS_DIR / name / "SKILL.md").resolve()
+    if not p.is_relative_to(SKILLS_DIR.resolve()):
+        raise ValueError("Skill path escaped registry")
+    return p.read_text()
+
+
+def snapshot(name: str) -> dict:
+    """Complete dependency-ordered local Markdown references, pinned by content hash.
+
+    Only explicit Markdown links to .md resources are dependencies; remote citations
+    are not instructions. Containment, missing references and cycles fail closed.
+    """
+    if get_skill(name) is None:
+        raise ValueError(f"Unknown skill: {name}")
+    root = SKILLS_DIR.resolve()
+    approved = {(root.parent / p).resolve() for p in REFERENCE_PATHS}
+    visiting, seen, files = set(), set(), []
+
+    def visit(path):
+        path = path.resolve()
+        if not path.is_relative_to(root) and path not in approved:
+            raise ValueError("Skill reference escaped registry")
+        if path in visiting:
+            raise ValueError("Cyclic skill references")
+        if path in seen:
+            return
+        visiting.add(path)
+        text = path.read_text()
+        for ref in re.findall(r"\]\(([^)]+\.(?:md|txt))(?:#[^)]*)?\)", text):
+            if "://" not in ref:
+                visit(path.parent / ref)
+        visiting.remove(path)
+        seen.add(path)
+        files.append({"path": str(path.relative_to(root.parent)), "text": text,
+                      "sha256": hashlib.sha256(text.encode()).hexdigest()})
+
+    visit(root / name / "SKILL.md")
+    content = "\n\n".join(f"--- {f['path']} ---\n{f['text']}" for f in files)
+    if len(content.encode()) > 200_000:
+        raise ValueError("Required skill exceeds instruction delivery capacity; execution stopped")
+    return {"name": name, "content": content, "files": files,
+            "sha256": hashlib.sha256(content.encode()).hexdigest()}
 
 
 def search_skills(query: str, limit: int = 8) -> list[dict]:

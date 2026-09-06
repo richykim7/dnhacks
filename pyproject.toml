@@ -10,6 +10,7 @@ dependencies = [
     "numpy>=2.0",
     "requests>=2.32",    # data pulls
     "pydantic>=2.0",     # claim schema models
+    "gemmi>=0.7,<0.8",  # validate PDB/mmCIF artifacts before serving molecular geometry
     "gilda>=1.6.1",      # entity grounding (local; REST fallback)
 ]
 
@@ -19,6 +20,7 @@ evalue = [
 ]
 dev = [
     "pytest>=8",
+    "claude-agent-sdk>=0.1",  # web API imports the SDK seam even in deterministic tests
 ]
 # LLM seam + dense retrieval. Optional so a plumbing-only install never blocks on torch; the engine itself
 # needs both. Install: `uv sync --extra llm`.

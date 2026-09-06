@@ -21,12 +21,15 @@ import math
 import os
 import re
 import time
+import threading
+from uuid import uuid4
 from pathlib import Path
 
 from dnhacksbio import llm
 from dnhacksbio.explorer import embed as EMB
 from dnhacksbio.explorer import lineage as LIN
 from dnhacksbio.explorer import skills as SK
+from dnhacksbio.explorer.runtime import Journal, process_identity, safe_id
 from dnhacksbio.explorer.exploration import ExplorationLog
 from dnhacksbio.explorer.fulltext import FullTextStore
 from dnhacksbio.explorer.sandbox import SandboxPool
@@ -199,7 +202,7 @@ _SYS = (
 _PROTOCOL = """\
 Respond with exactly one JSON object for your next action, and no prose outside it:
 
-  {"thought": "<your full reasoning this step: what the last observation showed, your current hypothesis, why this action, and what you expect; this is the recorded reasoning trace>", "action": "<name>", "args": { ... }}
+  {"intent": "<brief user-facing next task and purpose, 1-320 characters; not private reasoning>", "action": "<name>", "args": { ... }}
 
 Actions:
 - search_kg      {"query": "<entity or free text>"}            -> claims/edges (exact keyword hits plus
@@ -320,8 +323,9 @@ class Explorer:
                  cache_dir: str | None = None, cross_run_memory: bool = True,
                  share_from: "Explorer | None" = None, fork_budget: "ForkBudget | None" = None,
                  resume_sid: str | None = None, branch_brief: str | None = None, fork_fn=None,
-                 fork_enabled: bool = True, judge_fn=None, trace_dir: str | None = None):
-        self.run_id = run_id
+                 fork_enabled: bool = True, judge_fn=None, trace_dir: str | None = None,
+                 project_id: str | None = None, branch_objective: str | None = None):
+        self.run_id = safe_id(run_id)
         self.goal = goal
         self.model = model
         self.freeze_year = freeze_year   # when set, the engine sees only literature <= this year
@@ -397,6 +401,66 @@ class Explorer:
         # into the reasoning trace so the UI reads the beam tree as data rather than from observation text).
         self._fork_meta: dict | None = None
         self._has_forked = False       # a node splits once; the tree grows through survivors
+        self.journal = share_from.journal if share_from else Journal(td)
+        self.vq.runtime_journal = self.journal
+        if share_from:
+            project_id = share_from.manifest.get("project_id")
+        elif project_id is None and db_path:
+            db = Path(db_path).resolve()
+            if db.parent.parent.name in {"projects", "corpora"}:
+                project_id = db.parent.name
+        self.manifest = self.journal.register(run_id, goal, objective=branch_objective or "",
+                                             project=project_id, config={"model": model, "network": network})
+        self.goal = self.manifest["original_question"]
+        self.attempt_id = ""
+        self._operation_id = None
+        self._delivered: set[str] = set()
+        self._pending_skills: dict[str, dict] = {}
+        self._skill_snapshots: dict[str, dict] = {}
+        self._skill_errors: dict[str, str] = {}
+        self._pending_feedback: list[dict] = []
+        self._cancel_sandbox = threading.Event()
+        self._degraded = False
+        self.model_timeout_s = 600
+        existing = [m["run_id"] for m in self.journal.manifests() if m.get("parent_run_id") == run_id]
+        self._forks_spawned = max([int(r.rsplit("~", 1)[-1]) for r in existing if r.rsplit("~", 1)[-1].isdigit()] or [0])
+
+    def _event(self, kind: str, payload: dict | None = None, **kw):
+        try:
+            return self.journal.append(self.run_id, self.attempt_id, kind, payload,
+                                       operation_id=self._operation_id, **kw)
+        except Exception:
+            self._degraded = True
+            self.journal.degraded = True
+            self._cancel_sandbox.set()
+            print(f"[{self.run_id}] AUDIT STORAGE FAILURE: protected execution halted", flush=True)
+            raise
+
+    def _begin_attempt(self):
+        self.attempt_id = uuid4().hex
+        self._delivered.clear()
+        self._pending_skills.clear()
+        self._cancel_sandbox = threading.Event()
+        self._degraded = False
+        self._operation_id = None
+        self._event("attempt.started", {**self.manifest, "pid": os.getpid(),
+                                       "process_identity": process_identity(),
+                                       "resumed": bool(self._resume_sid), "protocol_version": 1})
+        # Pin registry contents, including complete references, for this attempt.
+        self._skill_snapshots, self._skill_errors = {}, {}
+        for s in SK.list_skills():
+            try:
+                self._skill_snapshots[s["name"]] = SK.snapshot(s["name"])
+            except (OSError, ValueError) as exc:
+                self._skill_errors[s["name"]] = str(exc)
+        if "agent-runtime" not in self._skill_snapshots:
+            raise ValueError("Mandatory runtime skill unavailable: " + self._skill_errors.get("agent-runtime", "missing"))
+        self._pending_skills["agent-runtime"] = self._skill_snapshots["agent-runtime"]
+
+    async def _heartbeat(self):
+        while True:
+            self._event("heartbeat")
+            await asyncio.sleep(5)
 
     # --- lineage read-scope -----------------------------------------------------------------------
     def _scope(self):
@@ -414,6 +478,8 @@ class Explorer:
         oq = self.log.open_questions(scope)[:5]
         fb = self.log.feedback_entries(scope, limit=6)
         corr = self.log.corrections(scope)
+        self._pending_feedback = [{"entry_id": e["entry_id"], "version": self.journal.blob(json.dumps(e, default=str))}
+                                  for e in [*fb, *corr]]
         # Passive recall: the goal-relevant entries from this lineage and prior runs (not already on the
         # frontier), so the agent remembers what it has tried before.
         recalled = []
@@ -509,24 +575,48 @@ class Explorer:
         messages into self._last_capture. The path is the run's persistent resumable Session; a
         test-injected complete_fn bypasses it, and a direct step() with no open session falls back to a
         one-shot acomplete."""
+        if self._degraded or getattr(self.journal, "degraded", False):
+            raise RuntimeError("Audit storage unavailable")
+        # Explicitly re-supply previously required guidance on each request. SDK context
+        # compaction may have summarized old messages; a delivery ledger alone cannot
+        # establish that those messages are still in the current context.
+        for name in self._delivered:
+            self._pending_skills.setdefault(name, self._skill_snapshots[name])
+        if sum(len(s["content"].encode()) for s in self._pending_skills.values()) > 200_000:
+            raise ValueError("Required instruction set exceeds context delivery capacity; execution stopped")
+        for name, skill in self._pending_skills.items():
+            prompt = skill["content"] + "\n\n" + prompt
+            ref = self.journal.blob(skill["content"])
+            self._event("instructions.delivered", {"name": name, "sha256": skill["sha256"],
+                        "files": [{k: f[k] for k in ("path", "sha256")} for f in skill["files"]],
+                        "content": ref, "delivery": "model_request_context"})
+            self._delivered.add(name)
+        self._pending_skills.clear()
+        if self._pending_feedback:
+            self._event("feedback.delivered", {"items": self._pending_feedback})
+            self._pending_feedback = []
+        self._event("model.started", {"phase": "model", "label": "Choosing the next research action"})
         if self._inject_complete is not None:
             self._last_capture = {}
-            return await self._inject_complete(prompt)
+            text = await asyncio.wait_for(self._inject_complete(prompt), timeout=self.model_timeout_s)
+            self._event("model.ended")
+            return text
         cap: dict = {}
         if self._session is not None:
-            text = await self._session.ask(prompt, capture=cap)
+            text = await asyncio.wait_for(self._session.ask(prompt, capture=cap), timeout=self.model_timeout_s)
         else:
-            text = await llm.acomplete(prompt, model=self.model, system=_SYS, effort="high",
-                                       max_turns=24, thinking=True, capture=cap)
+            text = await asyncio.wait_for(llm.acomplete(prompt, model=self.model, system=_SYS, effort="high",
+                                       max_turns=24, thinking=True, capture=cap), timeout=self.model_timeout_s)
         self._last_capture = cap
+        self._event("model.ended")
         return text
 
     def _snapshot_seen(self) -> None:
         """After the opening message (which already shows the current feedback and corrections), mark them
         seen so the per-turn deltas only surface ones that arrive later."""
         scope = self._scope()
-        self._seen_fb = {e["entry_id"] for e in self.log.feedback_entries(scope, limit=50)}
-        self._seen_corr = {c["entry_id"] for c in self.log.corrections(scope, limit=50)}
+        self._seen_fb = {e["entry_id"] for e in self.log.feedback_entries(scope, limit=6)}
+        self._seen_corr = {c["entry_id"] for c in self.log.corrections(scope, limit=5)}
 
     def _tree_evidence_block(self, limit: int = 30) -> str:
         """The tree's adjudicated results, verbatim, for the node about to synthesize. Branch digests are
@@ -581,6 +671,8 @@ class Explorer:
                                      f"{((e.get('body') or '').strip().splitlines() or [''])[-1][:140]}"
                                      for e in new_fb))
         new_corr = [c for c in self.log.corrections(scope, limit=10) if c["entry_id"] not in self._seen_corr]
+        self._pending_feedback = [{"entry_id": e["entry_id"], "version": self.journal.blob(json.dumps(e, default=str))}
+                                  for e in [*new_fb, *new_corr]]
         if new_corr:
             self._seen_corr.update(c["entry_id"] for c in new_corr)
             parts.append("NEW CORRECTIONS FROM HUMAN REVIEW (these reshape your model; follow them):\n"
@@ -602,7 +694,9 @@ class Explorer:
             obj = llm.parse_json(raw)
         except Exception:
             return None
-        if not isinstance(obj, dict) or "action" not in obj:
+        if (not isinstance(obj, dict) or not isinstance(obj.get("action"), str)
+                or not isinstance(obj.get("args", {}), dict)
+                or not isinstance(obj.get("intent"), str) or not 1 <= len(obj["intent"].strip()) <= 320):
             return None
         obj.setdefault("args", {})
         return obj
@@ -614,17 +708,15 @@ class Explorer:
         obj = self._as_action(raw)
         if obj is not None:
             return obj
-        retry = ("Your last reply was not a single JSON action object, so nothing ran and no step was "
+        self._event("protocol.repair", {"reason": "Missing or invalid action, args, or concise intent"})
+        retry = ("Your last reply was not a valid JSON action object with a concise intent, so nothing ran and no step was "
                  "consumed. Reply with one JSON object and nothing else, no prose and no code fence "
-                 'around anything but the object: {"action": "<name>", "args": {...}}. '
+                 'around anything but the object: {"intent": "brief task and purpose, 1-320 characters", "action": "<name>", "args": {...}}. '
                  f"For reference, your last reply began: {(raw or '')[:300]!r}")
         obj = self._as_action(await self._complete_capturing(retry))
         if obj is not None:
             return obj
-        # Twice unparseable: fall back rather than loop, and log it.
-        print(f"[{self.run_id}] action unparseable twice; falling back to reflect", flush=True)
-        return {"action": "reflect", "args": {"note": "could not parse an action; re-orienting"},
-                "thought": ""}
+        raise ValueError("Action protocol error after one repair; nothing dispatched")
 
     # --- action handlers (each returns a short observation string) --------------------------------
     @staticmethod
@@ -859,35 +951,80 @@ class Explorer:
         return "\n".join(f"{s['name']}: {s.get('one_line', '')}" for s in hits) or "(no matching skill)"
 
     def _act_get_skill(self, args) -> str:
-        txt = SK.get_skill(str(args.get("name", "")))
-        return txt[:8000] if txt else "(no such skill)"
+        name = str(args.get("name", ""))
+        skill = self._skill_snapshots.get(name)
+        if not skill:
+            return "(skill unavailable: " + self._skill_errors.get(name, "no such registered skill") + ")"
+        self._pending_skills[name] = skill
+        return f"Complete {name} guidance will accompany the next model request (version {skill['sha256']})."
 
     async def _act_run_experiments(self, args) -> str:
         exps = [e for e in (args.get("experiments") or []) if isinstance(e, dict) and e.get("code")]
         if not exps:
             return "(no experiments provided)"
+        if len(exps) > 8:
+            return "(at most 8 experiments per action)"
+        for e in exps:
+            method = e.get("method_id")
+            required = "agent-runtime" if method == "exploratory" else method
+            if not required or required not in self._skill_snapshots or required not in self._delivered:
+                self._event("policy.rejected", {"reason": "Method guidance not delivered", "method_id": method})
+                return "(experiment blocked: declare a registered method_id and get_skill first; custom methods use exploratory)"
+        identities = [uuid4().hex for _ in exps]
+        for e, expid in zip(exps, identities):
+            self._event("experiment.queued", {"status": "queued", "title": e.get("hypothesis", ""),
+                        "method": e.get("method", ""), "method_id": e["method_id"],
+                        "code": self.journal.blob(e["code"])}, experiment_id=expid)
         run = self._sandbox_run
         if run is None:
             from dnhacksbio.explorer.sandbox import run_many
+            def progress(index, kind, payload):
+                self._event(kind, payload, experiment_id=identities[index])
             run = lambda codes: run_many(codes, max_parallel=self.max_parallel, timeout=600,
                                          network=self.network, cache_dir=self.cache_dir,
-                                         scratch_dir=self.scratch_dir, pool=self.sandbox_pool)
+                                         scratch_dir=self.scratch_dir, pool=self.sandbox_pool,
+                                         progress=progress, journal=self.journal,
+                                         cancel=self._cancel_sandbox)
         # Off the event loop: this is the longest blocking call in the engine (up to the sandbox timeout),
         # and every concurrent branch and the verify worker must keep running meanwhile.
-        results = await asyncio.to_thread(run, [e["code"] for e in exps])
+        worker = asyncio.create_task(asyncio.to_thread(run, [e["code"] for e in exps]))
+        cancelled = False
+        try:
+            results = await asyncio.shield(worker)
+        except asyncio.CancelledError:
+            self._cancel_sandbox.set()
+            cancelled = True
+            results = await worker  # collect final diagnostics before ending the attempt
+        except Exception as exc:
+            for expid in identities:
+                self._event("experiment.finished", {"status": "failed", "error": str(exc)}, experiment_id=expid)
+            raise
         obs = []
-        for e, r in zip(exps, results):
-            parsed = _parse_result(getattr(r, "stdout", "") or "")
+        if len(results) != len(exps):
+            raise ValueError("Sandbox returned an incomplete experiment batch")
+        for e, r, expid in zip(exps, results, identities):
+            parsed = _parse_result(getattr(r, "stdout", "") or "") if getattr(r, "ok", False) else None
             # Store the hypothesis whole: the title is the claim, read back by frontier(), the promise judge
             # and the promotion records. Truncate at the point of display, if a consumer needs it.
             eid = self.log.log("experiment", e.get("hypothesis", "")[:MAX_HYPOTHESIS], "",
                                run_id=self.run_id,
                                status="promising" if parsed else "open",
                                provenance={"subject": e.get("subject"), "object": e.get("object"),
-                                           "method": e.get("method"), "expected_sign": e.get("expected_sign")},
+                                           "method": e.get("method"), "method_id": e["method_id"],
+                                           "experiment_id": expid, "expected_sign": e.get("expected_sign")},
                                code=e["code"], result=json.dumps(parsed) if parsed else
                                (getattr(r, "stdout", "") or getattr(r, "stderr", ""))[:800])
             ok = getattr(r, "ok", False)
+            self._event("experiment.finished", {"entry_id": eid, "status": "completed" if ok else "failed",
+                        "result": parsed, "exit_code": getattr(r, "exit_code", None),
+                        "timed_out": getattr(r, "timed_out", False),
+                        "stdout": self.journal.blob(getattr(r, "stdout", "") or ""),
+                        "stderr": self.journal.blob(getattr(r, "stderr", "") or ""),
+                        "exploratory": e["method_id"] == "exploratory"}, experiment_id=expid)
+            for artifact in getattr(r, "artifacts", None) or []:
+                self._event("artifact", {**artifact, "schema_version": 1, "run_id": self.run_id,
+                            "investigation_id": LIN.root(self.run_id), "attempt_id": self.attempt_id,
+                            "experiment_id": expid}, experiment_id=expid, producer="collector")
             if parsed:
                 # Front-load the key stats so they survive observation truncation.
                 summary = (f"effect={parsed.get('effect')} "
@@ -904,6 +1041,8 @@ class Explorer:
                            + (getattr(r, "stdout", "") or getattr(r, "stderr", ""))[-4000:])
             obs.append(f"#experiment {eid} [{'ran' if ok else 'FAILED'}] {e.get('subject')}~{e.get('object')} "
                        f"({e.get('method')}): {summary}")
+        if cancelled:
+            raise asyncio.CancelledError()
         return "\n".join(obs)
 
     def _act_log(self, args) -> str:
@@ -938,16 +1077,22 @@ class Explorer:
             return ("(that experiment has no parsed RESULT to verify — re-run so its code prints a valid "
                     "RESULT line." + self._mine_to_submit() + ")")
         prov = entry.get("provenance") or {}
+        if prov.get("method_id") == "exploratory":
+            return "(exploratory method cannot be submitted as audited; register and validate a method first)"
         sid = self.vq.submit(run_id=self.run_id,
                              hypothesis=entry["title"],
                              subject=prov.get("subject", ""), object=prov.get("object", ""),
                              method=prov.get("method", ""), expected_sign=int(prov.get("expected_sign", 0) or 0),
                              result=result, code=entry.get("code", ""),
-                             provenance={"exploration_entry": entry["entry_id"]})
+                             provenance={"exploration_entry": entry["entry_id"],
+                                         "experiment_id": prov.get("experiment_id"), "attempt_id": self.attempt_id})
         self.log.update(entry["entry_id"], status="submitted")
+        if prov.get("experiment_id"):
+            self._event("experiment.submitted", {"verification": "pending", "submission_id": sid},
+                        experiment_id=prov["experiment_id"])
         return f"submitted #{entry['entry_id']} for verification (submission {sid})"
 
-    def _spawn_child(self, run_id: str, resume_sid: str | None, brief: str) -> "Explorer":
+    def _spawn_child(self, run_id: str, resume_sid: str | None, brief: str, objective: str = "") -> "Explorer":
         """Build a child leaf branch that shares this branch's DB and fork budget (share_from=self),
         resumes the forked session (inheriting our cached context), and opens on a divergence briefing with
         fork disabled (a leaf earns forking by being promoted). It inherits our injected
@@ -959,7 +1104,7 @@ class Explorer:
             corpus_card=None, network=self.network, cache_dir=self.cache_dir,
             cross_run_memory=self.cross_run_memory, share_from=self, resume_sid=resume_sid,
             branch_brief=brief, fork_fn=self._fork_fn, fork_enabled=False, judge_fn=self._inject_judge,
-            trace_dir=self._trace_dir)   # a branch's trace belongs beside its parent's, wherever that is
+            trace_dir=self._trace_dir, branch_objective=objective or "Explore an independent branch")
 
     def _branch_digest(self, run_id: str, angle: str = "", hypothesis: str = "",
                        adversarial: bool = False) -> dict:
@@ -1176,7 +1321,7 @@ class Explorer:
                 continue
             brief = (_adversarial_brief(crid) if is_adv
                      else _leaf_brief(crid, b.get("angle", ""), b.get("hypothesis", "")))
-            leaves.append((self._spawn_child(crid, child_sid, brief), b))
+            leaves.append((self._spawn_child(crid, child_sid, brief, b.get("angle") or b.get("hypothesis", "")), b))
         if not leaves:
             return "(fork produced no live branches)\n" + "\n".join(notes)
         self._has_forked = True
@@ -1189,6 +1334,11 @@ class Explorer:
         k = min(BEAM_K, len(leaves))
         verdicts = await self._judge_promise(digests, k)
         keep = {v["run_id"] for v in verdicts if v.get("keep")}
+        for child, spec in leaves:
+            verdict = next((v for v in verdicts if v["run_id"] == child.run_id), {})
+            child._event("branch.decision", {"kept": child.run_id in keep, "reason": verdict.get("reason", ""),
+                         "rank": verdict.get("rank"), "angle": spec.get("angle", ""),
+                         "adversarial": bool(spec.get("adversarial"))})
         vby = {v["run_id"]: v for v in verdicts}
         self._persist_judge(verdicts, digests)
         # 3. Continue the survivors (resume with fork enabled) concurrently; prune the rest ------------
@@ -1259,6 +1409,8 @@ class Explorer:
                 "supports, or fork only if a new angle emerged that no branch is pursuing. Then `done`.")
 
     async def _dispatch(self, action: dict) -> str:
+        if self._degraded or getattr(self.journal, "degraded", False) or "agent-runtime" not in self._delivered:
+            raise RuntimeError("Mandatory runtime instructions not delivered; dispatch blocked")
         name, args = action.get("action"), action.get("args", {})
         h = {"search_kg": self._act_search_kg, "search_papers": self._act_search_papers,
              "read_paper": self._act_read_paper, "search_skills": self._act_search_skills,
@@ -1285,12 +1437,28 @@ class Explorer:
         """One think→act→observe cycle on the persistent session. `message` is turn 1's full standing
         context or a turn-2+ delta (last observation + any new feedback). Returns (action, observation)."""
         self.steps += 1
+        if not self.attempt_id:
+            self._begin_attempt()
+        self._operation_id = uuid4().hex
         # Wall-clock the whole think→act→observe cycle: monotonic for a robust
         # duration, epoch for "when". Both land in the reasoning trace so the UI
         # can show per-step latency without a separate profiling pass.
         _t0 = time.monotonic()
         action = await self._next_action(message)
-        obs = await self._dispatch(action)
+        self._event("intent", {"intent": action["intent"]}, producer="agent")
+        self._event("tool.started", {"phase": "tool", "action": action["action"],
+                                    "label": action["action"].replace("_", " "),
+                                    "inputs": self.journal.blob(json.dumps(action["args"]))})
+        try:
+            if action["action"] == "fork":
+                self._event("lifecycle", {"lifecycle": "waiting", "reason": "Waiting for child research branches"})
+            obs = await self._dispatch(action)
+            if action["action"] == "fork":
+                self._event("lifecycle", {"lifecycle": "running", "reason": "Child research returned"})
+        except BaseException as exc:
+            self._event("tool.failed", {"error": f"{type(exc).__name__}: {exc}"})
+            raise
+        self._event("tool.ended", {"action": action["action"], "observation": self.journal.blob(str(obs))})
         # Keep the rolling transcript bounded to the last 6 steps, but do not truncate each observation:
         # only these few steps are re-shown, so full text is affordable and the numbers/errors survive.
         self.transcript.append({"step": self.steps, "action": action.get("action", ""),
@@ -1302,8 +1470,7 @@ class Explorer:
         rec = {"step": self.steps, "run_id": self.run_id,
                "ts": time.time(),                          # end-of-step epoch seconds
                "dt_s": round(time.monotonic() - _t0, 3),   # step wall-clock duration
-               "thinking": cap.get("thinking", ""),        # model's real reasoning
-               "reasoning": action.get("thought", ""),     # self-reported label
+               "reasoning": action["intent"],
                "action": action.get("action", ""), "args": action.get("args", {}),
                "observation": str(obs)}
         if self._fork_meta is not None:                    # a fork step: attach the structured beam tree
@@ -1331,7 +1498,10 @@ class Explorer:
         reasoning thread while only new tokens are paid for. The harness runs this, optionally with a
         verification worker draining the queue concurrently."""
         sess = None
+        heartbeat = None
         try:
+            self._begin_attempt()
+            heartbeat = asyncio.create_task(self._heartbeat())
             if self._inject_complete is None:      # real path: open the persistent session (tests inject a fake)
                 # A forked child resumes its parent's session (resume_sid) so it inherits the cached ancestor
                 # context; a root run opens fresh (resume_sid is None).
@@ -1349,13 +1519,27 @@ class Explorer:
                 message = f"{message}\n\n{bl}"
             self._snapshot_seen()                  # per-turn deltas only surface feedback that arrives later
             for _ in range(max_steps):
+                if heartbeat.done():
+                    heartbeat.result()  # persistence failure must stop protected dispatch
                 action, obs = await self.step(message)
                 print(f"[step {self.steps}] {action.get('action')} :: "
                       f"{str(obs)[:200].replace(chr(10), ' ')}", flush=True)
                 if action.get("action") == "done":
+                    self._event("lifecycle", {"lifecycle": "completed", "reason": "Agent concluded this branch"})
                     break
                 message = self._turn_message(obs)   # turn 2 onward: only what is new
+            else:
+                self._event("lifecycle", {"lifecycle": "budget_exhausted", "reason": "Step allowance exhausted"})
+        except BaseException as exc:
+            self._cancel_sandbox.set()
+            if not self._degraded:
+                self._event("lifecycle", {"lifecycle": "cancelled" if isinstance(exc, asyncio.CancelledError) else "failed",
+                                         "reason": f"{type(exc).__name__}: {exc}"})
+            raise
         finally:
+            if heartbeat:
+                heartbeat.cancel()
+                await asyncio.gather(heartbeat, return_exceptions=True)
             # stash the live session id so a promoted branch can resume this exact conversation
             if sess is not None and sess.session_id:
                 self.session_id = sess.session_id

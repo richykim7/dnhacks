@@ -1,6 +1,5 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Atom,
   BookOpen,
   ChevronDown,
   GitBranch,
@@ -20,10 +19,8 @@ import { Evidence } from "./components/Evidence";
 import { Forecasting } from "./components/Forecasting";
 import { ResearchProcess } from "./components/ResearchProcess";
 import { Button } from "./components/ui/button";
-import { ErrorNotice, Loading } from "./components/common";
-const Structures = lazy(() => import("./components/Structures"));
-type View =
-  "forecast" | "investigations" | "library" | "evidence" | "structures";
+import { ErrorNotice } from "./components/common";
+type View = "forecast" | "investigations" | "library" | "evidence";
 function readRoute() {
   const [path, run = ""] = window.location.hash.slice(1).split("/");
   const map: Record<string, View> = {
@@ -37,13 +34,7 @@ function readRoute() {
     new: "library",
   };
   return {
-    view: ([
-      "forecast",
-      "investigations",
-      "library",
-      "evidence",
-      "structures",
-    ].includes(path)
+    view: (["forecast", "investigations", "library", "evidence"].includes(path)
       ? path
       : map[path] || "investigations") as View,
     run: decodeURIComponent(run),
@@ -58,14 +49,17 @@ export default function App() {
       safeStorage("dn-project", ""),
   );
   const [launch, setLaunch] = useState(false);
-  const [processOpen, setProcessOpen] = useState(false);
-  const [structuresVisited, setStructuresVisited] = useState(
-    route.view === "structures",
+  const [lastRun, setLastRun] = useState(() =>
+    safeStorage(`dn-last-run-${project}`, ""),
   );
-  const projects = useResource<{ projects: Project[] }>("/api/projects", 15000);
   useEffect(() => {
-    if (route.view === "structures") setStructuresVisited(true);
-  }, [route.view]);
+    if (route.view === "investigations" && route.run) {
+      setLastRun(route.run);
+      saveStorage(`dn-last-run-${project}`, route.run);
+    }
+  }, [route]);
+  const [processOpen, setProcessOpen] = useState(false);
+  const projects = useResource<{ projects: Project[] }>("/api/projects", 15000);
   useEffect(() => {
     const fn = () => setRoute(readRoute());
     window.addEventListener("hashchange", fn);
@@ -81,6 +75,7 @@ export default function App() {
   };
   const chooseProject = (value: string) => {
     setProject(value);
+    setLastRun(safeStorage(`dn-last-run-${value}`, ""));
     saveStorage("dn-project", value);
     const url = new URL(location.href);
     value
@@ -103,7 +98,6 @@ export default function App() {
     },
     { view: "library" as const, label: "Library", icon: BookOpen },
     { view: "evidence" as const, label: "Evidence", icon: Network },
-    { view: "structures" as const, label: "Structures", icon: Atom },
   ];
   return (
     <div className="app-shell">
@@ -188,7 +182,7 @@ export default function App() {
           {nav.map((n) => (
             <a
               key={n.view}
-              href={`#${n.view}`}
+              href={`#${n.view}${n.view === "investigations" && lastRun ? `/${encodeURIComponent(lastRun)}` : ""}`}
               className={route.view === n.view ? "active" : ""}
               aria-current={route.view === n.view ? "page" : undefined}
             >
@@ -233,19 +227,6 @@ export default function App() {
           {route.view === "evidence" && (
             <Evidence key={project} project={project} />
           )}{" "}
-          {structuresVisited && (
-            <div
-              className="structure-mount"
-              style={{ display: route.view === "structures" ? "flex" : "none" }}
-            >
-              <Suspense fallback={<Loading label="Opening structures" />}>
-                <Structures
-                  theme={theme}
-                  active={route.view === "structures"}
-                />
-              </Suspense>
-            </div>
-          )}
         </main>
       </div>
       <ResearchProcess open={processOpen} onOpenChange={setProcessOpen} />

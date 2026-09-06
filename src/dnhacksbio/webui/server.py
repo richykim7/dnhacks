@@ -147,6 +147,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send_json(forecasting.reasoning_packet())
             if path == "/api/forecasting/run":
                 return self._send_json(forecasting.saved_run())
+            if path.startswith("/api/runtime/"):
+                from . import runtime
+                return runtime.handle(self, unquote(path[len("/api/runtime/"):]), qs)
             if path == "/api/projects" or path.startswith("/api/projects/"):
                 return self._projects_get(path, qs)
             if path == "/api/runs":

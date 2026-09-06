@@ -114,6 +114,31 @@ class VerifyQueue:
         return [{"run_id": r[0], "hypothesis": r[1], "verdict": r[2]} for r in rows]
 
     # --- worker side ------------------------------------------------------------------------------
+    def _publish_verified(self, run_id: str) -> None:
+        """Recoverable publication from the durable queue; event IDs make retries idempotent.
+
+        This records the verifier's assessment, not human confirmation or graph promotion.
+        Legacy queues without a runtime association retain their existing behavior.
+        """
+        journal = getattr(self, "runtime_journal", None)
+        if journal is None:
+            return
+        frag, params = LIN.tree_sql(run_id)
+        rows = self.con.execute("SELECT submission_id,run_id,provenance,verdict,reason FROM verification_queue "
+                                f"WHERE status='verified' AND {frag}", params).fetchall()
+        for sid, rid, raw, verdict, reason in rows:
+            prov = json.loads(raw or "{}")
+            if not prov.get("experiment_id") or not prov.get("attempt_id"):
+                continue
+            try:
+                journal.append(rid, prov["attempt_id"], "experiment.reviewed",
+                               {"verification": verdict, "verification_reason": reason,
+                                "submission_id": sid}, experiment_id=prov["experiment_id"],
+                               producer="verifier", event_id=f"verification-{rid}-{sid}")
+            except Exception:
+                journal.degraded = True
+                raise
+
     @staticmethod
     def _toolresult(row: dict) -> ToolResult:
         res = row["result"]
@@ -129,6 +154,7 @@ class VerifyQueue:
         """Process every queued submission for a run: local soundness (direction, null, robustness), and
         write verdicts back to the working graph. Returns the verdict dicts."""
         fal = falsifier or Falsifier()
+        self._publish_verified(run_id)
         rows = self.pending(run_id)
         if not rows:
             return []
@@ -167,6 +193,7 @@ class VerifyQueue:
                                      reason=rec["reason"] or "", note=fb_note,
                                      new_status=_feedback_status(rec["status"], rec["reason"] or "", note))
         kg.write_back(results, run_id=run_id)
+        self._publish_verified(run_id)
         return results
 
     def counts(self) -> dict:
