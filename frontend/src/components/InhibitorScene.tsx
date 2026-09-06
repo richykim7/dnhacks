@@ -29,7 +29,7 @@ function Scene({g,recipe,pick,ack,onCamera}:{g:Geometry;recipe:Recipe;pick:(id:s
  const context=useMemo(()=>atomSet.filter(a=>a.kind==='polymer' && ligand.some(b=>distance(a,b)<6)),[atomSet,ligand]);
  const ligandIndices=useMemo(()=>new Set(g.atoms.flatMap((a,i)=>a.residue_id===recipe.ligand?[i]:[])),[g,recipe.ligand]);
  const clip=useMemo(()=>recipe.clip?[new T.Plane(new T.Vector3(0,0,-1),focus[2]+3)]:[],[recipe.clip,focus]);
- useEffect(()=>{const controls=new OrbitControls(camera,gl.domElement);orbit.current=controls;controls.enableDamping=false;controls.addEventListener('change',()=>invalidate());const end=()=>onCamera(camera.position.toArray() as Vec3,controls.target.toArray() as Vec3);controls.addEventListener('end',end);return()=>controls.dispose();},[camera,gl,invalidate,onCamera]);
+ useLayoutEffect(()=>{const controls=new OrbitControls(camera,gl.domElement);orbit.current=controls;controls.enableDamping=false;controls.addEventListener('change',()=>invalidate());const end=()=>onCamera(camera.position.toArray() as Vec3,controls.target.toArray() as Vec3);controls.addEventListener('end',end);return()=>controls.dispose();},[camera,gl,invalidate,onCamera]);
  useLayoutEffect(()=>{
    const target=recipe.camera?.target || (recipe.shot==='arrival'?center(atomSet):focus);
    const radius=Math.max(10,...atomSet.map(a=>Math.hypot(...a.position.map((v,i)=>v-target[i]))));
