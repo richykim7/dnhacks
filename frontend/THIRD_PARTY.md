@@ -7,3 +7,5 @@
 - IBM Plex Sans / Mono: self-hosted via Fontsource, SIL Open Font License.
 
 David's DESIGN.md and research/sprint/D1 informed the restrained design direction. No David application code or data was copied.
+
+- Latent Nature wordmark: outlined DejaVu Sans Bold glyphs, reduced relative to the custom emblem. Bitstream Vera license; DejaVu changes are public domain. See [font license](licenses/DejaVu.txt).
