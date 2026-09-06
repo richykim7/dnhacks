@@ -502,7 +502,13 @@ to the JSON and SSE API. A project selector in the header scopes every view. The
   and local figures. The read-only project paper routes use the existing graph and optional corpus
   manifest/raw citation metadata, with explicit missing-content states. Manage collection holds
   settings, preview/build, document import/removal, assistant proposals and build/run history.
-  Collection selection/creation is separate from starting a scoped investigation.
+  Direct Add papers and per-paper Remove actions change collection membership. Explicit detached
+  additions reuse full-text acquisition/conversion, extraction checkpoints and incremental embeddings;
+  retries expose incomplete work and do not re-extract the existing collection. Removal preserves
+  other papers' support and original shared assets while clearing the removed source's graph/text/index
+  contribution. Script-built sources copy into a separate project before membership edits; active
+  jobs, external writers and shared graph paths are guarded. Collection selection/creation is separate
+  from starting a scoped investigation.
 - **Knowledge.** The project's literature claim graph with entity-kind shapes, signed relationships,
   collection-wide database search and vocabulary filters, collection totals and a capped graph view.
   Claim inspection shows entity forms, exact quotations, source papers, biological context, reported

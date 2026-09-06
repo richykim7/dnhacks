@@ -19,7 +19,6 @@ async function serveSnapshot(
   state: "ready" | "empty" | "error" = "ready",
 ) {
   const writes: string[] = [];
-  let paperRequests = 0;
   await page.route("**/api/**", async (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
@@ -35,7 +34,7 @@ async function serveSnapshot(
       return route.fulfill({ json: { projects: [snapshot.project] } });
     if (path === base) return route.fulfill({ json: snapshot.project });
     if (path === `${base}/papers`) {
-      if (state === "error" && paperRequests++ === 0)
+      if (state === "error")
         return route.fulfill({
           status: 503,
           json: { error: "Corpus could not be read" },
@@ -256,6 +255,170 @@ test("empty collection and unavailable corpus remain distinct", async ({
     path: test.info().outputPath("library-error.png"),
     fullPage: true,
   });
+  await page.route(`**/api/projects/${snapshot.project.id}/papers`, (route) =>
+    route.fulfill({ json: snapshot.list }),
+  );
   await page.getByRole("button", { name: "Retry", exact: true }).click();
   await expect(page.locator(".paper-row")).toHaveCount(snapshot.list.total);
+});
+
+test("empty workspace creates a collection without starting processing", async ({
+  page,
+}) => {
+  const writes: string[] = [];
+  page.on("request", (request) => {
+    if (request.method() !== "GET")
+      writes.push(new URL(request.url()).pathname);
+  });
+  await page.goto("/#library");
+  await expect(
+    page.getByRole("heading", {
+      name: "Your research starts with a collection",
+    }),
+  ).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({
+    path: test.info().outputPath("library-empty.png"),
+    fullPage: true,
+  });
+  const create = page.getByRole("button", {
+    name: "New collection",
+    exact: true,
+  });
+  await expect(create).toHaveClass(/button-primary/);
+  await create.click();
+  await page
+    .getByLabel("Collection name", { exact: true })
+    .fill("Cell division literature");
+  await page
+    .getByLabel("What does this collection cover? (optional)")
+    .fill("Mechanisms of cell division and their connection to cancer.");
+  await page.screenshot({
+    path: test.info().outputPath("library-create.png"),
+    fullPage: true,
+  });
+  await page
+    .getByRole("button", { name: "Create collection", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Cell division literature",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "No collected papers yet" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Add papers", exact: true }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: test.info().outputPath("library-new.png"),
+    fullPage: true,
+  });
+  expect(writes).toEqual(["/api/projects"]);
+  await page.getByRole("button", { name: "Add papers", exact: true }).click();
+  await page
+    .getByLabel("Paper DOI", { exact: true })
+    .fill("10.1074/jbc.M110.121491");
+  await page.screenshot({
+    path: test.info().outputPath("library-add.png"),
+    fullPage: true,
+  });
+  expect(writes).toEqual(["/api/projects"]);
+});
+
+test("paper removal states collection scope before mutation", async ({
+  page,
+}) => {
+  const writes = await serveSnapshot(page);
+  await expect(page.locator(".paper-row")).toHaveCount(snapshot.list.total);
+  await page
+    .getByRole("button", { name: /^Remove paper:/ })
+    .first()
+    .click();
+  await expect(page.getByRole("dialog")).toContainText(
+    "Claims supported by other papers",
+  );
+  await expect(page.getByRole("dialog")).toContainText("separate collection");
+  await page.screenshot({
+    path: test.info().outputPath("library-remove.png"),
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: "Keep paper", exact: true }).click();
+  expect(writes).toEqual([]);
+});
+
+test("explicit paper addition shows progress and can retry a failed job", async ({
+  page,
+}) => {
+  await serveSnapshot(page);
+  const base = `/api/projects/${snapshot.project.id}`;
+  let status = "running";
+  let submitted: unknown;
+  let retried = false;
+  await page.route(`**${base}/papers/add`, async (route) => {
+    submitted = route.request().postDataJSON();
+    return route.fulfill({
+      status: 202,
+      json: {
+        project_id: snapshot.project.id,
+        job: { id: "paper-job", kind: "membership" },
+      },
+    });
+  });
+  await page.route(`**${base}/jobs/paper-job`, (route) =>
+    route.fulfill({
+      json: {
+        job: { id: "paper-job", kind: "membership", status },
+        events: [],
+      },
+    }),
+  );
+  await page.route(`**${base}/jobs`, (route) =>
+    route.fulfill({
+      json: {
+        jobs: [
+          {
+            id: "paper-job",
+            kind: "membership",
+            status,
+            last_event: { msg: "Extracting this paper's claims" },
+            error:
+              status === "failed"
+                ? "Semantic indexing is incomplete; retry reuses saved extraction."
+                : "",
+          },
+        ],
+      },
+    }),
+  );
+  await page.route(`**${base}/jobs/paper-job/retry`, (route) => {
+    retried = true;
+    status = "running";
+    return route.fulfill({
+      status: 202,
+      json: {
+        project_id: snapshot.project.id,
+        job: { id: "paper-job", kind: "membership" },
+      },
+    });
+  });
+  await page.getByRole("button", { name: "Add papers", exact: true }).click();
+  await page.getByLabel("Paper DOI", { exact: true }).fill("10.1234/new-paper");
+  await page
+    .getByRole("button", { name: "Add and process papers", exact: true })
+    .click();
+  expect(submitted).toEqual({ dois: ["10.1234/new-paper"] });
+  await expect(
+    page.getByText("Processing added papers", { exact: true }),
+  ).toBeVisible();
+  status = "failed";
+  await expect(
+    page.getByText("Paper processing needs attention", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Retry processing", exact: true })
+    .click();
+  expect(retried).toBe(true);
 });
