@@ -377,8 +377,10 @@ These are in the package and tested, and deliberately not connected to the falsi
 - `pharmacotype_data.py`, `pharmacotype_encoder.py`, `pharmacotype.py`: declared donor/curve
   preparation, CPU separate-view encoders and development prediction/neighborhood/program tools.
   `pharmacotype_scoring.py` provides receipt-only operator-frozen association replay through the
-  shared native ledger. No biological model, confirmation cohort, adaptive critic update or GPU
-  training path is bundled. See [pharmacotype operations](docs/pharmacotype.md).
+  shared native ledger, with opt-in atomic past-block critic updates. Public PRISM/CCLE
+  acquisition and real CPU/GPU training are reproducible via scripts; PCA remains selected
+  after validation. No PDO confirmation is enabled. See [pharmacotype operations](docs/pharmacotype.md)
+  and [real-development model card](docs/pharmacotype-training.md).
 - `expr_encoder.py`: frozen PCA or masked-gene autoencoder encoders with recorded training provenance,
   trained by `scripts/train_expr_encoder.py`.
 - `evalues.py`: p-to-e calibration, merging and e-BH helpers. Inputs must already be valid.
@@ -576,3 +578,13 @@ sampling, transfer, selection, privacy, novelty and power artifacts. No biologic
 cohort or confirmatory capability is approved; real-data audits and adequate
 power remain release gates. No graph promotion or branch-success behavior changes.
 See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limits.
+
+### Exploratory binder interfaces
+
+`binder/` adds bounded coordinate inspection, exact residue maps, contact/SASA diagnostics and
+portable `binder_bundle.v1` artifacts. The existing collector and explorer enforce source/hash,
+provenance and experiment-scope checks before publication. RuntimeDetail opens those collected
+artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
+Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
+verification. No live design pilot, biological efficacy, runtime vision or performance acceptance
+is implied. See [supported behavior and remaining acceptance](docs/binder-design.md).

@@ -1,4 +1,4 @@
-# Native frozen association evidence
+# Native association evidence
 
 `dnhacksbio.native_evidence` provides the shared `native-two-view-four-term-v1`
 kernel and an operator-only SQLite process ledger. This is infrastructure, not
@@ -26,9 +26,16 @@ one factor; cells or the four critic evaluations are not replicates.
 The specification declares kernel, measured null, population, panel, two model
 hashes, QC/data/crosswalk/acquisition hashes, family/parent, sampling assumptions,
 exclusions, frozen weights/stake and ordered eligible canonical donors. Schedule
-is `fully-frozen-v1`; optimizer and RNG snapshots are explicitly null because
-this version has neither adaptive updates nor scoring randomness. Adaptive
-score-before-train requires a future version with atomic optimizer/RNG state.
+defaults to `fully-frozen-v1`, with null optimizer/RNG state. Opt-in
+`past-block-bilinear-sgd-v1` scores with the preceding snapshot's `next_critic`
+(registered external weights for block zero). After writing the score and donor
+consumption inside the transaction, it takes one squared-loss SGD step on that
+block's matched/crossed pairs: learning rate .001, elementwise gradient clip 10.
+The scored critic, next critic, fixed stateless optimizer and RNG=None commit
+together with cursor and wealth. Training cannot change the consumed factor.
+Exceptions roll back both states; identical retries and receipt aliases cannot
+train or score twice. Encoders and stake remain frozen. The base table schema
+is unchanged. This schedule is deterministic and has no momentum or randomness.
 
 The reuse policy `globally-disjoint-canonical-donors-v1` rejects consumed donors
 across every process **in the same store**. All adapters in an investigation
