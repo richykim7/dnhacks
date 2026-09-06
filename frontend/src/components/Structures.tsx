@@ -1,352 +1,242 @@
 import { useEffect, useRef, useState } from "react";
-import { Box, Maximize, RotateCcw, Upload } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { Button } from "./ui/button";
 import { AnimatedTabs } from "./ui/animated-tabs";
-import { Empty, ErrorNotice, Loading, Status } from "./common";
+import { ErrorNotice, Loading } from "./common";
+import type { JsonRecord } from "@/lib/types";
 
+const views = new Map<
+  string,
+  { view: number[]; representation: string; chain: string; residue: string }
+>();
 export default function Structures({
-  theme,
-  active = true,
+  artifact,
+  url,
 }: {
-  theme: string;
-  active?: boolean;
+  artifact: JsonRecord;
+  url: string;
 }) {
-  const host = useRef<HTMLDivElement>(null);
-  const viewer = useRef<any>(null);
-  const [structure, setStructure] = useState<{
-    text: string;
-    format: string;
-    name: string;
-    source: string;
-  } | null>(null);
-  const [coloring, setColoring] = useState("uniform");
-  const [pdb, setPdb] = useState("");
-  const [representation, setRepresentation] = useState("cartoon");
-  const [residue, setResidue] = useState("");
+  const host = useRef<HTMLDivElement>(null),
+    viewer = useRef<any>(null);
+  const saved = views.get(artifact.artifact_id);
+  const [representation, setRepresentation] = useState(
+    saved?.representation || "cartoon",
+  );
+  const [chain, setChain] = useState(saved?.chain || ""),
+    [residue, setResidue] = useState(saved?.residue || "");
+  const [chains, setChains] = useState<string[]>([]);
   const [rotate, setRotate] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const [atoms, setAtoms] = useState(0);
-  const [residueMissing, setResidueMissing] = useState(false);
-  const fetchAbort = useRef<AbortController | null>(null);
-  useEffect(() => () => fetchAbort.current?.abort(), []);
+  const [busy, setBusy] = useState(true),
+    [error, setError] = useState("");
+  const [theme, setTheme] = useState(document.documentElement.dataset.theme);
+  const options = useRef({ representation, chain, residue });
+  options.current = { representation, chain, residue };
   useEffect(() => {
-    if (!structure || !host.current) return;
-    let disposed = false;
+    const observer = new MutationObserver(() =>
+      setTheme(document.documentElement.dataset.theme),
+    );
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    const abort = new AbortController();
     let v: any;
+    const observer = new ResizeObserver(() => v?.resize());
+    const element = host.current;
+    if (element) observer.observe(element);
     setBusy(true);
     setError("");
-    setAtoms(0);
-    if (structure.format === "pdb" && !/^(ATOM  |HETATM)/m.test(structure.text)) {
-      viewer.current?.spin(false);
-      viewer.current?.clear();
-      viewer.current?.render();
-      setError(
-        "No atoms could be read from this structure. Choose a valid PDB or mmCIF file.",
-      );
+    async function open() {
+      const response = await fetch(url, { signal: abort.signal });
+      if (!response.ok)
+        throw new Error("This experiment artifact is unavailable.");
+      const raw = await response.arrayBuffer();
+      if (raw.byteLength > 20 * 1024 * 1024)
+        throw new Error("Structure exceeds the 20 MB viewer limit.");
+      const text = new TextDecoder().decode(raw);
+      if (artifact.format === "pdb" && !/^(ATOM  |HETATM)/m.test(text))
+        throw new Error("No atoms could be read from this structure.");
+      const m = await import("3dmol");
+      if (abort.signal.aborted || !element) return;
+      v = m.createViewer(element, {
+        antialias: true,
+        upscale: true,
+        cartoonQuality: 8,
+        backgroundColor:
+          document.documentElement.dataset.theme === "dark"
+            ? "#111819"
+            : "#edf1ed",
+        ambientOcclusion: { strength: 0.65, radius: 4 },
+        orthographic: true,
+      });
+      viewer.current = v;
+      const model = v.addModel(text, artifact.format);
+      const atoms = model.selectedAtoms({});
+      if (!atoms.length || atoms.length > 100000)
+        throw new Error(
+          "Structure contains no atoms or exceeds the viewer limit.",
+        );
+      setChains([...new Set<string>(atoms.map((a: any) => a.chain || ""))]);
+      v.zoomTo();
+      v.zoom(1.3);
+      const previous = views.get(artifact.artifact_id);
+      if (previous?.view) v.setView(previous.view);
+      v.setViewChangeCallback(() => {
+        views.set(artifact.artifact_id, {
+          view: v.getView(),
+          ...options.current,
+        });
+        if (views.size > 24) views.delete(views.keys().next().value!);
+      });
       setBusy(false);
-      return;
     }
-    import("3dmol")
-      .then((m) => {
-        if (disposed || !host.current) return;
-        v =
-          viewer.current ||
-          m.createViewer(host.current, {
-            backgroundColor: theme === "dark" ? "#151a1b" : "#eef1ef",
-            antialias: true,
-          });
-        viewer.current = v;
+    void open().catch((e) => {
+      if (!abort.signal.aborted) {
+        setError(e.message);
+        setBusy(false);
+      }
+    });
+    return () => {
+      abort.abort();
+      observer.disconnect();
+      if (v) {
+        views.set(artifact.artifact_id, {
+          view: v.getView(),
+          ...options.current,
+        });
         v.spin(false);
         v.clear();
-        const model = v.addModel(structure.text, structure.format);
-        const count = model.selectedAtoms({}).length;
-        if (!count)
-          throw new Error(
-            "No atoms could be read from this structure. Choose a valid PDB or mmCIF file.",
-          );
-        setAtoms(count);
-        v.setStyle({}, { cartoon: { color: "#9fbfaf" } });
-        v.zoomTo();
-        v.render();
-        setBusy(false);
-      })
-      .catch((e) => {
-        if (!disposed) {
-          setError((e as Error).message);
-          setBusy(false);
-        }
-      });
-    const observer = new ResizeObserver(() => v?.resize());
-    observer.observe(host.current);
-    return () => {
-      disposed = true;
-      observer.disconnect();
+      }
+      viewer.current = null;
+      element?.replaceChildren();
     };
-  }, [structure]);
+  }, [artifact.artifact_id, url]);
   useEffect(() => {
     const v = viewer.current;
-    if (!v || busy) return;
-    v.setBackgroundColor(theme === "dark" ? "#151a1b" : "#eef1ef");
+    if (!v || busy || error) return;
+    let disposed = false;
+    const selection = chain ? { chain } : {};
+    v.setBackgroundColor(theme === "dark" ? "#111819" : "#edf1ed");
     v.removeAllSurfaces();
     v.removeAllLabels();
+    v.setStyle({}, {});
     v.setStyle(
-      {},
+      selection,
       representation === "sticks"
         ? { stick: { colorscheme: "Jmol", radius: 0.16 } }
         : {
             cartoon: {
-              color: coloring === "sequence" ? "spectrum" : "#9fbfaf",
-              opacity: representation === "surface" ? 0.45 : 1,
+              color: theme === "dark" ? "#a8ccbd" : "#527f70",
+              thickness: 0.45,
+              arrows: true,
             },
           },
     );
+    if (representation === "cartoon")
+      v.addStyle(
+        { ...selection, hetflag: true, not: { resn: "HOH" } },
+        { stick: { colorscheme: "Jmol", radius: 0.18 } },
+      );
     if (representation === "surface")
-      void v.addSurface(1, {
-        opacity: 0.72,
-        color: theme === "dark" ? "#8abbb0" : "#487b70",
-      });
-    const exists =
-      !residue ||
-      v.getModel()?.selectedAtoms({ resi: Number(residue) }).length > 0;
-    setResidueMissing(!exists);
-    if (exists && residue && /^\d+$/.test(residue)) {
-      v.setStyle(
-        { resi: Number(residue) },
+      void v
+        .addSurface(
+          1,
+          { opacity: 0.85, color: theme === "dark" ? "#91bcb2" : "#6d9989" },
+          selection,
+        )
+        .then(() => {
+          if (!disposed) v.render();
+        });
+    if (residue && /^-?\d+$/.test(residue))
+      v.addStyle(
+        { ...selection, resi: Number(residue) },
         {
-          stick: { color: "#eab66c", radius: 0.3 },
-          sphere: { color: "#eab66c", scale: 0.4 },
+          stick: { color: "#dcac70", radius: 0.26 },
+          sphere: { color: "#dcac70", scale: 0.25 },
         },
       );
-      v.addLabel(
-        `Residue ${residue}`,
-        { fontSize: 13, backgroundOpacity: 0.8 },
-        { resi: Number(residue) },
-      );
-    }
     v.spin(
-      active &&
-        rotate &&
-        !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      rotate && !matchMedia("(prefers-reduced-motion: reduce)").matches
         ? "y"
         : false,
+      0.25,
     );
     v.render();
-    if (active) v.resize();
-  }, [representation, residue, rotate, busy, theme, coloring, active]);
-  async function loadPdb(value: string) {
-    const code = value.trim().toUpperCase();
-    if (!/^[0-9][A-Z0-9]{3}$/.test(code)) {
-      setError("Enter a four-character PDB identifier, such as 1CRN.");
-      return;
-    }
-    fetchAbort.current?.abort();
-    const abort = new AbortController();
-    fetchAbort.current = abort;
-    const timeout = setTimeout(() => {
-      abort.abort();
-      setBusy(false);
-      setError("The structure request timed out. Retry or open a local file.");
-    }, 20000);
-    setBusy(true);
-    setError("");
-    try {
-      const r = await fetch(`https://files.rcsb.org/download/${code}.pdb`, {
-        signal: abort.signal,
-      });
-      if (!r.ok)
-        throw new Error(
-          `Could not retrieve ${code} from the Protein Data Bank (${r.status}).`,
-        );
-      const text = await r.text();
-      setStructure({
-        text,
-        format: "pdb",
-        name: code,
-        source: `RCSB Protein Data Bank · ${code}`,
-      });
-      setPdb(code);
-      setResidue("");
-    } catch (e) {
-      if (!abort.signal.aborted) {
-        setError((e as Error).message);
-        setBusy(false);
-      }
-    } finally {
-      clearTimeout(timeout);
-    }
-  }
+    return () => {
+      disposed = true;
+      v.spin(false);
+    };
+  }, [representation, chain, residue, rotate, busy, error, theme]);
   return (
-    <div className="structures-page">
-      <header className="page-heading">
-        <div>
-          <div className="breadcrumb">Research workspace / Structures</div>
-          <h1>Biology, in three dimensions</h1>
-          <p>Inspect molecular geometry alongside your research.</p>
-        </div>
-        <Status label="Reference viewer" />
-      </header>
-      <div className="structure-layout">
-        <aside className="structure-controls">
-          <h2>Open a structure</h2>
-          <p>
-            Load an experimental structure from the Protein Data Bank, or
-            inspect a local file.
-          </p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void loadPdb(pdb);
-            }}
-          >
-            <label>
-              Protein Data Bank ID
-              <input
-                value={pdb}
-                onChange={(e) => setPdb(e.target.value)}
-                placeholder="e.g. 1CRN"
-                maxLength={4}
-              />
-            </label>
-            <Button type="submit" disabled={busy}>
-              Load structure <Box size={15} />
-            </Button>
-          </form>
-          <div className="or-divider">or</div>
-          <label className="file-button">
-            <Upload size={16} />
-            Open PDB / mmCIF file
-            <input
-              type="file"
-              accept=".pdb,.cif,.mmcif"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                if (file.size > 20 * 1024 * 1024) {
-                  setError("Choose a structure smaller than 20 MB.");
-                  return;
-                }
-                try {
-                  fetchAbort.current?.abort();
-                  setStructure({
-                    text: await file.text(),
-                    format: file.name.endsWith(".pdb") ? "pdb" : "cif",
-                    name: file.name,
-                    source: "Local file · stays in your browser",
-                  });
-                  setResidue("");
-                } catch {
-                  setError("The selected file could not be read.");
-                }
-              }}
-            />
-          </label>
-          <div className="structure-provenance">
-            <h3>Reference, not a prediction</h3>
-            <p>
-              This viewer displays the structure you load. The engine does not
-              yet publish structure predictions, docking scores or
-              variant-effect measurements.
-            </p>
-          </div>
-          {structure && (
-            <>
-              <h3>Selected structure</h3>
-              <p className="mono">{structure.name}</p>
-              <small>{structure.source}</small>
-              {atoms > 0 && <p>{atoms.toLocaleString()} atoms</p>}
-              <label>
-                Color by
-                <select
-                  value={coloring}
-                  onChange={(e) => setColoring(e.target.value)}
-                >
-                  <option value="uniform">Uniform ribbon</option>
-                  <option value="sequence">Position in sequence</option>
-                </select>
-              </label>
-              <label>
-                Highlight a residue
-                <input
-                  type="number"
-                  min={1}
-                  value={residue}
-                  onChange={(e) => setResidue(e.target.value)}
-                  placeholder="Residue number"
-                />
-              </label>
-              {residueMissing && (
-                <p className="notice">
-                  That residue number is not present in this structure.
-                </p>
-              )}
-              <label className="check-label">
-                <input
-                  type="checkbox"
-                  checked={rotate}
-                  onChange={(e) => setRotate(e.target.checked)}
-                />
-                Slow rotation
-              </label>
-            </>
-          )}
-        </aside>
-        <section className="structure-stage">
-          <div className="structure-toolbar">
-            <AnimatedTabs
-              label="Molecular representation"
-              value={representation}
-              onChange={setRepresentation}
-              tabs={[
-                { value: "cartoon", label: "Ribbon" },
-                { value: "sticks", label: "Atomic" },
-                { value: "surface", label: "Surface" },
-              ]}
-            />
-            <Button
-              size="icon"
-              variant="ghost"
-              aria-label="Reset structure view"
-              onClick={() => {
-                viewer.current?.zoomTo();
-                viewer.current?.render();
-              }}
-            >
-              <RotateCcw size={16} />
-            </Button>
-          </div>
-          <ErrorNotice message={error} />
-          {structure ? (
-            <div
-              className="molecule-view"
-              ref={host}
-              aria-label={`Interactive molecular structure ${structure.name}`}
-            />
-          ) : (
-            <Empty
-              title="Inspect a molecular structure"
-              action={
-                <Button onClick={() => void loadPdb("1CRN")}>
-                  Explore crambin · 1CRN <Maximize size={14} />
-                </Button>
-              }
-            >
-              Open a protein to explore its fold, inspect a residue, and see the
-              geometry behind a biological question.
-            </Empty>
-          )}
-          {busy && (
-            <div className="structure-loading">
-              <Loading label="Preparing structure" />
-            </div>
-          )}
-          <div className="structure-caption">
-            {structure
-              ? "Drag to rotate · Scroll to zoom · Right-drag to move"
-              : "Interactive molecular structures · Powered by 3Dmol.js"}
-          </div>
-        </section>
+    <section
+      className="artifact-viewer"
+      aria-label={`Experiment structure ${artifact.name}`}
+    >
+      <div className="structure-toolbar">
+        <AnimatedTabs
+          label="Molecular representation"
+          value={representation}
+          onChange={setRepresentation}
+          tabs={[
+            { value: "cartoon", label: "Ribbon" },
+            { value: "sticks", label: "Atomic" },
+            { value: "surface", label: "Surface" },
+          ]}
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Reset structure view"
+          onClick={() => {
+            viewer.current?.zoomTo();
+            viewer.current?.render();
+          }}
+        >
+          <RotateCcw size={15} />
+        </Button>
       </div>
-    </div>
+      <ErrorNotice message={error} />
+      <div
+        className="artifact-canvas"
+        ref={host}
+        aria-label={`Interactive molecular structure ${artifact.name}`}
+      />
+      {busy && <Loading label="Preparing experiment structure" />}
+      <div className="artifact-controls">
+        <label>
+          Chain
+          <select value={chain} onChange={(e) => setChain(e.target.value)}>
+            <option value="">All chains</option>
+            {chains.filter(Boolean).map((c) => (
+              <option key={c}>{c}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Residue
+          <input
+            type="number"
+            value={residue}
+            placeholder="Number"
+            onChange={(e) => setResidue(e.target.value)}
+          />
+        </label>
+        <label className="check-label">
+          <input
+            type="checkbox"
+            checked={rotate}
+            onChange={(e) => setRotate(e.target.checked)}
+          />
+          Slow rotation
+        </label>
+      </div>
+      <p className="muted">
+        {artifact.atom_count?.toLocaleString()} atoms · Drag to rotate, scroll
+        to zoom. Colours are decorative, not confidence.
+      </p>
+    </section>
   );
 }

@@ -187,13 +187,11 @@ test("library provenance, documents, history and accessible light theme", async 
     ),
   ).toEqual([]);
   await page.getByRole("tab", { name: "Documents", exact: true }).click();
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "research-note.md",
-      mimeType: "text/markdown",
-      buffer: Buffer.from("Functional evidence notes"),
-    });
+  await page.locator("input[type=file]").setInputFiles({
+    name: "research-note.md",
+    mimeType: "text/markdown",
+    buffer: Buffer.from("Functional evidence notes"),
+  });
   await expect
     .poll(() => writes.filter((w) => w.path.endsWith("/attachments")).length)
     .toBe(1);
@@ -229,27 +227,11 @@ test("project creation and missing-project scope do not leak a prior graph", asy
     ),
   ).toBeVisible();
 });
-test("molecular viewer rejects invalid files and preserves view when navigating", async ({
-  page,
-}) => {
+test("standalone structures route is retired", async ({ page }) => {
   await mockApi(page);
   await page.goto("/#structures");
-  await page.getByLabel("Protein Data Bank ID").fill("ZZZZ");
-  await page
-    .getByRole("button", { name: "Load structure", exact: true })
-    .click();
-  await expect(page.getByRole("alert")).toContainText(
-    "four-character PDB identifier",
-  );
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "invalid.pdb",
-      mimeType: "text/plain",
-      buffer: Buffer.from("not a structure"),
-    });
-  await expect(page.getByRole("alert")).toContainText("No atoms could be read");
-  await page.getByRole("link", { name: "Library", exact: true }).click();
-  await page.getByRole("link", { name: "Structures", exact: true }).click();
-  await expect(page.getByText("invalid.pdb", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Structures", exact: true }),
+  ).toHaveCount(0);
+  await expect(page.locator(".agent-node")).toHaveCount(6);
 });

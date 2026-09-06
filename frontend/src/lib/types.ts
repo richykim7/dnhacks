@@ -7,6 +7,9 @@ export interface Beam {
   reason?: string;
 }
 export interface RunSummary {
+  runtime?: boolean;
+  lifecycle?: string;
+  objective?: string;
   run_id: string;
   root: string;
   parent: string | null;
@@ -19,6 +22,7 @@ export interface RunSummary {
   project?: string;
 }
 export interface Investigation {
+  runtime?: boolean;
   root: string;
   runs: RunSummary[];
   active: boolean;

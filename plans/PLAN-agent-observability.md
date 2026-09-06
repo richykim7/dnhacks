@@ -1,8 +1,11 @@
 # Agent visibility, instruction compliance, and experiment artifacts
 
-Status: **proposed implementation plan; no runtime changes delivered by this document**.
-The user has agreed with the product direction below. This documentation slice records it first;
-it is not a claim that events, enforcement, terminal capture, or the corrected viewer are implemented.
+Status: **runtime integration implemented; deterministic runner/API and browser gates cover the delivery slices**.
+The original design below is retained as acceptance context. See [runtime documentation](../docs/runtime.md)
+for the implemented API, persistence, instruction gates, artifact collector, inline viewer and limits.
+SQLite transactions replace the proposed JSONL serialized writer; current snapshots rebuild indexed
+history rather than using stored checkpoints. Legacy histories remain partial. SDK branches without
+dedicated panes report terminal unavailable. No live-model scientific outcomes are asserted by tests.
 The evaluation ideas in [backlog.md](backlog.md) require separate explicit user approval.
 
 ## Product contract
@@ -109,8 +112,8 @@ question only when its provenance is known, otherwise show unavailable—not cor
 
 ## Mandatory instructions and tool-specific skills
 
-Planned main entry: `skills/agent-runtime/SKILL.md`, with pointers to focused guidance for progress,
-artifact output, feedback, and the existing scientific method skills. These files are not yet created.
+Main entry: `skills/agent-runtime/SKILL.md`, with pointers to focused guidance for progress,
+artifact output, feedback, and the existing scientific method skills.
 The launcher/runner must resolve and deliver the mandatory entry and required references, rather than
 relying on an agent remembering to discover a menu. Coordinate method registries with active e-value
 work; this plan does not redefine its statistical contracts.
