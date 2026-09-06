@@ -2,6 +2,18 @@ import { test, expect, type Page } from "@playwright/test";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { mockApi, investigation } from "./fixtures";
+// Keep explicit review PNGs and DOM/network traces without duplicate GPU screencast readbacks.
+test.use({ trace: { mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: true } });
+
+async function waitForBinder(page: Page, bundleSha?: string) {
+  await page.waitForFunction((bundleSha) => {
+    if (bundleSha && document.querySelector('.binder-workbench')?.getAttribute('data-bundle-sha256') !== bundleSha) return false;
+    const viewport = (window as any).sceneReview?.inspect().viewport;
+    const bounds = document.querySelector('[data-testid="binder-stage"] canvas')?.getBoundingClientRect();
+    return viewport && bounds && Math.abs(viewport.width - bounds.width) < 1 && Math.abs(viewport.height - bounds.height) < 1;
+  }, bundleSha);
+  await page.evaluate(async () => { await (window as any).sceneReview.ready(); });
+}
 const baseRaw = readFileSync(
   new URL("./binder-fixture.json", import.meta.url),
   "utf8",
@@ -109,16 +121,10 @@ async function fixture(
     .locator(".experiment-row")
     .filter({ hasText: "Illustrative interface geometry" })
     .click();
-  await page
-    .getByRole("tablist", { name: "Researcher detail" })
-    .getByRole("tab", { name: "Experiments", exact: true })
-    .click();
   await expect(page.locator('[data-testid="binder-stage"] canvas')).toBeVisible(
     { timeout: 30000 },
   );
-  await page.evaluate(async () => {
-    await (window as any).sceneReview.ready();
-  });
+  await waitForBinder(page);
 }
 test("binder artifact picking, camera stability, replay and responsive tables", async ({
   page,
@@ -128,9 +134,7 @@ test("binder artifact picking, camera stability, replay and responsive tables", 
   page.on("pageerror", (e) => errors.push(e.message));
   await fixture(page);
   await page.getByRole("button", { name: "Expand workbench" }).click();
-  await page.evaluate(async () => {
-    await (window as any).sceneReview.ready();
-  });
+  await waitForBinder(page);
   const before = await page.evaluate(
     () => (window as any).sceneReview.inspect().camera,
   );
@@ -164,6 +168,7 @@ test("binder visual review captures", async ({ page }) => {
   test.setTimeout(180000);
   await fixture(page);
   await page.getByRole("button", { name: "Expand workbench" }).click();
+  await waitForBinder(page);
   const dir =
     process.env.BINDER_REVIEW_DIR ||
     test.info().outputPath("binder-review-r01");
@@ -245,6 +250,7 @@ test("recorded camera actions replay at adjustable speed while exploration stays
     )
     .toBe("reverse");
   await page.getByLabel("Activity playback position").fill("5");
+  await waitForBinder(page);
   await expect
     .poll(() =>
       page.evaluate(() => (window as any).sceneReview?.inspect().preset),
@@ -267,9 +273,7 @@ test("source-mapped surface and backbone trace preserve the coordinate assessmen
   page.on("pageerror", (e) => errors.push(e.message));
   await fixture(page, false, source);
   await page.getByRole("button", { name: "Expand workbench" }).click();
-  await page.evaluate(async () => {
-    await (window as any).sceneReview.ready();
-  });
+  await waitForBinder(page);
   expect(
     await page.evaluate(
       () => (window as any).sceneReview.inspect().representation,
@@ -404,7 +408,7 @@ test("native binder records and real job states respect the experiment cursor", 
 });
 
 
-test("node scene persists across activity tabs and selects only available sources", async ({ page }) => {
+test("node scene persists while reading activity and selects only available sources", async ({ page }) => {
   test.setTimeout(90000);
   const surfaceRaw = readFileSync(new URL("./binder-surface-fixture.json", import.meta.url), "utf8");
   const second = JSON.parse(surfaceRaw);
@@ -417,7 +421,7 @@ test("node scene persists across activity tabs and selects only available source
   ["scene.recipe", { note: "Fixture action: inspect the opposite interface", bundle_sha256: "other-unavailable-source" }]] });
   const stage = page.locator('[data-testid="binder-stage"] canvas');
   await stage.evaluate(el => el.setAttribute("data-preserved", "yes"));
-  await page.getByRole("tablist", { name: "Researcher detail" }).getByRole("tab", { name: "Activity", exact: true }).click();
+  await page.getByText("Advanced diagnostics", { exact: true }).click();
   await expect(stage).toHaveAttribute("data-preserved", "yes");
   await expect(page.getByText("Fixture image observation: compare the source contact distances.", { exact: true })).toBeVisible();
   await expect(page.getByText("Fixture action: inspect the opposite interface", { exact: true })).toBeVisible();
@@ -427,6 +431,7 @@ test("node scene persists across activity tabs and selects only available source
   expect(left!.x + left!.width).toBeLessThanOrEqual(right!.x + 1);
   await page.screenshot({ path: test.info().outputPath("node-scene-desktop.png") });
   await page.getByRole("combobox", { name: "Scene source", exact: true }).selectOption("exp1:second");
+  await waitForBinder(page, hash);
   await expect(page.locator(`.binder-workbench[data-bundle-sha256="${hash}"]`)).toBeVisible();
   await expect(page.locator('[data-testid="binder-stage"] canvas')).toHaveCount(1);
   await page.getByLabel("Activity playback position").fill("4");
@@ -437,27 +442,31 @@ test("node scene persists across activity tabs and selects only available source
   await page.evaluate(async () => { await (window as any).sceneReview.ready(); });
   await page.screenshot({ path: test.info().outputPath("node-scene-mobile.png") });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
-  await expect(page.getByRole("button", { name: "Close scene workspace" })).toBeVisible();
+  await expect(page.locator('.workspace-titlebar').getByRole("button", { name: "Close researcher detail", exact: true })).toBeVisible();
 });
 
 test("binder camera travels continuously and user takeover cancels the remaining motion", async ({ page }) => {
   test.setTimeout(90000);
+  const clockStart = new Date("2026-09-06T09:00:00Z");
+  await page.clock.install({ time: clockStart });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await fixture(page);
-  const samples = await page.evaluate(async () => {
-    const bridge = (window as any).sceneReview;
-    const start = bridge.inspect().camera.position;
-    await bridge.apply({ preset: "reverse" });
-    const positions = [start], frames: string[] = [];
-    const deadline = performance.now() + 2000;
-    while (frames.length < 3 && performance.now() < deadline) {
-      await new Promise(requestAnimationFrame);
-      const position = bridge.inspect().camera.position;
-      if (JSON.stringify(position) === JSON.stringify(positions.at(-1))) continue;
-      positions.push(position); frames.push(bridge.capture());
-    }
-    return { positions, frames };
-  });
+  await page.clock.pauseAt(new Date(clockStart.getTime() + 60_000));
+  const samples = {
+    positions: [await page.evaluate(() => (window as any).sceneReview.inspect().camera.position)],
+    frames: [] as string[],
+  };
+  // apply waits for display frames; PNG export must not consume the 700ms animation.
+  await page.evaluate(() => { void (window as any).sceneReview.apply({ preset: "reverse" }); });
+  for (let i = 0; i < 3; i++) {
+    await page.clock.runFor(160);
+    const sample = await page.evaluate(() => ({
+      position: (window as any).sceneReview.inspect().camera.position,
+      frame: (window as any).sceneReview.capture(),
+    }));
+    samples.positions.push(sample.position);
+    samples.frames.push(sample.frame);
+  }
   expect(samples.frames).toHaveLength(3);
   samples.frames.forEach((png, i) => writeFileSync(test.info().outputPath(`camera-motion-${i}.png`), Buffer.from(png.split(",")[1], "base64")));
   writeFileSync(test.info().outputPath("camera-motion.json"), JSON.stringify(samples.positions));
@@ -466,18 +475,20 @@ test("binder camera travels continuously and user takeover cancels the remaining
   expect(samples.positions[3]).not.toEqual(samples.positions[2]);
   const box = await page.locator('[data-testid="binder-stage"] canvas').boundingBox();
   await page.mouse.move(box!.x + 20, box!.y + 20);
-  await page.evaluate(async () => { await (window as any).sceneReview.apply({ preset: "hero" }); });
+  await page.evaluate(() => { void (window as any).sceneReview.apply({ preset: "hero" }); });
+  await page.clock.runFor(64);
   expect(await page.evaluate(() => (window as any).sceneReview.inspect().camera_transitioning)).toBe(true);
   await page.mouse.down();
   expect(await page.evaluate(() => (window as any).sceneReview.inspect().camera_transitioning)).toBe(false); await page.mouse.move(box!.x + 45, box!.y + 25); await page.mouse.up();
   const held = await page.evaluate(() => (window as any).sceneReview.inspect().camera);
-  await page.waitForTimeout(800);
+  await page.clock.runFor(800);
   const afterHold = await page.evaluate(() => (window as any).sceneReview.inspect().camera);
   for (const field of ["position", "target", "quaternion", "up"])
     for (let i = 0; i < held[field].length; i++)
       expect(afterHold[field][i]).toBeCloseTo(held[field][i], 9);
   for (const field of ["fov", "near", "far", "projection"])
     expect(afterHold[field]).toEqual(held[field]);
+  await page.clock.resume();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.evaluate(async () => { await (window as any).sceneReview.apply({ preset: "hero" }); await (window as any).sceneReview.ready(); });
   const fixed = await page.evaluate(() => (window as any).sceneReview.inspect().camera);
@@ -558,8 +569,9 @@ test("comparison shares camera and scale, returns the picked candidate and respe
     return null;
   });
   expect(orthoPick?.bundle_sha256).toBe(hash);
-  await page.screenshot({ path: test.info().outputPath('comparison-orthographic.png') });
-  await page.screenshot({ path: test.info().outputPath("comparison-resized.png") });
+  const comparisonPng = await page.screenshot({ path: test.info().outputPath('comparison-orthographic.png') });
+  // Both filenames describe the same resized orthographic view; one GPU readback preserves both.
+  writeFileSync(test.info().outputPath("comparison-resized.png"), comparisonPng);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(async () => { await (window as any).sceneReview.ready(); });
   await page.screenshot({ path: test.info().outputPath("comparison-mobile.png") });

@@ -1,7 +1,7 @@
 {
-  "source_snapshot": "fee316580ba27951c2ad6fea4bdd4a6b335421ed",
-  "built_on": "2026-09-06",
-  "main_slides": 29,
+  "source_snapshot": "da551e0cccfc1833830c71eabb52b78bfb100db5",
+  "website_capture_snapshot": "a054f1b133a5c42583da4f9efd6311a70782b0da",
+  "main_slides": 10,
   "core_slides": [
     1,
     2,
@@ -12,79 +12,17 @@
     7,
     8,
     9,
-    14,
-    15,
-    16
+    10
   ],
-  "core_seconds": 340,
-  "hidden_slides": [
-    10,
-    11,
-    12,
-    13,
-    17,
-    18,
-    19,
-    20,
-    21,
-    22,
-    23,
-    24,
-    25,
-    26,
-    27,
-    28,
-    29
-  ],
-  "reveal_sequence": [
-    10,
-    11,
-    12,
-    13
-  ],
-  "paper_reveal_slide": 12,
-  "frozen_corpus_slide": 13,
-  "layout_kit_slides": 4,
+  "core_seconds": 375,
+  "hidden_slides": [],
+  "paper_reveal_slot": 7,
+  "frozen_corpus_slot": 8,
+  "video_slide": 4,
+  "video_start": "automatic; delay=0",
+  "external_video": "binder-reveal.mp4",
   "fonts": [
     "IBM Plex Sans",
     "IBM Plex Mono"
-  ],
-  "sources": {
-    "pubmed": [
-      "NIH / NLM \u00b7 About PubMed",
-      "https://pubmed.ncbi.nlm.nih.gov/about/"
-    ],
-    "seer": [
-      "NCI SEER \u00b7 Pancreatic Cancer Stat Facts",
-      "https://seer.cancer.gov/statfacts/html/pancreas.html"
-    ],
-    "dtx": [
-      "DTX Ventures \u00b7 Vision",
-      "https://www.dtxventures.com/vision"
-    ],
-    "event": [
-      "DNHacks \u00b7 Official event and category descriptions",
-      "https://dnhacks.org/"
-    ],
-    "elicit": [
-      "Elicit \u00b7 Introducing Elicit Research Agent",
-      "https://elicit.com/blog/introducing-elicit-research-agent"
-    ],
-    "deepmind": [
-      "Google DeepMind \u00b7 Co-scientist",
-      "https://deepmind.google/blog/co-scientist-a-multi-agent-ai-partner-to-accelerate-research/"
-    ],
-    "nsceb": [
-      "NSCEB final report, April 2025, \u00a71.3",
-      "https://www.biotech.senate.gov/final-report/chapters/chapter-1/section-3/"
-    ],
-    "foresight": [
-      "NSCEB final report, April 2025, \u00a73.3",
-      "https://www.biotech.senate.gov/final-report/chapters/chapter-3/section-3/"
-    ],
-    "darpa": [
-      "DARPA \u00b7 Pandemic Prevention Platform",
-      "https://www.darpa.mil/research/programs/pandemic-prevention-platform"
-    ]
-  }
+  ]
 }

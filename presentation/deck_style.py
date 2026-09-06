@@ -22,7 +22,7 @@ W, H = 13.333333, 7.5
 INK, PAPER, GREEN, AMBER, ROSE = "17201F", "F1EFE7", "A6C9B8", "DEB577", "D99E99"
 MUTED, LINE, PANEL, DARKGREEN = "AFB9B2", "3A4944", "222E2A", "365E4D"
 FONT, MONO = "IBM Plex Sans", "IBM Plex Mono"
-SNAPSHOT = "fee316580ba27951c2ad6fea4bdd4a6b335421ed"
+SNAPSHOT = "da551e0cccfc1833830c71eabb52b78bfb100db5"
 SOURCES = {
     "pubmed": ("NIH / NLM · About PubMed", "https://pubmed.ncbi.nlm.nih.gov/about/"),
     "seer": ("NCI SEER · Pancreatic Cancer Stat Facts", "https://seer.cancer.gov/statfacts/html/pancreas.html"),

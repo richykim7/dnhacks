@@ -1,17 +1,20 @@
 # Demo slides
 
-Status: **revised editable deck; scientific reveal still pending**. The
-[PowerPoint, judge-pitch PDF, reviewer copy and layout kit](../presentation/README.md)
-now lead with strategic biological anticipation, show real 3D software artifacts and measured
-training/evaluation results, and address the full rubric. Slides 10–13 preserve the exact complete-loop,
-survivors, paper-fade and frozen-corpus-next-slide sequence as hidden, explicitly unpopulated
-storyboards. Enable only after selecting and verifying a qualifying run and excluded matching paper.
-Every slide has a tentative script in Notes; technical appendices distinguish measured training
-histories from final held-out comparisons and untrained components.
+Status: **ten-slide technical pitch, 6:15; teammate-run fields editable**. [PowerPoint and delivery bundle](../presentation/README.md). This replaces the rejected long/reference-separated format. Every slide has a script and technical/source/editing Notes.
 
-The ordinary falsifier screens reported result fields and flags; it does not independently certify
-that arbitrary numerical outputs are sound. Human review records a decision, not biological truth.
-This is the precise implementation boundary for the earlier framing shorthand below.
+## Current presentation contract (user review, 6 September 2026)
+
+- Replace the cell cover with an editable rendering of the agent architecture. Lead with biological foresight and the potential for unilateral biological power.
+- Experimental slide 2 grounds urgency in scoped AISI capability and Anthropic safeguard evaluations, plus the requested NSCEB quote. Do not turn benchmark scores into weapons-feasibility measurements.
+- Slide 3 explains ingestion/grounding, recursive sessions and acceptance; slide 4 ties 3D inspection to canonical-coordinate counterchecks. The embedded 23-second binder cinematic and adjacent MP4 fallback remain illustrative website footage.
+- Slides5–6 explain the implemented losses, their rationale and paper references. All charts have explicit controls/comparators; retain stronger baselines. TRAIN masked MSE is compared with an analytical TRAIN-mean reference. Fresh-data evidence is compared with PCA, IFIT3 and a constant-critic no-information control. No empirical random-model benchmark is invented.
+- Show the general research loop before the paper reveal. Slide7 provides an editable publication mockup with on-click fade; slide 8 immediately explains the frozen inputs and access audit. The user confirms run records are on a teammate machine and authorizes inferred structure with a few grouped placeholders.
+- Fill candidate counts/result, paper identity/date, cutoff/run/input hashes, and the actual GPU task/device/time from those records. The locally measured L40S expression fit is a separate component, not a discovery-runtime claim. A frozen retrieval corpus cannot erase pretrained knowledge.
+- Slides9–10 give a deployment case and three-year development thesis: cost per rerunnable useful result, review effort, repeat use/paid expansion, then prospectively trained allocation and continuous supervised programs.
+- Use the optional technical context dump only where code supports it. Canonical claim identities are not free-text summaries, but source/context text remains evidence. Attribution records citation echoes, while displayed confidence counts source papers. Registered results are checked against reported fields, not independently recomputed automatically. Real-trajectory branch-monitor fitting/calibration remains future work.
+- The user will manually edit heavily. Prefer concrete mechanisms and defensible claims over slogan headlines; future ambitions can be assertive without changing measured results.
+
+Cancelled ecosystem/pharmacotype research remains historical; distinct tissue/spindle/protein tools retain their actual status. Original narrative/toolkit notes below remain useful; the current contract above resolves their stale shorthand.
 
 ## Framing note (Rich, 2026-09-06)
 
@@ -92,6 +95,6 @@ note, not authorization to start new training runs.
   renderings, and agent decision excerpts from the selected run.
 - Select the discovery paper and verify its match to a surviving candidate and exclusion from the
   run's accessible evidence; document the cutoff and remaining model-prior-knowledge limitations.
-- Working format: native editable PowerPoint, approximately five-minute core pitch. Confirm the
+- Working format: native editable PowerPoint, seven slides and approximately 4 minutes 10 seconds of script. Confirm the
   official pitch duration, final product name and entered category; the deck proposes Open Category
   based on the DTX-sponsored official category description.

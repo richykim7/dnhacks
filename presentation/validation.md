@@ -1,42 +1,41 @@
-# Presentation revision review · 6 September 2026
+# Technical pitch review
 
-Scientific source snapshot: `fee3165` (including inhibitor review, external protein/PDO results and expanded ecosystem training). The generator and manifests pin the full source commit. This task changes presentation and coordination infrastructure, not the research engine or its scientific results.
+Scientific source audit: `0a0e109bd325ef8fe9db7b9146b9a94749d538c2` (6 September 2026). Website sample captures use `a054f1b133a5c42583da4f9efd6311a70782b0da`; integrated application source is `da551e0cccfc1833830c71eabb52b78bfb100db5` plus the small repairs below. New urgency/loss references were checked against primary sources.
 
-## Delivery review
+## Presentation and delivery
 
-- **29 editable slides**: 12-slide default pitch (340 scripted seconds), four hidden discovery storyboards and 13 hidden technical appendix slides. Three named custom shows support the normal pitch, shorter cut and conditional reveal route.
-- **Four reusable layout slides**, also with notes. All **33 slides** reopen through `python-pptx`, pass ZIP integrity checks and include scripts or script prompts, status and editing instructions.
-- Default judge PDF contains 12 pages. The reviewer PDF contains all 29 slides; its temporary export copy unhides slides and removes custom-show selection while leaving the delivered PPTX unchanged.
-- LibreOffice rendered all 33 pages. Native PowerPoint text was compared with extracted PDF words: **no missing text tokens**. All text boxes remain within the slide canvas.
-- Reviewed the full contact sheet and full-size cover, persona, scientific toolkit, reliability, deployment, training/transfer figures and closing slides. Fixed persona overlap, crowded roadmap copy, external-result footer overflow and closing contrast.
-- The discovery-paper panel has a native 800 ms on-click fade, and the frozen-corpus slide is directly next. The sequence is explicitly unpopulated and hidden. Linux/LibreOffice rendering does not certify animation playback in native PowerPoint; the PDF shows the final state.
-- Fourteen research figures are reproducible from committed measurements or explicit documented values. The [figure manifest](assets/v2/plots/manifest.json) records source hashes, plotted values, objectives, comparators and limits. No absent validation-loss histories were reconstructed.
-- Conceptual cover/closing artwork has separate [provider provenance](assets/v2/provenance.json); it is not scientific evidence. Screenshots remain actual application captures with clear fixture/illustration/measured-workflow distinctions.
+- **Ten main slides, 375 scripted seconds.** Technical mechanisms, both loss functions and measured comparisons are in the main deck, with no hidden appendix or separate reference dependency. Every slide has a tentative script, source/evidence status, rubric coverage and editing Notes.
+- Native editable architecture replaces the cell cover. Actual Knowledge/Investigation UI images retain their synthetic-data labels. The inhibitor coordinate check, tissue and spindle panels have distinct recorded provenance.
+- The experimental urgency slide scopes AISI question-answering scores and Anthropic adversarial evaluation correctly. It does not claim demonstrated weapons feasibility, offer jailbreak methods or claim validated threat prediction.
+- The two new standalone scientific figures are generated from committed aggregates. TRAIN masked MSE is compared with an analytical TRAIN-mean reference; evidence curves retain all three predeclared representation comparators and analytical constant-critic control. No random-network experiment or epoch-level held-out loss is invented. [Definitions and hashes](assets/revision/plots/manifest.json).
+- The general-use walkthrough and editable paper mockup/reveal are on slide 7; the frozen evidence/access/GPU-record explanation follows immediately on slide 8. The user confirms teammate-machine records and authorizes inferred structure plus placeholders. The recorded 3.41s L40S fit remains a separate expression-encoder measurement; it is not a discovery timing.
+- Slide 4 embeds the exact 23.44-second H.264 cinematic with media start delay zero. Its OPEN VIDEO shape and label link to adjacent `binder-reveal.mp4`, including in the PDF. The delivery ZIP preserves adjacency; its MP4 is byte-identical to the embedded movie.
+- The PDF exporter substitutes the exact movie poster only in a temporary copy. Delivered PPTX retains native video and 800ms paper fade; PDF shows the fade's final state.
+- Reopened the PPTX/ZIP, checked ten Notes and slide bounds, media/fade XML and relative links, and compared native text against all ten PDF pages. No missing text tokens. Contact-sheet and detailed visual review corrected cover wrapping, training/GPU text spacing and roadmap overlap.
+- Scientific content review corrected GPU timing scope and stale figure references. No paper match, discovery count, customer traction or performance uplift is fabricated. The ten-slide PPTX and matching bundle supersede earlier Telegram drafts. [Artifact report and hashes](output/artifact-checks.json).
 
-Rendering environment: system `python-pptx` 1.0.2, Pillow, Matplotlib, LibreOffice Impress 7.3.7 and Poppler. IBM Plex fonts are installed locally but are not embedded. Artwork, screenshots and figures are raster assets; presentation text, diagrams and panels are native editable objects. Standalone research-figure PDFs are also included.
+Native PowerPoint media/fade playback cannot be directly inspected on this Linux host. Rehearse in Slide Show on the presentation machine; the adjacent MP4 is an independent playback route. IBM Plex fonts are installed here but not embedded. No new scientific experiment, training run, app deployment or service restart was performed.
 
-[Artifact checks and SHA-256 hashes](output/artifact-checks.json) identify the delivery packages. The PDF is the reviewed appearance reference.
+## Repository checks
 
-## Repository validation
-
-Final Python validation used `592fb0a` plus this task’s changes. Frontend build, unit and full browser checks passed on `fee3165`; the subsequently merged isolation changes also passed a real empty-backend browser check. The scientific presentation remains pinned to the separately audited `fee3165` snapshot. Subsequent independent spindle/ecosystem work through `e871ed1` was incorporated without conflict; the changed coordination and cleanup callers were rechecked on that merge base.
-
-| Gate | Result |
+| Check | Result |
 | --- | --- |
-| Frontend production build | Passed; upstream 3Dmol `eval` and large-chunk warnings remain. |
-| Frontend unit tests | 6 passed. |
-| Tracked Python suite | 529 passed, 33 skipped; no failures (105 seconds). |
-| Browser suite | 24 passed using the repository’s isolated browser runner; final empty-backend isolation case also passed. |
-| Whitespace check | Passed. |
+| Frontend production build | Passed on integrated da551e0; existing 3Dmol eval/large-chunk warnings. |
+| Frontend unit tests | 21 passed across six files. |
+| Full Python suite | 716 passed, 47 skipped; two existing SciPy warnings. |
+| Browser suite | 41 passed, 7 explicit optional snapshot skips; 48 distinct cases covered across serial chunks and focused reruns. |
+| Whitespace | Passed; repeated before commit. |
 
-The isolated Python environment uses the declared development extra. Skips cover optional Torch/expression/spreadsheet/PDF adapters, Rscript/PharmacoGx, opt-in Docker and an unconfigured operator-pinned Cytosim build. No missing-vocabulary-data failure occurred; the wider ignored local vocabulary suite was not copied from another checkout.
+The controller fixture enrolled a 288-action protocol while its explorer used the new 2,880-action default. It now takes policy and horizon from the actual frozen contract. Production validation remains unchanged; all 22 focused outcome tests passed before the full rerun.
 
-Earlier integration checks passed 472 Python tests with 27 skips at `35b4103` and 490 with 29 skips at `af01505`. The final browser run used the repository runner, which owns isolated servers, data, ports and cleanup. An earlier run exposed a process-reaping race in the browser cleanup assertion. The correction now tolerates disappearance during reads and asynchronous exit while still failing if the owned child remains live after five seconds; the affected OS-level check passed 50 repetitions and the final full suite passed. No public preview or research app deployment was performed. The revised PowerPoint, 12-page pitch PDF and 29-page reviewer PDF were each delivered successfully through the existing Telegram transport.
+The review-publication test now follows the implemented retry contract: a publication failure wraps its original OSError, retains saved decisions and persists the verdict; a successful retry does not count that verdict twice. Its cause, saved decision, final verdict/note and empty decision document are asserted. No Python production behavior changed.
 
-Nudger regression and live-service evidence are documented in [the operating guide](../docs/board-nudger.md) and on the Board. The final nudger, shared-input and mirror regression selection passed all 63 cases. All real tmux fixtures use an owned private socket; Herdr routing verifies the existing pane and exact thread. Actual direct and managed-service probe arrivals were acknowledged by this active agent, distinct from transport receipts.
+The incoming inline researcher workspace had omitted scene events and their notes from Advanced diagnostics. The small UI repair restores `scene.recipe` / `scene.review` entries and string notes; the existing exact note/observation assertions remain. The new workspace layout is preserved and its evidence location is documented in `docs/runtime.md`.
 
-Local logs: `/tmp/dnhacks-presentation-v2-validation/`; service evidence: `/tmp/dnhacks-nudger-evidence/` and `~/.local/state/dnhacks-board/`.
+Browser investigation found animation sampling racing a wall-clock transition, mobile camera capture preceding responsive layout, an outdated Knowledge heading, and multiple expensive PNG exports sharing one normal test deadline. Fixture changes retain the camera/replay assertions and capture scenarios while controlling time and establishing the intended viewport before mounting. All final cases passed. Behavioral deadlines and evidence assertions remain intact; dedicated PNG-export cases have an explicit export budget. The new investigation behavior case took 13.8s within its unchanged30s limit; its separate five-image export took38.7s.
 
-## Remaining scientific additions
+Optional-dependency, GPU/native-simulator and opt-in skips are reported by the suite. Missing real Library/Knowledge snapshots are not replaced by invented data. Browser runs use the repository queue and their own ports/data/servers; completed and interrupted runs were cleaned by their owner. No Rich agent was tagged or interrupted.
 
-The project name and entered category remain team decisions. The full discovery reveal requires a verified run, candidate list, matching paper and exclusion/access audit. The frozen corpus alone cannot rule out pretrained model memory. Pilot cost, usefulness, user adoption, production hardening and clinical or operational deployment remain future evidence requirements; none was fabricated to complete the deck.
+The first final browser launcher exited on SIGTERM before a complete summary. Its sender was not established. Owned child processes, ports and temporary data were cleaned; coverage resumed in serial chunks rather than rerunning successful cases unnecessarily. No other agent or service was interrupted.
+
+Logs and source/coverage/cleanup evidence: `/tmp/dnhacks-presentation-short-validation/da551e0/`.

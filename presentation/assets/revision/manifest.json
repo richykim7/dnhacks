@@ -1,0 +1,27 @@
+{
+  "knowledge.png": {
+    "source": "frontend/test-results/run-hvot_x6x/artifacts/evidence-a-relationship-op-f8d48-d-return-retain-graph-scope/ux-code-evidence-dark.png",
+    "source_snapshot": "a054f1b133a5c42583da4f9efd6311a70782b0da",
+    "status": "Actual React UI, synthetic SCN2A fixture; not a real corpus finding.",
+    "sha256": "7f1f229602415e819c347c03faa931ae9ff6522fd3a6582156b36049f641dae5"
+  },
+  "investigation.png": {
+    "source": "frontend/test-results/run-hvot_x6x/artifacts/workspace-tree-live-detail-f8f24-ments-and-theme-screenshots/dn-tree-dark.png",
+    "source_snapshot": "a054f1b133a5c42583da4f9efd6311a70782b0da",
+    "status": "Actual React UI, synthetic six-branch investigation; not measured research.",
+    "sha256": "0d7e6897db54461048b951ce79aacbbd1c1a6c3523ec760f1d6a92e2e05a5d5f"
+  },
+  "investigation-detail.png": {
+    "source": "frontend/test-results/run-hvot_x6x/artifacts/workspace-tree-live-detail-f8f24-ments-and-theme-screenshots/dn-detail-dark.png",
+    "source_snapshot": "a054f1b133a5c42583da4f9efd6311a70782b0da",
+    "status": "Actual React UI, synthetic investigation activity; replace with selected actual run.",
+    "sha256": "dc256b9dadec2d151a001b1635fac10d2ae9d1f34e0705ffecd0f0b4c8bd43f0"
+  },
+  "cover-cell.png": {
+    "tool": "built-in image_gen",
+    "source": "presentation/assets/v2/cover.jpg",
+    "prompt": "cover-prompt.txt",
+    "status": "Conceptual cutaway cell; not scientific evidence.",
+    "sha256": "37a192d31d76ff0b1daddf5401cc8f92e2f0ba996dd01da387e2196c408c273b"
+  }
+}

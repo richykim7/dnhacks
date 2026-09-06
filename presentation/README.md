@@ -1,68 +1,63 @@
-# DNHacks 2026 · DN Research
+# DNHacks · technical pitch
 
-The current editable deck is [DNHacks_2026_DN_Research.pptx](output/DNHacks_2026_DN_Research.pptx).
-The [judge-pitch PDF](output/DNHacks_2026_DN_Research.pdf) shows the default presentation.
-The [reviewer PDF](output/DNHacks_2026_Reviewer_Copy.pdf) includes the optional discovery sequence and technical appendix.
-Every slide has a tentative script, evidence status, sources and editing instructions in PowerPoint **Notes**;
-[speaker-notes.md](speaker-notes.md) provides the same text. Use the [contact sheet](output/contact-sheet.png) for an overview.
+[Editable PowerPoint](output/DNHacks_2026_DN_Research.pptx) · [Delivery bundle](output/DNHacks_Presentation_Bundle.zip) · [PDF](output/DNHacks_2026_DN_Research.pdf) · [Speaker notes](speaker-notes.md) · [Contact sheet](output/contact-sheet.png)
 
-This revision consolidates the earlier decks in `presentation/output/` and `presentation/pptx/`.
-The latter is retained as an archived draft; use this deck for subsequent work.
+**Ten slides, about 6 minutes 15 seconds.** The main deck contains the technical case, measured comparisons and the discovery demonstration structure. Every slide has a tentative script, detailed technical Notes, sources, rubric coverage and editing instructions. There is no separate technical-reference dependency.
 
-## Presentation route
+| Slide | Argument and visual |
+| --- | --- |
+| 1 | Autonomous biological research; native editable architecture rendering replaces the cell cover. |
+| 2 | Experimental urgency argument, with scoped AISI/Anthropic evidence and the requested NSCEB quote. |
+| 3 | Ingestion and grounded graph → recursive sessions → acceptance; actual website captures. |
+| 4 | Ground 3D inspection in recorded coordinate checks; actual inhibitor result and playable binder cinematic. |
+| 5 | Masked reconstruction loss, justified analytical mean baseline, real training curve and recorded L40S fit. |
+| 6 | Negative log-payoff loss, fresh-data betting, null assumptions, evidence trajectories and all predeclared representation comparators. |
+| 7 | General research workflow, actual website capture as a placeholder, editable candidate counts and paper mockup fading on click. |
+| 8 | Immediately following: frozen inputs, excluded paper, access audit and the teammate-run GPU task/timing slot. |
+| 9 | First user, deployment integration, unit economics and adoption evidence to measure. |
+| 10 | Three-year development thesis, including future trained allocation and concrete commercial/scientific milestones. |
 
-- **Judge pitch:** slides **1–9, 14–16**, 5 minutes 40 seconds as scripted. Technical evidence receives substantial time, reflecting the 50-point execution and AI-sophistication weights.
-- **Three-minute cut:** slides **1, 2, 4, 6, 7, 9, 16**. Shorten the spoken transitions and rehearse.
-- **Optional discovery sequence:** slides **10–13**, hidden by default. Full investigation → surviving candidates → paper fade-in → frozen corpus on the **immediately following slide**. These are explicitly unpopulated storyboards. No qualifying run or matching excluded paper was verified at the source snapshot.
-- **Technical Q&A:** slides **17–29**, hidden by default. Includes the complete rubric map, model/data/objective/split details, real training and evaluation figures, design evidence and deployment questions.
+## Play the video
 
-PowerPoint **Slide Show → Custom Slide Show** contains the judge pitch, three-minute cut and a discovery-reveal route.
-Do not activate the discovery route until its four slides are populated and audited. The PPTX hides storyboards and appendices from the default show; the reviewer PDF displays them with their status labels.
-No official pitch duration was supplied. DN Research remains a working name; Open Category remains proposed rather than a claim about the submitted track.
+The movie on **slide 4** is embedded H.264 and configured to start when the slide opens in **PowerPoint Slide Show mode**. The green **OPEN VIDEO** button opens `binder-reveal.mp4` beside the deck. Extract the entire delivery bundle first and keep the PPTX, PDF and MP4 together. The standalone MP4 is also available directly in Telegram.
 
-## Intention
+A Telegram document preview or PDF displays a still frame. Native PowerPoint playback still needs rehearsal on the presentation machine; the XML and fallback packaging have been checked here. The 23.44-second clip is an authored website cinematic with illustrative geometry, not a model inference or scientific result. [Media provenance](assets/short/manifest.json).
 
-**Anticipate biology. Before it changes the balance of power.**
+Playback references: [Microsoft playback guidance](https://support.microsoft.com/en-us/powerpoint/play-a-video-automatically-in-a-slide-show) and [PresentationML video timing](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.presentation.video?view=openxml-3.0.1).
 
-The strategic thesis is that biology is an underappreciated future source of unilateral advantage, and that scientific lead time can support earlier defensive preparation. The opening uses the exact NSCEB 2025 report §1.3 quotation requested by the team. The product is an inspectable research engine; it does not demonstrate bioweapon prediction, operational threat prevention or clinical benefit. Reactive measures remain necessary; anticipation is the additional posture we aim to enable.
+## Fill the teammate-run demonstration
 
-For DTX Ventures, the connection is scientific infrastructure and critical-technology leadership, inferred from its public thesis. The pitch then grounds that ambition in an initial computational-biologist persona, working engineering, real artifacts, measured negative results and a small private-pilot business hypothesis. It claims no customers, pricing validation, revenue or superior discovery rate.
+The user confirms that the actual run records are on a teammate machine. The deck provides an inferred workflow and editable placeholders; missing local records do not prevent building the presentation.
 
-The visual system combines mineral charcoal, warm ivory, muted mint and amber with IBM Plex Sans/Mono, large editable headlines and generous space. Two matching conceptual editorial backgrounds were generated through the existing LaoZhang adapter. They are decorative, never scientific evidence. Actual application captures retain their illustration/fixture labels. Research figures are generated from committed measurements with Matplotlib; no scientific images or loss histories were invented.
+- Slide 7: replace the sample website capture with the selected investigation. Fill proposed/passed/reviewed counts, the candidate's exact result and the later paper's title/date/DOI. The native white paper mockup has an 800ms on-click fade. Show the loop and survivors before the reveal.
+- Slide 8: insert the real Library/source-reader capture, run/cutoff/input hashes and the recorded GPU task/device/time. Keep this slide directly after the paper reveal. Audit external retrieval and explain exactly what was excluded.
+- The locally measured **3.41s L40S fit belongs to the expression encoder on slide 5**. It is not a discovery runtime or evidence that the teammate's recovery ran on a GPU. A frozen retrieval corpus cannot erase pretrained model knowledge; sealed post-cutoff data and equal-budget baselines are stronger subsequent tests.
 
-## Finish the discovery sequence
+## Defend the mathematics
 
-1. Select one real run with source claim, concise logged decision, code, data identity, raw result, checks and a recorded human decision.
-2. Populate the actual survivor list, including the relevant denominator and the checks each candidate passed. A survivor is not automatically a true or novel finding.
-3. Verify the matching later paper, its exact claim, publication date and exclusion from every accessible run input. Replace the paper group on slide 12 while retaining its native 800 ms on-click fade.
-4. Keep slide 13 immediately next. Attach the frozen manifest/hash, tool-access boundary, cutoff and model-memory limitations. A curated corpus is not itself proof of a run's access boundary.
-5. Independently audit the claim, then unhide all four slides. Keep a local recording and final-state PDF fallback. Linux rendering cannot certify native PowerPoint animation playback.
+Slide 5 shows recorded TRAIN masked reconstruction MSE and an **analytical training-mean reference**. Standardized nonconstant genes have TRAIN variance one, so predicting their TRAIN mean gives expected masked MSE approximately one. No empirical random-network run or epoch-level validation curve is implied. The masked loss forces prediction from other entries rather than copying a visible target. [Denoising rationale: Vincent et al., JMLR 2010](https://www.jmlr.org/papers/v11/vincent10a.html).
 
-## What the technical figures establish
+Slide 6 minimizes negative mean log-payoff on past pairs, then scores fresh pairs before reuse. Under the iid equal-distribution null, frozen preprocessing and predictable fitting, swap symmetry gives a conditionally fair factor and an anytime threshold of 20 at alpha .05. Constant critic `g=0` gives exactly `E=1`: an analytical no-information control. Arbitrary LLM confidence numbers have no such conditional-expectation guarantee. This construction follows [Pandeva et al., AISTATS 2024](https://proceedings.mlr.press/v238/pandeva24a.html); it is not a new theorem.
 
-| Component | Measured material | Boundary |
-| --- | --- | --- |
-| Expression | 100 training-loss epochs; measured sequential evidence trajectories | No epoch-level validation-loss history retained. Separate observational COVID diagnostic, not PDAC. Single-gene comparator wins final evidence in the primary run. |
-| Protein | Held-out hidden-entry error comparisons from committed training report | PCA beats denoiser. The subsequent Fudan cross-assay benchmark shows weak primary-model transfer and a secondary ranking signal requiring further evaluation. No invented convergence curve. |
-| Drug response | Real CUDA validation comparisons and pancreatic-subset baseline; separate real PDO AUC validation | No pancreatic utility or full-curve PDO success established. Mean predictor wins PDO validation. |
-| Cellular ecosystems | Initial count/set-model histories and final errors; expanded 72-donor GPU train/validation histories | Cells are nested within donors. Exact PCA leads external reconstruction in the expanded study. Initial pilot and new cell-weighted metrics are not directly comparable. |
-| E-value diagnostics | Synthetic-null crossings, explicit denominators and confidence intervals | Not a product false-positive rate, biological power guarantee or investigation-wide certificate. |
-| Branch monitor | Implemented model/calibration contracts and readiness explanation | No real-trajectory fitting or calibration yet; no fabricated plot or live calibrated-pruning claim. |
+All predeclared RNA representation comparators remain visible: learned **3,652.81**, PCA **85.76**, and stronger IFIT3 **5,964.41**. These are evidence statistics, not accuracy or causal effects. PCA64 and learned128 are not dimension-matched. The separate synthetic null audit had **112/10,000 ever-crossings**, not zero. [Figure data and analytical-control definitions](assets/revision/plots/manifest.json).
 
-[Plot manifest](assets/v2/plots/manifest.json) stores source hashes and exact plotted data. [Editorial provenance](assets/v2/provenance.json) records prompts and the adapter's estimated $0.18 generation cost; account balance/final billing could not be read using the inference key. No new scientific training or experiments were run for this presentation.
+The ordinary acceptance path validates reported fields; it does not independently recompute arbitrary output. Graph confidence counts source papers, not independent experiments. Real-trajectory branch-monitor training/calibration remains future work. The Notes retain these boundaries and additional protein/native-kernel details.
 
-## Rebuild and extend
+## Sources and manual editing
+
+The urgency slide uses [AISI's scoped benchmark report](https://www.aisi.gov.uk/frontier-ai-trends-report), [Anthropic's adversarial evaluation](https://www.anthropic.com/research/next-generation-constitutional-classifiers), and [NSCEB's call for anticipatory preparedness](https://www.biotech.senate.gov/final-report/chapters/chapter-3/section-3/). Neither benchmark is evidence that a novice can build a biological weapon. No operational threat or jailbreak method is included.
+
+Use **Change Picture** for captures/plots. Architecture, paper, metric fields and deployment diagrams are editable native shapes. Current Knowledge/Investigation images show actual React UI with labeled synthetic data; replace them with the final collection/run. [Capture provenance](assets/revision/manifest.json). The previous cell illustration and exact generation prompt remain as optional assets in that directory; they are absent from the current slides.
+
+Save manual edits separately: rerunning the generator overwrites its outputs. Fonts are IBM Plex Sans/Mono; install them on the presentation machine because they are not embedded. The earlier 29-slide package is preserved at [PR90](https://github.com/richykim7/dnhacks/pull/90); the legacy reviewer PDF now aliases the same ten-page pitch. The old [layout kit](output/DNHacks_Layout_Kit.pptx) remains available.
+
+## Rebuild
 
 ```sh
-python3 presentation/build_figures.py
+python3 presentation/build_pitch_figures.py
 python3 presentation/build_deck.py
 python3 presentation/render_deck.py
+python3 presentation/package_deck.py
 ```
 
-The scripts use existing `python-pptx`, Matplotlib, Pillow, LibreOffice Impress and Poppler. No application dependency was added for slide authoring. The evidence snapshot is pinned in `deck_style.py` and written into the [deck manifest](output/deck-manifest.json); re-audit new findings before changing it.
-
-Text, diagrams and paper-reveal panels are native editable PowerPoint objects. Artwork, charts and screenshots are raster assets; standalone chart PDFs are also provided. The [four-slide layout kit](output/DNHacks_Layout_Kit.pptx) provides reusable evidence, result, demo and roadmap examples. It is not a set of custom Slide Master layouts.
-
-Install [IBM Plex](https://github.com/IBM/plex) on the presentation machine; fonts are not embedded. The PDF preserves the reviewed appearance. Manual PowerPoint edits do not round-trip to Python, so save them as a separate version or update the generator. The reviewed [codex-slides project](https://github.com/nexu-io/codex-slides) uses image-native slides; this deck retains editable text and diagrams because the project is still evolving.
-
-Sources: [NSCEB §1.3](https://www.biotech.senate.gov/final-report/chapters/chapter-1/section-3/), [NSCEB §3.3](https://www.biotech.senate.gov/final-report/chapters/chapter-3/section-3/), [DARPA P3](https://www.darpa.mil/research/programs/pandemic-prevention-platform), [DTX Vision](https://www.dtxventures.com/vision), [DNHacks](https://dnhacks.org/). Full source/status details appear in each slide's notes. See [validation.md](validation.md) for rendering and repository checks.
+Uses existing python-pptx, Pillow, Matplotlib, LibreOffice and Poppler. Figures derive from committed aggregates; no model training, scientific experiment, app deployment or service restart is started. [Validation](validation.md).

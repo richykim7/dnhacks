@@ -1,0 +1,10 @@
+{
+  "source_snapshot": "da551e0cccfc1833830c71eabb52b78bfb100db5",
+  "source": "frontend/src/demo/captures/demo-expanded.webm",
+  "source_sha256": "cd3a8f95366ab16ad0dd41a9207f52e463ed00dc8accb9ada2dd0ffa55706e79",
+  "output": "presentation/assets/short/binder-reveal.mp4",
+  "output_sha256": "d12894d2cbb004f9a7784cd4a231c59bc1092b1b6da900e99a3a5d5e0bdef061",
+  "duration_seconds": 23.44,
+  "conversion": "ffmpeg -c:v libx264 -preset veryfast -crf 21 -threads 1 -pix_fmt yuv420p -movflags +faststart -an",
+  "status": "Actual browser node expansion/18-second illustrative binder sequence/collapse. No scientific result; speed unchanged."
+}
