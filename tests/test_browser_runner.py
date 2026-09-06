@@ -17,17 +17,18 @@ spec.loader.exec_module(runner)
 
 def test_browser_slot_queues_and_releases_on_exception(tmp_path):
     marker = tmp_path / "entered"
+    lock_path = tmp_path / "queue.lock"
     code = f"""
 import sys
 from pathlib import Path
 sys.path.insert(0, {str(SCRIPT.parent)!r})
 from browser_tests import browser_slot
-with browser_slot():
+with browser_slot({str(lock_path)!r}):
     Path({str(marker)!r}).touch()
 """
     process = None
     try:
-        with pytest.raises(ValueError), runner.browser_slot():
+        with pytest.raises(ValueError), runner.browser_slot(lock_path):
             process = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, text=True)
             assert "Waiting for another browser run" in process.stdout.readline()
             assert not marker.exists()
@@ -73,4 +74,30 @@ p.wait()
     assert process.poll() is not None
     # On Linux an orphan may briefly be a zombie pending init's reap, but cannot run.
     status = Path(f"/proc/{child}/stat")
+    deadline = time.monotonic() + 5
+    while status.exists() and time.monotonic() < deadline:
+        try:
+            if status.read_text().split()[2] == "Z":
+                break
+        except FileNotFoundError:
+            break
+        time.sleep(0.02)
     assert not status.exists() or status.read_text().split()[2] == "Z"
+
+
+def test_private_backend_does_not_inherit_source_root_state(tmp_path,monkeypatch):
+    from dnhacksbio.webui import data,projects,jobs
+    from dnhacksbio.explorer.runtime import Journal
+    # Restore every module binding after checking the actual backend reader.
+    for module,keys in [(data,['ROOT','PROCESSED','CORPORA','WORKING_KG','MASTER_KG','PROMOTION_DECISIONS_PATH','_CACHE']),
+                        (projects,['ROOT','PROJECTS','CORPORA']),(jobs,['ROOT'])]:
+        for key in keys:monkeypatch.setattr(module,key,getattr(module,key))
+    populated=tmp_path/'operator-state';journal=Journal(populated)
+    journal.register('existing-research','Private existing experiment',project='operator')
+    monkeypatch.setattr(data,'PROCESSED',populated)
+    assert data.list_runs(include_all=True)
+    isolated=tmp_path/'isolated';runner.configure_backend(isolated)
+    assert data.list_runs(include_all=True)==[]
+    assert data.PROCESSED.is_relative_to(isolated) and data.WORKING_KG.is_relative_to(isolated)
+    assert projects.PROJECTS.is_relative_to(isolated) and jobs.ROOT==isolated
+    assert len(journal.manifests())==1
