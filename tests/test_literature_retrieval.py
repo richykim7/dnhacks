@@ -243,3 +243,65 @@ def test_refilled_paper_list_records_actual_sources(monkeypatch, tmp_path):
     assert [p["title"] for p in saved["papers"]] == [TITLE]
     assert saved["papers"][0]["publication_date"] == "2020-03-02"
     assert saved["papers"][0]["is_full_text"]
+
+
+def test_manuscript_figures_fall_back_to_official_html_after_missing_packages(monkeypatch, tmp_path):
+    html = b'<article><h1>Paper</h1><figure id="F1"><img src="https://cdn.ncbi.nlm.nih.gov/pmc/blobs/one.jpg"><figcaption>Spindle</figcaption></figure><figure id="other"><img src="https://cdn.ncbi.nlm.nih.gov/pmc/blobs/other.jpg"></figure></article>'
+    requested = []
+    def request(url, **kwargs):
+        requested.append(url)
+        if url.endswith('/PMC42/'):
+            return Response(html, content_type='text/html')
+        if url.endswith('/one.jpg'):
+            return Response(b'image-bytes', content_type='image/jpeg')
+        assert 'supplementaryFiles' in url or 'oa.fcgi' in url
+        return None
+    monkeypatch.setattr(find, '_request', request)
+    figures = [{'id': 'F1', 'url': 'manuscript-f1', 'path': None}]
+    find._pmc_figure_assets('PMC42', figures, tmp_path, [])
+    assert (tmp_path / figures[0]['path']).read_bytes() == b'image-bytes'
+    assert figures[0]['resolution_source'] == 'https://pmc.ncbi.nlm.nih.gov/articles/PMC42/'
+    assert (tmp_path / figures[0]['resolution_file']).read_bytes() == html
+    assert not any('/other.jpg' in url for url in requested)
+
+
+@pytest.mark.parametrize('image_url,mime', [
+    ('https://cdn.ncbi.nlm.nih.gov/pmc/blobs/one.jpg', 'text/html'),
+    ('https://unrelated.example/one.jpg', 'image/jpeg'),
+])
+def test_pmc_html_figure_fallback_rejects_challenges_and_external_images(monkeypatch, tmp_path, image_url, mime):
+    def request(url, **kwargs):
+        if url.endswith('/PMC42/'):
+            return Response(f'<article><figure id="F1"><img src="{image_url}"></figure></article>'.encode(), content_type='text/html')
+        if url == image_url:
+            return Response(b'challenge', content_type=mime)
+        return None
+    monkeypatch.setattr(find, '_request', request)
+    figures = [{'id': 'F1', 'url': 'f1', 'path': None}]
+    find._pmc_figure_assets('PMC42', figures, tmp_path, [])
+    assert figures[0]['path'] is None
+
+
+@pytest.mark.parametrize('alternate_succeeds', [True, False])
+def test_pmc_figure_html_challenge_tries_one_alternate_representation(monkeypatch, tmp_path, alternate_succeeds):
+    requested = []
+    base = 'https://pmc.ncbi.nlm.nih.gov/articles/PMC42/'
+    image_url = 'https://cdn.ncbi.nlm.nih.gov/pmc/blobs/one.jpg'
+    def request(url, **kwargs):
+        requested.append(url)
+        if url == base + '?report=xml' and alternate_succeeds:
+            return Response(f'<article><figure id="F1"><img src="{image_url}"></figure></article>'.encode(), content_type='text/html')
+        if url in (base, base + '?report=xml'):
+            return Response(b'<html><p>Checking your browser</p></html>', content_type='text/html')
+        if url == image_url:
+            return Response(b'image-bytes', content_type='image/jpeg')
+        return None
+    monkeypatch.setattr(find, '_request', request)
+    figures = [{'id': 'F1', 'url': 'f1', 'path': None}]
+    attempts = []
+    find._pmc_figure_assets('PMC42', figures, tmp_path, attempts)
+    assert [u for u in requested if u.startswith(base)] == [base, base + '?report=xml']
+    assert bool(figures[0]['path']) is alternate_succeeds
+    assert sum(a['status'] == 'no-article-figure-markup' for a in attempts) == (1 if alternate_succeeds else 2)
+    if alternate_succeeds:
+        assert figures[0]['resolution_source'] == base + '?report=xml'

@@ -82,7 +82,7 @@ def _structured(data, fmt):
             raise ValueError("XML entity declarations are not supported")
         root = ET.fromstring(raw)
         body = next((el for el in root.iter() if _tag(el) == "body"), None)
-        sections = [el for el in root.iter() if _tag(el) in {"article-title", "abstract", "body", "back"}]
+        sections = [el for el in root.iter() if _tag(el) in {"article-title", "abstract", "body", "back", "floats-group"}]
         # Abstracts nested in back/body must not be serialized twice.
         selected = []
         for el in sections:
@@ -102,7 +102,7 @@ def _structured(data, fmt):
     markdown = "\n\n".join(_render(el).strip() for el in selected)
     markdown = re.sub(r"\n[ \t]*\n(?:[ \t]*\n)+", "\n\n", markdown).strip()
     figures = []
-    scope = body if body is not None else root
+    scope = root if fmt == "xml" else (body if body is not None else root)
     for el in scope.iter():
         if _tag(el) not in {"fig", "figure"}:
             continue
@@ -118,7 +118,7 @@ def _structured(data, fmt):
                             "kind": "document_figure"})
     return {"text": markdown, "markdown": markdown, "figures": figures,
             "parser": "stdlib-jats" if fmt == "xml" else "stdlib-article-html",
-            "parser_version": "1", "pages": None, "warnings": [], "has_body": body is not None,
+            "parser_version": "2" if fmt == "xml" else "1", "pages": None, "warnings": [], "has_body": body is not None,
             "needs_ocr": False, "unreadable_pages": [],
             "figures_status": "referenced" if figures else "none"}
 

@@ -333,7 +333,7 @@ def _epmc_figure_assets(pmcid: str, figures: list[dict], dest: Path, attempts: l
         attempts.append({"url": url, "status": "invalid-figure-package", "error_type": type(exc).__name__})
 
 
-def _pmc_figure_assets(pmcid: str, figures: list[dict], dest: Path, attempts: list[dict]) -> None:
+def _pmc_package_figure_assets(pmcid: str, figures: list[dict], dest: Path, attempts: list[dict]) -> None:
     """Read only matching image members; never extract archive paths, links or executables."""
     import io
     import tarfile
@@ -393,6 +393,58 @@ def _pmc_figure_assets(pmcid: str, figures: list[dict], dest: Path, attempts: li
         attempts.append({"url": archive_url, "status": "invalid-figure-package", "error_type": type(exc).__name__})
 
 
+def _pmc_figure_assets(pmcid: str, figures: list[dict], dest: Path, attempts: list[dict]) -> None:
+    """Resolve archived images, then public PMC HTML images for author manuscripts."""
+    from dnhacksbio.litmap.document_parse import parse_document_bytes
+    if not pmcid or not figures:
+        return
+    _pmc_package_figure_assets(pmcid, figures, dest, attempts)
+    missing = [f for f in figures if not f.get("path")]
+    if not missing:
+        return
+    article_url = f"https://pmc.ncbi.nlm.nih.gov/articles/{pmcid}/"
+    for article_url in (article_url, article_url + "?report=xml"):
+        missing = [f for f in figures if not f.get("path")]
+        if not missing:
+            break
+        response = _request(article_url, attempts=attempts)
+        if response is None:
+            continue
+        digest = hashlib.sha256(response.content).hexdigest()
+        html_name = f"{digest}.html"
+        (dest / html_name).write_bytes(response.content)
+        try:
+            html_figures = parse_document_bytes(response.content, "html")["figures"]
+        except (ValueError, KeyError):
+            attempts.append({"url": article_url, "status": "no-article-figure-markup", "raw_sha256": digest})
+            continue
+        image_types = {"image/jpeg": ".jpg", "image/png": ".png", "image/gif": ".gif",
+                       "image/tiff": ".tif", "image/webp": ".webp"}
+        for figure in missing:
+            match = next((f for f in html_figures if f.get("url") and
+                          ((figure.get("id") and f.get("id") == figure["id"]) or
+                           (figure.get("url") and _figure_matches(figure["url"], Path(urlparse(f["url"]).path))))), None)
+            if not match:
+                continue
+            image_url = match["url"]
+            parsed_url = urlparse(image_url)
+            if parsed_url.scheme != "https" or parsed_url.hostname != "cdn.ncbi.nlm.nih.gov":
+                continue
+            downloaded = _request(image_url, attempts=attempts)
+            if downloaded is None:
+                continue
+            mime = downloaded.headers.get("Content-Type", "").split(";")[0].lower()
+            if mime not in image_types:
+                attempts.append({"url": image_url, "status": "not-image", "content_type": mime})
+                continue
+            image_digest = hashlib.sha256(downloaded.content).hexdigest()
+            name = f"figure-{image_digest}{image_types[mime]}"
+            (dest / name).write_bytes(downloaded.content)
+            figure.update(path=name, sha256=image_digest, retrieval_status="downloaded",
+                          resolved_url=image_url, resolution_source=article_url, resolution_file=html_name)
+            attempts.append({"url": image_url, "status": "figure-downloaded", "raw_sha256": image_digest})
+
+
 def _landing_pdf_urls(data: bytes, base_url: str) -> list[str]:
     from html.parser import HTMLParser
     from urllib.parse import urljoin
@@ -426,6 +478,7 @@ def fetch_fulltext(cand: Candidate, artifact_root: Path | str | None = None) -> 
         try:
             cached = json.loads((dest / "retrieval.json").read_text(encoding="utf-8"))
             if (cached.get("cache_version") == 1 and cached.get("is_full_text")
+                    and (cached.get("parser") != "stdlib-jats" or cached.get("parser_version") == "2")
                     and cached.get("candidate", {}).get("key") == cand.key
                     and hashlib.sha256((dest / cached["raw_file"]).read_bytes()).hexdigest() == cached["raw_sha256"]
                     and (dest / cached["parsed_file"]).read_text(encoding="utf-8") == cached["text"]
