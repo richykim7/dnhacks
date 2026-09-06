@@ -226,6 +226,8 @@ test("node execution, opt-in terminal, inline real geometry and replay boundary"
   expect(errors).toEqual([]);
 });
 test("inhibitor workbench opens from its owning experiment", async ({ page }) => {
+  const clockStart = new Date('2026-09-06T09:00:00Z');
+  await page.clock.install({time: clockStart});
   test.setTimeout(60000);
   await fixture(page, false, false, true);
   const geometry = JSON.parse(readFileSync(new URL('./inhibitor/geometry.json', import.meta.url), 'utf8'));
@@ -268,11 +270,20 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   await page.getByText('Activity & evidence · 3 recorded operations', {exact:true}).click();
   await page.getByRole('button',{name:/Inspected scene pixels/}).click();
   await expect(page.getByText('Check the visible ligand against canonical geometry.')).toBeVisible();
+  // At 8× the last operation lasts only 0.5s. Real-time locator dispatch can
+  // arrive after completion, when this same toggle has become Play again.
+  await page.clock.pauseAt(new Date(clockStart.getTime()+300_000));
   await page.getByRole('button',{name:'Play',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Pause',exact:true})).toBeVisible();
+  await page.clock.runFor(160);
+  await expect(page.locator('.pocket-clock')).toHaveText('6 / 9s');
   await page.getByRole('button',{name:'Pause',exact:true}).click();
-  const paused=await page.locator('.pocket-clock').textContent();
-  await page.waitForTimeout(300);
-  expect(await page.locator('.pocket-clock').textContent()).toBe(paused);
+  await expect(page.getByRole('button',{name:'Play',exact:true})).toBeVisible();
+  const paused=await page.getByLabel('Agent scene action').inputValue();
+  await page.clock.runFor(1000); // would exceed the end of the recording if still playing
+  await expect(page.getByLabel('Agent scene action')).toHaveValue(paused);
+  await expect(page.locator('.pocket-clock')).toHaveText('6 / 9s');
+  await page.clock.resume();
   expect(writes).toBe(0);
   await page.screenshot({path:test.info().outputPath('dn-inhibitor-desktop.png')});
   await page.setViewportSize({width:390,height:844});
