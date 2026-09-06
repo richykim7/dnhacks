@@ -234,8 +234,10 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
     model:0,clip:false,selected:[],frame:0,pose:'reference',compare:false,prepared:false};
   const scenes=[{sequence:10,recorded_at:1,actor:'agent',note:'Locate target',recipe},
     {sequence:11,recorded_at:1.2,actor:'agent',note:'Inspect pocket',recipe:{...recipe,revision:2,shot:'pocket',clip:true}}];
+  const timeline=[...scenes.map(s=>({...s,kind:'scene.changed'})),
+    {sequence:12,recorded_at:1.4,actor:'agent',kind:'scene.vision',note:'Inspected scene pixels',recipe:scenes[1].recipe,details:{observation:'Check the visible ligand against canonical geometry.'}}];
   let writes=0;
-  await page.route('**/inhibitor/**',route=>{if(route.request().method()==='POST')writes++;return route.fulfill({json:{jobs:[],bundles:[],scenes}})});
+  await page.route('**/inhibitor/**',route=>{if(route.request().method()==='POST')writes++;return route.fulfill({json:{jobs:[],bundles:[],scenes,timeline}})});
   await page.route('**/geometry/**', route => {
     const operation = new URL(route.request().url()).searchParams.get('operation');
     return route.fulfill({ json: operation === 'contacts' ? {contacts: []} : operation === 'preparation' ? {status:'blocked', reason:'Fixture: no preparation protocol', retained:{waters:0,alternate_atoms:0,hydrogens:0}} : geometry });
@@ -256,6 +258,21 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   await expect(page.getByLabel('Interaction mode')).toHaveValue('explore');
   await page.waitForTimeout(1700); // one refresh: user camera must not be overwritten
   expect(await page.evaluate(()=>window.inhibitorScene!.recipe()!.shot)).toBe('oblique');
+  const ownView=await page.evaluate(()=>window.inhibitorScene!.recipe());
+  await page.getByLabel('Interaction mode').selectOption('follow');
+  await expect.poll(()=>page.evaluate(()=>window.inhibitorScene!.recipe()!.shot)).toBe('pocket');
+  await page.getByLabel('Interaction mode').selectOption('explore');
+  expect(await page.evaluate(()=>window.inhibitorScene!.recipe())).toEqual(ownView);
+  await page.getByRole('button',{name:'Previous action',exact:true}).click();
+  await expect(page.getByLabel('Interaction mode')).toHaveValue('replay');
+  await page.getByText('Activity & evidence · 3 recorded operations', {exact:true}).click();
+  await page.getByRole('button',{name:/Inspected scene pixels/}).click();
+  await expect(page.getByText('Check the visible ligand against canonical geometry.')).toBeVisible();
+  await page.getByRole('button',{name:'Play',exact:true}).click();
+  await page.getByRole('button',{name:'Pause',exact:true}).click();
+  const paused=await page.locator('.pocket-clock').textContent();
+  await page.waitForTimeout(300);
+  expect(await page.locator('.pocket-clock').textContent()).toBe(paused);
   expect(writes).toBe(0);
   await page.screenshot({path:test.info().outputPath('dn-inhibitor-desktop.png')});
   await page.setViewportSize({width:390,height:844});

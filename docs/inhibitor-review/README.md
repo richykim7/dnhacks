@@ -27,3 +27,29 @@ source. A separate real cancellation check produced a cancelled terminal receipt
 and no completed bundle. Two frozen-protocol runs yielded identical score/RMSD
 rows. The implementation includes scoped identity/cursor, actor revision,
 idempotency, invalid-protocol, canonical-distance and surface-coordinate tests.
+
+## Interaction correction, 2026-09-06
+
+The original visual review did not establish a satisfactory replay experience:
+its UI exposed only three agent camera bookmarks and omitted recorded operations.
+The corrected UI includes source-scoped job, capture, review and measurement
+receipts, continuous transport with idle-gap compression, visible molecular bonds,
+selection labels and local geometry distances. This is operation replay, not MD.
+
+`interactive-comparison.png` and `interactive-mobile.png` are actual browser
+captures after opening the real prepared comparison, selecting seed-17-pose-2,
+orbiting and measuring its nearest listed contact. The left measurement is
+3.131939 Å; the corresponding deposited contact differs. Browser assertions
+verified that selecting a docked pose exits preparation mode and that orbiting
+changes the camera. `interaction-validation.json` records the completed real
+three-seed docking job submitted through the guided UI. Its result is a
+computational repeat, not a new biological replicate. The narrow comparison
+retains two synchronized views; labels may crowd when several selected atoms
+project together. Earlier images above document the superseded layout.
+
+`agent-comparison.png` is a subsequent scoped capture from the corrected renderer.
+The agent inspected its pixels, measured the selected pair in each coordinate
+model and recorded the negative recovery conclusion. `agent-countercheck.json`
+contains those actual measurement/review receipts: 3.131939 Å docked and
+5.323898 Å deposited. These operations are appended to the local review demo's
+agent history; no unrecorded past actions were reconstructed.

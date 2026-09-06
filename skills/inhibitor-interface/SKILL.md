@@ -99,3 +99,24 @@ Operator/standalone equivalent: `python scripts/inhibitor_tool.py --trace-dir DI
 --run RUN --experiment EXP --project PROJECT --actor agent --request request.json`.
 Creating a separate demonstration investigation additionally requires
 `--create-investigation`; it never copies demo data into a production corpus.
+
+## Make a useful recording
+
+Start recording before the scientific work, not only when polishing the final
+camera. Record a view and an explanatory note when locating the reference,
+checking preparation changes, comparing independent seeds to the reference,
+examining the displaced/clashing controls, and choosing a numerical countercheck.
+Each note should explain the question, the observed result, and the next action.
+Inspect actual pixels before claiming a view is legible. Finish with the recovery
+result and its limitations, including failed recovery. Do not add redundant
+camera bookmarks just to lengthen playback or reconstruct unrecorded decisions as
+if they were historical agent actions.
+
+`describe.timeline` contains source-scoped, actor-labelled operation receipts:
+scene changes, docking jobs, captures, image observations, measurements and reviews.
+The UI plays these real operations with a continuous scrubber, pause, previous/next
+and 0.5–8× speed. Presentation holds last 2.4–6 seconds, shortening idle gaps;
+camera transitions are visual interpolation only. The expandable activity list
+shows observations and evidence. Switching back to Explore restores the user's
+saved view. Atom clicks label the selection and draw coordinate-based distances;
+the measurement action also persists the scientific receipt.
