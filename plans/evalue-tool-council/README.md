@@ -1,6 +1,6 @@
 # Learned biological tool council
 
-Status: independent proposal review in progress; planning only. Requested 2026-09-06.
+Status: five independent proposal reviews and three separate planning-agent drafts completed; planning only. Requested 2026-09-06.
 Baseline for this review: `6767be1`. No tool implementation, dataset acquisition, training or confirmation run is authorized by this planning task.
 
 ## Corrected objective
@@ -9,7 +9,7 @@ Propose reusable biological experiment tools useful in the pancreatic corpus and
 
 A candidate must specify meaningful biological operations, a reusable learned representation or payoff where justified, the data contract and independent units, and a native sequential evidence construction with an auditable score-before-train schedule. A neural model alone does not establish validity. A final scalar is still evidence for one declared null; an evidence trajectory cannot silently pool unrelated hypotheses, overlapping donors or repetitions of one dataset.
 
-Five reviewers propose independently before seeing each other's recommendations. The parent then records convergence and assigns three separate agents to produce one implementation plan each. The available three worker slots require two review waves. Proposals are preserved under `reviews/`; final plans will be separate files here. None of these files is an autonomous implementation assignment.
+Five reviewers propose independently before seeing each other's recommendations. The parent then records convergence and assigns three separate agents to produce one implementation plan each. The available three worker slots require two review waves. Proposals are preserved under `reviews/`; the three final plans are linked below. None of these files is an autonomous implementation assignment.
 
 ## Corpus and existing architecture
 
@@ -22,6 +22,8 @@ GPU availability was checked through the local handoff connector on 2026-09-06: 
 ## Value of the three earlier integrations
 
 Keep their reusable infrastructure: durable receipt submission, separate private scoring, immutable registered inputs/settings, provenance hashes, donor/alias checks, replay, retry deduplication and attempt audit. Existing learned expression compatibility was retained.
+
+Integration update checked against main `bee2ade`: [the operator monitoring service](../../docs/branch-monitoring.md) now has an explicit `associate` command that imports a completed scoring receipt/canonical alias into an immutable private finding-review record. A human can record a written decision there. This is an additional concrete reuse path for the earlier adapters. Automatic receipt routing, discovery feedback and master-graph updates are still not wired; numerical evidence and branch-future-success statistics remain distinct.
 
 Keep numerical operations where useful: dependency mean comparisons, observed drug-response AUC and rank association, paired expression preparation and optional differential-expression effects. These can become simple comparison baselines and data-preparation components.
 
@@ -58,3 +60,20 @@ Selected for separate plans: **protein/phosphosignaling**, **learned pharmacotyp
 Dependency-program mapping remains a strong reserve, particularly for the corpus's division/functional focus. Eligible fresh PDAC models and shared Chronos fitting remain unresolved; it does not displace the selected modality diversity. Image phenotyping is exceptionally relevant to division biology, but reviewers found training resources rather than a verified PDAC confirmation set. Neither reserve is an implementation assignment.
 
 The three planning agents must use the [shared native contract](native-evidence-contract.md), independently verify their selected data paths, and specify useful biological operations, training, evaluation, private sequential state and implementation milestones. The selection authorizes planning, not data acquisition or training. Parent source checks confirmed the Hwang publication/accessions and Korean proteomics availability statements; publication inventories remain distinct from audited usable donor counts.
+
+
+## Three planning-agent deliverables
+
+| Selected capability | Plan | First native evidence operation | Useful development outputs |
+| --- | --- | --- | --- |
+| Protein/phosphosignaling | [Protein plan](PLAN-protein-signaling.md) | Independent-group comparison of frozen measured protein representations; proposed open-metadata grade comparison is a feasibility/demo endpoint, not the only supported question | Protein/site profiles, coverage, module maps, similar tumors and exploratory comparisons |
+| Learned pharmacotypes | [Pharmacotype plan](PLAN-pharmacotype.md) | Molecular-state/whole-response independence using one native two-donor block per increment | Observed/predicted curves, response-profile neighbors, program comparisons and candidate markers |
+| Cellular ecosystems | [Ecosystem plan](PLAN-cellular-ecosystems.md) | Independence of separately represented malignant/fibroblast state distributions across fresh donors | Compartment/state distributions, donor maps, exploratory coupling and actual-data spatial summaries |
+
+Each plan was written by a separate planning agent after the five-review convergence. The parent reviewed the resulting interfaces, scope and data claims; a returning council reviewer audited mathematical/measurement risks. That audit found no kernel/schedule blocker and identified a confirmation-count disclosure ambiguity, which was corrected: public budgets are requirements, while realized confirmation counts and exclusions remain private. The protein plan independently verified that Fudan uses label-free quantification and has a much smaller described transcriptomic subset, motivating protein-only confirmation first. The drug plan identifies controlled-access molecular data as a real blocker. The ecosystem plan quantifies that its narrow untreated candidate population might offer at most nine two-donor blocks before exclusions. No plan claims that publication sample counts are ready-to-score independent donors.
+
+Implementation is incremental: data/identity/assay audit, useful development operations and simple baselines, measured GPU representation training, shared native-process integration, then independently validated private confirmation. Release of a useful exploratory tool is distinct from release of a confirmatory experiment. Learned encoders must earn their cost through held-out utility/power comparisons; where simpler features win, report that outcome.
+
+No new tool has been trained or implemented by this council. The three earlier fixed-data adapters remain available as preparation/infrastructure/baselines; these plans neither remove them nor claim their scalar outputs now drive the exploration loop.
+
+Training coordination: the three plans share one L40S. CPU preparation/scoring may overlap within host limits; initial GPU pilots are serialized through one operator-managed queue/lease. Concurrent training is a later measured resource/throughput decision, not an assumption that each agent has a GPU. See the [shared scheduling rule](native-evidence-contract.md#coordination-on-the-shared-gpu).

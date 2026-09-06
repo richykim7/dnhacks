@@ -50,6 +50,16 @@ For a locked finite cohort, a private worker may deterministically replay the or
 
 Store log wealth for stability; expose final or prespecified stopped wealth privately. The running maximum is useful for a threshold-crossing diagnostic but is not a replacement e-value. Do not automatically select the strongest seed, representation or endpoint after scoring. Do not multiply across tools, overlapping modalities or different nulls; preserve distinct processes and defer family combination to a separately reviewed policy.
 
+## Coordination on the shared GPU
+
+There is one verified L40S, not one GPU per tool. All three training implementations must use an operator-managed shared queue/lease (or an agreed cross-process lock) on that host. The coordination Board reports ownership and planned work but is advisory, not an atomic resource reservation. Checking an idle `nvidia-smi` snapshot does not reserve the device. No scheduler is implemented or training authorized by this document.
+
+Begin with one GPU training job at a time. Profile each encoder/critic workload separately, including peak GPU allocation/reservation, host RAM, data-loader workers, CPU threads, I/O and time. CPU data preparation, code work and small CPU scoring jobs may proceed concurrently within host resource limits. Do not launch a full null/power sweep alongside unprofiled encoder training.
+
+Allow GPU concurrency only after the operator verifies that combined measured peaks plus explicit headroom fit the available device and host memory and that a trial shows useful aggregate throughput. Two small jobs may fit; three unprofiled jobs have no such guarantee. Single-job caps in the individual plans are not simultaneous reservations. Large cell/set training should initially own the GPU exclusively. If memory or throughput gates fail, queue jobs serially instead of silently shrinking scientific data or changing the registered model.
+
+Every job gets a unique job/experiment ID, artifact/checkpoint directory, seed/configuration record and recorded data role. Keep model files, caches with mutable state and optimizer/RNG checkpoints separate. Lease release/recovery must check the recorded worker/job identity so a stale heartbeat cannot permit a second job over a still-running first one. Respect existing private confirmation storage and service identities; a training scheduler does not authorize one tool to read another experiment's hidden data. Recheck hardware availability before the future run and coordinate with other sessions using that host.
+
 ## Validation and release gates
 
 - Review the conditional-mean argument against the actual assay preprocessing and sampling, including shared references and pooled assays.
@@ -60,3 +70,5 @@ Store log wealth for stability; expose final or prespecified stopped wealth priv
 - Fail closed when sampling, identity, access, effect coverage or sample-size design is unsupported. Exploratory functionality can still be useful, explicitly labeled; an uninformative e-value of one and unavailable evidence are different states.
 
 No change to `ToolResult`, ordinary falsifier behavior, branch-future-success monitoring or human promotion is authorized by these plans. Biological association/distribution evidence does not establish that a subtree will produce a future discovery. Any future consumer must preserve this distinction and receive a separately specified contract.
+
+Existing operator consumer: `branch_monitoring associate` can import an already completed private scoring receipt into a finding-review record, preserving operator-declared method/null/family policy. Future native adapters can preserve compatible private result envelopes for this explicit path; they do not automatically route receipts, disclose scores or alter the master graph. See [current monitoring documentation](../../docs/branch-monitoring.md).
