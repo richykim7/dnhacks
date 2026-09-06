@@ -33,8 +33,10 @@ def dispatch(request):
     if action=='binder.plan_design':return plan_design(**args)
     if action=='binder.compare':return compare(**args)
     if action=='binder.propose_followup':return propose_followup(**args)
-    if action in {'binder.start_design','binder.collect_candidates','binder.cancel'}:
+    if action in {'binder.start_design','binder.collect_candidates','binder.cancel','binder.recover','binder.attach_candidate'}:
         store=DesignStore(request['store'])
+        if action=='binder.attach_candidate':
+            args={**args};args['bundle_raw']=Path(args.pop('bundle_path')).read_bytes()
         return getattr(store,action.split('.')[1])(**args)
     raise ValueError('Unknown binder operation; execution is an operator-side adapter action')
 
