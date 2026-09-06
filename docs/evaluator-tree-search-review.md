@@ -1,6 +1,6 @@
 # E-valuator and the research tree
 
-Assessment, 2026-09-05, against repository `680069ba`. Proposal only: no monitor, training,
+Assessment, 2026-09-05, with branch-level scope clarified against `fcf20648`. Proposal only: no monitor, training,
 pruning changes or new biological tools were implemented in this review.
 
 ## Plain-language purpose
@@ -14,6 +14,10 @@ mechanism should count as useful if that was its assigned task.
 This is a proposed compute-allocation aid. Continuing a branch does not certify its science, and
 stopping it does not prove that its hypothesis is false. The existing biological scoring service
 answers a different question about experimental data and remains separate.
+
+**The intervention is to stop an individual child branch.** Whole investigations are useful units
+for grouping evaluation data, but that does not require stopping the entire investigation. Each child
+has a private monitor, while its parent remains responsible for allocation among surviving children.
 
 ## Source and reading record
 
@@ -67,17 +71,24 @@ flowchart LR
   D -. operator only .-> H[Audit and evaluation]
 ```
 
-## Smallest defensible pilot
+## Branch-level pilot
 
-The independent statistical reviewer recommends an even simpler first measurement: keep the current
-frozen tree policy, regard one complete root investigation as one trajectory, and calibrate a prefix
-score's maximum over its ordered event stream. Arbitrary dependence inside a tree is then internal to
-one sample. A PAC-calibrated raw-verifier baseline can precede learned density ratios. An alarm means
-stop the **whole investigation**, so this pilot cannot justify individual branch pruning. Collect only
-observation-only alarms first, finish verification before assigning final labels, and isolate state
-across roots. Estimate savings only from a hypothetical whole-investigation stop, without reallocation.
+An earlier review proposed whole-investigation stopping because it simplifies the calibration unit.
+That does not answer the intended allocation question and is not the recommended intervention.
+The pilot should record proposed stops for individual children while letting evaluation copies finish.
+Use complete investigations to group related observations and quantify uncertainty, and address the
+additional calibration assumptions explicitly instead of changing the stopping target.
 
-For the more useful but more demanding **individual-branch** question, use the following staged design:
+For example, children A, B and C pursue different mechanisms. Each completed child action extends
+only that child's monitor history. A calibrated alarm on B makes B ineligible for further work; A and C
+remain eligible under existing budget rules. A survivor resuming another round keeps its monitor history.
+The parent never fills a beam quota by reviving a monitored stop. Existing evidence and queued scoring
+jobs remain intact. Resource reallocation must be explicit in the controller and separately evaluated.
+For the first pilot, monitor leaves before they spawn descendants, avoiding ambiguous cancellation of
+already-running grandchildren. Handling an ancestor alarm while descendants are active is a later policy
+decision, not permission to cancel unrelated children or discard their results.
+
+Use the following staged design:
 
 1. **Define a narrow task and success rubric.** Use PDAC research tasks with independently checkable
    endpoints under a fixed tool/corpus/model/budget configuration. Examples include recovering a
@@ -157,8 +168,8 @@ from test curves. Count subgroups such as falsification tasks, novel mechanisms 
 small subgroup samples do not establish subgroup guarantees. No synthetic illustrative plot should be
 presented as a measured PDAC result.
 
-Recommendation: collect complete traces and first assess whole-investigation alarms without changing
-the existing policy. Use fixed PDAC leaves for a separate branch-level study. GPU availability is not
+Recommendation: collect complete traces and first assess proposed child-branch stops on fixed PDAC
+leaves, without changing live allocation. GPU availability is not
 the limiting factor; reliable labels and representative independent runs are. Recursive branch stopping
 is a later, separately validated policy change. Use the paper's strict `score > threshold` comparison;
 at the 116-success minimum above, the threshold is the largest successful calibration maximum.
