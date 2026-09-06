@@ -2,7 +2,11 @@
 
 Open `/#forecast` after starting the app. This prepared route runs entirely from checked-in
 historical artifacts. No live model, API key, GPU, or data download is needed for playback.
-The default Investigations route is still available for the discovery engine.
+**Product direction:** Investigations is the primary workspace. This separate Forecast
+route is a recorded experiment/replay asset, not the intended destination for the live
+scientific graph. It has no project or investigation scope and does not implement the
+user-approved permanent-graph boundary. Read the [architecture reconciliation](architecture/README.md)
+before extending it; reuse its presentation inside scoped Investigations data.
 
 ```sh
 uv sync --extra dev --extra llm
@@ -82,7 +86,7 @@ runner](forecasting-runner.md); a changed scenario does not silently reuse a mis
 
 ## UX exploration prompt
 
-> Read AGENTS.md, BOARD.md, frontend/DESIGN.md, and the current Forecast route. Review the
+> Read AGENTS.md, BOARD.md, docs/architecture/README.md, frontend/DESIGN.md, and the current Investigations and Evidence screens. Review the
 > working demo and propose concrete UX, feature, and presentation changes that would most
 > improve our odds of winning the frontend award. Prioritize an iteratively created and
 > consumed scientific graph, anticipation of research developments, and falsifiable
@@ -90,7 +94,7 @@ runner](forecasting-runner.md); a changed scenario does not silently reuse a mis
 > hackathon window, abundant parallel compute, and permission to stub any data or output
 > with clear provenance. No production hardening. Rank proposals by audience impact,
 > implementation time, and dependency; give a 100-second interaction script and an
-> independent prototype if useful. Coordinate on the Board before production edits;
+> scoped Investigations prototype if useful. Preserve the approved graph versus provisional branch boundary. Coordinate on the Board before production edits;
 > e-values belong to the teammate, and exploration theory belongs to another session.
 
 ## All-query study
@@ -116,3 +120,18 @@ A bootstrap interval from one AP-eligible query is uninformative; the interface 
 that interval. Actual reported token use can exceed the requested limit, so the controls
 are matched requests rather than enforced compute budgets. All original outputs are saved,
 including failed schema/citation validation, without repair or retrospective retries.
+
+## Later control and planning correction
+
+The zero-retrieval modern-model control on the same 683 candidates achieved AUROC 0.854
+and AP 0.233, compared with structural 0.819 and 0.201. This is counterevidence to a claim
+that this packet proves graph value or first-discovery anticipation. See the immutable
+[control report](forecasting-memory-control.md). The failed and missing cases in the
+all-query memory study remain part of the result; do not compare its selected completion
+cohort directly with this full-cohort control.
+
+The next product slice belongs in Investigations and must display the graph state the
+selected attempt actually consumed. Forecast replay revisions are working acquisition or
+model-memory revisions; they are not accepted graph revisions and do not imply user
+approval. The [knowledge contract](architecture/knowledge-contract.md) distinguishes those
+objects and the current master/read-path gap.

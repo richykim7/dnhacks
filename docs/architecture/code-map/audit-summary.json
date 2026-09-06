@@ -1,0 +1,175 @@
+{
+  "schema_version": "source-map-audit/v1",
+  "repository_commit": "e04e9ff8bbe6a1abce23ba022518dbdde3ebb370",
+  "tool": {
+    "repository": "https://github.com/Graphify-Labs/graphify",
+    "commit": "c9f99018774e2e0380e9f65b3959944559a0d5f6",
+    "package": "graphifyy",
+    "version": "0.9.55"
+  },
+  "file_count": 137,
+  "parsed_file_count": 130,
+  "node_count": 1860,
+  "edge_count": 3727,
+  "community_count": 109,
+  "relation_counts": {
+    "calls": 1410,
+    "contains": 902,
+    "references": 150,
+    "imports_from": 207,
+    "imports": 174,
+    "dynamic_import": 3,
+    "inherits": 23,
+    "method": 243,
+    "rationale_for": 510,
+    "indirect_call": 38,
+    "uses": 67
+  },
+  "confidence_counts": {
+    "EXTRACTED": 3521,
+    "INFERRED": 206
+  },
+  "graph_directed": false,
+  "graph_multigraph": false,
+  "rationale_nodes": 510,
+  "external_or_unattributed_source_labels": [
+    "",
+    "3dmol",
+    "node:fs/promises"
+  ],
+  "fresh_repeat_exact_match": "all nodes (except added community labels), edges and community IDs match a second clean extraction",
+  "llm_input_tokens": 0,
+  "llm_output_tokens": 0,
+  "executed_repo_code": false,
+  "network_or_home_access_attempts": [],
+  "top_modules_raw": [
+    {
+      "path": "src/dnhacksbio/explorer/explorer.py",
+      "extension": ".py",
+      "bytes": 109221,
+      "lines": 1667,
+      "sha256": "00339d8def882efc04e73711e5b9f6c308e62fa3efa025a7e9ac269d3ba973fe",
+      "graph_node_count": 103,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 17
+    },
+    {
+      "path": "src/dnhacksbio/litmap/store.py",
+      "extension": ".py",
+      "bytes": 26388,
+      "lines": 504,
+      "sha256": "ae0cee001b141d2892e7473e29a0f7cfd1bd5c2236be2fd7f499c6310df6a4b1",
+      "graph_node_count": 63,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 13
+    },
+    {
+      "path": "src/dnhacksbio/webui/__init__.py",
+      "extension": ".py",
+      "bytes": 363,
+      "lines": 7,
+      "sha256": "7b43aeb5290f6c2040dd113fe3f02339a91c61b92ef29435fdfeb9c715b3a729",
+      "graph_node_count": 2,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 13
+    },
+    {
+      "path": "src/dnhacksbio/webui/data.py",
+      "extension": ".py",
+      "bytes": 70717,
+      "lines": 1634,
+      "sha256": "9d9704f61e82931e61c7d56c0ef3f4042d92ae1f72415b96f7f4362ec8ea3e70",
+      "graph_node_count": 91,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 11
+    },
+    {
+      "path": "src/dnhacksbio/webui/server.py",
+      "extension": ".py",
+      "bytes": 23293,
+      "lines": 477,
+      "sha256": "d83c870be7c5cff0fc692ef0b3bc330dd9772e372f3b827205bee81034badcc6",
+      "graph_node_count": 34,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 11
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "extension": ".tsx",
+      "bytes": 8056,
+      "lines": 241,
+      "sha256": "4318e61933e62262aeb3cc4bfb6ca929eaaa6af8700d03adb02db80b012ba697",
+      "graph_node_count": 4,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 11
+    },
+    {
+      "path": "src/dnhacksbio/explorer/runtime.py",
+      "extension": ".py",
+      "bytes": 11723,
+      "lines": 257,
+      "sha256": "985cf515325732ee7f9b65652f53b29e4c782ef0955d7a00d55772cf535166df",
+      "graph_node_count": 21,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 10
+    }
+  ],
+  "five_central_modules_excluding_package_initializers": [
+    {
+      "path": "src/dnhacksbio/explorer/explorer.py",
+      "extension": ".py",
+      "bytes": 109221,
+      "lines": 1667,
+      "sha256": "00339d8def882efc04e73711e5b9f6c308e62fa3efa025a7e9ac269d3ba973fe",
+      "graph_node_count": 103,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 17
+    },
+    {
+      "path": "src/dnhacksbio/litmap/store.py",
+      "extension": ".py",
+      "bytes": 26388,
+      "lines": 504,
+      "sha256": "ae0cee001b141d2892e7473e29a0f7cfd1bd5c2236be2fd7f499c6310df6a4b1",
+      "graph_node_count": 63,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 13
+    },
+    {
+      "path": "src/dnhacksbio/webui/data.py",
+      "extension": ".py",
+      "bytes": 70717,
+      "lines": 1634,
+      "sha256": "9d9704f61e82931e61c7d56c0ef3f4042d92ae1f72415b96f7f4362ec8ea3e70",
+      "graph_node_count": 91,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 11
+    },
+    {
+      "path": "src/dnhacksbio/webui/server.py",
+      "extension": ".py",
+      "bytes": 23293,
+      "lines": 477,
+      "sha256": "d83c870be7c5cff0fc692ef0b3bc330dd9772e372f3b827205bee81034badcc6",
+      "graph_node_count": 34,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 11
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "extension": ".tsx",
+      "bytes": 8056,
+      "lines": 241,
+      "sha256": "4318e61933e62262aeb3cc4bfb6ca929eaaa6af8700d03adb02db80b012ba697",
+      "graph_node_count": 4,
+      "graphify_status": "parsed_ast",
+      "cross_file_neighbor_count": 11
+    }
+  ],
+  "vendor": {
+    "package": "vis-network",
+    "version": "9.1.6",
+    "url": "https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js",
+    "sha256": "576bb887733eb01bb52ee75b90ef46d818454de5fddb5b616fb8a298d307ca12"
+  }
+}
