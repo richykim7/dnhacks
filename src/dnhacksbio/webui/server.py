@@ -136,6 +136,9 @@ class Handler(BaseHTTPRequestHandler):
         path = parsed.path
         qs = parse_qs(parsed.query)
         try:
+            if path == "/api/deployment/health":
+                return self._send_json({"status": "ok", "release": os.environ.get("DNHACKS_RELEASE", "development"),
+                                        "guarded": bool(os.environ.get("DNHACKS_DEPLOY_LOCK"))})
             if path == "/" or path == "/index.html":
                 return self._serve_frontend("index.html")
             if path.startswith("/assets/"):
@@ -187,6 +190,15 @@ class Handler(BaseHTTPRequestHandler):
                 return
 
     def do_POST(self):
+        from .deployment import Busy, lease
+        try:
+            with lease():
+                return self._post()
+        except Busy as exc:
+            self.close_connection = True
+            return self._error(503, str(exc))
+
+    def _post(self):
         parsed = urlparse(self.path)
         # An attachment upload is bytes, not JSON. It is read here, before the JSON parse below
         # would choke on a PDF, and it is the only route that reads a raw body.
