@@ -1,22 +1,23 @@
-# Product walkthrough
+# Latent Nature walkthrough
 
-The Remotion project lives in [`video/`](../video/README.md). It renders a 138-second
-1080p walkthrough from opening the research library through collection setup,
-paper arrivals, graph construction, investigation branching, and candidate review.
-The first two researcher inspections are deliberately slow; later branches speed
-up while the camera zooms out. A visible cursor and written captions guide the flow.
+The [Remotion project](../video/README.md) creates a 170-second, 1080p walkthrough
+using Playwright captures of the deployed frontend. Its current logo, sidebar,
+library, full-text reader, knowledge graph and top-down search tree are captured
+directly rather than recreated in presentation components.
 
-The video reuses shared frontend components and generated native application styles,
-with separate frame-driven scene state. It does not operate the app or execute
-research. Real bibliographic metadata comes from the committed PDAC curation;
-graph growth and research activity are authored illustrative sequences.
+The flow opens a collection, types its scope, adds literature, reveals papers and
+graph elements, starts an investigation, slowly inspects the lead and metabolic
+researchers, accelerates through the existing history while fitting the camera,
+and opens the HA–CD44 candidate. Browser-local form responses prevent any live
+research or ingestion from being launched.
 
-The default ending explicitly leaves the held-out paper reveal pending. Supply the
-verified matching paper, candidate, run identifier, corpus manifest hash and access
-boundary before producing the final discovery version. The paper appears first;
-the next scene explains the frozen evidence boundary, following the demo narrative.
-A frozen corpus alone does not eliminate pretrained model knowledge.
+The ending displays the real first page of Ozcan et al.'s HA–CD44 article,
+DOI 10.1186/s12964-026-02865-5, published 7 April 2026. Its exact candidate is
+900004 on branch pdac-frozen-investigation-03~1~1~1~1~1~1~1~1~1.
+The next scene explains the excluded paper and corpus boundary. The repository
+runtime labels this history an authored reconstruction, not a measured holdout
+recovery; that distinction remains in the video.
 
-See the video README for preview/render commands and the Playwright frame-review
-workflow, which shares the repository browser queue and owns its isolated server.
-No deployment or live data changes are part of this video workflow.
+Rendering and visual checks are documented in the project README. Deliverable
+media belong inside the main checkout's video/out directory and remain ignored
+by Git. No deployment, scientific execution or live data mutation is performed.

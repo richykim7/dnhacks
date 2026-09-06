@@ -9,3 +9,5 @@ out
 # Regenerated from versioned frontend and corpus sources.
 src/frontend.generated.css
 src/corpus.json
+public/capture
+src/capture.generated.json

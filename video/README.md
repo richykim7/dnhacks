@@ -1,66 +1,81 @@
-# Product walkthrough video
+# Latent Nature product walkthrough
 
-A 138-second, 1920×1080, 30 fps Remotion composition with a visible cursor,
-typed project scope and research question, library arrivals, knowledge-graph
-growth, two slow researcher inspections, accelerating tree expansion, candidate
-review, and a configurable paper reveal followed by the evidence boundary.
+The 170-second, 1080p/30 fps Remotion video uses **captures of the deployed frontend**.
+There is no recreated application shell, library, graph or researcher card.
+Playwright opens the actual app, types into its forms, opens papers, seeks its
+history slider, opens researcher workspaces, and selects the HA–CD44 candidate.
 
-This is an authored product animation, not a recording of a completed scientific
-run. It imports the frontend's `Button`, `Empty`, and `Status` components and
-regenerates its native CSS from the frontend stylesheet. Screen structure follows
-`App.tsx` and `Library.tsx`; timing, graph topology, researcher activity and camera
-motion are presentation-specific React components. The main application is not
-mounted and no backend, model, experiment or live-data mutation is invoked.
+Remotion adds a visible cursor, captions, short fades between captured growth
+states, and the first-page paper reveal. Native graph topology, branding, sidebar,
+library rows, candidate records and researcher detail come from the deployed UI.
 
-## Run
+## Capture, check and render
 
-From `video/`, using Node 22.12 or later:
+Use Node 22.12+ and Python 3 with PyMuPDF for the article page. From video/ run:
 
-```sh
-npm ci
-npm run dev -- --no-open
-npm run check
-npm run check:frames
-npm run render
-```
+    npm ci
+    npx playwright install chromium
+    npm run capture
+    npm run check
+    npm run check:frames
+    npm run render
 
-`npm run render` produces `out/product-walkthrough-preview.mp4`, explicitly marking
-the missing discovery source. The preview is captioned and has no audio track.
-All outputs and generated source assets are ignored by Git.
+The capture defaults to the deployed localhost app at port 8765. Override with
+CAPTURE_BASE_URL. CAPTURE_OUTPUT sets an absolute capture folder; by default it
+is video/public/capture. VIDEO_OUTPUT sets the final MP4 path; its default is
+video/out/latent-nature-walkthrough.mp4. FRAME_CHECK_OUTPUT sets the screenshot
+review folder. All generated media are local, ignored artifacts.
 
-For a final reveal, supply JSON with a `reveal` object containing `paperTitle`,
-`doi`, `publicationDate`, `candidate`, `runId`, `manifestHash`, `evidenceNote`, and
-`verified: true`, then run `npm run render -- /absolute/path/to/props.json`.
-Verification is an editorial attestation, not an automatic proof: first check the
-candidate-to-paper match and the actual accessible evidence boundary. This command
-refuses incomplete final-render metadata. It renders `out/product-walkthrough.mp4`.
+Both capture and frame checks hold the shared browser slot from
+scripts/browser_tests.py and clean up only their own processes. The capture
+visits the deployed website as explicitly requested; it never reuses a frontend
+test server. Its browser-local route fulfills every non-GET API request, so form
+submission cannot start research, ingestion, review decisions or any server writes.
+First-open collection creation is staged in the browser. Subsequent source papers,
+graph and investigation history are real existing application records.
 
-Do not label authored activity as executed research. The committed demo notes still
-leave a verified later-paper recovery pending. A frozen corpus alone does not rule
-out model prior knowledge. The final paper reveal precedes the boundary explanation,
-as requested in `plans/PLAN-demo-slides.md`.
+Graph and paper arrival animation reveals existing rendered elements. Research
+history is sought in an accelerating sequence; the camera is fitted to the actual
+visible node geometry after each seek. Native styles and topology remain intact.
 
-## Frame review
+CAPTURE_FROM=tree resumes the capture from the investigation, preserving earlier
+frames. Capture metadata includes clicked target bounds, exact screenshot times,
+source URL, release-health response and history length. A failed capture writes
+its checkpoint and fails; rendering refuses an incomplete capture.
 
-`npm run check:frames` uses the repository's `browser_slot` queue and process cleanup
-from `scripts/browser_tests.py`. Inside that slot it owns an isolated local Vite
-server and Playwright Chromium; it never connects to an existing development
-server or the hosted app. It seeks the real Remotion Player to 43 timestamps,
-saves full-size screenshots and an HTML contact sheet, checks console errors,
-important text overflow, cursor bounds and 11 cursor-to-target hits, and compares
-an earlier frame byte-for-byte after seeking backwards. Outputs are under
-`out/frame-check/`. Manual review of these screenshots complements the assertions.
+## The HA–CD44 ending
 
-For a clean machine, install Chromium with `npx playwright install chromium`.
-For a single export-pipeline frame: `npx remotion still ProductWalkthrough out/check.png --frame=990`.
+The selected branch is
+pdac-frozen-investigation-03~1~1~1~1~1~1~1~1~1, candidate 900004:
 
-## Sources and animation guidance
+> HA–CD44 supports division tolerance in centrosome-amplified pancreatic cells.
 
-- UI: `frontend/src/App.tsx`, `components/Library.tsx`, `components/common.tsx`,
-  `components/ui/button.tsx`, and `styles.css`.
-- Real paper titles and DOIs: `demo/pdac/papers.json`, regenerated by `sync-corpus.mjs`.
-- Workflow and scientific limits: `ARCHITECTURE.md`, `plans/PLAN-demo-slides.md`.
-- Official Remotion agent skill: https://github.com/remotion-dev/skills/tree/main/skills/remotion-best-practices
-  (installed locally; version 4.0.521 at creation).
+The associated paper is Ozcan et al., “Stress adaptation pathways and HA–CD44
+signaling maintain the survival of pancreatic cancer cells with centrosome
+amplification,” Cell Communication and Signaling (7 April 2026),
+https://doi.org/10.1186/s12964-026-02865-5.
+The actual first PDF page appears with author/source/license credit, followed by
+the evidence-boundary explanation.
 
-Remotion's free-use eligibility is governed by its own license. Rendering uses local compute.
+The named target DOI is absent from the frozen manifest and the seeded project's
+paper index. The local runtime explicitly identifies the investigation as an
+authored presentation reconstruction. The video preserves that distinction and
+does not call it an independently measured holdout recovery. This is an attribution
+and presentation correction, not a new scientific run.
+
+The article is © The Author(s) 2026, CC BY-NC-ND 4.0:
+https://creativecommons.org/licenses/by-nc-nd/4.0/.
+Its first page is reproduced unchanged; media and the full PDF remain untracked.
+
+## Visual verification
+
+The Playwright check seeks 56 times across all chapters, checks image loading and
+caption overflow, saves screenshots, compares seven UI frames pixel-for-pixel
+against their original browser captures, and checks that the paper reveal is
+identical after seeking backwards. Inspect out/frame-check/index.html manually
+as well: passing assertions alone does not establish visual fidelity.
+
+Official Remotion skill used:
+https://github.com/remotion-dev/skills/tree/main/skills/remotion-best-practices.
+The locally installed skill was version 4.0.521. Local rendering is subject to
+Remotion's license eligibility.

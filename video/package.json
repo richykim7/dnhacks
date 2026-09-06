@@ -7,19 +7,11 @@
   "private": true,
   "dependencies": {
     "@fontsource-variable/ibm-plex-sans": "^5.3.0",
-    "@fontsource/ibm-plex-mono": "^5.3.0",
-    "@radix-ui/react-dialog": "^1.1.23",
-    "@radix-ui/react-slot": "^1.3.3",
     "@remotion/cli": "4.0.521",
     "@remotion/player": "4.0.521",
-    "@remotion/transitions": "4.0.521",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.468.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "remotion": "4.0.521",
-    "tailwind-merge": "^3.6.0"
+    "remotion": "4.0.521"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
@@ -30,6 +22,7 @@
     "@types/web": "0.0.166",
     "@vitejs/plugin-react": "^5.0.0",
     "eslint": "^9.39.5",
+    "pngjs": "^7.0.0",
     "prettier": "3.8.1",
     "typescript": "5.9.3",
     "vite": "^7.3.0"
@@ -39,7 +32,7 @@
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc",
-    "sync": "node scripts/sync-styles.mjs && node scripts/sync-corpus.mjs",
+    "sync": "node scripts/sync-capture.mjs",
     "predev": "npm run sync",
     "prebuild": "npm run sync",
     "prerender": "npm run sync",
@@ -47,7 +40,8 @@
     "precheck": "npm run sync",
     "check": "tsc --noEmit",
     "precheck:frames": "npm run sync",
-    "check:frames": "python3 scripts/check-frames.py"
+    "check:frames": "python3 scripts/check-frames.py",
+    "capture": "python3 scripts/capture-app.py"
   },
   "sideEffects": [
     "*.css"

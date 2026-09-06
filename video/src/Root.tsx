@@ -1,15 +1,13 @@
-import "./index.css";
+import "./captured.css";
 import { Composition } from "remotion";
-import { Walkthrough } from "./Composition";
-import { totalFrames, pendingReveal } from "./story";
+import { CapturedWalkthrough } from "./CapturedWalkthrough";
 export const RemotionRoot = () => (
   <Composition
     id="ProductWalkthrough"
-    component={Walkthrough}
-    durationInFrames={totalFrames}
+    component={CapturedWalkthrough}
+    durationInFrames={5100}
     fps={30}
     width={1920}
     height={1080}
-    defaultProps={{ reveal: pendingReveal }}
   />
 );
