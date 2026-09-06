@@ -5,6 +5,7 @@ export function saveFigure(
   data: Tissue,
   view: View,
   owner: string,
+  artifactHash: string,
 ) {
   const canvases = Array.from(host.querySelectorAll("canvas"));
   if (!canvases.length) return;
@@ -61,7 +62,19 @@ export function saveFigure(
   download(out.toDataURL("image/png"), "living-tissue.png");
   const url = URL.createObjectURL(
     new Blob(
-      [JSON.stringify({ owner, view, provenance: data.provenance }, null, 2)],
+      [
+        JSON.stringify(
+          {
+            artifact_sha256: artifactHash,
+            owner,
+            view,
+            provenance: data.provenance,
+            analysis: data.analysis,
+          },
+          null,
+          2,
+        ),
+      ],
       { type: "application/json" },
     ),
   );

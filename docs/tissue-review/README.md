@@ -29,7 +29,9 @@ fixed shared field range with midpoint ticks, source-voxel diagnostic and satura
 diagnostic panels outside tissue geometry. Mobile places the field below the 3D scene. The scale
 bar now uses the actual renderer height and camera projection. A subsequent Neighborhood camera
 focus refinement is being checked separately; the pictured earlier Neighborhood view remains
-a development capture, not the accepted focused view.
+a development capture, not the accepted focused view. `focused-neighborhood.png` supersedes it:
+the selected source cell is centered, the clipping plane exposes it, and the35µm halo corresponds
+to the source-distance neighborhood query. The updated image was opened and inspected.
 
 The final comparison visibly shows a localized pearl survivor cluster in the first condition
 and violet dead cells in the suppressed condition. The two alanine fields differ only slightly;
@@ -45,4 +47,29 @@ The native static rendering measurements record browser, software renderer, canv
 draw calls, triangle counts and20 timed renders after three warmups. They are not sustained whole-
 application frame rates. The10000-cell/128³ capacity case exceeded its90-second capture budget
 in two initial attempts; no black frame or unavailable performance result was accepted. Capacity
-optimization/measurement continues as a separate final milestone.
+optimization subsequently completed: large populations use12×8 tessellation without clearcoat and
+24 ray steps; the renderer now draws once per scheduled frame. Desktop and mobile capacity PNGs
+were captured and opened after this change. Every source ID remains present, with10000 desktop
+glyphs and1343 mobile groups; mobile field display is64³ and the source remains128³.
+
+## Performance interpretation
+
+The capacity fixture is synthetic and its fixed view is stored in the receipt. It is not a tumor
+model or evidence of biological effects. The test uses Chromium153/SwiftShader on a16-logical-CPU
+AMD EPYC-Genoa Linux host, Three0.180.0 and R3F9.3.0. Viewports are1600×1000 and390×844; actual
+canvases are1508×568 and362×348. Payload is9,629,241 bytes (cell JSON plus binary field).
+
+The static draw-call measurement is **not** sustained application FPS. A separate30-frame camera
+orbit check verifies actual camera movement and renderer frame increments. The first complete
+single-pass measurement averaged1.18fps desktop (p95 2283.3ms) and4.13fps mobile (p95 416.7ms).
+The requested60/30fps targets are therefore **not met on this software-rendered host**. Do not
+advertise the sub-millisecond static command timings as60fps, or generalize them to hardware GPUs.
+The versioned performance receipt retains both measurements and any bounded failures. Hardware-
+accelerated browser throughput remains unverified. Functional and numerical acceptance does not
+turn this negative performance result into a pass.
+
+`performance-repeat.json` preserves the later repeat as well: the desktop profile exhausted90s
+after producing pixels, and mobile averaged2.64fps with p95 900ms. Mobile readiness was2.39s, while
+the completed screenshot was10.83s after the artifact request (including readback/PNG encoding).
+Thus the3s first-image target is not established either. `capacity-mobile-repeat.png` was opened
+and inspected; failed measurements are retained alongside successful image captures.

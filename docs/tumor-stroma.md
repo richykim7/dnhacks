@@ -2,9 +2,10 @@
 
 The instrument implements native conditional simulation, immutable frame collection, the selected-
 experiment theater, scoped agent tools, recorded scene-action playback and actual PNG-bearing review.
-The 165-run source-grounded sensitivity demonstration and analytical/replay checks completed. Final
-capture/performance acceptance is recorded separately in the image inspection report; it does not
-provide biological validation or deployment approval.
+The165-run source-grounded sensitivity demonstration, analytical/replay checks and actual image-
+review workflow completed. The image inspection report records the full native capture set and
+capacity measurements. The60/30fps targets are not met on the tested SwiftShader host; hardware-
+accelerated throughput remains unverified. No biological validation or deployment is implied.
 
 The model uses PhysiCell 1.14.2 at `dbd3499250141b27600e91e501c54c46f68f2763` and bundled BioFVM.
 Build with `dnhacksbio.tissue.engine.build_engine(source, destination)` after cloning that exact
@@ -102,6 +103,17 @@ Users can watch agent scene actions at0.5–4×, scrub them, independently explo
 and restore their own view. User interactions never mutate the recorded agent history. Saved PNG
 figures include common legends/units and a recipe sidecar. Stored agent captures and observations
 are expandable within the owning experiment, subject to the investigation replay cursor.
+
+Large populations use lower tessellation and24 volume steps without discarding cells. The original
+small native demonstration retains its membrane detail. Normal scene captures do not run a moving-
+camera performance test; only the explicit benchmark does. Figure recipe exports include the exact
+artifact SHA-256 and numerical analysis. The focused Neighborhood view centers the selected source
+cell and clips at its surface, using the same35µm source-distance neighborhood calculation.
+
+Reproduce capacity measurements with `uv run python scripts/benchmark_tissue.py --output /tmp/new-capacity`.
+It records a separate status for each profile, preserving an unavailable result if a bounded capture
+fails. See [performance and visual interpretation](tissue-review/README.md); successful rendering is
+not evidence that the frame-rate target passed.
 
 The scene inspector exposes a shared fixed field maximum and exact-voxel diagnostic; saturated
 voxels are counted. The diagnostic labels the actual voxel-center z as well as the requested plane.
