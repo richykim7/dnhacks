@@ -21,7 +21,14 @@ export type SpindleRecipe = {
   treatment: "luminous" | "fine";
   trails: boolean;
   revision: number;
-  camera?: { position: Vec3; target: Vec3 };
+  compare?: number | null;
+  camera?: {
+    position: Vec3;
+    target: Vec3;
+    fov?: number;
+    near?: number;
+    far?: number;
+  } | null;
 };
 export function validateBundle(value: unknown): SpindleBundle {
   const b = value as SpindleBundle;

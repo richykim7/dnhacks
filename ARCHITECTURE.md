@@ -229,6 +229,7 @@ The actions:
 | `search_skills`, `get_skill` | find and read a method guide |
 | `run_experiments` | run several pieces of Python in parallel |
 | `inhibitor` | skill-gated, experiment-scoped bounded preparation/docking, scene vision and canonical measurements; exploratory artifacts only |
+| `spindle` | bounded provisional 3D filament jobs, collected numerical ensembles and separate scoped scene/capture/vision operations; requires spindle-interface guidance |
 | `log` | record an idea, observation, dead end, open question or note with a promise score |
 | `submit` | send a self-judged experiment to verification |
 | `fork`, `checkpoint` | request parent allocation through a mandatory checkpoint report |
@@ -610,3 +611,18 @@ verification. No live design pilot, biological efficacy, runtime vision or perfo
 is implied. Immutable scoped scene recipes and PNG captures support actual image observations,
 recorded action replay and independent user exploration inside the owning experiment.
 See [supported behavior and remaining acceptance](docs/binder-design.md).
+
+
+### Spindle experiment adapter
+
+`spindle/` validates source-linked numerical protocols and executes an operator-pinned
+3D Cytosim CPU build with durable scoped receipts, cancellation, budgets and raw
+archives. The registered `spindle` action publishes complete saved trajectories and
+ensemble metrics into their owning experiment. New scientific hypotheses use new
+experiment identities; scene revisions do not rerun mechanics. The inline spindle
+observatory preserves source coordinates and physical samples, displays pole IDs
+and comparison, and replays recorded scene actions separately from human exploration.
+Immutable scene recipes, captures and actual image-bearing model observations use
+the runtime journal and its playback visibility boundary. This is provisional,
+uncalibrated mechanics; no p-values, biological sample counts or verification verdicts
+are generated. See [spindle operations](docs/spindle-simulator.md).
