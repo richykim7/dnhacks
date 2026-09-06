@@ -19,6 +19,7 @@ import { Investigation } from "./components/Investigation";
 import { Library, LaunchInvestigation } from "./components/Library";
 import { Knowledge } from "./components/Knowledge";
 import { ResearchProcess } from "./components/ResearchProcess";
+import { Brand } from "./components/Brand";
 import { Button } from "./components/ui/button";
 import { ErrorNotice } from "./components/common";
 type View = "investigations" | "library" | "knowledge";
@@ -135,24 +136,9 @@ function Workspace() {
         <a
           className="brand"
           href="#investigations"
-          aria-label="DN Research workspace"
+          aria-label="Latent Nature workspace"
         >
-          <svg
-            width="29"
-            height="31"
-            viewBox="0 0 29 31"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M5 4v23M5 6h8c12 0 12 19 0 19H5M12 9v13M18 9v13"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            />
-          </svg>
-          <span>
-            DN<span className="brand-sub">Research</span>
-          </span>
+          <Brand />
         </a>
         <div className="header-divider" />
         <div className="project-picker">

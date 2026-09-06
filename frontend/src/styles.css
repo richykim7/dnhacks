@@ -317,21 +317,24 @@ select:focus-visible {
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: var(--accent);
+  flex-shrink: 0;
 }
-.brand > span {
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: -0.7px;
-  color: var(--fg);
+.brand-lockup {
+  display: block;
+  width: 124px;
+  height: 49px;
 }
-.brand-sub {
-  font-size: 13px;
-  margin-left: 9px;
-  font-weight: 400;
-  color: var(--muted);
-  letter-spacing: 0;
+.brand-emblem {
+  color: #91af9f;
+}
+.brand-wordmark {
+  color: #bac6bc;
+}
+:root[data-theme="light"] .brand-emblem {
+  color: #476f58;
+}
+:root[data-theme="light"] .brand-wordmark {
+  color: #3b5145;
 }
 .header-divider {
   width: 1px;
@@ -1758,15 +1761,21 @@ select:focus-visible {
     padding: 0 13px;
     gap: 12px;
   }
-  .brand-sub,
   .header-divider {
     display: none;
   }
-  .brand > span {
-    font-size: 18px;
+  .brand {
+    width: 34px;
+    height: 36px;
+    overflow: hidden;
   }
-  .brand svg {
-    width: 22px;
+  .brand-lockup {
+    width: 88px;
+    height: 35px;
+    flex-shrink: 0;
+  }
+  .brand-wordmark {
+    display: none;
   }
   .project-picker {
     max-width: 190px;

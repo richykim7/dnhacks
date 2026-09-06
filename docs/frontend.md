@@ -2,6 +2,10 @@
 
 The frontend is a new React + TypeScript application in `frontend/`, built with Vite, Tailwind v4, local shadcn-style components, Radix, Motion, React Flow (Dagre for the investigation tree, d3-force for the knowledge graph), and 3Dmol.js. It uses the existing Python JSON and SSE APIs. The old DOM-rendering JavaScript is retired.
 
+The header uses the Latent Nature emblem and a compact, outlined wordmark. Muted sage and
+gray-green colors adapt to dark and light themes; narrow screens show the emblem with
+the full brand name retained in the accessible home-link label.
+
 ## Run
 
 Use Node 22.12+ and the repository's Python environment.
