@@ -280,6 +280,7 @@ export function Investigation({
       }))
     : events.data?.events || [];
   const max = allEvents.length;
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
   useEffect(() => {
     if (!playing) return;
     const timer = setInterval(
@@ -289,10 +290,10 @@ export function Investigation({
           if (next >= max) setPlaying(false);
           return next;
         }),
-      500,
+      500 / playbackSpeed,
     );
     return () => clearInterval(timer);
-  }, [playing, max]);
+  }, [playing, max, playbackSpeed]);
   const historic = cursor !== null;
   const visibleEvents = historic ? allEvents.slice(0, cursor) : allEvents;
   const runtimeState = useMemo(
@@ -589,7 +590,8 @@ export function Investigation({
                 </strong>
                 <span>{date(t.updated_at)}</span>
                 <span className="run-row-foot">
-                  {t.n_runs} researchers <ChevronRight size={13} />
+                  {historic && t.root === root ? visibleRuns.length : t.n_runs}{" "}
+                  researchers <ChevronRight size={13} />
                 </span>
               </button>
             ))}
@@ -695,6 +697,10 @@ export function Investigation({
               />
               <div className="toolbar-note">
                 {visibleRuns.length} researchers<span>·</span>
+                {visibleRuns.length
+                  ? Math.max(...visibleRuns.map((run) => run.depth)) + 1
+                  : 0}{" "}
+                generations<span>·</span>
                 {investigation.runtime
                   ? Object.values(runtimeState.runs).reduce(
                       (sum, r) => sum + Object.keys(r.experiments).length,
@@ -1001,6 +1007,7 @@ export function Investigation({
                               run={runtimeState.runs[selected]}
                               project={project}
                               cursor={historic ? runtimeState.sequence : null}
+                              replayTime={visibleEvents.at(-1)?.t}
                               connection={runtime.connection}
                               onClose={closeResearcher}
                             />
@@ -1047,6 +1054,17 @@ export function Investigation({
                 {playing ? <Pause size={15} /> : <Play size={15} />}
               </Button>
               <span>{historic ? "Playback" : "Latest"}</span>
+              <select
+                aria-label="Playback speed"
+                value={playbackSpeed}
+                onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
+              >
+                {[0.5, 1, 2, 4, 8, 16].map((speed) => (
+                  <option key={speed} value={speed}>
+                    {speed}×
+                  </option>
+                ))}
+              </select>
               <input
                 type="range"
                 aria-label="Activity playback position"

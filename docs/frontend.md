@@ -262,7 +262,9 @@ prevents an older failed addition retry from resurrecting a removed paper.
 Automated candidate emissions are deduplicated by recorded experiment/submission and retry identities.
 Candidate badges never mean human acceptance. Fresh heartbeats permit restrained activity animation;
 stale workers, idle researchers and historical playback do not animate progress. Replay derives counts,
-experiments, human decisions and artifact access from the same event cursor.
+experiments, human decisions and artifact access from the same event cursor. Playback supports
+pause/resume, scrubbing, 0.5–16× event speed and return to Latest state. Active historical
+researchers accumulate elapsed time through the cursor; terminal researchers retain their end time.
 
 `GET /api/review/candidate?run=<run>&experiment=<experiment>&project=<project>` resolves the exact
 runtime provenance association to the collection's candidate test. It exposes the submitted claim,

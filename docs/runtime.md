@@ -110,6 +110,27 @@ length, creation/availability, status and provenance. Types are allowlisted; no 
 HTML, script, absolute path or remote URL is rendered. The engine does not invent structure predictions.
 No renderable artifact means no viewer. Colours are decorative unless backed by separately recorded data.
 
+An explicitly recorded `illustrative_scene` artifact can select a local cinematic illustration in the
+expanded researcher's left scene pane. Its immutable JSON blob uses `schema: "illustrative_scene.v1"`,
+`scene` (`binder`, `tissue`, or `spindle`), nonempty `title` and `purpose`, and
+`provenance: {"category": "illustrative", "description": "..."}`. This is read-only presentation support,
+not a scientific trajectory or an additional experiment collector format. The frontend fetches the
+descriptor through the normal run/cursor-scoped blob route and rejects unknown scenes or missing
+illustrative provenance. Availability follows the recorded artifact event; nodes without a visual
+artifact remain full-width. A persistent label distinguishes the animation from measured output.
+Its local 18-second play/pause/reset/scrub controls are independent of investigation playback, and
+reduced motion holds a static pose. No arbitrary HTML, remote asset URLs or executable code is accepted.
+Experiment details render optional `summary`, `plan` and `result.summary` strings as readable text
+alongside the existing result disclosure, preserving the event projection's historical visibility.
+
+Operator-installed project records may declare `presentation_only: true`. These namespaces use their
+own regular `projects/<id>/kg.duckdb` and normal runtime run identities. The API blocks project changes,
+uploads, corpus builds and researcher launches. Individual and bulk candidate decisions update only
+their private review rows and durable runtime review outbox; they never open the master graph, promote
+claims, or send feedback into exploration. A failed runtime publication retains the pending decision
+for an idempotent retry. The review database must be inside its own project directory and may not be
+a symlink or hard link. This operator-only flag cannot be enabled or cleared by a browser project patch.
+
 The 3Dmol public API provides high-quality cartoons, ambient occlusion, orthographic framing, ligands,
 atomic/surface modes, chain/residue selection, reduced-motion-aware optional rotation and camera reset.
 Camera and selection are cached for recently inspected artifacts. There is no dependency fork or

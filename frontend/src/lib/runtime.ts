@@ -191,8 +191,20 @@ export function runtimeRunSummary(
   const started = [...history]
     .reverse()
     .find((e) => e.kind === "attempt.started")?.recorded_at;
-  const until =
-    historic || !running ? (run?.updated_at ?? started) : nowSeconds;
+  const ended = [
+    "completed",
+    "failed",
+    "cancelled",
+    "budget_exhausted",
+    "pruned",
+  ].includes(lifecycle)
+    ? [...history]
+        .reverse()
+        .find(
+          (e) => e.kind === "lifecycle" && e.payload.lifecycle === lifecycle,
+        )?.recorded_at
+    : undefined;
+  const until = !running ? (ended ?? run?.updated_at ?? started) : nowSeconds;
   return {
     experimentCount: experiments.length,
     candidateCount: candidates.length,
@@ -277,7 +289,8 @@ export function runtimeMilestones(run?: JsonRecord): RuntimeMilestone[] {
       summary = concise(p.reason) || title;
     }
     if (!summary || result.at(-1)?.summary === summary) continue;
-    if (title === "Research intent" && result.at(-1)?.title === title) result.pop();
+    if (title === "Research intent" && result.at(-1)?.title === title)
+      result.pop();
     result.push({
       sequence: e.sequence,
       recordedAt: e.recorded_at,

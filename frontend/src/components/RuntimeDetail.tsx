@@ -17,6 +17,7 @@ import NodeScene, { type SceneChoice } from "./NodeScene";
 const SpindleMetrics = lazy(() => import("./spindle/SpindleMetrics"));
 const SpindleObservatory = lazy(() => import("./spindle/SpindleObservatory"));
 const TissueWorkbench = lazy(() => import("./tissue/TissueWorkbench"));
+const IllustrativeScene = lazy(() => import("./IllustrativeScene"));
 
 function RecordedDisclosure({
   title,
@@ -123,6 +124,7 @@ export function RuntimeDetail({
   project,
   cursor,
   connection,
+  replayTime,
   onClose,
 }: {
   experimentId?: string | null;
@@ -131,6 +133,7 @@ export function RuntimeDetail({
   project: string;
   cursor: number | null;
   connection: string;
+  replayTime?: number;
   onClose: () => void;
 }) {
   const [terminal, setTerminal] = useState(false);
@@ -152,7 +155,11 @@ export function RuntimeDetail({
     return () => clearInterval(t);
   }, []);
   const historic = cursor !== null;
-  const summary = runtimeRunSummary(run, now / 1000, historic);
+  const summary = runtimeRunSummary(
+    run,
+    historic ? (replayTime ?? run?.updated_at ?? 0) : now / 1000,
+    historic,
+  );
   const milestones = runtimeMilestones(run);
   const events: RuntimeEvent[] = run?.history || [];
   const exps = (
@@ -178,6 +185,7 @@ export function RuntimeDetail({
             "molecular_structure",
             "filament_trajectory",
             "tissue_simulation",
+            "illustrative_scene",
           ].includes(artifact.kind),
       )
       .map((artifact: JsonRecord) => ({
@@ -239,7 +247,17 @@ export function RuntimeDetail({
                 data-scene-experiment-id={activeScene.experiment.experiment_id}
               >
                 <Suspense fallback={<Loading label="Opening recorded scene" />}>
-                  {activeScene.artifact.kind === "tissue_simulation" ? (
+                  {activeScene.artifact.kind === "illustrative_scene" ? (
+                    <IllustrativeScene
+                      key={activeScene.key}
+                      url={runtimeUrl(
+                        runId,
+                        `blob/${activeScene.artifact.storage_key}`,
+                        project,
+                        cursor,
+                      )}
+                    />
+                  ) : activeScene.artifact.kind === "tissue_simulation" ? (
                     <TissueWorkbench
                       embedded
                       key={activeScene.key}
@@ -336,7 +354,7 @@ export function RuntimeDetail({
               <small>
                 {historic
                   ? "Recorded at playback cursor"
-                  : `${connection} · ${summary.status === "stale" ? "Worker heartbeat stale or unavailable" : "Live research state"}`}
+                  : `${connection} · ${summary.status === "stale" ? "Worker heartbeat stale or unavailable" : summary.status === "running" || summary.status === "idle" || summary.status === "stale" ? "Latest research state" : "Recorded research state"}`}
               </small>
             </div>
           }
@@ -380,6 +398,8 @@ export function RuntimeDetail({
                   tone={exp.status === "failed" ? "negative" : "neutral"}
                 />
                 <h3>{exp.title || exp.method || "Experiment"}</h3>
+                {typeof exp.summary === "string" && <p>{exp.summary}</p>}
+                {typeof exp.plan === "string" && <p>{exp.plan}</p>}
                 {exp.error && <p className="notice">{exp.error}</p>}
                 <p className="muted">
                   {exp.method || "Exploratory analysis"}
@@ -401,6 +421,9 @@ export function RuntimeDetail({
                       ) : null,
                     )}
                   </dl>
+                )}
+                {exp.result && typeof exp.result.summary === "string" && (
+                  <p>{exp.result.summary}</p>
                 )}
                 {exp.result && (
                   <Disclosure title="Recorded result">
@@ -547,6 +570,7 @@ export function RuntimeDetail({
                       "binder_bundle",
                       "filament_trajectory",
                       "tissue_simulation",
+                      "illustrative_scene",
                     ].includes(artifact.kind) ? (
                       <>
                         <h4>{artifact.name}</h4>

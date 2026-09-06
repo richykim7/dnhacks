@@ -163,11 +163,21 @@ describe("research projection", () => {
       status: "stale",
       freshActivity: false,
     });
-    expect(runtimeRunSummary(state.runs.root, 1000, true)).toMatchObject({
+    expect(runtimeRunSummary(state.runs.root, 10, true)).toMatchObject({
       status: "running",
       freshActivity: false,
-      elapsedSeconds: 2,
+      elapsedSeconds: 9,
     });
+    const ended = reduceRuntime(
+      state,
+      event(4, "lifecycle", { lifecycle: "completed" }),
+    );
+    expect(runtimeRunSummary(ended.runs.root, 10, true).elapsedSeconds).toBe(3);
+    const later = reduceRuntime(
+      ended,
+      event(5, "experiment.reviewed", { verification: "CANDIDATE" }),
+    );
+    expect(runtimeRunSummary(later.runs.root, 10, true).elapsedSeconds).toBe(3);
     const idle = reduceRuntime(state, event(4, "tool.ended"));
     expect(runtimeRunSummary(idle.runs.root, 10)).toMatchObject({
       status: "idle",
