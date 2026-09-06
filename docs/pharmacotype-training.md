@@ -7,7 +7,59 @@ in [training results](pharmacotype-training.json); exact public source hashes,
 licenses, panel and aggregate exclusions are in [source audit](pharmacotype-sources.json).
 Matrices, crosswalks and model artifacts remain in ignored local data directories.
 
+## GPU-only follow-up
+
+The subsequent user requirement is GPU fitting whenever supported. The training
+script now defaults to Torch/CUDA and runs identity, PCA and MLP for all three
+seeds. `pharmacotype_torch.py` keeps fill/scaling, PCA/SVD, ridge solving and
+critic optimization on device. Neural checkpoints remain on device; no host
+outer-product critic matrix is constructed. Host work is input parsing and
+portable artifact serialization. Missing CUDA raises an error rather than
+silently switching to CPU. The original NumPy API remains for compatibility and
+small regression fixtures; it is not used for further production training.
+
+The [CUDA-only rerun](pharmacotype-cuda-training.json) completed all nine fits on
+the same frozen PRISM development input. Peak allocated memory was 31–51 MiB;
+peak reserved memory was 70 MiB. PCA validation RMSE remained 0.9936 and remains
+selected. This rerun does not retroactively change the original CPU provenance
+or the earlier training-only feature selection. CUDA tests explicitly reject
+NumPy SVD/solve invocation. The shared lease encloses each complete model fit.
+
 ## Data and frozen design
+
+### Real PDO AUC baseline
+
+The [Shi 2022 publication](https://www.nature.com/articles/s41467-022-29857-6)
+releases processed FPKM in GSE194249 and normalized drug AUC in GSE195623.
+Supplementary Data 1 identifies 38 paired PDAC organoids with one sample per
+patient. The source-ID hash split, fixed before loading response values, contains
+21 training, five validation and 12 test models. The five prespecified compounds
+are gemcitabine, fluorouracil, paclitaxel, oxaliplatin and irinotecan. Training-only
+log2(FPKM+1) variance selects 1,000 genes on CUDA. All nine representation,
+prediction-head and critic fits ran on CUDA under a single GPU lease.
+
+| Predictor | Validation AUC RMSE | Test AUC RMSE |
+| --- | ---: | ---: |
+| Training mean | 0.1562 | 0.1162 |
+| Identity + ridge | 0.2333 | 0.1211 |
+| PCA + ridge | 0.2053 | 0.1187 |
+| Masked MLP + ridge, three-seed mean | 0.1892 | 0.1162 |
+
+Retain the training mean: no learned model improves validation error. Five
+validation donors cannot support a strong generalization claim. Peak reserved
+CUDA memory was 64 MiB. The [source audit](pharmacotype-pdo-audit.json) and
+[all trial results](pharmacotype-pdo-auc.json) preserve provenance and negative
+results. Normalized AUC discards dose shape and may include cohort-derived
+normalization; this benchmark does not establish the full-curve endpoint or
+independent confirmation. Its distinct AUC artifact schema cannot pass as a
+curve model. Published donor metadata is not independent identity revalidation.
+
+Reproduce the source audit with `scripts/build_pharmacotype_pdo.py --raw
+data/raw/pharmacotype/shi2022 --output data/interim/pharmacotype/shi2022`, then run
+`scripts/train_pharmacotype_pdo_auc.py --data data/interim/pharmacotype/shi2022`
+on the GPU host. Exact source URLs and SHA256 hashes are in the audit.
+
+### PRISM/CCLE development
 
 Acquired the secondary dose-response release from [PRISM 19Q4](https://api.figshare.com/v2/articles/9393293),
 expression from [DepMap 19Q4](https://api.figshare.com/v2/articles/11384241), and
@@ -90,8 +142,14 @@ hashes refer to those actual runs. Timings and hashes will vary on reproduction.
 ## PDO access and scientific release
 
 The Tiriac primary molecular record is [dbGaP phs001611.v1.p1](https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=phs001611.v1.p1).
-It requires authorized access and a data-use certification, and includes normal
-and tumor material. Its 71 consented subjects are not a usable endpoint count.
+Raw sequencing requires authorized access and a data-use certification, and
+includes normal and tumor material. Its 71 consented subjects are not a usable
+endpoint count. **Correction:** processed expression is publicly available in
+[GDC ORGANOID-PANCREATIC](https://portal.gdc.cancer.gov/projects/ORGANOID-PANCREATIC)
+and the [AWS open-data record](https://github.com/awslabs/open-data-registry/blob/main/datasets/organoid-pancreatic.yaml).
+The GDC API identifies 55 open STAR-count files. Sample-to-organoid joins are
+still being audited. The earlier inference that all usable molecular data
+required controlled access was too broad.
 The [author-hosted publication](https://escholarship.org/content/qt50b3r2ms/qt50b3r2ms_noSplash_b6e236520590c29f129b0938c8cf7cf9.pdf)
 is accessible; publication availability does not provide paired raw curves and RNA.
 A public [reanalysis notebook](https://github.com/Urogenus/GDSC_Pancreatic_study/blob/main/pancreatic_RNAseq_prediction.ipynb)
@@ -103,8 +161,12 @@ paired measurements. External notebook code and pickle files were not executed.
 requires DAC approval and lists noncommercial use restrictions. Its 31 sequencing
 samples do not establish independent PDAC donors with complete curves. Reserved
 confirmation outcomes remain unopened. No access application was submitted on
-behalf of an institution. An authorized paired PDO dataset is still required
-for the first scientific endpoint; this cell-line pilot cannot substitute for it.
+behalf of an institution. Public processed PDO sources are now being acquired
+and audited directly. Shi 2022 supplies open RNA (GSE194249) and paired drug AUC
+(GSE195623); its AUC table does not contain full curves. Tiriac supplementary
+Table S4 is also AUC. Yin 2025 supplies dose-level CFTR-drug measurements; its
+cross-study RNA join and dose-label consistency require audit before use.
+These are development candidates; the cell-line pilot cannot substitute for PDOs.
 
 Adaptive diagnostics use 10,000 streams per case at a synthetic 32-donor budget.
 Anytime rejection: IID null 0.01%, heavy-tail null 0.10%, simple alternative
