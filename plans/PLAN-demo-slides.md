@@ -1,10 +1,17 @@
 # Demo slides
 
-Status: **working deck created, scientific demo replacement pending**. The editable
-[PowerPoint and layout kit](../presentation/README.md) implement this framing with an 11-slide
-core pitch, six Q&A slides and per-slide scripts in Notes. The current demo capture is explicitly
-synthetic interface data; replace it with the selected real investigation before presenting a result.
-This file preserves the team's framing and original candidate outline.
+Status: **revised editable deck; scientific reveal still pending**. The
+[PowerPoint, judge-pitch PDF, reviewer copy and layout kit](../presentation/README.md)
+now lead with strategic biological anticipation, show real 3D software artifacts and measured
+training/evaluation results, and address the full rubric. Slides 10–13 preserve the exact complete-loop,
+survivors, paper-fade and frozen-corpus-next-slide sequence as hidden, explicitly unpopulated
+storyboards. Enable only after selecting and verifying a qualifying run and excluded matching paper.
+Every slide has a tentative script in Notes; technical appendices distinguish measured training
+histories from final held-out comparisons and untrained components.
+
+The ordinary falsifier screens reported result fields and flags; it does not independently certify
+that arbitrary numerical outputs are sound. Human review records a decision, not biological truth.
+This is the precise implementation boundary for the earlier framing shorthand below.
 
 ## Framing note (Rich, 2026-09-06)
 
