@@ -110,9 +110,8 @@ export default function SpindleObservatory({
         setReadyRevision(-1);
         setMode("explore");
         setRecipe((r) => ({ ...r, ...view, revision: r.revision + 1 }));
-        await new Promise((r) =>
-          requestAnimationFrame(() => requestAnimationFrame(r)),
-        );
+        // ready() owns completion; do not add two unconditional display intervals.
+        await Promise.resolve();
       },
       ready: async () => {
         const deadline = performance.now() + 30000;

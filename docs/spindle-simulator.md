@@ -218,3 +218,8 @@ and force vectors in pN; the viewer shows the saved anchors and a measurement
 table. Every anchor is checked against its prescribed surface position at every
 frame. [Motor-field validation and the earlier placement erratum](spindle-motors.md)
 explain why original origin-anchored runs are unsuitable for localization comparisons.
+
+The runtime can now export bounded, scoped WebM movies from exact saved frames;
+see [movie delivery and measured rendering](spindle-movie.md). GPU draw time is
+reported separately from full frame-update, screenshot and encoding costs. The
+reference interactive frame-rate target is not yet certified.

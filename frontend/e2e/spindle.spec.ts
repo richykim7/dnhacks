@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { test, expect, type Page } from "@playwright/test";
 import { mockApi, investigation } from "./fixtures";
 import type { SpindleBundle, Vec3 } from "../src/components/spindle/types";
@@ -78,9 +79,10 @@ function fixture(): SpindleBundle {
     })),
   };
 }
-async function openSpindle(page: Page) {
+async function openSpindle(page: Page, withMovie = false) {
   await mockApi(page);
   const root = investigation.root;
+  const movieBytes = withMovie ? readFileSync(new URL("../../docs/spindle-review/movie.webm", import.meta.url)) : null;
   const rawBundle = JSON.stringify(fixture());
   const sha = createHash("sha256").update(rawBundle).digest("hex");
   const raw = [
@@ -109,6 +111,7 @@ async function openSpindle(page: Page) {
       },
     ],
   ];
+  if (movieBytes) raw.push(["artifact", { artifact_id:"movie",sha256:createHash("sha256").update(movieBytes).digest("hex"),name:"Native movie playback fixture",kind:"scene_movie",status:"available",storage_key:"movie",provenance:{category:"illustration"} }]);
   const events = raw.map(([kind, payload], i) => ({
     schema_version: 1,
     sequence: i + 1,
@@ -126,6 +129,7 @@ async function openSpindle(page: Page) {
   );
   await page.route("**/api/runtime/**", (r) => {
     const u = new URL(r.request().url());
+    if (movieBytes && u.pathname.endsWith("/blob/movie")) return r.fulfill({ body:movieBytes,contentType:"video/webm" });
     if (u.pathname.includes("/blob/"))
       return r.fulfill({ body: rawBundle, contentType: "application/json" });
     if (u.pathname.endsWith("/events"))
@@ -238,4 +242,20 @@ test("spindle controller freezes comparison cameras and restores context", async
   await page.getByRole("button", { name: "Restore spindle scene" }).click();
   await expect(scene).toHaveAttribute("data-scene-ready", "true");
   await expect(page.locator(".spindle-readout")).toContainText("C1");
+});
+
+
+test("saved spindle movie decodes inline and respects the history cursor", async ({page}) => {
+  await openSpindle(page, true);
+  await page.getByRole("button", {name:"Close expanded view"}).click();
+  const movie = page.getByLabel("Saved spindle trajectory movie");
+  await movie.scrollIntoViewIfNeeded();
+  await expect(movie).toBeVisible();
+  await page.waitForFunction(() => (document.querySelector('video[aria-label="Saved spindle trajectory movie"]') as HTMLVideoElement)?.readyState >= 1);
+  expect(await movie.evaluate((v:HTMLVideoElement) => v.duration)).toBeCloseTo(1.1,1);
+  await movie.evaluate((v:HTMLVideoElement) => v.play());
+  await page.waitForFunction(() => (document.querySelector('video[aria-label="Saved spindle trajectory movie"]') as HTMLVideoElement)?.currentTime > .5);
+  await movie.evaluate((v:HTMLVideoElement) => v.pause());
+  await page.getByLabel("Activity playback position").fill("4");
+  await expect(movie).toHaveCount(0);
 });
