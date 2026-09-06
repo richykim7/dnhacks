@@ -30,6 +30,7 @@ from dnhacksbio.explorer import embed as EMB
 from dnhacksbio.explorer import lineage as LIN
 from dnhacksbio.explorer import skills as SK
 from dnhacksbio.explorer.runtime import Journal, process_identity, safe_id
+from dnhacksbio.explorer.budget import BudgetUnavailable
 from dnhacksbio.explorer.control import ControlStore, REPORT_PROMPT, validate_report, validate_decision
 from dnhacksbio.explorer.exploration import ExplorationLog
 from dnhacksbio.explorer.fulltext import FullTextStore
@@ -250,7 +251,7 @@ class Explorer:
                  resume_sid: str | None = None, branch_brief: str | None = None, fork_fn=None,
                  fork_enabled: bool = True, judge_fn=None, trace_dir: str | None = None,
                  project_id: str | None = None, branch_objective: str | None = None,
-                 allocation_fn=None):
+                 allocation_fn=None, subtree_budget=None):
         self.run_id = safe_id(run_id)
         self.goal = goal
         self.model = model
@@ -329,6 +330,12 @@ class Explorer:
         self._has_forked = False       # a node splits once; the tree grows through survivors
         self.journal = share_from.journal if share_from else Journal(td)
         self.control = share_from.control if share_from else ControlStore(td)
+        if share_from is None:
+            existing_budget = self.control.budgets(self.run_id)
+            if subtree_budget is not None or not any(b["run_id"] == self.run_id for b in existing_budget):
+                self.control.freeze_budget(self.run_id, subtree_budget)
+        elif subtree_budget is not None:
+            self.control.freeze_budget(self.run_id, subtree_budget)
         self._allocation_fn = allocation_fn if allocation_fn is not None else (share_from._allocation_fn if share_from else None)
         self._report_reason = "allowance_exhausted"
         self.vq.runtime_journal = self.journal
@@ -1213,9 +1220,9 @@ class Explorer:
                 try:
                     prompt = REPORT_PROMPT + "\nObjective: " + self.manifest["branch_objective"] + "\nTrigger: " + self._report_reason + "\n" + error
                     self._event("model.started", {"phase": "report", "label": "Writing mandatory report"})
-                    raw = await asyncio.wait_for(
+                    raw = await self._funded("report", lambda: asyncio.wait_for(
                         self._inject_complete(prompt) if self._inject_complete else report_session.ask(prompt, capture=cap),
-                        timeout=min(90, self.model_timeout_s))
+                        timeout=min(90, self.model_timeout_s)))
                     report = validate_report(json.loads(raw))
                     if report_session and report_session.truncated:
                         raise ValueError("Report output limit reached")
@@ -1263,11 +1270,28 @@ class Explorer:
             size += length
         return {"records": items, "shown": len(items), "total": len(rows), "truncated": len(items) < len(rows)}
 
+    async def _funded(self, phase, call):
+        op = self.control.reserve_operation(self.run_id, phase)
+        started, interrupted = time.monotonic(), False
+        try:
+            return await asyncio.wait_for(call(), timeout=op["seconds"]) if op else await call()
+        except (asyncio.CancelledError, TimeoutError):
+            interrupted = True
+            raise
+        finally:
+            saved = self.control.settle_operation(op, time.monotonic() - started, interrupted)
+            if saved:
+                self._event("budget.operation", saved)
+
     async def _parent_decision(self, child):
+        return await child._funded("judge", lambda: self._parent_decision_inner(child))
+
+    async def _parent_decision_inner(self, child):
         state = self.control.get(child.run_id)
         context = {"objective": child.manifest["branch_objective"], "report": state["report"],
                    "report_version": state["version"], "current_round_objective": state.get("objective"),
                    "supporting_records": child._allocation_records(),
+                   "subtree_budgets": child.control.budgets(child.run_id),
                    "actions_used": state["total_actions"], "rounds": state["rounds"],
                    "max_branch_actions": BRANCH_TOTAL_STEPS, "max_rounds": MAX_CONTINUATIONS,
                    "depth": LIN.depth(child.run_id), "max_depth": MAX_DEPTH}
@@ -1304,6 +1328,11 @@ class Explorer:
                 return
             if state["status"] != "awaiting_parent":
                 return
+            if not self.control.research_available(child.run_id):
+                self.control.patch(child.run_id, status="completed", terminal_reason="budget_endpoint")
+                child._event("lifecycle", {"lifecycle": "completed", "reason": "Fixed shared budget reached after mandatory report"})
+                self.control.finalize_budgets(child.run_id)
+                return
             try:
                 decision = await self._parent_decision(child)
                 record = self.control.decide(child.run_id, state["version"], decision)
@@ -1339,7 +1368,9 @@ class Explorer:
                     if fork_fn is None:
                         from claude_agent_sdk import fork_session
                         fork_fn = lambda parent_sid: fork_session(parent_sid, directory=os.getcwd())
-                    sid = getattr(fork_fn(self.session_id or self._resume_sid), "session_id", None)
+                    async def launch():
+                        return fork_fn(self.session_id or self._resume_sid)
+                    sid = getattr(await self._funded("fork", launch), "session_id", None)
                     if self._inject_complete is None and not sid:
                         raise RuntimeError("No fork session")
                     self.control.launch_state(record["decision_id"], rid, "launched", sid)
@@ -1494,9 +1525,17 @@ class Explorer:
                 for _ in range(max(0, state["allowance"] - state["used"])):
                     if heartbeat.done():
                         heartbeat.result()
+                    if not self.control.research_available(self.run_id):
+                        self._report_reason = "subtree_budget_exhausted"
+                        self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
+                        break
                     started = time.monotonic()
                     try:
-                        action, obs = await self.step(message)
+                        action, obs = await self._funded("research", lambda: self.step(message))
+                    except BudgetUnavailable:
+                        self._report_reason = "subtree_budget_exhausted"
+                        self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
+                        break
                     finally:
                         self.control.cost(self.run_id, "research", time.monotonic() - started)
                     if self._session and self._session.session_id:
@@ -1530,8 +1569,11 @@ class Explorer:
 
     async def run_investigation(self, max_steps: int = 18):
         """Root uses the same allocation controller as every child."""
-        await self.run(max_steps)
-        await self._allocate(self)
+        try:
+            await self.run(max_steps)
+            await self._allocate(self)
+        finally:
+            self.control.finalize_budgets(self.run_id)
         return self._run_summary()
 
     def _persist_session(self, sid: str) -> None:

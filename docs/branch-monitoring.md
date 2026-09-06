@@ -51,14 +51,31 @@ A minimal enrollment file has this shape (values shown are examples, not a valid
 }
 ```
 
-The example's 80-action horizon is not a recommended success deadline. The development pilot must
-select the horizon and cost conversion, then freeze them before calibration. The collector supports
-`research_actions` and `accounted_seconds`, measured cumulatively across the enrolled subtree's
-recorded work. Research actions remain a coarse proxy. Accounted seconds sum branch research/report/judge
-durations at recorded checkpoints; they are not instantaneous CPU time or a hard pre-reserved compute
-cap. The collector rejects observations beyond the declared endpoint; it does not yet enforce a total
-subtree compute allowance. A real evaluation runner must enforce the declared horizon and count all
-continuation, tool, report and verifier overhead before its labels can qualify for deployment.
+The example's 80-action horizon is not a recommended success deadline. The runtime now enforces
+prospective subtree contracts in `explorer/budget.py`, in the same SQLite transactions as parent grants.
+Pass `--budget-spec contract.json` to the explorer CLI; Python callers use `subtree_budget`.
+The default engineering contract is 3600 summed operation seconds and 288 research actions, with
+600-second research operations, 90-second report/judge calls and 10-second fork launches. These are
+operational defaults, not empirically selected scientific horizons. Restart loads the original contract;
+a changed contract or retrospective enrollment is rejected. Nested explicit budgets charge every ancestor.
+
+Before research, the controller reserves up to three mandatory report attempts. A fork reserves each
+child's action and report grants atomically, with a share of remaining research time. Unused grants return
+at a valid checkpoint or a failed launch. Research, report, judge and launch operations reserve time
+before dispatch, then settle measured duration. Concurrent descendants cannot overdraw the shared ledger;
+new IDs and continuations do not reset it. A spent research allowance forces a real report before ending
+allocation. Report/parent failures remain operational states, not negative scientific labels.
+
+Seconds are summed operation wall time, including waiting inside an operation, not GPU/CPU-seconds or
+money. Async deadlines request cancellation; a backend that overruns or cannot confirm cancellation is
+recorded as a budget violation, charged conservatively and blocked from further dispatch. Unsettled
+operations survive a crash without an automatic refund or retry. This is not process isolation or a
+hard operating-system compute quota. Session setup and external verification overhead require separate
+accounting; the private assessor has its own frozen adjudication allowance.
+
+The collector supports `research_actions` and `accounted_seconds`. Legacy checkpoint counters remain
+available, but an operator must bind outcome collection to the runtime's actual frozen contract before
+using labels for training. Pilot horizon selection, real rollouts and calibration remain deferred.
 
 Run these commands only under the operator account after corpus readiness and frozen enrollment:
 

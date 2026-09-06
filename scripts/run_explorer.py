@@ -42,7 +42,7 @@ def _resolve_card(card_arg: str | None, db: str | None) -> str | None:
 
 async def _run(goal: str, steps: int, interval: float, run_id: str, db: str | None,
                freeze_year: int | None = None, corpus_card: str | None = None, network: str = "none",
-               resume: bool = False) -> dict:
+               resume: bool = False, subtree_budget=None) -> dict:
     sid = load_session_id("data/processed", run_id) if resume else None
     if resume:
         if sid is None:
@@ -51,7 +51,7 @@ async def _run(goal: str, steps: int, interval: float, run_id: str, db: str | No
                              f"still inherits its findings via the exploration log.")
         print(f"resuming {run_id} on session {sid}")
     ex = Explorer(run_id, goal, db_path=db, freeze_year=freeze_year, corpus_card=corpus_card, network=network,
-                  resume_sid=sid)
+                  resume_sid=sid, subtree_budget=subtree_budget)
     stop = asyncio.Event()
 
     async def worker():
@@ -87,6 +87,7 @@ async def main() -> dict:
     ap.add_argument("--goal", default=None, help="the run's goal; if omitted, taken from the corpus card, "
                     "else a generic fallback")
     ap.add_argument("--steps", type=int, default=30)
+    ap.add_argument("--budget-spec", help="JSON frozen subtree contract; all descendants share it. Resume must match.")
     ap.add_argument("--interval", type=float, default=5.0, help="seconds between verification-worker drains")
     ap.add_argument("--run-id", default="explorer")
     ap.add_argument("--db", default=None,
@@ -131,7 +132,7 @@ async def main() -> dict:
 
     summary = await _run(goal, args.steps, args.interval, args.run_id, args.db,
                          freeze_year=args.freeze_year, corpus_card=card_path, network=args.network,
-                         resume=args.resume)
+                         resume=args.resume, subtree_budget=__import__("json").loads(Path(args.budget_spec).read_text()) if args.budget_spec else None)
     usage = llm.LEDGER.summary()
     summary["usage"] = usage
     print(summary)

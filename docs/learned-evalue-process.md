@@ -461,3 +461,16 @@ Infrastructure milestone gates after integrating the other tools and extraction 
 Final controller review strengthened restart handling: continuation objectives are reloaded from durable state, concurrent SDK fork claims and same-child execution are serialized, and allocation receives bounded ordinary evidence records with explicit coverage rather than an experiment-count/dead-end proxy.
 
 Final integration gates against main 899651c: 309 Python tests passed with the same six optional dependency/hardware skips; frontend build, six unit tests and 19 browser tests passed. The operator CLI help command also passed.
+
+
+## Shared subtree budget engineering
+
+Implemented the next controller stage with deterministic fixtures before corpus readiness. A durable
+ledger now shares action and operation-time allowances across descendants and continuation rounds,
+reserves reporting before granting research, and grants all fork children transactionally. Restart
+cannot refresh a contract or refund ambiguous paid work. Concurrency, nested budgets, failed launches,
+zero-action reporting and exhaustion across rounds have focused regression coverage.
+
+The time measure is summed operation wall time, not GPU compute or money; interrupted/overrunning
+backends are marked as operational violations, not valid completed negative examples. No actual
+trajectory collection, model scoring, training or GPU run was performed for this stage.
