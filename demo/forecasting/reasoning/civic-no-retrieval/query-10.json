@@ -1,0 +1,177 @@
+{
+  "errors": [],
+  "origin": "model",
+  "prompt_sha256": "161f8d97780b1ec12f83609bf13dcf1a7802518c4ba557ee61b949f7e11c7552",
+  "query_id": "civic:variant:270",
+  "raw_text": "{\"forecasts\":[{\"candidate_id\":\"civic:candidate:112f4774aac29de48cc2\",\"score\":0.05},{\"candidate_id\":\"civic:candidate:1b7267cceaba15cd933b\",\"score\":0.05},{\"candidate_id\":\"civic:candidate:22ccbbec1c82ba93c4de\",\"score\":0.03},{\"candidate_id\":\"civic:candidate:30cfedff8efc398c7ba2\",\"score\":0.02},{\"candidate_id\":\"civic:candidate:325c47248d8ddd6203c4\",\"score\":0.02},{\"candidate_id\":\"civic:candidate:3595e13f76f9feeadc72\",\"score\":0.15},{\"candidate_id\":\"civic:candidate:3aee50e786bb249282b7\",\"score\":0.05},{\"candidate_id\":\"civic:candidate:5144a20c46e134fc56cd\",\"score\":0.03},{\"candidate_id\":\"civic:candidate:5929a378eafad50e1ede\",\"score\":0.03},{\"candidate_id\":\"civic:candidate:5e8e629e17b006fa55c1\",\"score\":0.15},{\"candidate_id\":\"civic:candidate:628fb1ee4e48f517986d\",\"score\":0.02},{\"candidate_id\":\"civic:candidate:672ced286fda33cc8d55\",\"score\":0.05},{\"candidate_id\":\"civic:candidate:6dad0825961fd880ba8e\",\"score\":0.35},{\"candidate_id\":\"civic:candidate:6f844077e77da6488680\",\"score\":0.05},{\"candidate_id\":\"civic:candidate:727f7a1d7dbda25364a3\",\"score\":0.1},{\"candidate_id\":\"civic:candidate:824be82f0999a88a4ba2\",\"score\":0.15},{\"candidate_id\":\"civic:candidate:90826c0c3aa279c3384c\",\"score\":0.02},{\"candidate_id\":\"civic:candidate:945e8871c43451304b12\",\"score\":0.02},{\"candidate_id\":\"civic:candidate:aaa78957b4d238d45961\",\"score\":0.01},{\"candidate_id\":\"civic:candidate:aeab7025ef1410255d1c\",\"score\":0.05},{\"candidate_id\":\"civic:candidate:b899e93a2b5e9777ea8d\",\"score\":0.03},{\"candidate_id\":\"civic:candidate:c1a082cfe2cfd6bfcd36\",\"score\":0.03},{\"candidate_id\":\"civic:candidate:c5da2304c661601fe868\",\"score\":0.02},{\"candidate_id\":\"civic:candidate:c79bb60158c72f6d8d3c\",\"score\":0.03},{\"candidate_id\":\"civic:candidate:ca59a7ef8566545c843f\",\"score\":0.03},{\"candidate_id\":\"civic:candidate:d2e1dfacdfb7a0cbef1d\",\"score\":0.02},{\"candidate_id\":\"civic:candidate:d5fa8e7200521c0e95d4\",\"score\":0.35},{\"candidate_id\":\"civic:candidate:d60b167d07c2f49aa9ea\",\"score\":0.02},{\"candidate_id\":\"civic:candidate:d74d9156c97ee3f4ac8e\",\"score\":0.25},{\"candidate_id\":\"civic:candidate:e11bc4fc6a9fcba3c367\",\"score\":0.03},{\"candidate_id\":\"civic:candidate:ed689a7ebfaf507b8492\",\"score\":0.02},{\"candidate_id\":\"civic:candidate:f2e17be8fc1c084156b0\",\"score\":0.02},{\"candidate_id\":\"civic:candidate:f780ff9774f012d68e71\",\"score\":0.03}]}",
+  "response": {
+    "forecasts": [
+      {
+        "candidate_id": "civic:candidate:112f4774aac29de48cc2",
+        "score": 0.05
+      },
+      {
+        "candidate_id": "civic:candidate:1b7267cceaba15cd933b",
+        "score": 0.05
+      },
+      {
+        "candidate_id": "civic:candidate:22ccbbec1c82ba93c4de",
+        "score": 0.03
+      },
+      {
+        "candidate_id": "civic:candidate:30cfedff8efc398c7ba2",
+        "score": 0.02
+      },
+      {
+        "candidate_id": "civic:candidate:325c47248d8ddd6203c4",
+        "score": 0.02
+      },
+      {
+        "candidate_id": "civic:candidate:3595e13f76f9feeadc72",
+        "score": 0.15
+      },
+      {
+        "candidate_id": "civic:candidate:3aee50e786bb249282b7",
+        "score": 0.05
+      },
+      {
+        "candidate_id": "civic:candidate:5144a20c46e134fc56cd",
+        "score": 0.03
+      },
+      {
+        "candidate_id": "civic:candidate:5929a378eafad50e1ede",
+        "score": 0.03
+      },
+      {
+        "candidate_id": "civic:candidate:5e8e629e17b006fa55c1",
+        "score": 0.15
+      },
+      {
+        "candidate_id": "civic:candidate:628fb1ee4e48f517986d",
+        "score": 0.02
+      },
+      {
+        "candidate_id": "civic:candidate:672ced286fda33cc8d55",
+        "score": 0.05
+      },
+      {
+        "candidate_id": "civic:candidate:6dad0825961fd880ba8e",
+        "score": 0.35
+      },
+      {
+        "candidate_id": "civic:candidate:6f844077e77da6488680",
+        "score": 0.05
+      },
+      {
+        "candidate_id": "civic:candidate:727f7a1d7dbda25364a3",
+        "score": 0.1
+      },
+      {
+        "candidate_id": "civic:candidate:824be82f0999a88a4ba2",
+        "score": 0.15
+      },
+      {
+        "candidate_id": "civic:candidate:90826c0c3aa279c3384c",
+        "score": 0.02
+      },
+      {
+        "candidate_id": "civic:candidate:945e8871c43451304b12",
+        "score": 0.02
+      },
+      {
+        "candidate_id": "civic:candidate:aaa78957b4d238d45961",
+        "score": 0.01
+      },
+      {
+        "candidate_id": "civic:candidate:aeab7025ef1410255d1c",
+        "score": 0.05
+      },
+      {
+        "candidate_id": "civic:candidate:b899e93a2b5e9777ea8d",
+        "score": 0.03
+      },
+      {
+        "candidate_id": "civic:candidate:c1a082cfe2cfd6bfcd36",
+        "score": 0.03
+      },
+      {
+        "candidate_id": "civic:candidate:c5da2304c661601fe868",
+        "score": 0.02
+      },
+      {
+        "candidate_id": "civic:candidate:c79bb60158c72f6d8d3c",
+        "score": 0.03
+      },
+      {
+        "candidate_id": "civic:candidate:ca59a7ef8566545c843f",
+        "score": 0.03
+      },
+      {
+        "candidate_id": "civic:candidate:d2e1dfacdfb7a0cbef1d",
+        "score": 0.02
+      },
+      {
+        "candidate_id": "civic:candidate:d5fa8e7200521c0e95d4",
+        "score": 0.35
+      },
+      {
+        "candidate_id": "civic:candidate:d60b167d07c2f49aa9ea",
+        "score": 0.02
+      },
+      {
+        "candidate_id": "civic:candidate:d74d9156c97ee3f4ac8e",
+        "score": 0.25
+      },
+      {
+        "candidate_id": "civic:candidate:e11bc4fc6a9fcba3c367",
+        "score": 0.03
+      },
+      {
+        "candidate_id": "civic:candidate:ed689a7ebfaf507b8492",
+        "score": 0.02
+      },
+      {
+        "candidate_id": "civic:candidate:f2e17be8fc1c084156b0",
+        "score": 0.02
+      },
+      {
+        "candidate_id": "civic:candidate:f780ff9774f012d68e71",
+        "score": 0.03
+      }
+    ]
+  },
+  "status": "complete",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 2049,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 2049,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "not_available",
+    "input_tokens": 2,
+    "iterations": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2049,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2049,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 2,
+        "output_tokens": 1216,
+        "type": "message"
+      }
+    ],
+    "output_tokens": 1216,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_fetch_requests": 0,
+      "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+  }
+}

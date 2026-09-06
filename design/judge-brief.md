@@ -164,8 +164,12 @@ Pre-registered, not yet met:
   small-sample problem in B1.
 - **B4, flat log versus static graph versus evolving graph** at equal tokens and retrieval budget.
   Answers "does the graph help" separately from "does more evidence help."
-- **B5, contamination control.** A no-retrieval LLM diagnostic on the same cohort; any LLM-scored result
-  is reported as "retrospective with historically restricted evidence" until this passes.
+- **B5, contamination control. Measured 2026-09-06, and it failed in the informative direction.** With zero
+  evidence, Claude Sonnet 5 scored AUROC 0.854 and AP 0.233 on all 683 candidates, above the structural
+  scorer's 0.819 with the whole 2018 graph. The model already knows the answers on this packet. Consequence:
+  no model-scored result on CIViC 2018→2022 may be presented as forecasting skill. The structural,
+  zero-model number is the only clean one, and any model forecast claim moves to a cohort whose outcomes
+  postdate the model's training data or to a prospective run. See `docs/forecasting-memory-control.md`.
 
 Kill criteria, said out loud: if B3 cannot beat popularity on Dyport, structure is not worth building
 on. If B4 shows the evolving graph never beats a flat log at equal budget, the graph is a visualization
