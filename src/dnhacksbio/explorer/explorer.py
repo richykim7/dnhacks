@@ -615,7 +615,7 @@ class Explorer:
         """After the opening message (which already shows the current feedback and corrections), mark them
         seen so the per-turn deltas only surface ones that arrive later."""
         scope = self._scope()
-        self._seen_fb = {e["entry_id"] for e in self.log.feedback_entries(scope, limit=6)}
+        self._seen_fb = {_feedback_version(e) for e in self.log.feedback_entries(scope, limit=6)}
         self._seen_corr = {c["entry_id"] for c in self.log.corrections(scope, limit=5)}
 
     def _tree_evidence_block(self, limit: int = 30) -> str:
@@ -661,9 +661,9 @@ class Explorer:
         parts = [f"OBSERVATION (result of your last action):\n{obs}"]
         if bl := self._budget_line():
             parts.append(bl)
-        new_fb = [e for e in self.log.feedback_entries(scope, limit=10) if e["entry_id"] not in self._seen_fb]
+        new_fb = [e for e in self.log.feedback_entries(scope, limit=10) if _feedback_version(e) not in self._seen_fb]
         if new_fb:
-            self._seen_fb.update(e["entry_id"] for e in new_fb)
+            self._seen_fb.update(_feedback_version(e) for e in new_fb)
             parts.append("NEW VERIFICATION FEEDBACK (act on these: needs-retry = fix the experiment and "
                          "rerun; reframe = the opposite may be true, test that; dead = abandon; validated = "
                          "build on it):\n"
@@ -1599,19 +1599,16 @@ def _finite(x) -> bool:
         return False
 
 
+def _feedback_version(entry: dict) -> tuple:
+    """A later verdict on the same entry must be delivered, even at the same timestamp."""
+    return (entry["entry_id"], str(entry.get("updated_at", "")), entry.get("status"), entry.get("body"))
+
+
 def _result_problem(d: dict) -> str | None:
     """Why this RESULT is not a usable audited statistic, or None if it is. Validate at the door: a value
     we cannot interpret is not a weak result, it is not a result."""
-    p = d.get("p_null")
-    if not _finite(p):
-        return f"p_null is not a finite number ({p!r})"
-    if not (0.0 <= float(p) <= 1.0):
-        return f"p_null={p!r} is not a probability in [0,1] (do not pack counts or flags into it)"
-    # `effect` is required and must be estimable; a design that cannot yield one belongs in `log` as a
-    # dead-end, not in the experiment log as a result.
-    if not _finite(d.get("effect")):
-        return f"effect is not an estimable finite number ({d.get('effect')!r})"
-    return None
+    from dnhacksbio.methods import result_problem
+    return result_problem(d)
 
 
 def _parse_result(stdout: str) -> dict | None:

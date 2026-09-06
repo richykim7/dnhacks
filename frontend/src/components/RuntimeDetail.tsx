@@ -311,16 +311,21 @@ export function RuntimeDetail({
                   <pre>{JSON.stringify(exp.result, null, 2)}</pre>
                 </Disclosure>
               )}
-              {exp.verification && (
+              {(exp.verification || exp.human_review) && (
                 <div className="notice">
                   <strong>
-                    {exp.verification === "CANDIDATE"
-                      ? "Passed verifier checks · awaiting human review"
-                      : exp.verification === "KILL"
-                        ? "Rejected by verifier"
-                        : "Verification pending"}
+                    {exp.human_review === "validated"
+                      ? "Accepted by human review"
+                      : exp.human_review === "rejected"
+                        ? "Rejected by human review"
+                        : exp.verification === "CANDIDATE"
+                          ? "Passed verifier checks · awaiting human review"
+                          : exp.verification === "KILL"
+                            ? "Rejected by verifier"
+                            : "Verification pending"}
                   </strong>
                   {exp.verification_reason && <p>{exp.verification_reason}</p>}
+                  {exp.human_review_note && <p>{exp.human_review_note}</p>}
                 </div>
               )}
               {exp.code && (

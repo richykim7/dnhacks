@@ -52,6 +52,19 @@ Verifier assessments are published from the durable verification queue with stab
 interrupted publication can recover on the next drain without duplicates. The node shows pending,
 rejected or passed-verifier checks separately from execution status; passing is not human confirmation.
 
+Human decisions remain supported by the backend, but review controls are hidden in the frontend.
+Applying a decision records a durable outbox row in the working database, linked to the exact experiment
+and attempt. Publication emits `experiment.human_reviewed` without private statistical scores. Repeating
+the same decision/note is idempotent; changing a decision produces a new historical event. A publication
+failure retains the saved decisions so applying again retries delivery. Legacy tests without an exact
+runtime association do not invent one. Playback shows a human decision only after its event cursor.
+Agent feedback deduplication tracks entry versions (timestamp, status and body), not just entry IDs, so
+a later decision on an already-seen experiment is delivered on the next turn.
+
+Parsed and queued results require finite numeric effect, p in (0,1], positive integer independent-unit
+count, a nonempty null description and an explicit boolean robustness check. Invalid queued results
+receive a retryable `malformed-result` verdict. Missing robustness never silently passes.
+
 ## Agent protocol and skills
 
 `skills/agent-runtime/SKILL.md` is mandatory. It points to rigor, progress/feedback and artifact guidance.

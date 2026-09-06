@@ -847,6 +847,9 @@ def apply_promotions(project: str | None = None) -> dict:
         master = KGStore(MASTER_KG)
         try:
             summary = promote.apply_decisions(working, master, decisions)
+            from dnhacksbio.explorer.human_review import publish_reviews
+            from dnhacksbio.explorer.runtime import Journal
+            publish_reviews(working, Journal(PROCESSED))
         finally:
             master.close()
     finally:

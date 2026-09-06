@@ -29,6 +29,7 @@ REFUTED = "refuted"                # the data actively contradicted the claim; a
 KILL_KIND: dict[str, str] = {
     "no-effect":             INVALID,
     "malformed-p":           INVALID,
+    "malformed-result":      INVALID,
     "too-few-units":         UNDERPOWERED,
     "not-significant":       INCONCLUSIVE,
     "direction-wrong":       REFUTED,         # the data went the other way; the inverse is a lead
@@ -75,13 +76,13 @@ class Falsifier:
             return False, "too-few-units", underpowered_reason
         # Every comparison against NaN is False, so a NaN p would pass `p_null > threshold`. Guard by
         # validity, never by comparison.
-        if not _finite(p_null) or not (0.0 <= p_null <= 1.0):
+        if not _finite(p_null) or not (0.0 < p_null <= 1.0):
             return False, "malformed-p", f"p_null is not a probability (p_null={p_null!r})"
         if expected_sign != 0 and int(np.sign(effect)) != expected_sign:
             return False, "direction-wrong", f"effect direction wrong (effect={effect:+.3f}, want sign {expected_sign:+d})"
         if p_null > P_PERM_CLEAR_NULL:
             return False, "not-significant", f"clearly non-significant (p_null={p_null:.3f})"
-        if not robust:
+        if robust is not True:
             return False, "not-robust", "effect failed the tool's robustness check"
         return True, None, f"sound: effect={effect:+.3f}, p_null={p_null:.3g}, n={n_units_note}"
 

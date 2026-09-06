@@ -10,7 +10,9 @@ Never edit code without a claim on the board. Never stop without a `done` or `up
 This applies to every agent, every session, every task. No exceptions.
 
 ## What this is
-DNHacks 2026 team repo. Fill in the one-paragraph project description here once the team agrees on it.
+Read [ARCHITECTURE.md](ARCHITECTURE.md) before changing product or backend behavior. It is the
+anchoring source of truth; distinguish implemented behavior from explicitly pending decisions.
+Do not replace its product direction with another plan. Ask the user before changing that direction.
 
 ## Layout
 
