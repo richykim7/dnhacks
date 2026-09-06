@@ -457,3 +457,7 @@ adjudication, final assessor selection/validation, automatic private routing and
 The monitor remains observation-only; neither its scores nor alarms control branch pruning.
 
 Infrastructure milestone gates after integrating the other tools and extraction repair: 304 Python tests passed, six optional checks skipped (Rscript, PyDESeq2 twice, decoupler, CUDA, opt-in Docker); build, six frontend unit tests and 19 browser tests passed. A subsequent read-only database regression also passed in the focused monitor suite. No corpus experiment was run.
+
+Final controller review strengthened restart handling: continuation objectives are reloaded from durable state, concurrent SDK fork claims and same-child execution are serialized, and allocation receives bounded ordinary evidence records with explicit coverage rather than an experiment-count/dead-end proxy.
+
+Final integration gates against main 899651c: 309 Python tests passed with the same six optional dependency/hardware skips; frontend build, six unit tests and 19 browser tests passed. The operator CLI help command also passed.

@@ -1250,10 +1250,24 @@ class Explorer:
         self.control.patch(self.run_id, status="reporting_blocked")
         self._event("lifecycle", {"lifecycle": "reporting_blocked", "reason": error or "Report repair allowance exhausted"})
 
+    def _allocation_records(self):
+        """Ordinary branch evidence for allocation, with explicit bounded coverage."""
+        rows = self.log._rows("WHERE run_id=? ORDER BY entry_id DESC", [self.run_id])
+        items, size = [], 0
+        for row in rows:
+            item = {k: row.get(k) for k in ("entry_id", "kind", "title", "body", "code", "result", "status")}
+            length = len(json.dumps(item, default=str))
+            if size + length > 100000:
+                break
+            items.append(item)
+            size += length
+        return {"records": items, "shown": len(items), "total": len(rows), "truncated": len(items) < len(rows)}
+
     async def _parent_decision(self, child):
         state = self.control.get(child.run_id)
         context = {"objective": child.manifest["branch_objective"], "report": state["report"],
-                   "report_version": state["version"], "supporting_work": child._branch_digest(child.run_id),
+                   "report_version": state["version"], "current_round_objective": state.get("objective"),
+                   "supporting_records": child._allocation_records(),
                    "actions_used": state["total_actions"], "rounds": state["rounds"],
                    "max_branch_actions": BRANCH_TOTAL_STEPS, "max_rounds": MAX_CONTINUATIONS,
                    "depth": LIN.depth(child.run_id), "max_depth": MAX_DEPTH}
@@ -1473,6 +1487,8 @@ class Explorer:
             self._round_max_steps = state["allowance"]
             self._steps_at_round_start = self.steps - state["used"]
             message = (self._branch_brief or self._state()) + "\n" + self._budget_line()
+            if state.get("objective"):
+                message += "\nCurrent parent-authorized objective: " + state["objective"]
             self._snapshot_seen()
             if state["status"] == "working":
                 for _ in range(max(0, state["allowance"] - state["used"])):

@@ -258,13 +258,18 @@ export function Investigation({
             parent: r.parent_run_id || null,
             depth: r.run_id.split("~").length - 1,
             steps: r.history.length,
-            active: !historic && ["running", "waiting"].includes(r.lifecycle),
+            active: !historic && ["running", "reporting"].includes(r.lifecycle),
             last_action: r.activity?.action || "",
             updated_at: r.updated_at,
             runtime: true,
             lifecycle: r.lifecycle,
             objective: r.branch_objective,
-            beam: r.decision,
+            beam: r.decision?.decision
+              ? {
+                  reason: r.decision.decision.reason,
+                  kept: r.decision.decision.action === "prune" ? false : undefined,
+                }
+              : r.decision,
           }) as RunSummary,
       );
     if (!historic) return investigation.runs;
