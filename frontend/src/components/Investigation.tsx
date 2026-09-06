@@ -70,6 +70,7 @@ type AgentData = {
   title: string;
   count: number;
   candidates: number;
+  leaf: boolean;
   activity: boolean;
   state: string;
   elapsed: string;
@@ -89,7 +90,7 @@ function AgentNode({ data }: NodeProps<Node<AgentData>>) {
           : { type: "spring", stiffness: 320, damping: 34 }
       }
       style={{ borderRadius: 12 }}
-      className={`agent-node ${data.selected ? "selected" : ""} ${data.activity ? "is-working" : ""} ${data.candidates ? "has-candidates" : ""} ${r.beam?.kept === false ? "closed-branch" : ""}`}
+      className={`agent-node ${data.leaf ? "is-leaf" : ""} ${data.selected ? "selected" : ""} ${data.activity ? "is-working" : ""} ${data.candidates ? "has-candidates" : ""} ${r.beam?.kept === false ? "closed-branch" : ""}`}
     >
       <Handle type="target" position={Position.Top} />
       <button
@@ -430,6 +431,7 @@ export function Investigation({
     setSelectedExperiment(experimentId);
   };
   const nodes = useMemo(() => {
+    const parents = new Set(visibleRuns.map((r) => r.parent));
     return visibleRuns.map((r) => ({
       id: r.run_id,
       type: "agent",
@@ -454,6 +456,7 @@ export function Investigation({
                 (e) => e.run_id === r.run_id && e.kind === "experiment",
               ).length || 0,
         candidates: summaries[r.run_id].candidateCount,
+        leaf: !parents.has(r.run_id),
         onCandidate: () => {
           const choices = runtimeCandidates(runtimeState.runs[r.run_id]);
           const first =
@@ -831,6 +834,13 @@ export function Investigation({
                             </small>
                           </span>
                           <Status
+                            tone={
+                              experiment.human_review === "validated"
+                                ? "live"
+                                : experiment.human_review === "rejected"
+                                  ? "negative"
+                                  : "promising"
+                            }
                             label={
                               experiment.human_review === "validated"
                                 ? "Accepted"

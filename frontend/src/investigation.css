@@ -103,8 +103,26 @@
 .investigation-redesign .agent-node p {
   font-size: 11px;
 }
+.investigation-redesign .agent-node.is-leaf:not(.selected) {
+  background: #30363b;
+  border-color: #66727b;
+}
+.investigation-redesign .agent-node.is-leaf:not(.selected) h3 {
+  color: #bdc6cc;
+}
 .investigation-redesign .agent-node.has-candidates {
-  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  border-color: #8ac69a;
+  box-shadow: 0 0 0 1px #b9e7bc80, 0 0 22px 5px #9bdca64d,
+    0 5px 20px #00000009;
+}
+.investigation-redesign .agent-node.has-candidates.selected {
+  border-color: var(--accent);
+}
+.candidate-queue .status.negative {
+  color: #ef9399;
+}
+.candidate-queue .status.promising {
+  color: #8abfb3;
 }
 .investigation-redesign .agent-node-bottom {
   margin-top: 0;
@@ -268,4 +286,18 @@
 }
 .investigation-redesign .workspace-titlebar > button {
   flex-shrink: 0;
+}
+
+:root[data-theme="light"] .investigation-redesign .agent-node.is-leaf:not(.selected) {
+  background: #e3e7ea;
+  border-color: #a4afb5;
+}
+:root[data-theme="light"] .investigation-redesign .agent-node.is-leaf:not(.selected) h3 {
+  color: #505d64;
+}
+:root[data-theme="light"] .candidate-queue .status.negative {
+  color: #b63b43;
+}
+:root[data-theme="light"] .candidate-queue .status.promising {
+  color: #347b70;
 }
