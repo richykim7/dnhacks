@@ -1,8 +1,8 @@
-"""Versioned native association kernel and operator-only frozen-critic ledger.
+"""Versioned native association kernel and operator-only predictable-critic ledger.
 
 This module has no discovery read surface. Put its directory behind a real OS
-permission boundary. Append mode is deliberately limited to a fully frozen
-bilinear critic; adaptive optimizer/RNG state is not supported in v1.
+permission boundary. The optional deterministic SGD schedule learns only after
+scoring a block and persists the next critic atomically. Encoders stay frozen.
 """
 from __future__ import annotations
 
@@ -30,6 +30,20 @@ def names(values, *, unique=False):
 
 
 KERNEL = 'native-two-view-four-term-v1'
+ADAPTIVE_SCHEDULE = 'past-block-bilinear-sgd-v1'
+
+
+def past_block_update(weights, x, y):
+    """One fixed stateless SGD step on an already scored matched/crossed block."""
+    w,x,y=(np.asarray(a,dtype=float) for a in (weights,x,y))
+    frozen_scores(x,y,w)  # Validate dimensions and finite inputs.
+    features=np.stack([np.outer(x[i],y[j]) for i,j in ((0,0),(1,1),(0,1),(1,0))])
+    scores=np.tanh(np.einsum('nij,ij->n',features,w))
+    gradient=np.mean(2*(scores-np.array([1,1,-1,-1]))[:,None,None]
+                     *(1-scores*scores)[:,None,None]*features,axis=0)
+    updated=w-.001*np.clip(gradient,-10,10)
+    if not np.isfinite(updated).all():raise ValueError('Nonfinite adaptive critic')
+    return updated.tolist()
 
 
 def association_factor(scores, stake=0.9):
@@ -97,7 +111,7 @@ class PrivateProcessStore:
         required = {'kernel', 'null', 'population', 'panel', 'model_hashes', 'qc_hash', 'data_hash',
                     'crosswalk_hash', 'acquisition_hash', 'family', 'parent', 'sampling', 'exclusions',
                     'weights', 'stake', 'eligible_donors', 'reuse_policy', 'schedule'}
-        if set(spec) != required or spec['kernel'] != KERNEL or spec['schedule'] != 'fully-frozen-v1':
+        if set(spec) != required or spec['kernel'] != KERNEL or spec['schedule'] not in {'fully-frozen-v1', ADAPTIVE_SCHEDULE}:
             raise ValueError('Unsupported process specification')
         if spec['reuse_policy'] != 'globally-disjoint-canonical-donors-v1':
             raise ValueError('Unsupported investigation reuse policy')
@@ -153,14 +167,30 @@ class PrivateProcessStore:
             for donor in donors:
                 if con.execute('SELECT 1 FROM consumed WHERE donor=?', (donor,)).fetchone():
                     raise ValueError('Canonical donor already consumed, including another modality/process')
-            factor = association_factor(frozen_scores(x, y, spec['weights']), spec['stake'])
+            weights=spec['weights']
+            optimizer=None
+            if spec['schedule']==ADAPTIVE_SCHEDULE:
+                optimizer={'name':'stateless-sgd','learning_rate':.001,'steps_per_past_block':1,'rng':None}
+                if cursor:
+                    previous=con.execute('SELECT snapshot FROM blocks WHERE process=? AND number=?',(process,cursor-1)).fetchone()
+                    if previous is None:raise ValueError('Missing durable predecessor')
+                    past=json.loads(previous[0])
+                    weights=past['next_critic']
+            factor = association_factor(frozen_scores(x, y, weights), spec['stake'])
             log_wealth += math.log(factor)
-            snapshot = json.dumps({'critic': spec['weights'], 'optimizer': None, 'rng': None,
+            snapshot = json.dumps({'critic': weights, 'optimizer': optimizer, 'rng': None,
                                    'schedule': spec['schedule'], 'spec_hash': process, 'donors': donors,
                                    'x': np.asarray(x).tolist(), 'y': np.asarray(y).tolist()}, allow_nan=False)
             con.execute('INSERT INTO blocks VALUES (?,?,?,?,?,?)', (process, number, block_hash, factor, log_wealth, snapshot))
             con.executemany('INSERT INTO consumed VALUES (?,?,?)', [(d, process, number) for d in donors])
             con.execute('UPDATE processes SET cursor=?,log_wealth=? WHERE id=?', (cursor+1, log_wealth, process))
+            if spec['schedule']==ADAPTIVE_SCHEDULE:
+                # Score and consumption precede training. The update can only
+                # affect the next fresh block; both states commit atomically.
+                state=json.loads(snapshot)
+                state['next_critic']=past_block_update(weights,x,y)
+                con.execute('UPDATE blocks SET snapshot=? WHERE process=? AND number=?',
+                            (json.dumps(state,allow_nan=False),process,number))
             if before_commit:
                 before_commit()
 

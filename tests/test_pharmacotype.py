@@ -110,10 +110,12 @@ def test_registration_fail_closed():
     with pytest.raises(ValueError, match='overlap'): registered(m)
 
 
-def test_private_queue_alias_replay_and_tamper(tmp_path):
+@pytest.mark.parametrize('schedule',['fully-frozen-v1','past-block-bilinear-sgd-v1'])
+def test_private_queue_alias_replay_and_tamper(tmp_path,schedule):
     import json
     from dnhacksbio.pharmacotype_scoring import Store
-    m = manifest(); path = tmp_path/'manifest.json'; path.write_text(json.dumps(m))
+    m = manifest(); m['protocol']['schedule']=schedule
+    path = tmp_path/'manifest.json'; path.write_text(json.dumps(m))
     store = Store(tmp_path/'queue')
     registration = store.configure(path, ledger=tmp_path/'ledger')
     assert 'donors' not in json.dumps(registration)
@@ -209,6 +211,15 @@ def test_separate_view_encoding():
     changed = train(data,model['splits'],epochs=10)
     assert changed['molecular'] == model['molecular']
     assert changed['response'] != model['response']
+
+
+def test_optional_torch_artifact_and_invalid_device():
+    _,data,model=fitted()
+    with pytest.raises(ValueError):train(data,model['splits'],device='cuda')
+    pytest.importorskip('torch')
+    learned=train(data,model['splits'],kind='mlp',epochs=5,backend='torch')
+    assert np.isfinite(predict(data['x'],learned)).all()
+    assert learned['resource_metrics']['device']=='cpu'
 
 
 def test_constant_critic_is_wealth_one_not_unavailable(tmp_path):
