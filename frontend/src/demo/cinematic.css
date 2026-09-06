@@ -691,3 +691,7 @@
     overflow: visible;
   }
 }
+/* AnimatePresence retains the old article props while it collapses. */
+.cinematic-demo:not(.is-open) .cine-expanded .cine-info {
+  overflow: visible;
+}
