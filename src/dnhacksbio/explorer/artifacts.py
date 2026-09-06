@@ -77,7 +77,7 @@ def collect(output: Path, journal: Journal) -> list[dict]:
     for entry in entries:
         a = {"artifact_id": uuid4().hex, "created_at": time.time(), "status": "rejected"}
         try:
-            if not isinstance(entry, dict) or entry.get("kind") not in {"molecular_structure", "binder_bundle"}:
+            if not isinstance(entry, dict) or entry.get("kind") not in {"molecular_structure", "binder_bundle", "filament_trajectory"}:
                 raise ValueError("Unsupported artifact kind")
             fmt = entry.get("format")
             prov = entry.get("provenance", {})
@@ -100,6 +100,17 @@ def collect(output: Path, journal: Journal) -> list[dict]:
                          byte_length=len(raw), atom_count=len(bundle["structure"]["atoms"]),
                          provenance=prov, name=Path(entry["path"]).name,
                          binder_scope=bundle["manifest"]["scope"])
+                artifacts.append(a)
+                continue
+            if entry["kind"] == "filament_trajectory":
+                from ..spindle.bundle import validate
+                bundle = validate(raw)
+                if fmt != "json" or prov["category"] != ("illustration" if bundle["category"] == "illustration" else "derived_geometry"):
+                    raise ValueError("Spindle format/provenance mismatch")
+                key = journal.store_bytes(raw)
+                a.update(status="available", kind="filament_trajectory", format="json",
+                         media_type="application/json", storage_key=key, sha256=key,
+                         byte_length=len(raw), provenance=prov, name=Path(entry["path"]).name)
                 artifacts.append(a)
                 continue
             count = validate_structure(raw, fmt)
