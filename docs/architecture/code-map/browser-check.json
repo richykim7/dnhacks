@@ -1,0 +1,11 @@
+{
+  "canvas": true,
+  "search": "Explorer",
+  "inspector": "Explorer\nType: code\nCommunity: Explorer\nSource: src/dnhacksbio/explorer/explorer.py\nDegree: 51\nNeighbors (51)\nSandboxPool\nJournal\nExplorationLog\nKGStore\nVerifyQueue\n_run()\nexplorer.py\n._act_fetch_papers()\n._act_find_datasets()\n._act_fork()\n._act_get_skill()\n._act_log()\n._act_neighbors()\n._act_path()\n._act_read_paper()\n._act_recall()\n._act_run_experiments()\n._act_search_kg()\n._act_search_papers()\n._act_search_skills()\n._act_subgraph()\n._act_submit()\n._as_action()\n._begin_attempt()\n._branch_digest()\n._budget_line()\n.close()\n._complete_capturing()\n._dispatch()\n._ensure_edge_vecs()\n._event()\n._fmt_edge()\n._heartbeat()\n.__init__()\n._judge_context()\n._judge_promise()\n._kg_semantic()\n._mine_to_submit()\n._next_action()\n._persist_judge()\n._persist_session()\n.run()\n._scope()\n._snapshot_seen()\n._state()\n.step()\n._tree_evidence_block()\n._turn_message()\nFullTextStore\n._spawn_child()\nmake_explorer()",
+  "errors": [],
+  "requests": [
+    "file:///tmp/dnhacks-architecture-map/latest/graphify-out/graph.html",
+    "file:///tmp/dnhacks-architecture-map/latest/graphify-out/vendor/vis-network.min.js"
+  ],
+  "external_requests": 0
+}
