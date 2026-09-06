@@ -7,10 +7,17 @@ import {
   Maximize2,
   Minimize2,
   Search,
+  Trash2,
 } from "lucide-react";
 import { useResource } from "@/lib/api";
 import { human, id } from "@/lib/utils";
 import { Button } from "./ui/button";
+import {
+  AddPapers,
+  RemovePaper,
+  PaperProcessing,
+  type MembershipResult,
+} from "./LibraryMembership";
 import { Disclosure, Empty, ErrorNotice, Loading } from "./common";
 
 interface Paper {
@@ -48,7 +55,17 @@ const sourceUrl = (p: Paper) => {
   }
 };
 
-export function PaperBrowser({ project }: { project: string }) {
+export function PaperBrowser({
+  project,
+  copiedOnEdit,
+  onProject,
+  onRefresh,
+}: {
+  project: string;
+  copiedOnEdit: boolean;
+  onProject: (project: string) => void;
+  onRefresh: () => void;
+}) {
   const resource = useResource<{ papers: Paper[]; total: number }>(
     `/api/projects/${id(project)}/papers`,
   );
@@ -58,8 +75,34 @@ export function PaperBrowser({ project }: { project: string }) {
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("newest");
   const [selected, setSelected] = useState<Paper | null>(null);
+  const [removing, setRemoving] = useState<Paper | null>(null);
+  const [membershipNotice, setMembershipNotice] = useState("");
+  const changed = (result: MembershipResult) => {
+    setMembershipNotice(
+      result.removed
+        ? "Paper removed from this collection."
+        : result.duplicates?.length
+          ? `${result.duplicates.length} paper${result.duplicates.length === 1 ? " is" : "s are"} already in this collection and will not be processed again.`
+          : "Paper processing started. Follow its progress below.",
+    );
+    if (result.project_id && result.project_id !== project)
+      onProject(result.project_id);
+    setSelected(null);
+    resource.refresh();
+    onRefresh();
+  };
   const [expanded, setExpanded] = useState(false);
   const opener = useRef<HTMLButtonElement | null>(null);
+  const list = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const pane = list.current;
+    const row = pane?.querySelector(".paper-row.selected");
+    if (!pane || !row || !pane.offsetParent) return;
+    const bounds = pane.getBoundingClientRect();
+    const selectedBounds = row.getBoundingClientRect();
+    pane.scrollTop += selectedBounds.top - bounds.top;
+
+  }, [selected?.paper_id, expanded]);
   const papers = resource.data?.papers || [];
   const years = [
     ...new Set(papers.map((p) => p.year).filter((y): y is number => y != null)),
@@ -120,7 +163,12 @@ export function PaperBrowser({ project }: { project: string }) {
       <div className="paper-browser-tools">
         <div className="paper-browser-title">
           <h2>Papers</h2>
-          <span>Read, search and explore your collection</span>
+          <span>Full text, figures and evidence in one place</span>
+          <AddPapers
+            project={project}
+            copiedOnEdit={copiedOnEdit}
+            onChanged={changed}
+          />
         </div>
         <label className="search-field paper-search">
           <Search size={18} />
@@ -190,11 +238,24 @@ export function PaperBrowser({ project }: { project: string }) {
                 Clear filters
               </Button>
             ) : (
-              <span>Select a paper to read</span>
+              <span>Click Read paper to open full text & figures</span>
             )}
           </div>
         )}
       </div>
+      {membershipNotice && (
+        <p className="paper-membership-notice" role="status">
+          {membershipNotice}
+        </p>
+      )}
+      <PaperProcessing project={project} onCompleted={resource.refresh} />
+      <RemovePaper
+        project={project}
+        copiedOnEdit={copiedOnEdit}
+        paper={removing}
+        onClose={() => setRemoving(null)}
+        onChanged={changed}
+      />
       <ErrorNotice message={resource.error} retry={resource.refresh} />
       {resource.loading ? (
         <Loading label="Loading papers" />
@@ -204,8 +265,8 @@ export function PaperBrowser({ project }: { project: string }) {
           <>
             {papers.length === 0 ? (
               <Empty title="No collected papers yet">
-                Collection settings and imported documents are available in
-                Manage collection. Papers appear here once collected.
+                Use Add papers above to paste a DOI or upload a document. We’ll
+                process only the papers you add and show progress here.
               </Empty>
             ) : filtered.length === 0 ? (
               <Empty
@@ -218,46 +279,63 @@ export function PaperBrowser({ project }: { project: string }) {
             <div className="paper-workspace">
               <div
                 className="paper-list"
+                ref={list}
                 aria-label="Papers"
                 role="region"
                 tabIndex={0}
               >
                 {filtered.map((p, index) => (
-                  <button
-                    className={`paper-row ${selected?.paper_id === p.paper_id ? "selected" : ""}`}
-                    key={p.paper_id}
-                    aria-pressed={selected?.paper_id === p.paper_id}
-                    onClick={(e) => {
-                      opener.current = e.currentTarget;
-                      setSelected(p);
-                    }}
-                  >
-                    <span className="paper-row-index">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <span className="paper-row-body">
-                      <strong>{p.title || "Untitled paper"}</strong>
-                      <span className="paper-row-authors">{authors(p)}</span>
-                      <span className="paper-row-meta">
-                        <span>{p.year || "Year not recorded"}</span>
-                        {p.category && <span>{human(p.category)}</span>}
-                        <span
-                          className={p.has_text ? "paper-text-available" : ""}
-                        >
-                          {p.has_text ? (
-                            <BookOpen size={12} />
-                          ) : (
-                            <FileText size={12} />
-                          )}
-                          {availability(p)}
-                        </span>
-                        {p.figure_count > 0 && (
-                          <span>{p.figure_count} figures</span>
-                        )}
+                  <div className="paper-entry" key={p.paper_id}>
+                    <button
+                      className={`paper-row ${selected?.paper_id === p.paper_id ? "selected" : ""}`}
+                      aria-pressed={selected?.paper_id === p.paper_id}
+                      onClick={(e) => {
+                        opener.current = e.currentTarget;
+                        setSelected(p);
+                      }}
+                    >
+                      <span className="paper-row-index">
+                        {String(index + 1).padStart(2, "0")}
                       </span>
-                    </span>
-                    <ArrowUpRight className="paper-row-arrow" size={16} />
-                  </button>
+                      <span className="paper-row-body">
+                        <strong>{p.title || "Untitled paper"}</strong>
+                        <span className="paper-row-authors">{authors(p)}</span>
+                        <span className="paper-row-meta">
+                          <span>{p.year || "Year not recorded"}</span>
+                          {p.category && <span>{human(p.category)}</span>}
+                          <span
+                            className={p.has_text ? "paper-text-available" : ""}
+                          >
+                            {p.has_text ? (
+                              <BookOpen size={12} />
+                            ) : (
+                              <FileText size={12} />
+                            )}
+                            {availability(p)}
+                          </span>
+                          {p.figure_count > 0 && (
+                            <span>{p.figure_count} figures</span>
+                          )}
+                        </span>
+                      </span>
+                      <span className="paper-open-label">
+                        <BookOpen size={16} />
+                        {selected?.paper_id === p.paper_id
+                          ? "Reading"
+                          : "Read paper"}
+                      </span>
+                    </button>
+                    <Button
+                      className="paper-remove-button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={`Remove paper: ${p.title}`}
+                      onClick={() => setRemoving(p)}
+                    >
+                      <Trash2 size={14} />
+                      <span>Remove</span>
+                    </Button>
+                  </div>
                 ))}
               </div>
               {selected && (

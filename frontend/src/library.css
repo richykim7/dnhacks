@@ -433,3 +433,237 @@
     min-height: 360px;
   }
 }
+.new-collection-button {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  border-color: var(--accent);
+  box-shadow: 0 3px 12px #0001;
+}
+.library-start {
+  margin: 35px auto;
+  padding: 44px 32px;
+  max-width: 960px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  text-align: center;
+}
+.library-start > svg {
+  margin: 0 auto 20px;
+  color: var(--accent);
+}
+.library-start h2 {
+  font-size: 27px;
+  margin-bottom: 14px;
+}
+.library-start > p {
+  max-width: 62ch;
+  margin: auto;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.library-start ol {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 0;
+  list-style: none;
+  margin: 38px 0 0;
+  text-align: left;
+}
+.library-start li {
+  padding: 22px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+.library-start li > span {
+  display: block;
+  color: var(--accent);
+  margin-bottom: 14px;
+  font-size: 12px;
+}
+.library-start li strong {
+  font-size: 15px;
+}
+.library-start li p {
+  color: var(--muted);
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.paper-browser-title .add-papers-button {
+  margin-left: auto;
+}
+.paper-browser-title {
+  align-items: center;
+}
+.paper-entry {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.paper-entry:last-child {
+  border-bottom: 0;
+}
+.paper-entry .paper-row {
+  border-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+.paper-open-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--accent);
+  font-size: 12px;
+  white-space: nowrap;
+  align-self: center;
+}
+.paper-remove-button {
+  align-self: center;
+  margin-right: 16px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.paper-remove-button:hover {
+  color: var(--negative);
+}
+.has-reader .paper-open-label {
+  font-size: 0;
+  gap: 0;
+}
+.has-reader .paper-remove-button {
+  margin-right: 6px;
+}
+.has-reader .paper-remove-button > span {
+  display: none;
+}
+.paper-add-methods {
+  display: flex;
+  gap: 10px;
+  margin: 22px 0;
+}
+.paper-add-methods > button {
+  flex: 1;
+}
+.paper-add-methods > button[aria-pressed="true"] {
+  background: var(--selected);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.paper-processing-explainer {
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 18px 0;
+  font-size: 13px;
+}
+.paper-processing-explainer p {
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 8px 0;
+}
+.paper-edit-scope {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 16px 0;
+}
+.paper-remove-title {
+  padding: 18px 0 4px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+.paper-processing-jobs:empty {
+  display: none;
+}
+.paper-processing-job {
+  border-top: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 12px;
+}
+.paper-processing-job > div:first-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 180px;
+}
+.paper-processing-job > div > span {
+  color: var(--muted);
+}
+.paper-processing-job.failed > div > strong {
+  color: var(--negative);
+}
+.paper-processing-job.done > div > strong {
+  color: var(--accent);
+}
+.paper-processing-events {
+  max-height: 200px;
+  overflow: auto;
+  line-height: 1.6;
+}
+.paper-processing-events p {
+  margin-bottom: 10px;
+}
+@media (max-width: 1000px) {
+  .paper-open-label {
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .paper-remove-button > span {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .library-start {
+    padding: 28px 20px;
+    margin: 16px 0;
+  }
+  .library-start h2 {
+    font-size: 24px;
+  }
+  .library-start ol {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .library-start li {
+    padding: 16px;
+  }
+  .library-start li > span {
+    float: left;
+    margin-right: 14px;
+    margin-top: 4px;
+  }
+  .paper-results > span:last-child {
+    max-width: 145px;
+    text-align: right;
+    font-size: 10px;
+  }
+  .paper-row {
+    padding-right: 5px;
+  }
+  .paper-open-label {
+    font-size: 0;
+  }
+  .paper-remove-button {
+    margin-right: 5px;
+    padding: 7px;
+  }
+}
+.paper-membership-notice {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  color: var(--accent);
+  font-size: 12px;
+}
+.has-reader .paper-filters { display: none; }

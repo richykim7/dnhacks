@@ -41,7 +41,7 @@ _HEARTBEAT_S = 10.0
 _LINGER_AFTER_EXIT_S = 3.0     # keep tailing briefly after the process exits, to flush last writes
 
 BUILD_KINDS = ("build",)
-KINDS = BUILD_KINDS + ("run",)        # every kind of job that can occupy a project
+KINDS = BUILD_KINDS + ("run", "membership")        # every kind of job that can occupy a project
 
 # A run_id is a path-encoded lineage key (explorer/lineage.py) whose separator is `~`; the base id
 # must never contain one. Project ids are already [a-z0-9_-], so the timestamp is the only new part.
@@ -95,7 +95,7 @@ def _job_paths(pid_project: str, job_id: str) -> tuple[Path, Path, Path]:
 
 
 def _new_job_id(kind: str) -> str:
-    return f"{kind}-{time.strftime('%Y%m%d-%H%M%S')}-{os.getpid() % 1000:03d}"
+    return f"{kind}-{time.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:8]}"
 
 
 def _python() -> str:
@@ -179,14 +179,19 @@ def start_run(project_id: str, *, goal: str = "", steps: int = 30) -> dict:
     return job
 
 
-def _spawn(project_id: str, kind: str, argv: list[str], *, extra: dict | None = None) -> dict:
+def _spawn(project_id: str, kind: str, argv: list[str], *, extra: dict | None = None,
+           project_lease_fd: int | None = None) -> dict:
     from .deployment import lease
-    with lease() as fd:
-        return _spawn_leased(project_id, kind, argv, extra=extra, lease_fd=fd)
+    from .membership import project_lease
+    from contextlib import nullcontext
+    held = nullcontext(project_lease_fd) if project_lease_fd is not None else project_lease(project_id)
+    with held as project_fd, lease() as fd:
+        return _spawn_leased(project_id, kind, argv, extra=extra, lease_fd=fd,
+                             project_lease_fd=project_fd)
 
 
 def _spawn_leased(project_id: str, kind: str, argv: list[str], *, extra: dict | None = None,
-                  lease_fd: int | None = None) -> dict:
+                  lease_fd: int | None = None, project_lease_fd: int | None = None) -> dict:
     """Start one detached child, with its record + progress + log files. Refuses to overlap.
 
     One job at a time per project, whatever the kind: a build rewrites the very graph a run reads,
@@ -209,8 +214,10 @@ def _spawn_leased(project_id: str, kind: str, argv: list[str], *, extra: dict | 
             # Own process group: a Ctrl-C in the server's terminal must not take the child with it,
             # and cancelling the child must not signal the server.
             start_new_session=True,
-            pass_fds=() if lease_fd is None else (lease_fd,),
-            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+            pass_fds=tuple(fd for fd in (lease_fd, project_lease_fd) if fd is not None),
+            env={**os.environ, "PYTHONUNBUFFERED": "1",
+                 **({"DNHACKS_PROJECT_LEASE_FD": str(project_lease_fd),
+                     "DNHACKS_PROJECT_LEASE_ID": project_id} if project_lease_fd is not None else {})},
         )
     finally:
         log.close()
@@ -323,7 +330,15 @@ def get_job(project_id: str, job_id: str) -> dict:
         raise FileNotFoundError(f"unreadable job record {job_id}: {exc}")
     job = _reconcile(job)
     job["has_log"] = log_path.is_file() and log_path.stat().st_size > 0
-    job["n_events"] = sum(1 for _ in open(prog_path, "rb")) if prog_path.is_file() else 0
+    job["n_events"] = 0
+    if prog_path.is_file():
+        with open(prog_path, "rb") as progress:
+            for line in progress:
+                job["n_events"] += 1
+                try:
+                    job["last_event"] = json.loads(line)
+                except (ValueError, UnicodeDecodeError):
+                    continue
     return job
 
 

@@ -40,7 +40,7 @@ The development helper calls the official 21st HTTP MCP endpoint using an authen
 ## User-facing behavior
 
 - Investigations: project-scoped roster and spatial agent tree. New runs use ordered runtime events for lifecycle, actual model/tool execution, concise agent intent, worker heartbeat, streaming experiment output and deterministic playback. Select a node for its experiments and artifacts; Show terminal is opt-in and reports unavailable for SDK branches without a dedicated pane. Streams reconnect by cursor and close on navigation. Legacy trace-only runs are explicitly partial. See [runtime contract](runtime.md).
-- Library: populated collections open to a scrollable paper browser with title, stored authors, publication year, local text/figure availability, title/author/DOI search, year/topic/availability filters and sorting. Selecting a paper opens a reading pane with stored text, section navigation and local figures; missing text, metadata and images are explicit. The reader can expand, and mobile returns to the list with Back to papers. Manage collection contains settings, document import, assistant and history; New collection is separate from the scoped New investigation action. Settings use chips for anchor DOIs/exclusions and progressive disclosure for advanced fields. Imported collections remain read-only where the API requires it.
+- Library: populated collections open to a scrollable paper browser with title, stored authors, publication year, local text/figure availability, title/author/DOI search, year/topic/availability filters and sorting. Selecting a paper opens a reading pane with stored text, section navigation and local figures; missing text, metadata and images are explicit. The reader can expand, and mobile returns to the list with Back to papers. The accent New collection action is visible with or without existing collections. Add papers is directly in the paper toolbar; each row has Read paper and Remove actions. Manage collection contains settings, supplemental documents, assistant and history; New collection is separate from the scoped New investigation action. Settings use chips for anchor DOIs/exclusions and progressive disclosure for advanced fields. Editing membership of a script-built source creates a separate collection; the source and its investigations are preserved. Busy or externally linked graphs reject membership writes.
 - Knowledge: a full-height graph workspace with a compact toolbar and no permanent side panel. The initial overview shows up to 36 claims, ordered by the backend (disputed first, then source count); density controls expand to 160 or 800, the API cap. Counts state the displayed subset honestly, and database search/filters reach the whole collection. The 24 highest-degree entities retain labels at overview scale; zoom reveals the rest, and selecting an entity highlights its neighbors. Labels compensate for zoom for readability. The source inspector opens on entity/claim selection or explicit Browse, scrolls independently, and closes with Escape, its close button or the canvas. No review, combining or approval controls are mounted. The literature graph as stored, with nothing invented on the way to the screen, laid out as a force-directed graph (d3-force, deterministic, run to rest before first paint) rather than layered ranks. Each entity is a shape for its kind, sized by how many claims touch it in view, with its label beneath and its ontology identifier (linked through Bioregistry) in the inspector and on the selected node; edges carry the claim's sign in biological notation (arrowhead enables, bar represses, open dot for an unsigned predicate), line weight by distinct source count, and a dashed amber stroke for corpus-disputed claims. Claims between the same two entities fan apart so a dispute is visible as two edges. Search runs in the database over the whole collection; status, sign, entity kind and relation class filters are closed-vocabulary and show real counts. A summary strip states claims, entities, evidence records, papers (full text), reported experiments and engine tests with the graph file's modification time. Selecting a claim shows its status with what the word may mean (a source count, never approval or proof), the subject → predicate → object spine with entity state and variant, aspect, sources, first mention, mechanism and dispute kind, the other claims answering the same question, every engine test on the claim (predicted versus observed sign, effect, p, verifier outcome, reviewer decision and note, novelty), then each evidence record: paper with DOI/PubMed/PMC links, full-text and licence status, section, quotation, evidence type, study type, attribution and certainty with checker agreement, the source's own wording, what it cites, the experiment it reports, and biological context with provenance. Identifiers and extraction metadata sit in disclosures. Missing values say so. Review controls are not shown; backend decision and promotion APIs remain available.
 - Molecular structures: only a selected node's collected experiment artifacts, inline in that experiment. No standalone Structures route, remote demo lookup or unrelated file picker. PDB/mmCIF coordinates are validated before durable collection; ribbon/atomic/surface modes, ambient occlusion, chain/residue controls, camera preservation and optional rotation use the public 3Dmol API without a fork. Artifact provenance distinguishes reference, prediction, derived geometry and illustration. No invented docking, confidence, mutation or binding scores.
 
@@ -213,3 +213,40 @@ its exact claim-detail response. The normal browser harness serves this local sn
 checks the full workspace, density control and source scrolling, and captures desktop,
 light and mobile views. Without a snapshot the optional case explicitly skips.
 No corpus records or quoted paper text are committed.
+
+### Adding and removing Library papers
+
+The Add papers dialog accepts DOI/DOI links (up to 50 per request) or one PDF, text,
+Markdown or XML upload. Submission explicitly starts a detached `membership` job;
+opening Library, opening the dialog and creating an empty collection start no model work.
+The existing document conversion preserves available local figures, and the configured
+reader/grounding/claim-repair path writes only new papers to the graph/full-text store.
+Paper vectors and new/changed claim vectors are indexed through the existing embedding
+modules. DOI/text hashes avoid duplicate extraction. The optional `litmap` dependencies
+are required for PDF conversion (`uv sync --extra litmap`).
+
+Library polls durable job stages and exposes actionable errors and Retry processing.
+Source, reader and extraction checkpoints are saved per new source ref; retry reuses
+completed stages instead of sending existing papers through extraction again. Truncated
+reader output and unavailable repair/indexing fail explicitly. An index failure may leave
+the added full text and graph visible while the job remains failed; retry completes indexing.
+
+Routes: `POST /api/projects/<id>/papers/add` with `{dois: [...]}`, raw-body
+`POST /api/projects/<id>/papers/upload` with `X-Filename`,
+`POST /api/projects/<id>/papers/<paper_id>/remove`, and
+`POST /api/projects/<id>/jobs/<job_id>/retry`. Responses include `project_id` and
+`copied`; the frontend selects the separate editable collection when one is created.
+
+A membership write refuses a busy project, a database held by another writer, or a
+project graph linked outside its own directory. Script-built corpora are copied only
+while an original read lock can be held and no pending WAL exists. Their graph, paper
+assets and original corpus card remain intact. Build/run/membership launchers share an
+inherited project lease. Workers receive the exact projects root explicitly, including
+when a private preview uses isolated data; they never fall back to live data.
+
+Removal is collection-scoped and transactional: it deletes the paper, its evidence,
+contexts, citations, experiments and deferrals, removes now-unsupported affected claims
+and orphan claim vectors, and recomputes support/disputes. Other papers' support and
+unrelated engine claims remain. Original assets and historical records are retained;
+manifest/count/card updates describe current membership. A durable removed-source marker
+prevents an older failed addition retry from resurrecting a removed paper.

@@ -84,11 +84,15 @@ export function Library({
               {managing ? "Back to papers" : "Manage collection"}
             </Button>
           )}
-          {(project || projects.length > 0) && (
-            <Button variant="ghost" onClick={() => setCreating(true)}>
+          {
+            <Button
+              variant="default"
+              className="new-collection-button"
+              onClick={() => setCreating(true)}
+            >
               <Plus size={16} /> New collection
             </Button>
-          )}
+          }
         </div>
       </header>
       <CreateProject
@@ -108,7 +112,9 @@ export function Library({
                 <span>
                   <strong>{p.name}</strong>
                   <small>
-                    {p.adopted ? "Imported collection" : human(p.status)}
+                    {p.has_kg
+                      ? "Open paper collection"
+                      : "Ready for your first papers"}
                   </small>
                 </span>
                 <span>
@@ -121,17 +127,31 @@ export function Library({
             ))}
           </div>
           {!projects.length && (
-            <Empty
-              title="Create your first collection"
-              action={
-                <Button variant="default" onClick={() => setCreating(true)}>
-                  Create a literature collection <Plus size={16} />
-                </Button>
-              }
-            >
-              Define a topic, collect its literature, and turn the evidence into
-              an investigation.
-            </Empty>
+            <div className="library-start">
+              <BookOpen size={38} strokeWidth={1.3} />
+              <h2>Your research starts with a collection</h2>
+              <p>
+                A collection keeps your papers, figures and evidence together.
+                Choose <strong>New collection</strong> above to get started.
+              </p>
+              <ol>
+                <li>
+                  <span>1</span>
+                  <strong>Name your collection</strong>
+                  <p>Give your research topic a home.</p>
+                </li>
+                <li>
+                  <span>2</span>
+                  <strong>Add your papers</strong>
+                  <p>Paste DOIs or upload documents.</p>
+                </li>
+                <li>
+                  <span>3</span>
+                  <strong>Read and investigate</strong>
+                  <p>Explore full text, figures and connected evidence.</p>
+                </li>
+              </ol>
+            </div>
           )}
         </>
       ) : rec.loading ? (
@@ -142,11 +162,6 @@ export function Library({
           {rec.data && (
             <>
               <div className="library-summary">
-                <span>
-                  {rec.data.adopted
-                    ? "Imported · read-only"
-                    : human(rec.data.status)}
-                </span>
                 {stats.data?.exists && !stats.data?.error && (
                   <span>
                     {number(stats.data.papers.n)} papers ·{" "}
@@ -154,7 +169,9 @@ export function Library({
                   </span>
                 )}
                 <p>
-                  {rec.data.description ||
+                  {(rec.data.description === "Existing corpus (read-only)."
+                    ? ""
+                    : rec.data.description) ||
                     rec.data.spec.scope ||
                     "Your collected literature"}
                 </p>
@@ -163,6 +180,9 @@ export function Library({
                 <PaperBrowser
                   key={project}
                   project={project}
+                  copiedOnEdit={rec.data.adopted}
+                  onProject={onProject}
+                  onRefresh={onRefresh}
                 />
               )}
               {managing && (
@@ -347,7 +367,7 @@ export function CreateProject({
       open={open}
       onOpenChange={onOpenChange}
       title="Create a literature collection"
-      description="Start with a topic. You can refine the literature search and add documents next."
+      description="Name your collection, then add papers by DOI or upload. Creating a collection does not start model work."
     >
       <form onSubmit={submit}>
         <label>
@@ -361,10 +381,9 @@ export function CreateProject({
           />
         </label>
         <label>
-          What does this collection cover?
+          What does this collection cover? (optional)
           <textarea
-            required
-            rows={4}
+            rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe the biology, targets, or evidence you want to explore."
