@@ -995,6 +995,13 @@ def _apply_promotions_leased(project: str | None = None, test_id: int | None = N
     each note to the explorer as feedback / CORRECTION. Clears the decisions file
     on success. Raises RuntimeError (→409) if the working graph is locked.
     """
+    if project:
+        try:
+            presentation = projects_mod.load(project).get("presentation_only") is True
+        except KeyError:
+            presentation = False
+        if presentation:
+            return _apply_presentation_reviews(project, test_id)
     from dnhacksbio.litmap import promote
     from dnhacksbio.litmap.store import KGStore
     decisions = read_promotion_decisions(project)
@@ -1043,6 +1050,63 @@ def _apply_promotions_leased(project: str | None = None, test_id: int | None = N
     finally:
         working.close()
     # Clear only applied decisions; a scoped review must not consume unrelated cards.
+    remaining = read_promotion_decisions(project)
+    for key in decisions:
+        remaining.pop(key, None)
+    _write_json_atomic(promotion_decisions_path(project), {"decisions": remaining})
+    return summary
+
+
+def _apply_presentation_reviews(project: str, test_id: int | None = None) -> dict:
+    """Stamp demo-owned review rows and outbox only; never open or promote into a master graph."""
+    from types import SimpleNamespace
+    from dnhacksbio.explorer.human_review import record_review, publish_reviews
+    from dnhacksbio.explorer.runtime import Journal
+    root = projects_mod.project_dir(project)
+    db = working_kg(project)
+    if (root.is_symlink() or db.is_symlink() or not db.resolve().is_relative_to(root.resolve())
+            or db.stat().st_nlink != 1):
+        raise RuntimeError("Presentation review requires a private database in its own project directory")
+    decisions = read_promotion_decisions(project)
+    if test_id is not None:
+        decisions = {str(test_id): decisions[str(test_id)]} if str(test_id) in decisions else {}
+    summary = {"promoted": 0, "rejected": 0, "skipped": 0, "rejections": [],
+               "presentation_only": True, "reviewed": 0}
+    try:
+        con = duckdb.connect(str(db))
+    except duckdb.Error as exc:
+        raise RuntimeError("The presentation review database is busy. Your decision is saved; retry application later.") from exc
+    working = SimpleNamespace(con=con)
+    try:
+        con.execute("BEGIN TRANSACTION")
+        try:
+            for tid, decision in decisions.items():
+                verdict, note = decision.get("decision"), decision.get("note", "").strip()
+                if verdict not in {"validated", "rejected"} or not note or len(note) > 400:
+                    raise ValueError("Presentation review requires a valid verdict and written note")
+                rows = _rows(con, "SELECT * FROM engine_tests WHERE test_id=?", [int(tid)])
+                if not rows or str(rows[0].get("status")).lower() != "candidate":
+                    raise ValueError("Presentation candidate is unavailable")
+                row = rows[0]
+                # A namespace cannot publish decisions for another project's run.
+                Journal(PROCESSED, create=False).manifest(row["run_id"], project)
+                if row.get("human_review") and (row["human_review"] != verdict or row.get("review_note") != note):
+                    raise RuntimeError("This candidate already has a different human decision")
+                con.execute("UPDATE engine_tests SET human_review=?, review_note=? WHERE test_id=?",
+                            [verdict, note, int(tid)])
+                record_review(working, row, verdict, note)
+                summary["reviewed"] += 1
+                summary["rejected"] += int(verdict == "rejected")
+            con.execute("COMMIT")
+        except Exception:
+            con.execute("ROLLBACK")
+            raise
+        try:
+            publish_reviews(working, Journal(PROCESSED))
+        except Exception as exc:
+            raise RuntimeError("Your presentation decision is saved, but runtime publication is pending. Retry application to finish.") from exc
+    finally:
+        con.close()
     remaining = read_promotion_decisions(project)
     for key in decisions:
         remaining.pop(key, None)
