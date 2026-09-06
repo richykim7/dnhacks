@@ -72,6 +72,7 @@ backend/coordination-only edits do not require unrelated UI or 3D suites.
 | Private branch-monitoring display | `e2e/monitor.spec.ts` |
 | Binder viewer/camera/export | `e2e/binder.spec.ts` |
 | Spindle viewer | `e2e/spindle.spec.ts` |
+| Tissue viewer, exact-frame inspection and agent replay | `e2e/tissue.spec.ts` |
 
 For frontend edits run the build, relevant unit tests, and the selected browser tests. Shared UI,
 API or dependency changes can require the full frontend suite at the integration milestone.
@@ -135,3 +136,16 @@ Binder scene history supports following the agent, action replay at 0.25–4× a
 local exploration. Replay uses only recipes visible at the current runtime cursor. The production
 workbench element provides a bounded controller for the local capture worker; only its convenient
 window alias requires `?sceneReview=1`. Scene replay is not physical simulation time.
+
+The selected experiment supports `tissue_simulation` artifacts through the Living tissue theater.
+Exterior, Core and Neighborhood use instanced cell geometry and an optional bounded 3D field pass.
+A section plane, exact simulation frame, shared comparison range and source-ID selection are
+keyboard accessible. Dark/light styles and mobile single-condition exploration share the same
+numerical data. Frame payloads load on demand with a three-frame cache; field textures are disposed
+on replacement. The viewport scale is in micrometers at the focal plane. Membrane shading and
+elongated CAF glyphs are illustration layers, never sampled measurements. Fixtures live only in
+`frontend/e2e/tissue/`. See `docs/tumor-stroma.md` for implementation status and scientific boundaries.
+
+For headless hosts without a usable graphics driver, set `PLAYWRIGHT_SOFTWARE_RENDERING=1` to
+explicitly use Chromium SwiftShader. This keeps the same assertions and timeouts. Record this renderer
+when reporting performance; browser screenshot success is not evidence of hardware GPU throughput.

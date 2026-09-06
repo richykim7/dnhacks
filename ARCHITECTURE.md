@@ -603,3 +603,18 @@ verification. No live design pilot, biological efficacy, runtime vision or perfo
 is implied. Immutable scoped scene recipes and PNG captures support actual image observations,
 recorded action replay and independent user exploration inside the owning experiment.
 See [supported behavior and remaining acceptance](docs/binder-design.md).
+
+## Tumor–stroma instrument
+
+`tissue/` and `native/tissue/` provide a conditional fixed-position PhysiCell 1.14.2/BioFVM
+alanine exchange model, bounded CPU runs and simulation-sensitivity summaries. The model's
+volume/damage law and parameters are assumed; computational seeds and cells are not biological
+replicates. No result is an audited statistical test. The collector validates tissue arrays and
+stores immutable cell JSON and float32 field chunks, served through the exact-run/cursor guard.
+The selected experiment opens a Three.js tissue theater with cutaways, shared field scale,
+cell inspection and paired conditions. Numerical sampling uses source coordinates and voxels;
+CAF shape and membrane shading are illustrative. The skill-gated `tissue` research action shares
+the CLI's scoped model/job/scene operations. Immutable agent revisions support separate scene-action
+playback; rendered PNG bytes reach the model seam and unavailable vision cannot complete a review.
+The sourced sensitivity study and final performance acceptance remain active validation work.
+See [tumor–stroma](docs/tumor-stroma.md).
