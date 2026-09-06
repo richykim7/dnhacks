@@ -33,7 +33,6 @@ corpus/
 /handoff/
 .data/
 .claude/settings.local.json
-docs/
 tests/
 gpu-ssh-handoff/
 
@@ -45,9 +44,6 @@ node_modules/
 frontend/dist/
 frontend/test-results/
 frontend/playwright-report/
-!docs/
-docs/*
-!docs/frontend.md
 !tests/
 tests/*
 !tests/test_frontend_server.py
@@ -57,3 +53,30 @@ tests/*
 /AGENTS.md
 /CLAUDE.md
 /COORDINATION.md
+
+# Local planning, documentation, review captures, and presentation exports
+/BOARD.md
+/plans/
+/tasks/
+/docs/
+/frontend/DESIGN.md
+/screenshots/
+/logs/
+*.log
+/frontend/src/demo/captures/
+/frontend/src/demo/scenes/binder/assets/
+/frontend/src/demo/scenes/tissue/assets/
+/frontend/src/demo/scenes/spindle/still-*.png
+/frontend/src/demo/scenes/spindle/spindle.webm
+/presentation/output/
+/presentation/pptx/*.pptx
+/presentation/validation.md
+/presentation/speaker-notes.md
+/video/VALIDATION.md
+/presentation/assets/v2/plots/
+/presentation/assets/revision/plots/
+/presentation/assets/revision/investigation*.png
+/presentation/assets/revision/knowledge.png
+/presentation/assets/evidence-fixture.png
+/presentation/assets/workspace-fixture.png
+/presentation/assets/short/binder-reveal.mp4

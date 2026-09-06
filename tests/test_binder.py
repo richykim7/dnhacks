@@ -127,7 +127,7 @@ def test_real_png_bytes_are_attached_to_sdk_observation():
     import asyncio
     import base64
     from dnhacksbio.llm import image_prompt
-    raw=(Path(__file__).resolve().parents[1]/'docs/binder-review/r04-interface-close-stage.png').read_bytes()
+    raw=(Path(__file__).resolve().parent/'fixtures/binder-interface.png').read_bytes()
     async def read():return [m async for m in image_prompt('Inspect the interface',[raw])]
     messages=asyncio.run(read())
     assert len(messages)==1
