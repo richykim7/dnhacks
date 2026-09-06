@@ -1,0 +1,12 @@
+{
+  "schema": "ecosystem-source-inventory-v1",
+  "status": "candidate-inventory-not-acquisition-approved",
+  "origin": "plans/evalue-tool-council/PLAN-cellular-ecosystems.md",
+  "sources": [
+    {"study": "Peng 2019", "accessions": ["CRA001160", "PRJCA001063"], "proposed_role": "training-development", "access_status": "unverified", "sha256": null, "audited_donors": null, "blockers": ["count access", "sample-to-donor mapping", "untreated status", "compartment coverage"]},
+    {"study": "Elyada 2019", "accessions": [], "proposed_role": "development-state-interpretation", "access_status": "unverified", "sha256": null, "audited_donors": null, "blockers": ["human count accession and annotations", "adjacent tissue aliases", "exclude mice from human population"]},
+    {"study": "Moncada 2020", "accessions": ["GSE111672"], "proposed_role": "spatial-development", "access_status": "unverified", "sha256": null, "audited_donors": null, "blockers": ["spatial subset inventory", "linked specimen IDs", "segmentation and assay resolution"]},
+    {"study": "Hwang 2022", "accessions": ["GSE202051", "GSE199102", "SCP1089", "SCP1096", "DUOS000139"], "proposed_role": "reserved-private-candidate", "access_status": "unverified", "sha256": null, "audited_donors": null, "blockers": ["canonical donor overlaps", "untreated primary subset", "snRNA transfer", "compartment coverage", "novel question and uninspected observations", "power at audited donor budget"]},
+    {"study": "Human pancreatic single-cell atlas", "accessions": [], "proposed_role": "expanded-training-candidate", "access_status": "unverified", "sha256": null, "audited_donors": null, "blockers": ["component study crosswalk", "exclude whole reserved studies and donor aliases", "raw source and reference-fitting provenance"]}
+  ]
+}
