@@ -259,3 +259,36 @@ test("saved spindle movie decodes inline and respects the history cursor", async
   await page.getByLabel("Activity playback position").fill("4");
   await expect(movie).toHaveCount(0);
 });
+
+for (const failure of ["missing", "corrupt"] as const) {
+  test(`spindle ${failure} artifact is explicit and cannot render stale geometry`, async ({ page }) => {
+    await openSpindle(page);
+    await page.route("**/api/runtime/**/blob/**", route => failure === "missing"
+      ? route.fulfill({ status: 404, json: { error: "Missing saved artifact" } })
+      : route.fulfill({ body: '{"changed":true}', contentType: "application/json" }));
+    await page.reload();
+    await page.getByRole("tablist", { name: "Investigation view" })
+      .getByRole("tab", { name: "Experiments", exact: true }).click();
+    await page.getByRole("button", { name: /Spindle visual development/ }).click();
+    await expect(page.getByRole("alert")).toContainText(failure === "missing" ? "Spindle artifact unavailable" : "hash");
+    await expect(page.locator(".spindle-stage canvas")).toHaveCount(0);
+  });
+}
+
+test("mobile spindle comparison toggles full-size cells without changing physical time or camera", async ({page})=>{
+  await openSpindle(page);
+  const stage=page.locator(".spindle-stage");
+  await stage.evaluate(async el=>{const c=(el as any).spindleController;await c.apply({frame:12,compare:1});await c.ready();});
+  await page.setViewportSize({width:390,height:844});
+  await stage.evaluate(async el=>await (el as any).spindleController.ready());
+  const before=await stage.evaluate(el=>(el as any).spindleController.inspect());
+  await page.getByRole("button",{name:"View comparison run"}).click();
+  const after=await stage.evaluate(el=>(el as any).spindleController.inspect());
+  expect(after.mobile_visible_run).toBe(1);expect(after.physical_time_s).toBe(before.physical_time_s);
+  expect(after.camera).toEqual(before.camera);expect(after.comparison.camera).toEqual(before.comparison.camera);
+  const boxes=await stage.locator("canvas").evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));
+  expect(boxes[0]).toBeGreaterThan(300);expect(boxes[1]).toBeCloseTo(boxes[0]);
+  await expect(stage.locator('.spindle-cell').first()).toHaveAttribute('aria-hidden','true');
+  await page.getByRole("button",{name:"View selected run"}).click();
+  await expect(stage.locator('.spindle-cell').first()).toHaveAttribute('aria-hidden','false');
+});

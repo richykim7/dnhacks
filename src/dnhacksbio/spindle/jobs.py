@@ -175,7 +175,9 @@ class SpindleStore:
                             'accepted_frames':len(run['frames']),'completed_replicates':len(runs),'configuration_sha256':digest(config.encode())})
             bundle={'schema_version':1,'dimensionality':3,'category':'simulation','model_id':protocol['model_id'],
                     'units':{'length':'um','time':'s'},'radius':protocol['radius_um'],'runs':runs}
-            raw=canonical(bundle);validate(raw);(directory/'trajectory.json').write_bytes(raw)
+            from .display import display_stream
+            display=display_stream(bundle)
+            (directory/'trajectory.json').write_bytes(canonical(display))
             metrics=analyze_ensemble(bundle,protocol['analysis_plan'])
             (directory/'metrics.json').write_bytes(canonical(metrics))
             (directory/'analysis.py').write_bytes(Path(__file__).with_name('analysis.py').read_bytes())
