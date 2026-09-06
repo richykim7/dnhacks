@@ -1,0 +1,829 @@
+{
+  "schema": "pharmacotype.auc-cv-report.v1",
+  "design": {
+    "schema": "pharmacotype.auc-cv-design.v1",
+    "input_integrity": "d5fd095fa1b3fa5ecdc18412905d2927492f5f02ec2ff4d0c12b327cbc70fb05",
+    "selection": "minimum pooled training-only three-fold CV MSE; grid order breaks ties",
+    "grid": [
+      {
+        "features": 128,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 0.01
+      },
+      {
+        "features": 128,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 0.1
+      },
+      {
+        "features": 128,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 1.0
+      },
+      {
+        "features": 128,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 10.0
+      },
+      {
+        "features": 128,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 100.0
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 0.01
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 0.1
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 1.0
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 10.0
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 100.0
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 0.01
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 0.1
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 1.0
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 10.0
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 100.0
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 0.01
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 0.1
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 1.0
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 10.0
+      },
+      {
+        "features": 128,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 100.0
+      },
+      {
+        "features": 512,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 0.01
+      },
+      {
+        "features": 512,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 0.1
+      },
+      {
+        "features": 512,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 1.0
+      },
+      {
+        "features": 512,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 10.0
+      },
+      {
+        "features": 512,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 100.0
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 0.01
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 0.1
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 1.0
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 10.0
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 100.0
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 0.01
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 0.1
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 1.0
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 10.0
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 100.0
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 0.01
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 0.1
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 1.0
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 10.0
+      },
+      {
+        "features": 512,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 100.0
+      },
+      {
+        "features": 1000,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 0.01
+      },
+      {
+        "features": 1000,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 0.1
+      },
+      {
+        "features": 1000,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 1.0
+      },
+      {
+        "features": 1000,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 10.0
+      },
+      {
+        "features": 1000,
+        "kernel": "linear",
+        "gamma": 1.0,
+        "penalty": 100.0
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 0.01
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 0.1
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 1.0
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 10.0
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 0.25,
+        "penalty": 100.0
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 0.01
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 0.1
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 1.0
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 10.0
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 1.0,
+        "penalty": 100.0
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 0.01
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 0.1
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 1.0
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 10.0
+      },
+      {
+        "features": 1000,
+        "kernel": "rbf",
+        "gamma": 4.0,
+        "penalty": 100.0
+      }
+    ],
+    "fold_rule": "SHA256 cv-v1:source-ID ordering round-robin into three folds",
+    "evaluation": "fixed validation; previously inspected test remains development only",
+    "preprocessing": "fold-training log-FPKM variance, center and population standard deviation",
+    "target": "all five registered chemotherapy AUC outputs, equally weighted"
+  },
+  "selection": {
+    "design_hash": "1648770c9bd97e8ae2f424f0f7fdc9f79a6fbfd31b5f86907c82ff0acd120b35",
+    "selected": {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 1.0
+    },
+    "selection_trial": 7
+  },
+  "trials": [
+    {
+      "features": 128,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 0.01,
+      "cv_rmse": 0.17072069733522685
+    },
+    {
+      "features": 128,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 0.1,
+      "cv_rmse": 0.16643282073813656
+    },
+    {
+      "features": 128,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 1.0,
+      "cv_rmse": 0.15824143744349714
+    },
+    {
+      "features": 128,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 10.0,
+      "cv_rmse": 0.15774963850267837
+    },
+    {
+      "features": 128,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 100.0,
+      "cv_rmse": 0.15868907872154592
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 0.01,
+      "cv_rmse": 0.166961773059682
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 0.1,
+      "cv_rmse": 0.16055938868642022
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 1.0,
+      "cv_rmse": 0.15752768964044833
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 10.0,
+      "cv_rmse": 0.15858853071794088
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 100.0,
+      "cv_rmse": 0.15881453161513773
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 0.01,
+      "cv_rmse": 0.16585422235788586
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 0.1,
+      "cv_rmse": 0.16342203226743277
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 1.0,
+      "cv_rmse": 0.1585595981851138
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 10.0,
+      "cv_rmse": 0.1584775816497236
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 100.0,
+      "cv_rmse": 0.15879628355585543
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 0.01,
+      "cv_rmse": 0.1636638822613213
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 0.1,
+      "cv_rmse": 0.16298619462426073
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 1.0,
+      "cv_rmse": 0.16032203285952393
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 10.0,
+      "cv_rmse": 0.15894119543735039
+    },
+    {
+      "features": 128,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 100.0,
+      "cv_rmse": 0.15884843710345947
+    },
+    {
+      "features": 512,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 0.01,
+      "cv_rmse": 0.1693195230743596
+    },
+    {
+      "features": 512,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 0.1,
+      "cv_rmse": 0.1675590751071652
+    },
+    {
+      "features": 512,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 1.0,
+      "cv_rmse": 0.16200202067134814
+    },
+    {
+      "features": 512,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 10.0,
+      "cv_rmse": 0.15898522778032015
+    },
+    {
+      "features": 512,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 100.0,
+      "cv_rmse": 0.15884191911582807
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 0.01,
+      "cv_rmse": 0.1671938284951379
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 0.1,
+      "cv_rmse": 0.16322696907608084
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 1.0,
+      "cv_rmse": 0.15913253076881465
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 10.0,
+      "cv_rmse": 0.15882587502009882
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 100.0,
+      "cv_rmse": 0.15883941918684977
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 0.01,
+      "cv_rmse": 0.16575573083668818
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 0.1,
+      "cv_rmse": 0.16394883745289768
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 1.0,
+      "cv_rmse": 0.15975852180452677
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 10.0,
+      "cv_rmse": 0.15877586540378935
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 100.0,
+      "cv_rmse": 0.15883020075481907
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 0.01,
+      "cv_rmse": 0.16287473053046983
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 0.1,
+      "cv_rmse": 0.16234491258820158
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 1.0,
+      "cv_rmse": 0.1601879489516055
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 10.0,
+      "cv_rmse": 0.15895899370398694
+    },
+    {
+      "features": 512,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 100.0,
+      "cv_rmse": 0.15885137309396083
+    },
+    {
+      "features": 1000,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 0.01,
+      "cv_rmse": 0.17125636455752455
+    },
+    {
+      "features": 1000,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 0.1,
+      "cv_rmse": 0.1691916267613428
+    },
+    {
+      "features": 1000,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 1.0,
+      "cv_rmse": 0.16307381506001564
+    },
+    {
+      "features": 1000,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 10.0,
+      "cv_rmse": 0.15926677356674593
+    },
+    {
+      "features": 1000,
+      "kernel": "linear",
+      "gamma": 1.0,
+      "penalty": 100.0,
+      "cv_rmse": 0.15887444639121465
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 0.01,
+      "cv_rmse": 0.1680813056390971
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 0.1,
+      "cv_rmse": 0.163994052895211
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 1.0,
+      "cv_rmse": 0.15947392304785857
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 10.0,
+      "cv_rmse": 0.15887219831462102
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 0.25,
+      "penalty": 100.0,
+      "cv_rmse": 0.15884421088841777
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 0.01,
+      "cv_rmse": 0.16533725306829167
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 0.1,
+      "cv_rmse": 0.1637660634186989
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 1.0,
+      "cv_rmse": 0.1598800020256003
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 10.0,
+      "cv_rmse": 0.15881582671627162
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 1.0,
+      "penalty": 100.0,
+      "cv_rmse": 0.15883480440215436
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 0.01,
+      "cv_rmse": 0.16173063982716324
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 0.1,
+      "cv_rmse": 0.1613333385781941
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 1.0,
+      "cv_rmse": 0.15972491057927649
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 10.0,
+      "cv_rmse": 0.1588906925493736
+    },
+    {
+      "features": 1000,
+      "kernel": "rbf",
+      "gamma": 4.0,
+      "penalty": 100.0,
+      "cv_rmse": 0.15884427886469718
+    }
+  ],
+  "cv_baseline_rmse": 0.15884180830048292,
+  "metrics": {
+    "validation": {
+      "rmse": 0.17028167208092793,
+      "baseline_rmse": 0.15622625952906774
+    },
+    "test": {
+      "rmse": 0.11100820285181086,
+      "baseline_rmse": 0.11615253130779797
+    }
+  },
+  "model_sha256": "a5a1dfb3d7d3b6b2d318a16dd8c6d45bb649ae9781fa3fbce320d43aed8660e9",
+  "split_counts": {
+    "train": 21,
+    "validation": 5,
+    "test": 12
+  },
+  "seconds": 0.6521557100058999,
+  "torch": "2.10.0+cu128",
+  "device": "cuda",
+  "peak_allocated_bytes": 16660992,
+  "peak_reserved_bytes": 23068672,
+  "confirmation_enabled": false
+}

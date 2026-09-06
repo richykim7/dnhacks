@@ -59,7 +59,27 @@ data/raw/pharmacotype/shi2022 --output data/interim/pharmacotype/shi2022`, then 
 `scripts/train_pharmacotype_pdo_auc.py --data data/interim/pharmacotype/shi2022`
 on the GPU host. Exact source URLs and SHA256 hashes are in the audit.
 
-### PRISM/CCLE development
+### Bounded PDO regularization follow-up
+
+A subsequent [60-setting CUDA search](pharmacotype-tuning.json) compared 128,
+512 and 1,000 training-variable genes; linear and RBF kernels; and five ridge
+penalties. Three folds are fixed from training donor identifiers. Each fold
+refits feature selection, centering and scaling using only its training donors.
+The selected setting is frozen before validation/test errors are calculated.
+`scripts/tune_pharmacotype_cuda.py` records the design, every trial, selected
+setting and a portable, integrity-checked AUC kernel model. The GPU regression
+changes all held-out outcomes and verifies identical selection and coefficients.
+
+The selected 128-feature RBF model has training CV RMSE 0.1575 (mean baseline
+0.1588), validation RMSE 0.1703 (baseline 0.1562), and test RMSE 0.1110 (baseline
+0.1162). The test improvement is accompanied by worse validation performance;
+this is mixed development evidence, not verified model success. Searching 60
+settings on 21 training donors also makes the selected CV error optimistic.
+The test set was inspected in the earlier benchmark and remains development
+data. No endpoint, donor or drug subset was selected using the new test results.
+The measured search took 0.65 seconds and reserved 22 MiB on the L40S.
+
+### PRISM/CCLE source details
 
 Acquired the secondary dose-response release from [PRISM 19Q4](https://api.figshare.com/v2/articles/9393293),
 expression from [DepMap 19Q4](https://api.figshare.com/v2/articles/11384241), and

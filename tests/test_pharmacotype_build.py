@@ -69,3 +69,30 @@ def test_pdo_auc_identity_audit_and_curve_separation(tmp_path, monkeypatch):
     assert json.loads((out/'auc-development.json').read_text())['splits']==before
     records.append(records[2])
     with pytest.raises(ValueError,match='Duplicate source organoid'):pdo.build(raw,out)
+
+
+def test_cuda_tuning_excludes_heldout_outcomes(tmp_path):
+    torch=pytest.importorskip('torch')
+    if not torch.cuda.is_available():pytest.skip('CUDA fitting requires GPU')
+    from dnhacksbio.pharmacotype_data import digest
+    spec=importlib.util.spec_from_file_location('pdo_tuner',Path(__file__).parents[1]/'scripts/tune_pharmacotype_cuda.py')
+    tuner=importlib.util.module_from_spec(spec);spec.loader.exec_module(tuner)
+    rng=np.random.default_rng(3);z=rng.normal(size=(60,12))
+    donors=[f'fixture-{i}' for i in range(60)]
+    data=dict(schema='pharmacotype.auc-development.v1',donors=donors,
+              genes=[f'G{i}' for i in range(12)],panel=[{'compound':'synthetic'}],source_hash='fixture',
+              x=np.exp(z).tolist(),y=(z[:,:1]+.1*rng.normal(size=(60,1))).tolist(),
+              splits=dict(train=donors[:40],validation=donors[40:50],test=donors[50:]))
+    def run():
+        data['integrity_sha256']=digest({k:v for k,v in data.items() if k!='integrity_sha256'})
+        (tmp_path/'auc-development.json').write_text(json.dumps(data))
+        tuner.run(tmp_path)
+        return [json.loads((tmp_path/name).read_text()) for name in ('cv-report.json','cv-model.json')]
+    report,model=run()
+    assert report['metrics']['test']['rmse']<report['metrics']['test']['baseline_rmse']
+    data['y'][40:]=[[99.] for _ in range(20)]
+    changed,model2=run()
+    assert changed['selection']['selected']==report['selection']['selected']
+    assert changed['trials']==report['trials']
+    assert model2['coef']==model['coef']
+    assert model2['features']==model['features']
