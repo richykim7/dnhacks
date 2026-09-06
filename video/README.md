@@ -69,7 +69,7 @@ Its first page is reproduced unchanged; media and the full PDF remain untracked.
 
 ## Visual verification
 
-The Playwright check seeks 56 times across all chapters, checks image loading and
+The Playwright check seeks 62 times across all chapters, checks image loading and
 caption overflow, saves screenshots, compares seven UI frames pixel-for-pixel
 against their original browser captures, and checks that the paper reveal is
 identical after seeking backwards. Inspect out/frame-check/index.html manually
