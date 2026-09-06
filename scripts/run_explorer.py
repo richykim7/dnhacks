@@ -70,7 +70,7 @@ async def _run(goal: str, steps: int, interval: float, run_id: str, db: str | No
     loop.add_signal_handler(signal.SIGTERM, task.cancel)
     w = asyncio.create_task(worker())
     try:
-        summary = await ex.run(max_steps=steps)
+        summary = await ex.run_investigation(max_steps=steps)
     finally:
         loop.remove_signal_handler(signal.SIGTERM)
         stop.set()

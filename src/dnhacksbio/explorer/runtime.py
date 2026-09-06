@@ -20,7 +20,7 @@ from uuid import uuid4
 from . import lineage as LIN
 
 VERSION = 1
-TERMINAL = {"completed", "failed", "cancelled", "budget_exhausted"}
+TERMINAL = {"completed", "failed", "cancelled", "budget_exhausted", "pruned"}
 ID = re.compile(r"^[A-Za-z0-9._~-]+$")
 
 
@@ -250,6 +250,8 @@ def reduce_event(state: dict, e: dict) -> dict:
     elif kind == "artifact":
         exp = run["experiments"][e["experiment_id"]]
         exp["artifacts"].append(dict(p, available_sequence=e["sequence"]))
+    elif kind == "checkpoint.report":
+        run["checkpoint"] = p
     elif kind == "branch.decision":
         run["decision"] = p
     if kind != "heartbeat":
