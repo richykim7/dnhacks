@@ -608,80 +608,206 @@ def kg_sources() -> dict[str, Path]:
     return srcs
 
 
-def kg_graph(source: str, limit: int = 220, status: str | None = None) -> dict:
-    """Nodes (entities) + edges (claims) for a force-directed view.
+def _facet(con: duckdb.DuckDBPyConnection, expr: str, sql_from: str = "claim_edges") -> list[dict]:
+    """Counts of one closed-vocabulary column over the whole collection, most common first."""
+    try:
+        rows = con.execute(
+            f"select {expr} as k, count(*) as n from {sql_from} "
+            f"where {expr} is not null and cast({expr} as varchar) <> '' group by 1 order by 2 desc, 1"
+        ).fetchall()
+    except duckdb.Error:
+        return []
+    return [{"value": k if not isinstance(k, (int, float)) else int(k), "n": int(n)} for k, n in rows]
 
-    Prioritizes the most-supported and disputed claims so the graph is legible
-    rather than a hairball: disputed edges first, then by source count.
+
+def _kg_summary(con: duckdb.DuckDBPyConnection, total_claims: int) -> dict:
+    """The collection in numbers: what is stored, so the view can say what it is a subset of."""
+    tabs = _tables(con)
+    one = lambda sql: int(con.execute(sql).fetchone()[0])          # noqa: E731
+    out = {"claims": int(total_claims), "entities": 0, "evidence": None, "papers": None,
+           "papers_full_text": None, "experiments": None, "deferrals": None, "tests": None,
+           "vectors": None}
+    try:
+        out["entities"] = one("select count(*) from (select subject_id e from claim_edges "
+                              "union select object_id from claim_edges)")
+        if "evidence" in tabs:
+            out["evidence"] = one("select count(*) from evidence")
+        if "papers" in tabs:
+            out["papers"] = one("select count(*) from papers")
+            try:
+                out["papers_full_text"] = one("select count(*) from papers where is_full_text")
+            except duckdb.Error:
+                pass
+        if "experiments" in tabs:
+            out["experiments"] = one("select count(*) from experiments")
+        if "deferrals" in tabs:
+            out["deferrals"] = one("select count(*) from deferrals")
+        if "engine_tests" in tabs:
+            out["tests"] = one("select count(*) from engine_tests")
+        if "claim_vectors" in tabs:
+            out["vectors"] = one("select count(*) from claim_vectors")
+    except duckdb.Error:
+        pass
+    return out
+
+
+def _tested_overlay(con: duckdb.DuckDBPyConnection, claim_ids: list[str]) -> dict[str, dict]:
+    """How the engine has treated each shown claim: counts of its engine_tests rows by outcome.
+
+    `candidate` = passed the verifier's soundness checks and awaits a person; `validated` /
+    `rejected` = the person's decision; `killed` = failed a soundness check. None of these is a
+    literature fact, which is why they travel separately from the claim row."""
+    if not claim_ids or "engine_tests" not in _tables(con):
+        return {}
+    marks = ",".join("?" * len(claim_ids))
+    rows = con.execute(
+        f"""select kg_claim_id, count(*) as n,
+                   count(*) filter (where status = 'candidate' and coalesce(human_review, '') = '') as candidate,
+                   count(*) filter (where human_review = 'validated') as validated,
+                   count(*) filter (where human_review = 'rejected') as rejected,
+                   count(*) filter (where status <> 'candidate') as killed
+            from engine_tests where kg_claim_id in ({marks}) group by 1""",
+        claim_ids,
+    ).fetchall()
+    return {r[0]: {"n": int(r[1]), "candidate": int(r[2]), "validated": int(r[3]),
+                   "rejected": int(r[4]), "killed": int(r[5])} for r in rows}
+
+
+_KG_STATUSES = ("disputed", "established", "reported")
+_KG_RELATION_CLASSES = ("causal", "correlational", "temporal", "predictive", "unclassed")
+
+
+def kg_graph(source: str, limit: int = 220, status: str | None = None, q: str | None = None,
+             polarity: str | int | None = None, kind: str | None = None,
+             relation_class: str | None = None, predicate: str | None = None) -> dict:
+    """Nodes (entities) + edges (claims) for the Evidence view.
+
+    Disputed claims come first, then the most-supported, so a capped view stays legible rather than a
+    hairball. Every filter but `q` is an equality test on a closed vocabulary (unknown values are
+    ignored, never guessed); `q` is a case-insensitive substring match over labels, identifiers,
+    predicate, aspect and mechanism, run in the database so search covers the whole collection and
+    not just the rows already loaded. Facets and the summary describe the unfiltered collection, the
+    `matched` count describes the filter, and `shown` the rows returned.
     """
     srcs = kg_sources()
     if source not in srcs:
         raise KeyError(source)
-    con = _connect_ro(srcs[source])
+    path = srcs[source]
+    con = _connect_ro(path)
     try:
-        where = ""
+        where: list[str] = []
         params: list = []
-        if status in ("disputed", "established", "reported"):
-            where = "where status = ?"
+        if status in _KG_STATUSES:
+            where.append("status = ?")
             params.append(status)
+        if str(polarity) in ("1", "0", "-1"):
+            where.append("polarity = ?")
+            params.append(int(polarity))
+        if kind:
+            where.append("(subject_kind = ? or object_kind = ?)")
+            params += [kind, kind]
+        if relation_class in _KG_RELATION_CLASSES:
+            where.append("coalesce(relation_class, '') = ?")
+            params.append("" if relation_class == "unclassed" else relation_class)
+        if predicate:
+            where.append("predicate = ?")
+            params.append(predicate)
+        q = (q or "").strip().lower()
+        if q:
+            like = f"%{q}%"
+            cols = ("subject_label", "object_label", "predicate", "coalesce(mechanism, '')",
+                    "coalesce(object_function, '')", "coalesce(subject_curie, '')",
+                    "coalesce(object_curie, '')")
+            where.append("(" + " or ".join(f"lower({c}) like ?" for c in cols) + ")")
+            params += [like] * len(cols)
+        clause = ("where " + " and ".join(where)) if where else ""
         limit = max(10, min(int(limit), 800))
         claims = _rows(
             con,
             f"""
-            select claim_id, subject_id, subject_label, predicate,
-                   object_id, object_label, object_function, polarity,
-                   status, dispute_kind, n_sources, confidence
-            from claim_edges {where}
-            order by (status='disputed') desc, n_sources desc
+            select claim_id, abstract_key,
+                   subject_id, subject_label, subject_curie, subject_kind,
+                   predicate, object_id, object_label, object_curie, object_kind,
+                   object_function, relation_class, polarity, mechanism,
+                   n_sources, first_year, status, dispute_kind, confidence
+            from claim_edges {clause}
+            order by (status='disputed') desc, n_sources desc, claim_id
             limit {limit}
             """,
             params,
         )
-        status_counts = dict(
-            _row2
-            for _row2 in con.execute(
-                "select status, count(*) from claim_edges group by 1"
-            ).fetchall()
-        )
-        total = con.execute("select count(*) from claim_edges").fetchone()[0]
+        matched = int(con.execute(f"select count(*) from claim_edges {clause}", params).fetchone()[0])
+        total = int(con.execute("select count(*) from claim_edges").fetchone()[0])
+        status_counts = _status_counts(con)
+        facets = {
+            "status": [{"value": k, "n": v} for k, v in sorted(status_counts.items())],
+            "polarity": _facet(con, "polarity"),
+            "relation_class": _facet(con, "coalesce(nullif(relation_class, ''), 'unclassed')"),
+            "predicate": _facet(con, "predicate"),
+            "kind": _facet(
+                con, "kind",
+                "(select distinct subject_id as id, subject_kind as kind from claim_edges "
+                "union select distinct object_id, object_kind from claim_edges)",
+            ),
+        }
+        summary = _kg_summary(con, total)
+        tested = _tested_overlay(con, [c["claim_id"] for c in claims])
     finally:
         con.close()
 
     nodes: dict[str, dict] = {}
 
-    def touch(nid: str, label: str, func: str = "") -> str:
+    def touch(nid: str, label: str, curie: str, kind: str, role: str) -> str:
         nid = nid or label
         if nid not in nodes:
-            nodes[nid] = {"id": nid, "label": label or nid, "function": func, "degree": 0}
-        nodes[nid]["degree"] += 1
+            nodes[nid] = {"id": nid, "label": label or nid, "curie": curie or "",
+                          "kind": kind or "", "degree": 0, "n_out": 0, "n_in": 0}
+        node = nodes[nid]
+        node["degree"] += 1
+        node["n_out" if role == "subject" else "n_in"] += 1
+        if not node["kind"] and kind:
+            node["kind"] = kind
         return nid
 
     edges = []
     for c in claims:
-        s = touch(c["subject_id"], c["subject_label"])
-        o = touch(c["object_id"], c["object_label"], c.get("object_function", ""))
+        s = touch(c["subject_id"], c["subject_label"], c.get("subject_curie"), c.get("subject_kind"), "subject")
+        o = touch(c["object_id"], c["object_label"], c.get("object_curie"), c.get("object_kind"), "object")
         edges.append(
             {
                 "claim_id": c["claim_id"],
+                "abstract_key": c.get("abstract_key") or "",
                 "source": s,
                 "target": o,
                 "predicate": c["predicate"],
-                "object_function": c.get("object_function", ""),
+                "object_function": c.get("object_function") or "",
+                "relation_class": c.get("relation_class") or "",
                 "polarity": c["polarity"],
+                "mechanism": c.get("mechanism") or "",
                 "status": c["status"],
-                "dispute_kind": c.get("dispute_kind", ""),
+                "dispute_kind": c.get("dispute_kind") or "",
                 "n_sources": c["n_sources"],
+                "first_year": c.get("first_year"),
                 "confidence": c["confidence"],
+                "tested": tested.get(c["claim_id"]),
             }
         )
 
+    try:
+        as_of = path.stat().st_mtime
+    except OSError:
+        as_of = None
     return {
         "source": source,
         "sources": list(srcs.keys()),
         "nodes": list(nodes.values()),
         "edges": edges,
         "total_claims": total,
+        "matched": matched,
         "status_counts": status_counts,
+        "facets": facets,
+        "summary": summary,
+        "as_of": as_of,
         "shown": len(edges),
     }
 

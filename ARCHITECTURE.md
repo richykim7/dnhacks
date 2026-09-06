@@ -407,9 +407,9 @@ Main routes: `/api/projects` and its sub-routes for build, run, jobs, chat and a
 
 ### 9.2 Frontend (`frontend/`)
 
-React and TypeScript, built with Vite and Tailwind, with Radix components, Motion, React Flow and Dagre for
-graphs, and 3Dmol for structures. It talks only to the JSON and SSE API. A project selector in the header
-scopes every view. The views:
+React and TypeScript, built with Vite and Tailwind, with Radix components, Motion and React Flow,
+d3-force for the literature graph, Dagre for investigation trees, and 3Dmol for structures. It talks only
+to the JSON and SSE API. A project selector in the header scopes every view. The views:
 
 - **Investigations.** The project's runs grouped into fork trees. The selected investigation shows its
   search tree as a spatial graph of agents, a live activity feed streamed step by step, and each experiment
@@ -421,9 +421,11 @@ scopes every view. The views:
 - **Library.** Create a project; edit every collection field; run a dry preview or a full build; upload
   and remove documents; talk to the assistant and accept its proposed settings; see build and run history
   with progress, logs and cancellation.
-- **Knowledge.** The project's literature claim graph with status filters, entity detail, relationship
-  search over the loaded subset, exact quotations, source papers and biological context. Review controls
-  are not exposed in the frontend. Backend review endpoints and human-decision persistence remain available.
+- **Knowledge.** The project's literature claim graph with entity-kind shapes, signed relationships,
+  collection-wide database search and vocabulary filters, collection totals and a capped graph view.
+  Claim inspection shows entity forms, exact quotations, source papers, biological context, reported
+  experiments, related claims and engine-test outcomes. Review controls are not exposed in the frontend.
+  Backend review endpoints and human-decision persistence remain available.
 
 ## 10. Data on disk
 

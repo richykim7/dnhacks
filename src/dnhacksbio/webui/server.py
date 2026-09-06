@@ -12,7 +12,8 @@ Routes
   GET  /api/investigations       -> runs grouped into fork trees (root + branches)
   GET  /api/runs/<id>            -> full parsed run (steps, tallies, tests)
   GET  /api/runs/<id>/stream     -> SSE; new steps as they are appended
-  GET  /api/kg?source=&limit=&status=   -> KG nodes+edges
+  GET  /api/kg?source=&limit=&status=&q=&polarity=&kind=&relation_class=&predicate=  -> KG nodes+edges
+  GET  /api/kg?source=&claim=          -> one claim: evidence, context, papers, experiments, tests
   GET  /api/review               -> review queue (promotion candidates)
   GET  /api/architecture         -> the engine's shape + facts extracted from source
   GET  /api/events/<id>          -> the investigation's ordered event stream (the player)
@@ -451,10 +452,16 @@ class Handler(BaseHTTPRequestHandler):
         if not srcs:
             return self._send_json({"nodes": [], "edges": [], "sources": []})
         source = (qs.get("source") or [srcs[0]])[0]
-        limit = int((qs.get("limit") or ["220"])[0])
-        status = (qs.get("status") or [None])[0]
         try:
-            return self._send_json(data.kg_graph(source, limit=limit, status=status))
+            limit = int((qs.get("limit") or ["220"])[0])
+        except ValueError:
+            return self._error(400, "limit must be an integer")
+        pick = lambda key: (qs.get(key) or [None])[0]          # noqa: E731
+        try:
+            return self._send_json(data.kg_graph(
+                source, limit=limit, status=pick("status"), q=pick("q"), polarity=pick("polarity"),
+                kind=pick("kind"), relation_class=pick("relation_class"), predicate=pick("predicate"),
+            ))
         except KeyError:
             return self._error(404, "unknown kg source")
 

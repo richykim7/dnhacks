@@ -2,7 +2,7 @@
 
 - Animated Tabs: adapted from preetsuthar17, retrieved through the user's 21st.dev account (demo 1962): https://21st.dev/@preetsuthar17/components/animated-tabs. Adaptation uses controlled selection, Radix keyboard behavior, and Motion's reduced-motion support; avoids duplicate interactive elements.
 - The component architecture follows shadcn/ui conventions (local source, CVA, Radix, Tailwind, `@/` aliases, `components.json`). The 21st catalog helper is development-only and never ships to the browser.
-- React Flow and Dagre: graph rendering and layout. Attribution remains visible.
+- React Flow: graph rendering; Dagre lays out the investigation tree; d3-force (ISC, Mike Bostock) lays out the knowledge graph. Attribution remains visible.
 - 3Dmol.js: local/browser molecular rendering. RCSB structures are fetched only after the user chooses an ID or explicitly opens the reference example.
 - IBM Plex Sans / Mono: self-hosted via Fontsource, SIL Open Font License.
 
