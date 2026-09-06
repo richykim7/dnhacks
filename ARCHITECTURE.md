@@ -622,6 +622,9 @@ artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning e
 A persistent node workspace keeps one selected molecular/binder source beside the researcher activity
 and findings; source availability follows the exact event cursor. Binder cameras transition smoothly
 and yield immediately to manual orbit; reduced motion and saved captures remain deterministic.
+Paired candidates use two scissored views with one actual camera, matching target coordinates and
+metric protocol. Captures retain both source hashes; saved-pixel picks resolve the exact candidate
+and residue, and the inspector follows that source. Availability remains bounded by the event cursor.
 Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
 verification. No live design pilot, biological efficacy or performance acceptance
 is implied. Immutable scoped scene recipes and PNG captures support actual image observations,
