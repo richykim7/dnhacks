@@ -311,3 +311,27 @@ def test_board_defers_on_two_option_popup(monkeypatch):
     monkeypatch.setattr(ui, "Tmux", lambda: c)
     assert not ui.send_board_message("test", "Board notice")
     assert not c.keys and not c.writes
+
+
+@pytest.mark.parametrize('partial', [False, True])
+def test_before_send_callback_runs_only_at_transport_boundary(monkeypatch, partial):
+    a = screen('› Ask Codex to do anything', cursor=True, x=2) if partial else screen()
+    c = Client([a, a, screen()] if partial else [a, a])
+    monkeypatch.setattr(ui, 'Tmux', lambda: c)
+    evidence = []
+    def before_send():
+        assert not c.writes
+        evidence.append('started')
+    assert not ui.send_board_message('test', 'Board notice', before_send=before_send)
+    assert evidence == (['started'] if partial else [])
+    assert len(c.writes) == int(partial)
+
+
+def test_before_send_persistence_failure_prevents_terminal_write(monkeypatch):
+    a = screen('› Ask Codex to do anything', cursor=True, x=2)
+    c = Client([a, a])
+    monkeypatch.setattr(ui, 'Tmux', lambda: c)
+    def fail():
+        raise OSError('state unavailable')
+    assert not ui.send_board_message('test', 'Board notice', before_send=fail)
+    assert not c.writes and not c.keys
