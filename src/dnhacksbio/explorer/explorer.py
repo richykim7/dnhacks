@@ -166,6 +166,9 @@ Actions:
 - search_skills  {"query": "<method or question>"}              -> which methods fit; then get_skill for the how
 - tissue         {"experiment_id":"<id>","operation":"<operation>","args":{...}} -> conditional spatial model; get_skill tissue-interface first
 - get_skill      {"name": "<skill>"}                            -> full method guidance, rigor invariants and an example
+- private_experiment {"method_id":"paired-pathway-v1|dependency-chronos-v1|biomarker_auc.v1", "spec":{...}, "input":{"cohort_id":"...","manifest_sha256":"..."}}
+                   -> submit an operator-registered experiment with runner-owned provenance; load the corresponding experiment skill first.
+                      Returns only a receipt. Never manufacture RESULT or submit that receipt to legacy verification.
 - run_experiments{"experiments": [ {"hypothesis","subject","object","method","expected_sign":-1|0|1,"code"}, ... ]}
                    -> runs each `code` in a parallel sandbox. Your code must print one line with json.dumps:
                       print("RESULT:", json.dumps({"effect":..,"p_null":..,"null_model":"..","n_units":..,"robust":true}))
@@ -1463,6 +1466,9 @@ class Explorer:
         if state and state["status"] != "working":
             raise RuntimeError("Research paused; dispatch prohibited")
         name, args = action.get("action"), action.get("args", {})
+        if name == "private_experiment":
+            from .private_experiments import dispatch
+            return await dispatch(self, args)
         if name == 'inhibitor':
             if 'inhibitor-interface' not in self._delivered:
                 return self._act_get_skill({'name':'inhibitor-interface'})
