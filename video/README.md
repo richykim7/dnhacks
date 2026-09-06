@@ -79,3 +79,15 @@ Official Remotion skill used:
 https://github.com/remotion-dev/skills/tree/main/skills/remotion-best-practices.
 The locally installed skill was version 4.0.521. Local rendering is subject to
 Remotion's license eligibility.
+
+## Typing-only refinement
+
+Typing is captured one Unicode character at a time with evenly spaced timestamps.
+The four windows remain exactly 7–10, 11–20, 27–32, and 71–80 seconds.
+
+CAPTURE_FROM=typing updates only those field interiors against the existing empty
+field screenshots. It preserves the original surrounding pixels, cursor paths,
+other snapshots and total 170-second duration. It refuses changed field geometry.
+It retains the previous manifest as manifest-before-typing.json; run
+node scripts/check-typing.mjs from video/ to verify every prefix, every 30 fps
+character step, exact window boundaries, and unchanged surrounding pixels.

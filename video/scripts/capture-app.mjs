@@ -2,6 +2,7 @@
 import { chromium } from "@playwright/test";
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 import path from "node:path";
+import { PNG } from "pngjs";
 const base = process.env.CAPTURE_BASE_URL || "http://127.0.0.1:8765";
 const out = process.env.CAPTURE_OUTPUT || path.resolve("video/public/capture");
 await mkdir(out, { recursive: true });
@@ -15,6 +16,20 @@ let manifest = {
     "Actual deployed frontend; browser-local staged setup and animated reveals; existing presentation history.",
 };
 const treeOnly = process.env.CAPTURE_FROM === "tree";
+const typingOnly = process.env.CAPTURE_FROM === "typing";
+const original = typingOnly
+  ? JSON.parse(await readFile(path.join(out, "manifest.json"), "utf8"))
+  : null;
+if (typingOnly) {
+  await writeFile(
+    path.join(out, "manifest-before-typing.json"),
+    JSON.stringify(original, null, 2),
+  );
+  manifest = structuredClone(original);
+  manifest.captures = manifest.captures.filter(
+    (s) => !s.note.includes("Typing") && s.note !== "Completed field",
+  );
+}
 if (treeOnly) {
   manifest = JSON.parse(
     await readFile(path.join(out, "manifest.json"), "utf8"),
@@ -124,6 +139,7 @@ await page.addInitScript(() => {
 });
 const wait = (ms) => page.waitForTimeout(ms);
 async function shot(t, note) {
+  if (typingOnly) return;
   await page.evaluate(() => document.fonts.ready);
   const file = `app-${String(manifest.captures.length).padStart(4, "0")}.png`;
   await page.screenshot({ path: path.join(out, file) });
@@ -136,24 +152,77 @@ async function shot(t, note) {
 async function cursor(t, locator, click = false) {
   const b = await locator.boundingBox();
   if (!b) throw new Error("No cursor target at " + t);
-  manifest.cursor.push({
-    t,
-    x: b.x + b.width * 0.5,
-    y: b.y + b.height * 0.5,
-    click,
-    target: await locator.innerText().catch(() => ""),
-    bounds: b,
-  });
+  if (!typingOnly)
+    manifest.cursor.push({
+      t,
+      x: b.x + b.width * 0.5,
+      y: b.y + b.height * 0.5,
+      click,
+      target: await locator.innerText().catch(() => ""),
+      bounds: b,
+    });
   if (click) await locator.click();
 }
 async function type(t, duration, locator, text) {
   await cursor(t - 0.2, locator, true);
-  for (let i = 0; i <= text.length; i += 4) {
-    await locator.fill(text.slice(0, i));
-    await shot(t + (duration * i) / text.length, "Typing in the actual form");
+  const characters = Array.from(text);
+  const baseShot = typingOnly ? original.captures.find((s) => s.t === t) : null;
+  const originalBounds = typingOnly
+    ? original.cursor.find((c) => Math.abs(c.t - (t - 0.2)) < 0.001).bounds
+    : null;
+  const bounds = await locator.boundingBox();
+  if (
+    typingOnly &&
+    ["x", "y", "width", "height"].some(
+      (k) => Math.abs(bounds[k] - originalBounds[k]) > 1,
+    )
+  ) {
+    throw new Error(
+      "Typing field layout changed at " +
+        t +
+        "; refusing to alter surrounding UI.",
+    );
   }
-  await locator.fill(text);
-  await shot(t + duration, "Completed field");
+  for (let i = 0; i <= characters.length; i++) {
+    const prefix = characters.slice(0, i).join("");
+    await locator.fill(prefix);
+    const time = t + (duration * i) / characters.length;
+    if (!typingOnly) {
+      await shot(
+        time,
+        i === characters.length
+          ? "Completed field"
+          : "Typing in the actual form",
+      );
+      continue;
+    }
+    // Replace only the input interior, keeping every surrounding pixel unchanged.
+    const clip = {
+      x: Math.ceil(bounds.x) + 3,
+      y: Math.ceil(bounds.y) + 3,
+      width: Math.floor(bounds.width) - 6,
+      height: Math.floor(bounds.height) - 6,
+    };
+    const field = PNG.sync.read(await page.screenshot({ clip, caret: "hide" }));
+    const base = PNG.sync.read(await readFile(path.join(out, baseShot.file)));
+    PNG.bitblt(field, base, 0, 0, field.width, field.height, clip.x, clip.y);
+    const file = "typing-" + t + "-" + String(i).padStart(3, "0") + ".png";
+    await writeFile(path.join(out, file), PNG.sync.write(base));
+    manifest.captures.push({
+      t: time,
+      file,
+      note:
+        i === characters.length
+          ? "Completed field"
+          : "Typing in the actual form",
+      typingStart: t,
+      typingDuration: duration,
+      typedLength: i,
+      typedText: prefix,
+      fieldClip: clip,
+      baseFile: baseShot.file,
+    });
+  }
 }
 async function seek(value) {
   const slider = page.getByRole("slider", {
@@ -321,6 +390,18 @@ try {
       page.locator(".modal textarea").first(),
       "Which adaptive processes could allow pancreatic cancer cells with extra centrosomes to survive nutrient, stress and division challenges?",
     );
+    if (typingOnly) {
+      manifest.captures.sort((a, b) => a.t - b.t);
+      await writeFile(
+        path.join(out, "manifest.json"),
+        JSON.stringify(manifest, null, 2),
+      );
+      await browser.close();
+      console.log(
+        "Updated single-character captures; all typing durations and other snapshots preserved.",
+      );
+      process.exit(0);
+    }
     await cursor(
       83,
       page.getByRole("button", { name: "Start research", exact: true }),
@@ -436,9 +517,10 @@ try {
     }),
   );
 } finally {
-  await writeFile(
-    path.join(out, "manifest.json"),
-    JSON.stringify(manifest, null, 2),
-  );
+  if (!typingOnly)
+    await writeFile(
+      path.join(out, "manifest.json"),
+      JSON.stringify(manifest, null, 2),
+    );
   await browser.close();
 }
