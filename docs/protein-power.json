@@ -1,0 +1,304 @@
+{
+  "schema": "ProteinPowerFeasibility-v1",
+  "minimum_effect": 0.4,
+  "alpha": 0.05,
+  "witness": "oracle g(x)=0.2x; not saved protein model",
+  "kernel": "learned_evalue._log_payoffs",
+  "burn_in_pairs": 16,
+  "results": [
+    {
+      "pairs": 48,
+      "scored_pairs": 32,
+      "gaussian_oracle_using_all_pairs": 0.6235197687011074,
+      "gaussian_oracle_using_scored_pairs": 0.4821119899731373,
+      "null": {
+        "streams": 10000,
+        "final_rate": 0.0024,
+        "final_ci95": [
+          0.0016133788093978358,
+          0.0035687763690995114
+        ],
+        "anytime_rate": 0.0052,
+        "anytime_ci95": [
+          0.003967852921628257,
+          0.006812151865993302
+        ]
+      },
+      "effect": {
+        "streams": 10000,
+        "final_rate": 0.116,
+        "final_ci95": [
+          0.10987063515944737,
+          0.12242427558923227
+        ],
+        "anytime_rate": 0.1562,
+        "anytime_ci95": [
+          0.149216611890123,
+          0.16344742538955423
+        ]
+      }
+    },
+    {
+      "pairs": 60,
+      "scored_pairs": 44,
+      "gaussian_oracle_using_all_pairs": 0.7074796116133933,
+      "gaussian_oracle_using_scored_pairs": 0.5914640505421219,
+      "null": {
+        "streams": 10000,
+        "final_rate": 0.005,
+        "final_ci95": [
+          0.0037949010708382266,
+          0.006585257316131603
+        ],
+        "anytime_rate": 0.0127,
+        "anytime_ci95": [
+          0.010684882862923495,
+          0.015089361949137915
+        ]
+      },
+      "effect": {
+        "streams": 10000,
+        "final_rate": 0.2319,
+        "final_ci95": [
+          0.22373195810996396,
+          0.2402739418163928
+        ],
+        "anytime_rate": 0.3035,
+        "anytime_ci95": [
+          0.2945655586137993,
+          0.3125853527458765
+        ]
+      }
+    },
+    {
+      "pairs": 96,
+      "scored_pairs": 80,
+      "gaussian_oracle_using_all_pairs": 0.8700077288784407,
+      "gaussian_oracle_using_scored_pairs": 0.8119131898703729,
+      "null": {
+        "streams": 10000,
+        "final_rate": 0.0077,
+        "final_ci95": [
+          0.006165744043271591,
+          0.009612340752496583
+        ],
+        "anytime_rate": 0.0257,
+        "anytime_ci95": [
+          0.022775958742475743,
+          0.028988302111948073
+        ]
+      },
+      "effect": {
+        "streams": 10000,
+        "final_rate": 0.5211,
+        "final_ci95": [
+          0.5113026842644052,
+          0.5308811110043522
+        ],
+        "anytime_rate": 0.638,
+        "anytime_ci95": [
+          0.6285294960360455,
+          0.6473645204136478
+        ]
+      }
+    },
+    {
+      "pairs": 128,
+      "scored_pairs": 112,
+      "gaussian_oracle_using_all_pairs": 0.9400443936072937,
+      "gaussian_oracle_using_scored_pairs": 0.9112467353958466,
+      "null": {
+        "streams": 10000,
+        "final_rate": 0.007,
+        "final_ci95": [
+          0.005544619309554507,
+          0.008834003083932618
+        ],
+        "anytime_rate": 0.0351,
+        "anytime_ci95": [
+          0.03166782524897386,
+          0.038889216436081224
+        ]
+      },
+      "effect": {
+        "streams": 10000,
+        "final_rate": 0.6847,
+        "final_ci95": [
+          0.6755238644667753,
+          0.6937342865350967
+        ],
+        "anytime_rate": 0.7941,
+        "anytime_ci95": [
+          0.7860625168410482,
+          0.8019116153173198
+        ]
+      }
+    },
+    {
+      "pairs": 160,
+      "scored_pairs": 144,
+      "gaussian_oracle_using_all_pairs": 0.9733729770919354,
+      "gaussian_oracle_using_scored_pairs": 0.9598768635051915,
+      "null": {
+        "streams": 10000,
+        "final_rate": 0.0073,
+        "final_ci95": [
+          0.005810351168746255,
+          0.009168040825718463
+        ],
+        "anytime_rate": 0.039,
+        "anytime_ci95": [
+          0.035379232816902695,
+          0.04297481368086112
+        ]
+      },
+      "effect": {
+        "streams": 10000,
+        "final_rate": 0.7905,
+        "final_ci95": [
+          0.7824130915589689,
+          0.798363805387668
+        ],
+        "anytime_rate": 0.8826,
+        "anytime_ci95": [
+          0.8761435310375107,
+          0.8887626334092475
+        ]
+      }
+    },
+    {
+      "pairs": 192,
+      "scored_pairs": 176,
+      "gaussian_oracle_using_all_pairs": 0.9885269224870178,
+      "gaussian_oracle_using_scored_pairs": 0.9824619591113393,
+      "null": {
+        "streams": 10000,
+        "final_rate": 0.0044,
+        "final_ci95": [
+          0.0032794410394017762,
+          0.0059011781456128655
+        ],
+        "anytime_rate": 0.0402,
+        "anytime_ci95": [
+          0.03652333626057827,
+          0.04422978864109592
+        ]
+      },
+      "effect": {
+        "streams": 10000,
+        "final_rate": 0.8575,
+        "final_ci95": [
+          0.850511366953795,
+          0.8642140742111711
+        ],
+        "anytime_rate": 0.9268,
+        "anytime_ci95": [
+          0.9215294486097154,
+          0.931742770381075
+        ]
+      }
+    },
+    {
+      "pairs": 256,
+      "scored_pairs": 240,
+      "gaussian_oracle_using_all_pairs": 0.9980155923488478,
+      "gaussian_oracle_using_scored_pairs": 0.9968991957729719,
+      "null": {
+        "streams": 10000,
+        "final_rate": 0.0026,
+        "final_ci95": [
+          0.0017749883701664525,
+          0.003807013208982624
+        ],
+        "anytime_rate": 0.0412,
+        "anytime_ci95": [
+          0.03747746616189304,
+          0.045274890743039795
+        ]
+      },
+      "effect": {
+        "streams": 10000,
+        "final_rate": 0.9342,
+        "final_ci95": [
+          0.9291719596806897,
+          0.9388945761342148
+        ],
+        "anytime_rate": 0.9722,
+        "anytime_ci95": [
+          0.9687920269633385,
+          0.9752453249753943
+        ]
+      }
+    },
+    {
+      "pairs": 384,
+      "scored_pairs": 368,
+      "gaussian_oracle_using_all_pairs": 0.9999514464888397,
+      "gaussian_oracle_using_scored_pairs": 0.9999219034131244,
+      "null": {
+        "streams": 10000,
+        "final_rate": 0.0006,
+        "final_ci95": [
+          0.0002750134763309977,
+          0.0013085240963007856
+        ],
+        "anytime_rate": 0.0426,
+        "anytime_ci95": [
+          0.03881428812903491,
+          0.04673699358046003
+        ]
+      },
+      "effect": {
+        "streams": 10000,
+        "final_rate": 0.9839,
+        "final_ci95": [
+          0.9812408523497239,
+          0.9861875140271351
+        ],
+        "anytime_rate": 0.9951,
+        "anytime_ci95": [
+          0.9935283915761888,
+          0.9962913732371672
+        ]
+      }
+    },
+    {
+      "pairs": 512,
+      "scored_pairs": 496,
+      "gaussian_oracle_using_all_pairs": 0.9999990084865609,
+      "gaussian_oracle_using_scored_pairs": 0.9999983749994046,
+      "null": {
+        "streams": 10000,
+        "final_rate": 0.0002,
+        "final_ci95": [
+          5.4848927320857825e-05,
+          0.0007289958440074671
+        ],
+        "anytime_rate": 0.0459,
+        "anytime_ci95": [
+          0.04196987371736925,
+          0.05017887360287923
+        ]
+      },
+      "effect": {
+        "streams": 10000,
+        "final_rate": 0.9959,
+        "final_ci95": [
+          0.9944430050723087,
+          0.9969761453436542
+        ],
+        "anytime_rate": 0.9988,
+        "anytime_ci95": [
+          0.997903527544183,
+          0.9993133956812301
+        ]
+      }
+    }
+  ],
+  "device": "NVIDIA L40S",
+  "torch": "2.10.0+cu128",
+  "seconds": 0.19174329700035742,
+  "peak_cuda_bytes": 239075328,
+  "code_sha256": "29185daaef7a7ccfd90ebbd6ba1e745bb6fcbf97f90de9f1314cd56d0f39c23a",
+  "model_specific_release_certificate": false
+}
