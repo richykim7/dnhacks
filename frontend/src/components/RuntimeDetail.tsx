@@ -411,6 +411,7 @@ export function RuntimeDetail({
                           />
                         ) : (
                           <Structures
+                            experimentId={exp.experiment_id}
                             owner={`${exp.title || "Experiment"} · ${runId}`}
                             artifact={artifact}
                             url={runtimeUrl(

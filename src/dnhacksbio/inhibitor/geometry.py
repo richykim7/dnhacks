@@ -173,5 +173,5 @@ def preparation_audit(geometry):
                 retained=dict(waters=sum(r['kind']=='water' for r in geometry['residues']),
                               alternate_atoms=sum(bool(a['altloc']) for a in atoms),
                               hydrogens=sum(a['element']=='H' for a in atoms)),
-                reason='No frozen receptor protonation/repair policy, ligand stereochemistry and charge assignment, '
-                       'or validated PDBQT preparation is registered. Deposited coordinates remain unchanged; docking unavailable.')
+                reason='This deposited structure has no preparation specification attached to this geometry request. '
+                       'Use the experiment-scoped inhibitor dock action with an explicit frozen protocol to prepare and dock it.')
