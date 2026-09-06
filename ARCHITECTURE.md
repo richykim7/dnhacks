@@ -344,6 +344,13 @@ These are in the package and tested, and deliberately not connected to the falsi
   association. `drug_response_scoring.py` uses the shared private transport and frozen donor registry;
   `drug_response.py` computes observed log-dose inhibition area and stratified Spearman permutations.
   No synergy evidence or biological confirmation cohort is enabled. See `docs/drug-response-scoring.md`.
+
+- `registered_expression_scoring.py`: shared-queue adapter for operator-frozen paired pathway protocols,
+  hashed expression cohorts/resources and receipt aliases. `expression_design.py` validates donor pairs
+  and prepares integer pseudobulk; `pathway_evalue.py` computes fixed weighted scores and assignment
+  evidence. Optional `count_expression.py` records approximate paired PyDESeq2 effects privately.
+  The `expression_experiment --dataset-id` route accepts identifiers only; legacy TPM uploads remain
+  available. No confirmation cohort is bundled, and no statistical result enters discovery feedback.
 - `expr_encoder.py`: frozen PCA or masked-gene autoencoder encoders with recorded training provenance,
   trained by `scripts/train_expr_encoder.py`.
 - `evalues.py`: p-to-e calibration, merging and e-BH helpers. Inputs must already be valid.

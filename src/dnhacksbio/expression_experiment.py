@@ -30,14 +30,34 @@ def submit(input_path, spec_path, request_id, *, endpoint=None):
     return send_payload(payload, endpoint)
 
 
+def submit_dataset(dataset_id, spec_path, request_id, *, endpoint=None):
+    """Submit only registered identifiers; the manifest hash accompanies the public spec."""
+    if not REQUEST_ID.fullmatch(dataset_id) or not REQUEST_ID.fullmatch(request_id):
+        raise ValueError("Invalid identifier")
+    with Path(spec_path).open("rb") as stream:
+        raw = stream.read(16_385)
+    if len(raw) > 16_384:
+        raise ValueError("Specification exceeds 16 KiB")
+    document = json.loads(raw)
+    if not isinstance(document, dict) or set(document) != {"spec", "manifest_sha256"}:
+        raise ValueError("Expected spec and manifest_sha256")
+    payload = {"request_id": request_id, "spec": document["spec"],
+               "input": {"cohort_id": dataset_id, "manifest_sha256": document["manifest_sha256"]}}
+    endpoint = endpoint or os.environ.get("DNHACKS_EXPRESSION_ENDPOINT", "http://127.0.0.1:8793")
+    return send_payload(payload, endpoint)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", required=True, help="NPZ with Xa, Xb, genes, unit_a, unit_b")
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--input", help="NPZ with Xa, Xb, genes, unit_a, unit_b")
+    inputs.add_argument("--dataset-id", help="Operator-registered cohort identifier")
     parser.add_argument("--spec", required=True, help="JSON experiment specification")
     parser.add_argument("--request-id", required=True, help="Stable ID; reuse for transport retries")
     args = parser.parse_args(argv)
     try:
-        receipt = submit(args.input, args.spec, args.request_id)
+        receipt = (submit_dataset(args.dataset_id, args.spec, args.request_id) if args.dataset_id
+                   else submit(args.input, args.spec, args.request_id))
     except (OSError, ValueError, RuntimeError):
         print("Experiment not acknowledged. Check inputs and service setup; retry with the same request ID.",
               file=sys.stderr)
