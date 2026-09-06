@@ -41,6 +41,7 @@ class MonitorStore:
               CREATE TABLE IF NOT EXISTS checkpoints(episode TEXT, version INTEGER, body TEXT NOT NULL,
                 PRIMARY KEY(episode,version));
               CREATE TABLE IF NOT EXISTS reviews(id TEXT PRIMARY KEY, body TEXT NOT NULL);
+              CREATE TABLE IF NOT EXISTS outcome_workflows(id TEXT PRIMARY KEY, body TEXT NOT NULL);
             ''')
         os.chmod(self.path, 0o600)
 
@@ -78,7 +79,7 @@ class MonitorStore:
             old = c.execute("SELECT body FROM episodes WHERE id=?", (episode_id,)).fetchone()
             if old:
                 old = json.loads(old[0])
-                if any(old[k] != v for k, v in body.items() if k not in {"enrolled_at", "outcome", "status", "label_provenance"}):
+                if any(old[k] != v for k, v in body.items() if k not in {"enrolled_at", "outcome", "status", "label_provenance", "protocol_hash"}):
                     raise ValueError("Episode is frozen; cannot refresh endpoint or objective")
                 return old
             if calibration_unit:
@@ -103,14 +104,14 @@ class MonitorStore:
         with self.connect() as c:
             return [json.loads(r[0]) for r in c.execute("SELECT body FROM checkpoints WHERE episode=? ORDER BY version", (eid,))]
 
-    def append_checkpoint(self, eid, prefix, *, cost, verifier_score, monitor_statistic=None, threshold=None, error=None, scoring_version=None, verifier_cost=None):
+    def append_checkpoint(self, eid, prefix, *, cost, verifier_score, monitor_statistic=None, threshold=None, error=None, scoring_version=None, verifier_cost=None, _historical=False):
         if type(cost) not in (int, float) or not math.isfinite(cost) or cost < 0:
             raise ValueError("Finite measured cumulative cost required")
         for name, v in [("verifier", verifier_score), ("statistic", monitor_statistic), ("threshold", threshold)]:
             if v is not None and (type(v) not in (int, float) or not math.isfinite(v) or v < 0 or name == "verifier" and v > 1):
                 raise ValueError("Invalid private measurement")
         ep = self.episode(eid)
-        if ep["status"] != "open":
+        if ep["status"] != "open" and not (_historical and ep.get("outcome_workflow")):
             raise ValueError("Closed episode cannot acquire new monitor readings")
         if set(prefix) != {"through_sequence", "events", "report", "report_version"}:
             raise ValueError("Invalid prefix envelope")
@@ -138,7 +139,11 @@ class MonitorStore:
                 return old
             current = json.loads(c.execute("SELECT body FROM episodes WHERE id=?", (eid,)).fetchone()[0])
             if current["status"] != "open":
-                raise ValueError("Closed episode cannot acquire new monitor readings")
+                bound = c.execute("SELECT body FROM outcome_workflows WHERE id=?", (eid,)).fetchone()
+                endpoint = json.loads(bound[0]).get("endpoint") if bound else None
+                if not (_historical and current.get("outcome_workflow") and endpoint
+                        and seq <= endpoint["through_sequence"]):
+                    raise ValueError("Closed episode permits only frozen historical checkpoints")
             # Serialize comparison with insertion, including concurrent worker calls.
             latest = c.execute("SELECT body FROM checkpoints WHERE episode=? ORDER BY version DESC LIMIT 1", (eid,)).fetchone()
             if latest:
@@ -148,7 +153,7 @@ class MonitorStore:
             c.execute("INSERT INTO checkpoints VALUES (?,?,?)", (eid, version, canonical(record)))
         return record
 
-    def close(self, eid, *, termination, evidence=None, pending_verification=False, provenance):
+    def close(self, eid, *, termination, evidence=None, pending_verification=False, provenance, _workflow=None):
         """Only a completed fixed-policy continuation can be a negative example."""
         if not isinstance(provenance, dict) or not provenance.get("assessor") or not provenance.get("artifact_refs"):
             raise ValueError("Final assessment needs assessor and artifact provenance")
@@ -159,7 +164,11 @@ class MonitorStore:
             if not row:
                 raise FileNotFoundError("Episode unavailable")
             ep = json.loads(row[0])
+            if ep.get("outcome_workflow") and ep["outcome_workflow"] != _workflow:
+                raise ValueError("Bound outcomes require the artifact adjudication workflow")
             if ep["status"] == "closed":
+                if _workflow:
+                    return ep
                 raise ValueError("Outcome is immutable; start a new declared objective")
             qualified = []
             for f in evidence or []:
@@ -178,7 +187,8 @@ class MonitorStore:
             else:
                 outcome, status = "censored", "closed"
             ep.update(outcome=outcome, status=status, label_provenance={"termination": termination,
-                "evidence": qualified, **provenance}, closed_at=time.time())
+                "evidence": qualified, **provenance}, closed_at=time.time(),
+                training_eligible=bool(_workflow and outcome in {"success", "unsuccessful"}))
             c.execute("UPDATE episodes SET body=? WHERE id=?", (canonical(ep), eid))
         return ep
 
@@ -237,6 +247,13 @@ class MonitorStore:
         result = []
         for ep in self.episodes():
             rows = self.checkpoints(ep["episode_id"])
-            result.append({**ep, "scores": [r["verifier_score"] for r in rows],
+            provenance = ep.get("label_provenance") or {}
+            cost_summary = {
+                "research_control_seconds": provenance.get("research_control_seconds"),
+                "final_assessor_seconds": provenance.get("adjudication_seconds"),
+                "prefix_verifier_seconds": sum(r.get("verifier_cost", {}).get("seconds", 0.) for r in rows),
+                "excludes": ["external_legacy_verification", "runner_bookkeeping"],
+            }
+            result.append({**ep, "cost_summary": cost_summary, "scores": [r["verifier_score"] for r in rows],
                            "costs": [r["cumulative_cost"] for r in rows], "histories": rows})
         return result

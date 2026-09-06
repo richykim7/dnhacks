@@ -193,6 +193,7 @@ class ControlStore:
                 left = c.execute("SELECT remaining FROM trees WHERE id=?", (root(run_id),)).fetchone()[0]
                 if depth(run_id) >= depth_cap or left < n:
                     raise ValueError("Fork exceeds depth or tree capacity; revise allocation")
+                budget.hold_launches(c, run_id, n)
                 budget.hold_reports(c, [child(run_id, i + 1) for i in range(n)], decision["allowance"])
                 if not all(budget.available(c, child(run_id, i + 1)) for i in range(n)):
                     raise budget.BudgetUnavailable("No research allowance remains for children")

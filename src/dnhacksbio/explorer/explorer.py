@@ -311,6 +311,7 @@ class Explorer:
         self._transcript_path = str(td / f"transcript_{run_id}.jsonl")  # raw SDK message stream per step
         self._trace_dir = str(td)
         self._last_capture: dict = {}
+        self._session_connected = False
         self._session = None                    # persistent resumable session (opened in run(); None in tests)
         self._seen_fb: set = set()              # feedback ids already surfaced (per-turn delta dedup)
         self._seen_corr: set = set()            # correction ids already surfaced
@@ -332,7 +333,7 @@ class Explorer:
         self.control = share_from.control if share_from else ControlStore(td)
         if share_from is None:
             existing_budget = self.control.budgets(self.run_id)
-            if subtree_budget is not None or not any(b["run_id"] == self.run_id for b in existing_budget):
+            if subtree_budget is not None or not existing_budget:
                 self.control.freeze_budget(self.run_id, subtree_budget)
         elif subtree_budget is not None:
             self.control.freeze_budget(self.run_id, subtree_budget)
@@ -539,10 +540,13 @@ class Explorer:
             return text
         cap: dict = {}
         if self._session is not None:
+            if not self._session_connected:
+                await self._session.__aenter__()
+                self._session_connected = True
             text = await asyncio.wait_for(self._session.ask(prompt, capture=cap), timeout=self.model_timeout_s)
         else:
             text = await asyncio.wait_for(llm.acomplete(prompt, model=self.model, system=_SYS, effort="high",
-                                       max_turns=24, thinking=True, capture=cap), timeout=self.model_timeout_s)
+                                       max_turns=1, tools_disabled=True, thinking=True, capture=cap), timeout=self.model_timeout_s)
         self._last_capture = cap
         if self.control.get(self.run_id):
             self.control.cost(self.run_id, "research", 0., _capture_usage(cap))
@@ -577,7 +581,13 @@ class Explorer:
     def _budget_line(self) -> str:
         state = self.control.get(self.run_id)
         left = max(0, state["allowance"] - state["used"]) if state else self._round_max_steps
-        return (f"RESEARCH ALLOWANCE: {left} actions remain before mandatory reporting. "
+        limits = self.control.budgets(self.run_id)
+        if limits:
+            left = min(left, *(b["action_holds"].get(self.run_id, 0) for b in limits))
+        shared = " ".join(f"Subtree {b['run_id']}: {b['contract']['actions'] - b['actions']} total actions and "
+                          f"{max(0., b['contract']['seconds'] - b['spent']):.1f} accounted seconds remain, shared with descendants."
+                          for b in limits)
+        return (shared + f" RESEARCH ALLOWANCE: {left} actions remain before mandatory reporting. "
                 "checkpoint reports early; done requests completion; neither means automatic pruning. "
                 + ("Wrap up current work and prepare to report unfinished progress." if left <= 3 else ""))
 
@@ -1197,7 +1207,9 @@ class Explorer:
                 self.session_id = sid
                 self._persist_session(sid)
                 self.control.patch(self.run_id, session_id=sid)
-            await self._session.__aexit__()
+            if self._session_connected:
+                await self._session.__aexit__()
+            self._session_connected = False
             self._session = None
         report_session = None
         if self._inject_complete is None:
@@ -1209,9 +1221,8 @@ class Explorer:
             report_session = llm.Session(system=_SYS, model=self.model, resume=sid,
                                          max_turns=1, tools_disabled=True, max_output_tokens=4096)
         error = ""
+        report_connected = False
         try:
-            if report_session:
-                await report_session.__aenter__()
             for attempt in range(state["report_attempts"], 3):
                 self.control.patch(self.run_id, report_attempts=attempt + 1)
                 started = time.monotonic()
@@ -1220,9 +1231,14 @@ class Explorer:
                 try:
                     prompt = REPORT_PROMPT + "\nObjective: " + self.manifest["branch_objective"] + "\nTrigger: " + self._report_reason + "\n" + error
                     self._event("model.started", {"phase": "report", "label": "Writing mandatory report"})
-                    raw = await self._funded("report", lambda: asyncio.wait_for(
-                        self._inject_complete(prompt) if self._inject_complete else report_session.ask(prompt, capture=cap),
-                        timeout=min(90, self.model_timeout_s)))
+                    async def ask_report():
+                        nonlocal report_connected
+                        if report_session and not report_connected:
+                            await report_session.__aenter__()
+                            report_connected = True
+                        return await asyncio.wait_for(self._inject_complete(prompt) if self._inject_complete
+                            else report_session.ask(prompt, capture=cap), timeout=min(90, self.model_timeout_s))
+                    raw = await self._funded("report", ask_report)
                     report = validate_report(json.loads(raw))
                     if report_session and report_session.truncated:
                         raise ValueError("Report output limit reached")
@@ -1230,7 +1246,8 @@ class Explorer:
                     report_cost_saved = True
                     saved = self.control.save_report(self.run_id, report)
                     self._event("checkpoint.report", {"version": saved["version"], "report": report,
-                                                      "total_actions": saved["total_actions"], "costs": saved["costs"]})
+                                                      "total_actions": saved["total_actions"], "costs": saved["costs"],
+                                                      "budget_scopes": self.control.budgets(self.run_id)})
                     self._event("lifecycle", {"lifecycle": "awaiting_parent", "reason": "Valid child report saved"})
                     return
                 except (ValueError, TypeError) as exc:
@@ -1251,7 +1268,8 @@ class Explorer:
                     self._persist_session(self.session_id)
                     self.control.patch(self.run_id, session_id=self.session_id)
                 try:
-                    await report_session.__aexit__()
+                    if report_connected:
+                        await report_session.__aexit__()
                 except Exception:
                     pass
         self.control.patch(self.run_id, status="reporting_blocked")
@@ -1320,6 +1338,17 @@ class Explorer:
             self.control.cost(child.run_id, "judge", time.monotonic() - started, _capture_usage(cap))
 
     async def _allocate(self, child):
+        """Serialize a node's controller, including restart/partial-fork execution."""
+        import fcntl
+        lock_path = self.control.path.parent / ("allocation-" + child.run_id + ".lock")
+        with lock_path.open("a") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return
+            return await self._allocate_unlocked(child)
+
+    async def _allocate_unlocked(self, child):
         """One child can report/receive allocation without waiting for siblings."""
         while True:
             state = self.control.get(child.run_id)
@@ -1384,7 +1413,10 @@ class Explorer:
                 state = c.control.get(c.run_id)
                 if state["status"] in {"working", "reporting"}:
                     await c.run(max_steps=record["decision"]["allowance"])
-                await self._allocate(c)
+                try:
+                    await self._allocate(c)
+                finally:
+                    self.control.finalize_budgets(c.run_id)
             tasks.append(work())
         self._event("lifecycle", {"lifecycle": "waiting", "reason": "Authorized descendants executing"})
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -1428,6 +1460,10 @@ class Explorer:
         return fn(args) if fn else f"(unknown action {name!r})"
 
     async def step(self, message: str) -> tuple[dict, str]:
+        self.control.start(self.run_id, CHILD_MAX_STEPS)
+        return await self._funded("research", lambda: self._step(message))
+
+    async def _step(self, message: str) -> tuple[dict, str]:
         """One think→act→observe cycle on the persistent session. `message` is turn 1's full standing
         context or a turn-2+ delta (last observation + any new feedback). Returns (action, observation)."""
         state = self.control.get(self.run_id)
@@ -1514,7 +1550,7 @@ class Explorer:
             if self._inject_complete is None:
                 self._session = llm.Session(system=_SYS, model=self.model, effort="high", max_turns=1,
                                             thinking=True, resume=self._resume_sid, tools_disabled=True)
-                await self._session.__aenter__()
+                self._session_connected = False
             self._round_max_steps = state["allowance"]
             self._steps_at_round_start = self.steps - state["used"]
             message = (self._branch_brief or self._state()) + "\n" + self._budget_line()
@@ -1531,7 +1567,7 @@ class Explorer:
                         break
                     started = time.monotonic()
                     try:
-                        action, obs = await self._funded("research", lambda: self.step(message))
+                        action, obs = await self.step(message)
                     except BudgetUnavailable:
                         self._report_reason = "subtree_budget_exhausted"
                         self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
@@ -1558,7 +1594,9 @@ class Explorer:
                 heartbeat.cancel()
                 await asyncio.gather(heartbeat, return_exceptions=True)
             if self._session:
-                await self._session.__aexit__()
+                if self._session_connected:
+                    await self._session.__aexit__()
+                self._session_connected = False
                 self._session = None
         return self._run_summary()
 

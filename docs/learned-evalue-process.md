@@ -474,3 +474,32 @@ zero-action reporting and exhaustion across rounds have focused regression cover
 The time measure is summed operation wall time, not GPU compute or money; interrupted/overrunning
 backends are marked as operational violations, not valid completed negative examples. No actual
 trajectory collection, model scoring, training or GPU run was performed for this stage.
+
+
+## Private outcome-label workflow
+
+Completed the engineering separately from deferred science runs. The operator can prepare a runtime
+identity and freeze its actual subtree contract, starting evidence, rubric/model and adjudication
+policy before research. The label worker gathers real recorded code/output/results from the child and
+descendants, waits for the matching automated verification and privately applies the fixed rubric.
+No manually asserted success, fork count or child summary substitutes for those artifacts.
+
+Tests exercise slow-start continuation, global exhaustion with mandatory reporting, concurrent grants,
+restart ambiguity, descendant success, initial-evidence replay, delayed verification, fixed deadlines,
+assessor outages, altered artifacts, duplicate workers and exclusion of future/private feedback.
+Missing evidence and operational failures become censored examples; failed soundness is not success.
+Only workflow-qualified completed labels enter the training CLI. The initial adapter covers the legacy
+submission gate; private receipt methods require explicit validated adapters.
+
+Budget milestone gates: 321 Python passed / 6 optional skips, frontend build, 6 unit and 19 browser
+tests passed. No actual investigation, assessor invocation, trajectory scoring, training or GPU job
+was launched. These tests demonstrate accounting and labeling behavior, not scientific predictive power.
+
+Final review also covered standalone child resumption (inherit the ancestor allowance), complete
+operation reservations before research admission, serialized parent controllers, authoritative budget
+snapshots at checkpoints, and outcome-before-prefix-replay ordering. Historical replay is limited to
+the frozen terminal cursor and never exposes labels in verifier input.
+
+Final integrated gates against main 268f120: 421 Python tests passed, six optional checks skipped
+(Rscript, PyDESeq2 twice, decoupler, CUDA, opt-in Docker). Frontend build, six unit tests and
+19 browser tests passed. Both label-before-replay and label-during-replay orderings are covered.
