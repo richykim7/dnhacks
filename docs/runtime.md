@@ -3,6 +3,9 @@
 New Explorer attempts publish runtime-owned events before model/tool work starts. Select a researcher
 in Investigations to see actual execution, its brief stated intent, liveness, experiment output, and
 recorded artifacts. Terminal capture is opt-in and is not the source of lifecycle state.
+The inline researcher workspace keeps recorded scene actions and image observations under
+**Advanced diagnostics**, including `scene.recipe` notes and `scene.review` observations.
+These entries follow the activity playback cursor alongside the other runtime events.
 
 ## Persistence and scope
 

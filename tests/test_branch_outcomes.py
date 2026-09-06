@@ -199,7 +199,8 @@ def test_real_controller_ledger_to_private_label_and_checkpoint_cost(tmp_path, m
     from dnhacksbio.branch_monitoring.worker import score_pending
     ex, _ = make_explorer(tmp_path / "public", monkeypatch, iter([action("done"), report()]))
     m = MonitorStore(tmp_path / "private")
-    proto = protocol(); proto.update(policy_id="parent-allocation-v1", terminal_budget=288)
+    budget = ex.control.budgets(ex.run_id)[0]["contract"]
+    proto = protocol(); proto.update(policy_id=budget["policy_id"], terminal_budget=budget["actions"])
     prepare(m, ex.journal, tmp_path / "public", episode_id="e", run_id="study", root_id="study", group_id="g",
         objective="Original research question", initial_evidence=[], protocol=proto, start_sequence=0,
         outcome_policy=dict(assessor_model="fake", prompt_version="subtree-outcome-v1",

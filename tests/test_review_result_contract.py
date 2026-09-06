@@ -125,9 +125,17 @@ def test_api_keeps_saved_decisions_when_publication_fails(tmp_path, monkeypatch)
     def fail(*args):
         raise OSError("publication unavailable")
     monkeypatch.setattr(human_review, "publish_reviews", fail)
-    with pytest.raises(OSError):
+    with pytest.raises(RuntimeError, match="runtime publication is pending") as error:
         data.apply_promotions()
+    assert isinstance(error.value.__cause__, OSError)
     assert data.read_promotion_decisions() == decisions
     monkeypatch.setattr(human_review, "publish_reviews", real_publish)
-    assert data.apply_promotions()["rejected"] == 1
-    assert not data.PROMOTION_DECISIONS_PATH.exists()
+    assert data.apply_promotions()["rejected"] == 0  # The committed verdict is not counted twice.
+    working = KGStore(data.WORKING_KG)
+    try:
+        saved = working.get_engine_test(test_id)
+        assert saved["human_review"] == "rejected"
+        assert saved["review_note"] == "Check independent controls"
+    finally:
+        working.close()
+    assert data.read_promotion_decisions() == {}

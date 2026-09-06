@@ -276,10 +276,10 @@ for (const failure of ["missing", "corrupt"] as const) {
 }
 
 test("mobile spindle comparison toggles full-size cells without changing physical time or camera", async ({page})=>{
+  await page.setViewportSize({width:390,height:844});
   await openSpindle(page);
   const stage=page.locator(".spindle-stage");
   await stage.evaluate(async el=>{const c=(el as any).spindleController;await c.apply({frame:12,compare:1});await c.ready();});
-  await page.setViewportSize({width:390,height:844});
   await stage.evaluate(async el=>await (el as any).spindleController.ready());
   const before=await stage.evaluate(el=>(el as any).spindleController.inspect());
   await page.getByRole("button",{name:"View comparison run"}).click();

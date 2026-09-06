@@ -1,5 +1,14 @@
 # Research workspace review
 
+## Review — technical presentation revision
+
+- Rebuilt the former 29-slide package as ten main slides, about 375 scripted seconds. Technical mechanisms, training objectives, baselines and fresh-data evidence are in the argument, with source-rich Notes on every slide.
+- Replaced the cell cover with an editable agent-architecture rendering; added a sourced experimental urgency slide and an ingestion→recursive research→acceptance overview. Grounded 3D inspection in the recorded coordinate countercheck.
+- Added masked-MSE and negative-log-payoff objectives with primary-paper rationale. Charts preserve all predeclared RNA comparators and explicitly label analytical mean/constant-critic controls. No fabricated random-model benchmark or discovery is included.
+- Kept the 23-second embedded video, automatic Slide Show condition, prominent relative MP4 link and portable delivery ZIP. General-use/paper reveal is slide 7, followed immediately by the cutoff/access/GPU-audit slide 8. Teammate-run details are grouped editable placeholders; the measured L40S fit is kept distinct.
+- Added deployment unit economics and a three-year development/investment thesis. Sources, website captures, plot manifests, manual-edit instructions and validation are documented under presentation/.
+- Required gates exposed stale controller/review/navigation fixtures and expensive duplicate screenshot readbacks. Restored missing scene actions/observations in Advanced diagnostics, retaining the current workspace and exact evidence assertions. Final checks and optional skips are recorded in presentation/validation.md.
+
 ## Review — sandbox-safe Board transport fixture
 
 - Reproduced the private transport test's `uncertain` failure with an unwritable input-lock cache; ordinary and isolated-PID probes passed.

@@ -2,6 +2,9 @@ import { test, expect, type Page } from "@playwright/test";
 import { mockApi, investigation } from "./fixtures";
 import type { RuntimeEvent } from "../src/lib/runtime";
 
+// Explicit UI exports retain image evidence without simultaneous trace screencast readbacks.
+test.use({ trace: { mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: true } });
+
 const root = investigation.root;
 const child = `${root}~1`;
 async function fixture(page: Page) {
@@ -145,9 +148,10 @@ async function fixture(page: Page) {
   return decisions;
 }
 
-test("full-canvas researcher morph, stable origin and candidate replay", async ({
-  page,
-}) => {
+async function exerciseResearcherWorkspace(page: Page, exportImages = false) {
+  const capture = async (name: string) => {
+    if (exportImages) await page.screenshot({ path: test.info().outputPath(name) });
+  };
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   const decisions = await fixture(page);
@@ -166,9 +170,7 @@ test("full-canvas researcher morph, stable origin and candidate replay", async (
     .click();
   await expect(page.locator("#main-navigation")).toBeHidden();
   await expect(page.locator("#investigation-navigation")).toBeHidden();
-  await page.screenshot({
-    path: test.info().outputPath("investigation-dark.png"),
-  });
+  await capture("investigation-dark.png");
   await page.waitForTimeout(900);
   const stage = await page.locator(".research-stage").boundingBox();
   await page.mouse.move(stage!.x + 45, stage!.y + 80);
@@ -209,7 +211,7 @@ test("full-canvas researcher morph, stable origin and candidate replay", async (
   const before = await viewport.getAttribute("style");
   await page.waitForTimeout(5500); // One investigation poll must preserve the user's viewport.
   expect(await viewport.getAttribute("style")).toBe(before);
-  await page.screenshot({ path: test.info().outputPath("node-dark.png") });
+  await capture("node-dark.png");
   await detail
     .getByRole("button", { name: "Review candidate", exact: true })
     .click();
@@ -230,9 +232,7 @@ test("full-canvas researcher morph, stable origin and candidate replay", async (
       experiment: "exp-controls",
     }),
   ]);
-  await page.screenshot({
-    path: test.info().outputPath("candidate-review.png"),
-  });
+  await capture("candidate-review.png");
   await page.keyboard.press("Escape");
   await expect(detail).toHaveCount(0);
   expect(await branch.boundingBox()).toEqual(origin);
@@ -255,11 +255,22 @@ test("full-canvas researcher morph, stable origin and candidate replay", async (
   await page.getByRole("button", { name: "Latest state", exact: true }).click();
   await expect(page.locator(".summary-candidates")).toHaveText("1 candidates");
   await page.getByRole("button", { name: "Switch to light theme" }).click();
-  await page.screenshot({ path: test.info().outputPath("node-light.png") });
+  await capture("node-light.png");
   await page.setViewportSize({ width: 430, height: 900 });
   await page.waitForTimeout(900);
-  await page.screenshot({ path: test.info().outputPath("node-mobile.png") });
+  await capture("node-mobile.png");
   expect(errors).toEqual([]);
+}
+
+test("full-canvas researcher morph, stable origin and candidate replay", async ({ page }) => {
+  await exerciseResearcherWorkspace(page);
+});
+
+test("researcher workspace visual exports across review, themes and mobile", async ({ page }) => {
+  // The first three of five SwiftShader PNG readbacks alone took 16.4s.
+  // Keep their export budget separate from the unchanged 30s behavior check.
+  test.slow();
+  await exerciseResearcherWorkspace(page, true);
 });
 
 // Opt-in read-only public projection capture; the snapshot never enters git.

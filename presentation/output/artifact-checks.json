@@ -1,45 +1,22 @@
 {
   "renderer": "LibreOffice Impress + Poppler",
   "native_powerpoint_animation_review": false,
+  "native_powerpoint_media_playback_review": false,
   "decks": {
     "DNHacks_2026_DN_Research": {
-      "slides": 29,
-      "notes": 29,
-      "rendered_pages": 29,
-      "hidden_slides": [
-        10,
-        11,
-        12,
-        13,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        27,
-        28,
-        29
-      ],
-      "missing_text_tokens": {}
-    },
-    "DNHacks_Layout_Kit": {
-      "slides": 4,
-      "notes": 4,
-      "rendered_pages": 4,
+      "embedded_movies": 1,
+      "slides": 10,
+      "notes": 10,
+      "rendered_pages": 10,
       "hidden_slides": [],
       "missing_text_tokens": {}
     }
   },
   "sha256": {
-    "DNHacks_2026_DN_Research.pptx": "14833f3b5a02b316843a64cebdbc5424fccfe07f3559d8fe6a88471e22243d45",
-    "DNHacks_2026_Reviewer_Copy.pdf": "7399b87b80f133fe24e03b390a2e4a2597088b6da7c9c42cf1785743e2de0313",
+    "DNHacks_2026_DN_Research.pptx": "0ce699019f3d71d7f40827292c56d7a8977efd0fc33634dde8471fb4230e77ee",
+    "DNHacks_2026_Reviewer_Copy.pdf": "4b4a873426c7dfd5ef560d33beed10aaa1795bf13572172691819f4f2dc9f067",
     "DNHacks_Layout_Kit.pdf": "cda0dbde74867c901ad05446d516bee7ae8fc7ed716dc6112dd12f9084b554fb",
-    "DNHacks_2026_DN_Research.pdf": "063fd6e8c9569b2972ce2c95a142da97b4d156dbaf5dd55a5d2700d1ac6bd649",
+    "DNHacks_2026_DN_Research.pdf": "4b4a873426c7dfd5ef560d33beed10aaa1795bf13572172691819f4f2dc9f067",
     "DNHacks_Layout_Kit.pptx": "ffbd2bd5ac9bd4b2234c2257817c0c311b74717bced2baf0728b1e9ad01eba6d"
   }
 }

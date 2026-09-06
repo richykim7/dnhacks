@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 import { mockApi, investigation } from "./fixtures";
 import type { RuntimeEvent } from "../src/lib/runtime";
 
+// Explicit PNGs retain visual evidence without continuous duplicate WebGL readbacks from tracing.
+test.use({ trace: { mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: true } });
+
 // Synthetic execution fixture; molecular coordinates are experimental reference 1CRN from RCSB.
 // https://files.rcsb.org/download/1CRN.pdb — no generated predictions or measured runtime claims.
 const pdb = readFileSync(new URL("./1crn.pdb", import.meta.url), "utf8");
@@ -183,6 +186,7 @@ test("node execution, opt-in terminal, inline real geometry and replay boundary"
   page.on("pageerror", (e) => errors.push(e.message));
   const reads = await fixture(page);
   await page.goto("/");
+  await page.getByRole("button", { name: "Inspect Inspect the experimental fold" }).waitFor();
   await expect(page.locator(".agent-node")).toHaveCount(2);
   expect(reads.artifactReads()).toBe(0);
   await page
@@ -204,16 +208,6 @@ test("node execution, opt-in terminal, inline real geometry and replay boundary"
     timeout: 20000,
   });
   await expect(page.getByText("Preparing experiment structure")).toHaveCount(0);
-  await page.locator(".artifact-canvas").scrollIntoViewIfNeeded();
-  await page.waitForTimeout(700);
-  await page.screenshot({ path: test.info().outputPath("dn-runtime-molecule-dark.png") });
-  await page.getByRole("tab", { name: "Surface", exact: true }).click();
-  await page.waitForTimeout(800);
-  await page.screenshot({ path: test.info().outputPath("dn-runtime-surface.png") });
-  await page.getByRole("button", { name: "Switch to light theme" }).click();
-  await page.getByRole("tab", { name: "Ribbon", exact: true }).click();
-  await page.waitForTimeout(600);
-  await page.screenshot({ path: test.info().outputPath("dn-runtime-molecule-light.png") });
   await page.getByLabel("Activity playback position").fill("7");
   await expect(page.locator(".artifact-viewer")).toHaveCount(0);
   await expect(page.locator(".experiment-detail")).toContainText("Running");
@@ -226,6 +220,33 @@ test("node execution, opt-in terminal, inline real geometry and replay boundary"
   await expect(page.locator(".inline-research-detail")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+// Each visual scenario owns one GPU readback; PNG export does not consume the replay test's budget.
+for (const view of [
+  { theme: 'dark', mode: 'Ribbon', image: 'dn-runtime-molecule-dark.png', settle: 700 },
+  { theme: 'dark', mode: 'Surface', image: 'dn-runtime-surface.png', settle: 800 },
+  { theme: 'light', mode: 'Ribbon', image: 'dn-runtime-molecule-light.png', settle: 600 },
+]) {
+  test(`reference geometry renders ${view.theme} ${view.mode}`, async ({ page }) => {
+    // SwiftShader PNG readback measured over 26s; only explicit image exports get this budget.
+    test.slow();
+    const errors: string[] = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await fixture(page);
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Inspect Inspect the experimental fold' }).click();
+    await expect(page.locator('.artifact-canvas canvas')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('Preparing experiment structure')).toHaveCount(0);
+    await page.locator('.artifact-canvas').scrollIntoViewIfNeeded();
+    if (view.theme === 'light') await page.getByRole('button', { name: 'Switch to light theme' }).click();
+    await page.getByRole('tab', { name: view.mode, exact: true }).click();
+    await expect(page.getByRole('tab', { name: view.mode, exact: true })).toHaveAttribute('aria-selected', 'true');
+    await page.waitForTimeout(view.settle);
+    await page.screenshot({ path: test.info().outputPath(view.image) });
+    expect(errors).toEqual([]);
+  });
+}
+
 test("inhibitor workbench opens from its owning experiment", async ({ page }) => {
   const clockStart = new Date('2026-09-06T09:00:00Z');
   await page.clock.install({time: clockStart});
@@ -256,14 +277,17 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   await expect(page.locator('.pocket-stage canvas')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.sceneReview));
   await page.evaluate(() => window.sceneReview!.ready());
+  // Control replay from its first action; slow rendering must not advance it while locating controls.
+  await page.clock.pauseAt(new Date(clockStart.getTime()+300_000));
   await page.getByRole('button', {name:'Scene controls',exact:true}).click();
   await page.getByLabel('Playback speed').selectOption('8');
   await page.getByRole('button',{name:'Play',exact:true}).click();
+  await page.clock.fastForward(1100);
   await expect.poll(()=>page.evaluate(()=>window.inhibitorScene!.recipe()!.revision)).toBe(2);
   await expect(page.getByLabel('Interaction mode')).toHaveValue('replay');
   await page.getByRole('button',{name:'oblique',exact:true}).click();
   await expect(page.getByLabel('Interaction mode')).toHaveValue('explore');
-  await page.waitForTimeout(1700); // one refresh: user camera must not be overwritten
+  await page.clock.fastForward(1700); // one refresh: user camera must not be overwritten
   expect(await page.evaluate(()=>window.inhibitorScene!.recipe()!.shot)).toBe('oblique');
   const ownView=await page.evaluate(()=>window.inhibitorScene!.recipe());
   await page.getByLabel('Interaction mode').selectOption('follow');
@@ -275,8 +299,6 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   await page.getByText('Activity & evidence · 4 recorded operations', {exact:true}).click();
   await page.getByRole('button',{name:/Inspected scene pixels/}).click();
   await expect(page.getByText('Check the visible ligand against canonical geometry.')).toBeVisible();
-  // Freeze before transport assertions so locator dispatch cannot run past the action.
-  await page.clock.pauseAt(new Date(clockStart.getTime()+300_000));
   await page.getByRole('button',{name:'Play',exact:true}).click();
   await expect(page.getByRole('button',{name:'Pause',exact:true})).toBeVisible();
   await page.clock.runFor(160);

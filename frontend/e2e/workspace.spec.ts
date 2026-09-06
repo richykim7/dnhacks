@@ -37,11 +37,12 @@ test("tree, live detail, recorded experiments and theme screenshots", async ({
   await page
     .getByRole("button", { name: "Inspect Variant-specific effects" })
     .click();
+  await page.getByRole("tablist", { name: "Researcher detail" }).getByRole("tab", { name: "Activity", exact: true }).click();
   await expect(
     page.getByText("Live update: robustness check has completed."),
   ).toBeVisible();
   await page.screenshot({ path: test.info().outputPath("dn-detail-dark.png") });
-  await page.getByRole("button", { name: "Close researcher detail" }).click();
+  await page.locator('.workspace-titlebar').getByRole("button", { name: "Close researcher detail", exact: true }).click();
   await expect(
     page.getByRole("tablist", { name: "Researcher detail" }),
   ).toHaveCount(0);
@@ -127,7 +128,7 @@ test("review controls are hidden and old knowledge links still work", async ({
   for (const route of ["knowledge", "evidence", "review"]) {
     await page.goto("/?project=ion-channels#" + route);
     await expect(
-      page.getByRole("heading", { name: "Explore knowledge" }),
+      page.getByRole("heading", { name: "Knowledge", exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole("tab", { name: "Review findings" }),
@@ -188,7 +189,7 @@ test("keyboard navigation and accessible primary surfaces", async ({
   await page.getByRole("tab", { name: "Search tree", exact: true }).focus();
   await page.keyboard.press("ArrowRight");
   await expect(
-    page.getByRole("tab", { name: "Activity", exact: true }),
+    page.getByRole("tab", { name: "Experiments", exact: true }),
   ).toHaveAttribute("data-state", "active");
 });
 test("empty real backend does not show test data", async ({ page }) => {

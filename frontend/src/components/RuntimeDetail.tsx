@@ -743,7 +743,7 @@ export function RuntimeDetail({
             )}
             {events
               .filter((e) =>
-                /^(attempt|lifecycle|intent|model|tool|experiment|artifact|checkpoint|branch)[.]*?/.test(
+                /^(attempt|lifecycle|intent|model|tool|experiment|artifact|checkpoint|branch|scene)[.]*?/.test(
                   e.kind,
                 ),
               )
@@ -756,6 +756,7 @@ export function RuntimeDetail({
                     <time>{date(e.recorded_at)}</time>
                   </div>
                   {e.payload.error && <p>{e.payload.error}</p>}
+                  {typeof e.payload.note === "string" && <p>{e.payload.note}</p>}
                   {typeof e.payload.observation === "string" ? (
                     <p>{e.payload.observation}</p>
                   ) : e.payload.observation?.storage_key ? (
