@@ -1,7 +1,10 @@
 # Demo slides
 
-Status: **draft, not started**. This file collects the framing and outline for the demo deck.
-Nothing here is an implementation task; it is a plan for what to say and show.
+Status: **working deck created, scientific demo replacement pending**. The editable
+[PowerPoint and layout kit](../presentation/README.md) implement this framing with an 11-slide
+core pitch, six Q&A slides and per-slide scripts in Notes. The current demo capture is explicitly
+synthetic interface data; replace it with the selected real investigation before presenting a result.
+This file preserves the team's framing and original candidate outline.
 
 ## Framing note (Rich, 2026-09-06)
 
@@ -38,4 +41,6 @@ directed in the correct directions, can be highly impactful.
 
 - Pick the one investigation to show; it needs a real candidate that reached the review queue.
 - Decide live versus recorded playback for the console segment.
-- Slide tool and length are undecided.
+- Working format: native editable PowerPoint, approximately five-minute core pitch. Confirm the
+  official pitch duration, final product name and entered category; the deck proposes Open Category
+  based on the DTX-sponsored official category description.
