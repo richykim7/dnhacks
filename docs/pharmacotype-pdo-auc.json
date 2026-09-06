@@ -1,0 +1,165 @@
+{
+  "schema": "pharmacotype.pdo-auc-benchmark.v1",
+  "source_hash": "0d8f0765d601e2adcdcc7450951b6a5000216130afcae353a84cc5660c5ba192",
+  "contract_hash": "760dfeb9f327da8642b52a7d4bd58b185d04146938e00c2646d72f0eeb09d69f",
+  "donor_count": 38,
+  "split_counts": {
+    "train": 21,
+    "validation": 5,
+    "test": 12
+  },
+  "trials": [
+    {
+      "kind": "identity",
+      "seed": 0,
+      "model_sha256": "046a1788b12d1637f9974d0b5cc556f4e78511ed588a4c79ae4290e1b7b81f27",
+      "training_seconds": 1.1823738140010391,
+      "resources": {
+        "torch": "2.10.0+cu128",
+        "device": "cuda",
+        "fitting_device": "cuda",
+        "host_critic_features": false,
+        "peak_allocated_bytes": 33920512,
+        "peak_reserved_bytes": 44040192
+      },
+      "validation_auc_rmse": 0.23326165213776281,
+      "test_auc_rmse": 0.12114598795901113
+    },
+    {
+      "kind": "identity",
+      "seed": 1,
+      "model_sha256": "0d0f61787a846918f875c0c71b10279d3c16a075121ed2c76bbf90c1b72b5821",
+      "training_seconds": 0.16324471899861237,
+      "resources": {
+        "torch": "2.10.0+cu128",
+        "device": "cuda",
+        "fitting_device": "cuda",
+        "host_critic_features": false,
+        "peak_allocated_bytes": 42440192,
+        "peak_reserved_bytes": 65011712
+      },
+      "validation_auc_rmse": 0.23326165213776281,
+      "test_auc_rmse": 0.12114598795901113
+    },
+    {
+      "kind": "identity",
+      "seed": 2,
+      "model_sha256": "4ad5cc1d3a2f6fbaf06ea2300b69899fd78f43d4292af9194b80915d74f5ee1b",
+      "training_seconds": 0.1641059800022049,
+      "resources": {
+        "torch": "2.10.0+cu128",
+        "device": "cuda",
+        "fitting_device": "cuda",
+        "host_critic_features": false,
+        "peak_allocated_bytes": 42440192,
+        "peak_reserved_bytes": 65011712
+      },
+      "validation_auc_rmse": 0.23326165213776281,
+      "test_auc_rmse": 0.12114598795901113
+    },
+    {
+      "kind": "pca",
+      "seed": 0,
+      "model_sha256": "bd1796f1dec4b533635664483e908f13796a455089aedb4c12aab6fba2db5993",
+      "training_seconds": 0.15958295999735128,
+      "resources": {
+        "torch": "2.10.0+cu128",
+        "device": "cuda",
+        "fitting_device": "cuda",
+        "host_critic_features": false,
+        "peak_allocated_bytes": 24937472,
+        "peak_reserved_bytes": 65011712
+      },
+      "validation_auc_rmse": 0.205254073078709,
+      "test_auc_rmse": 0.11865200618573425
+    },
+    {
+      "kind": "pca",
+      "seed": 1,
+      "model_sha256": "d6f67f7791191a23ec5e641f66c23e370d748d17a5f02c391c4671a6f80480b4",
+      "training_seconds": 0.15172244700079318,
+      "resources": {
+        "torch": "2.10.0+cu128",
+        "device": "cuda",
+        "fitting_device": "cuda",
+        "host_critic_features": false,
+        "peak_allocated_bytes": 24937472,
+        "peak_reserved_bytes": 65011712
+      },
+      "validation_auc_rmse": 0.205254073078709,
+      "test_auc_rmse": 0.11865200618573425
+    },
+    {
+      "kind": "pca",
+      "seed": 2,
+      "model_sha256": "eeeb198a5ba81c8b97836cc65da3a1716723d99679d5722521c0d956438b3ccc",
+      "training_seconds": 0.15495827500126325,
+      "resources": {
+        "torch": "2.10.0+cu128",
+        "device": "cuda",
+        "fitting_device": "cuda",
+        "host_critic_features": false,
+        "peak_allocated_bytes": 24937472,
+        "peak_reserved_bytes": 65011712
+      },
+      "validation_auc_rmse": 0.205254073078709,
+      "test_auc_rmse": 0.11865200618573425
+    },
+    {
+      "kind": "mlp",
+      "seed": 0,
+      "model_sha256": "1887bf4e1bdb1cf3136980174002b9c8a5c069a35cffd13a857e39d36cdff9cd",
+      "training_seconds": 0.5608587840033579,
+      "resources": {
+        "torch": "2.10.0+cu128",
+        "device": "cuda",
+        "fitting_device": "cuda",
+        "host_critic_features": false,
+        "peak_allocated_bytes": 19649024,
+        "peak_reserved_bytes": 67108864
+      },
+      "validation_auc_rmse": 0.18078202612703156,
+      "test_auc_rmse": 0.12173596090079074
+    },
+    {
+      "kind": "mlp",
+      "seed": 1,
+      "model_sha256": "97c83d11691b39288ad3972c0b43c45ce1e81909dc95b2ee2e7c09c8b453e968",
+      "training_seconds": 0.5088513579976279,
+      "resources": {
+        "torch": "2.10.0+cu128",
+        "device": "cuda",
+        "fitting_device": "cuda",
+        "host_critic_features": false,
+        "peak_allocated_bytes": 19649024,
+        "peak_reserved_bytes": 67108864
+      },
+      "validation_auc_rmse": 0.18850346619688063,
+      "test_auc_rmse": 0.10996713852904864
+    },
+    {
+      "kind": "mlp",
+      "seed": 2,
+      "model_sha256": "19385ec79a9b0c53c602fe1de896376a455e257c461cfe24379074c053d08aec",
+      "training_seconds": 0.5123059559991816,
+      "resources": {
+        "torch": "2.10.0+cu128",
+        "device": "cuda",
+        "fitting_device": "cuda",
+        "host_critic_features": false,
+        "peak_allocated_bytes": 19649024,
+        "peak_reserved_bytes": 67108864
+      },
+      "validation_auc_rmse": 0.1984135675180307,
+      "test_auc_rmse": 0.11684130474961131
+    }
+  ],
+  "mean_baseline": {
+    "validation_auc_rmse": 0.15622625952906774,
+    "test_auc_rmse": 0.11615253130779797
+  },
+  "selected_by_mean_validation": "mlp",
+  "confirmation_enabled": false,
+  "scope": "Conventional measured PDO AUC prediction; no dose reconstruction or full-curve claim",
+  "retained_predictor": "training_mean"
+}

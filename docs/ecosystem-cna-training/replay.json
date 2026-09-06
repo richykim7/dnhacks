@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "heldout_growth_absolute_error": {
+    "pca/cca-rbf": 0.0,
+    "pca/native-growth": 0.0,
+    "dae/cca-rbf": 0.0,
+    "dae/native-growth": 0.0,
+    "nb/cca-rbf": 0.0,
+    "nb/native-growth": 0.0
+  }
+}

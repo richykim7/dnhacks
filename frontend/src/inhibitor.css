@@ -1,0 +1,850 @@
+.pocket-workbench {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #080f17;
+  color: #dfe8ed;
+  overflow: auto;
+  font-family: "IBM Plex Sans Variable", sans-serif;
+  color-scheme: dark;
+  --edge: #273843;
+  --muted: #97adb9;
+  --accent: #b1ded5;
+}
+.pocket-workbench button {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 8px 11px;
+  background: #14212b;
+  color: #dfe8ed;
+  font-size: 12px;
+  cursor: pointer;
+}
+.pocket-workbench button:hover {
+  background: #223641;
+  border-color: #6b8e99;
+}
+.pocket-workbench button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.pocket-workbench :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.pocket-workbench :is(input, select, textarea) {
+  background: #101d27;
+  color: #dfe8ed;
+  border: 1px solid #344955;
+  border-radius: 5px;
+  padding: 7px;
+  font: inherit;
+  font-size: 12px;
+}
+.pocket-header {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--edge);
+}
+.pocket-owner {
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pocket-reference {
+  margin-left: auto;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+.pocket-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+}
+.pocket-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+.pocket-title h1 {
+  font-weight: 450;
+  font-size: 24px;
+  letter-spacing: -0.6px;
+  margin: 0;
+}
+.pocket-title h1 span {
+  color: #688791;
+  padding: 0 5px;
+}
+.pocket-title p:last-child {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 5px 0 0;
+}
+.pocket-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  margin: 0 24px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.pocket-stage {
+  position: relative;
+  min-width: 0;
+  background: #09131d;
+  height: clamp(390px, calc(100dvh - 340px), 780px);
+}
+.pocket-stage > div:not([class]) {
+  height: 100% !important;
+}
+.pocket-canvases {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+.pocket-canvases.paired {
+  grid-template-columns: 1fr 1fr;
+}
+.pocket-canvases > div {
+  min-width: 0;
+}
+.pocket-stage-meta {
+  position: absolute;
+  z-index: 2;
+  left: 18px;
+  right: 18px;
+  top: 14px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  pointer-events: none;
+}
+.pocket-scene-caption {
+  position: absolute;
+  bottom: 56px;
+  left: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  font-size: 12px;
+  background: #08131dd9;
+  padding: 7px 10px;
+  border-radius: 5px;
+  max-width: calc(100% - 36px);
+}
+.pocket-scene-caption > span:last-child {
+  color: var(--muted);
+  font-size: 11px;
+}
+.pocket-amber-dot {
+  width: 6px;
+  height: 6px;
+  background: #f2bd73;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pocket-camera-tools {
+  position: absolute;
+  bottom: 14px;
+  left: 18px;
+  display: flex;
+  gap: 6px;
+}
+.pocket-camera-tools button {
+  background: #12212be8;
+  font-size: 11px;
+  padding: 6px 10px;
+  backdrop-filter: blur(8px);
+}
+.pocket-orbit-hint {
+  position: absolute;
+  bottom: 20px;
+  right: 18px;
+  color: #819ba9;
+  font-size: 10px;
+  pointer-events: none;
+}
+.pocket-atom-label,
+.pocket-distance-label {
+  white-space: nowrap;
+  background: #10212fe8;
+  border: 1px solid #567b88;
+  border-radius: 4px;
+  color: #d7ffff;
+  font-size: 10px;
+  padding: 3px 6px;
+  pointer-events: none;
+}
+.pocket-distance-label {
+  font-size: 12px;
+  border-color: #b1ded5;
+}
+.pocket-inspector {
+  background: #101b25;
+  padding: 20px;
+  border-left: 1px solid var(--edge);
+  max-height: clamp(390px, calc(100dvh - 340px), 780px);
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.pocket-inspector h2 {
+  font-size: 24px;
+  font-weight: 450;
+  margin: 0;
+  color: #f2bd73;
+}
+.pocket-secondary {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 6px 0 12px;
+}
+.pocket-inspector label {
+  font-size: 11px;
+  color: #b5c5ce;
+  display: block;
+}
+.pocket-inspector label :is(select, input, textarea) {
+  width: 100%;
+  margin-top: 6px;
+}
+.pocket-tabs {
+  display: flex;
+  gap: 3px;
+  margin-top: 16px;
+  border-bottom: 1px solid var(--edge);
+}
+.pocket-tabs button {
+  background: none;
+  border: 0;
+  text-transform: capitalize;
+  padding: 9px 5px;
+  color: var(--muted);
+  border-radius: 0;
+  font-size: 11px;
+}
+.pocket-tabs button[aria-selected="true"] {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+.pocket-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 4px;
+}
+.pocket-stat > strong {
+  font-size: 32px;
+  font-weight: 350;
+}
+.pocket-stat span {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.pocket-contact-list {
+  max-height: 145px;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.pocket-contact-list button {
+  width: 100%;
+  justify-content: space-between;
+  border: 0;
+  border-bottom: 1px solid var(--edge);
+  background: none;
+  border-radius: 0;
+  padding: 9px 2px;
+  font-size: 11px;
+}
+.pocket-contact-list small {
+  color: var(--muted);
+  margin-left: 6px;
+}
+.pocket-contact-list strong {
+  font-weight: 450;
+  color: var(--accent);
+}
+.pocket-measure {
+  border-top: 1px solid var(--edge);
+  padding-top: 14px;
+  margin-top: 16px;
+}
+.pocket-measure p {
+  font-size: 11px;
+  color: var(--muted);
+}
+.pocket-measure button {
+  font-size: 11px;
+  margin: 0 5px 6px 0;
+}
+.pocket-measure output {
+  display: block;
+  margin-top: 12px;
+}
+.pocket-measure output > strong {
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--accent);
+}
+.pocket-measure code {
+  display: block;
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+.pocket-measure details {
+  font-size: 11px;
+  margin-top: 8px;
+}
+.pocket-search-results {
+  max-height: 140px;
+  overflow: auto;
+}
+.pocket-search-results button {
+  width: 100%;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+  text-align: left;
+  justify-content: start;
+}
+.pocket-audit {
+  font-size: 12px;
+  color: #b5c5ce;
+  line-height: 1.6;
+  padding-top: 12px;
+}
+.pocket-audit h3 {
+  font-size: 14px;
+  font-weight: 450;
+  color: #f2bd73;
+}
+.pocket-audit dl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px;
+}
+.pocket-audit dd {
+  margin: 0;
+}
+.pocket-audit textarea {
+  width: 100%;
+  font-size: 11px;
+}
+.pocket-audit pre {
+  font-size: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 250px;
+  overflow: auto;
+}
+.pocket-audit a {
+  display: block;
+  color: var(--accent);
+}
+.pocket-audit details {
+  margin: 12px 0;
+}
+.pocket-audit button {
+  margin-bottom: 8px;
+}
+.pocket-protocol {
+  display: grid;
+  gap: 12px;
+  margin: 10px 0;
+}
+.pocket-protocol p {
+  font-size: 10px;
+  color: var(--muted);
+}
+.pocket-inspector .pocket-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+}
+.pocket-check input {
+  width: auto !important;
+  margin: 0 !important;
+}
+.pocket-timeline {
+  margin: 10px 24px 0;
+  background: #111e28;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  font-size: 12px;
+  overflow: hidden;
+}
+.pocket-transport {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px;
+}
+.pocket-mode {
+  font-size: 0;
+}
+.pocket-transport .pocket-mode select {
+  font-size: 12px;
+  margin-right: 8px;
+}
+.pocket-transport input {
+  flex: 1;
+  min-width: 50px;
+  padding: 0;
+  accent-color: var(--accent);
+}
+.pocket-transport button {
+  padding: 7px;
+}
+.pocket-transport .pocket-play {
+  background: var(--accent);
+  color: #10231f;
+  border-color: var(--accent);
+}
+.pocket-clock {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--muted);
+}
+.pocket-action-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 12px 10px;
+  font-size: 11px;
+  color: #d3e2e8;
+}
+.pocket-action-caption small {
+  color: var(--muted);
+  white-space: nowrap;
+  font-size: 10px;
+}
+.pocket-action-log {
+  border-top: 1px solid var(--edge);
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.pocket-action-log summary {
+  cursor: pointer;
+}
+.pocket-action-log ol {
+  list-style: none;
+  max-height: 230px;
+  overflow: auto;
+  padding: 0;
+  margin: 8px 0;
+}
+.pocket-action-log button {
+  width: 100%;
+  justify-content: start;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 11px;
+}
+.pocket-action-log button[aria-current="step"] {
+  background: #233d45;
+  color: #ddfff5;
+}
+.pocket-action-log button > span {
+  color: #82aaa9;
+  font-variant-numeric: tabular-nums;
+}
+.pocket-action-log button small {
+  margin-left: auto;
+  color: var(--muted);
+}
+.pocket-action-log li p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 6px 25px;
+  line-height: 1.6;
+  max-height: 150px;
+  overflow: auto;
+}
+.pocket-pose-rail {
+  margin: 10px 24px;
+  display: flex;
+  gap: 6px;
+  overflow: auto;
+  padding-bottom: 5px;
+  scrollbar-width: thin;
+}
+.pocket-pose-rail button {
+  flex-direction: column;
+  align-items: start;
+  min-width: 130px;
+  padding: 7px 11px;
+  font-size: 11px;
+}
+.pocket-pose-rail button[aria-pressed="true"] {
+  border-color: #f2bd73;
+  background: #293332;
+}
+.pocket-pose-rail span {
+  font-size: 10px;
+  color: var(--muted);
+}
+.pocket-footer {
+  padding: 10px 24px 20px;
+  display: flex;
+  gap: 22px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.pocket-footer details {
+  margin-left: auto;
+  max-width: 400px;
+  overflow-wrap: anywhere;
+}
+.pocket-error {
+  margin: 0 24px 12px;
+  background: #472f29;
+  color: #fff0e7;
+  padding: 12px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.pocket-loading {
+  padding: 100px 30px;
+  text-align: center;
+  color: var(--muted);
+}
+.pocket-open {
+  margin-top: 10px;
+  width: 100%;
+}
+@media (max-width: 1000px) {
+  .pocket-orbit-hint {
+    display: none;
+  }
+  .pocket-layout {
+    grid-template-columns: minmax(0, 1fr) 285px;
+  }
+  .pocket-action-caption {
+    display: block;
+  }
+  .pocket-action-caption small {
+    display: block;
+    margin-top: 4px;
+  }
+}
+@media (max-width: 700px) {
+  .pocket-header {
+    padding: 0 12px;
+    height: 48px;
+    gap: 8px;
+  }
+  .pocket-owner {
+    display: none;
+  }
+  .pocket-reference {
+    font-size: 8px;
+    text-align: right;
+  }
+  .pocket-title {
+    padding: 14px 12px;
+    gap: 8px;
+  }
+  .pocket-title h1 {
+    font-size: 21px;
+  }
+  .pocket-title > button {
+    font-size: 0;
+    padding: 8px;
+  }
+  .pocket-title p:last-child {
+    font-size: 10px;
+  }
+  .pocket-layout {
+    display: flex;
+    flex-direction: column;
+    margin: 0 10px;
+  }
+  .pocket-stage {
+    height: 380px;
+  }
+  .pocket-inspector {
+    max-height: 370px;
+    padding: 16px;
+    border-left: 0;
+    border-top: 1px solid var(--edge);
+  }
+  .pocket-timeline {
+    margin: 8px 10px;
+  }
+  .pocket-transport {
+    flex-wrap: wrap;
+    padding: 8px;
+    gap: 5px;
+  }
+  .pocket-mode {
+    flex: 1;
+  }
+  .pocket-transport input {
+    order: 2;
+    flex-basis: 70%;
+  }
+  .pocket-clock {
+    order: 3;
+  }
+  .pocket-action-caption {
+    padding: 0 8px 8px;
+  }
+  .pocket-action-caption small {
+    white-space: normal;
+  }
+  .pocket-scene-caption {
+    left: 10px;
+    max-width: calc(100% - 20px);
+    flex-wrap: wrap;
+    gap: 5px;
+    font-size: 11px;
+  }
+  .pocket-camera-tools {
+    left: 10px;
+  }
+  .pocket-stage-meta {
+    left: 10px;
+    right: 10px;
+    font-size: 9px;
+  }
+  .pocket-pose-rail {
+    margin: 10px;
+  }
+  .pocket-footer {
+    display: block;
+    padding: 12px;
+    line-height: 1.7;
+  }
+  .pocket-footer > span {
+    display: block;
+  }
+  .pocket-footer details {
+    margin: 8px 0 0;
+  }
+  .pocket-error {
+    margin: 0 10px 10px;
+  }
+}
+.pocket-layout > .pocket-timeline {
+  grid-column: 1;
+  grid-row: 2;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--edge);
+  border-radius: 0;
+}
+.pocket-inspector {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  max-height: calc(clamp(390px, calc(100dvh - 340px), 780px) + 118px);
+}
+@media (max-width: 700px) {
+  .pocket-stage {
+    order: 0;
+    flex-shrink: 0;
+  }
+  .pocket-layout > .pocket-timeline {
+    order: 1;
+    flex-shrink: 0;
+  }
+  .pocket-inspector {
+    order: 2;
+    max-height: 360px;
+  }
+  .pocket-transport .pocket-mode select {
+    max-width: 145px;
+  }
+}
+.pocket-episode {
+  position: absolute;
+  z-index: 3;
+  top: 42px;
+  left: 22px;
+  max-width: 340px;
+  padding: 14px 16px;
+  border-left: 1px solid #71bcc980;
+  background: linear-gradient(90deg, #071021ed, #07102170);
+  pointer-events: none;
+  transform: translateY(calc((1 - var(--episode-progress)) * 4px));
+}
+.pocket-episode-kind {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 9px;
+  color: #82bacb;
+  margin-bottom: 8px;
+}
+.pocket-episode strong {
+  font-weight: 450;
+  font-size: 17px;
+  color: #e3f4fa;
+}
+.pocket-episode p {
+  font-size: 11px;
+  line-height: 1.55;
+  color: #b2c9d8;
+  margin: 7px 0;
+}
+.pocket-episode-progress {
+  height: 2px;
+  background: #284359;
+  margin-top: 12px;
+}
+.pocket-episode-progress i {
+  display: block;
+  height: 100%;
+  background: #a8e9ee;
+}
+.pocket-episode img {
+  width: 220px;
+  max-height: 138px;
+  object-fit: contain;
+  transform: translateX(calc((1 - var(--episode-progress)) * 12px));
+  opacity: clamp(0, calc(var(--episode-progress) * 3), 1);
+  border: 1px solid #629aac70;
+  margin-top: 8px;
+}
+.pocket-action-caption select {
+  font-size: 10px;
+  max-width: 180px;
+  padding: 3px 5px;
+}
+@media (max-width: 700px) {
+  .pocket-episode {
+    left: 12px;
+    top: 34px;
+    max-width: 240px;
+    padding: 8px 10px;
+  }
+  .pocket-episode strong {
+    font-size: 13px;
+  }
+  .pocket-episode p {
+    font-size: 10px;
+    max-height: 32px;
+    overflow: hidden;
+  }
+  .pocket-episode img {
+    width: 110px;
+    max-height: 65px;
+  }
+  .pocket-episode-kind {
+    font-size: 8px;
+    margin-bottom: 4px;
+  }
+  .pocket-action-caption select {
+    margin-bottom: 6px;
+  }
+}
+.pocket-embedded {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  overflow: hidden;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+}
+.pocket-embedded > .pocket-header,
+.pocket-embedded > .pocket-title,
+.pocket-embedded > .pocket-footer {
+  display: none;
+}
+.pocket-embedded .pocket-layout {
+  display: block;
+  position: relative;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.pocket-embedded .pocket-stage {
+  height: clamp(440px, 66dvh, 780px);
+}
+.pocket-embedded .pocket-inspector {
+  display: none;
+}
+.pocket-embedded.controls-open .pocket-inspector {
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 46px;
+  bottom: 118px;
+  max-height: none;
+  width: 300px;
+  z-index: 5;
+  background: #101b25f5;
+  box-shadow: -10px 0 30px #02071480;
+}
+.pocket-embedded .pocket-controls-toggle {
+  position: absolute;
+  right: 14px;
+  top: 38px;
+  z-index: 6;
+  background: #13243cda;
+}
+.pocket-embedded .pocket-stage-meta {
+  right: 14px;
+}
+.pocket-embedded .pocket-timeline {
+  margin: 0;
+  border-left: 0;
+  border-right: 0;
+}
+.pocket-embedded .pocket-pose-rail {
+  margin: 8px;
+}
+.pocket-embedded .pocket-action-caption {
+  display: block;
+}
+.pocket-embedded .pocket-action-caption select {
+  margin-bottom: 5px;
+}
+.pocket-embedded .pocket-action-caption small {
+  display: block;
+  white-space: normal;
+  margin-top: 5px;
+}
+.pocket-embedded .pocket-orbit-hint {
+  display: none;
+}
+.pocket-episode-progress i {
+  transition: width 0.08s linear;
+}
+@media (max-width: 700px) {
+  .pocket-embedded .pocket-stage {
+    height: 420px;
+  }
+  .pocket-embedded.controls-open .pocket-inspector {
+    width: min(300px, 90%);
+  }
+  .pocket-embedded .pocket-episode {
+    max-width: 200px;
+  }
+}

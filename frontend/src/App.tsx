@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+const InhibitorLink=lazy(()=>import('./components/InhibitorLink'));
 import {
   BookOpen,
   ChevronDown,
@@ -40,6 +41,10 @@ function readRoute() {
   };
 }
 export default function App() {
+  if(new URLSearchParams(location.search).get('sceneTool')==='inhibitor')return <Suspense fallback={<p>Opening experiment…</p>}><InhibitorLink/></Suspense>;
+  return <Workspace/>;
+}
+function Workspace() {
   const [route, setRoute] = useState(readRoute);
   const [theme, setTheme] = useState(() => safeStorage("dn-theme", "dark"));
   const [project, setProject] = useState(

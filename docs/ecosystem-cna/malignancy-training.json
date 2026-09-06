@@ -1,0 +1,439 @@
+{
+  "protocol": {
+    "seed": 9401,
+    "epochs": 30,
+    "learning_rate": 0.001,
+    "weight_decay": 0.01,
+    "target": "author-CNV-supported malignant versus author ductal/ductal-like",
+    "population": "untreated CUIMC recurrence-selected development donors",
+    "selection": "fixed final epoch; no validation-selected checkpoint",
+    "biological_gate_passed": false
+  },
+  "curves": [
+    {
+      "epoch": 1,
+      "training_loss": 0.1224589932684949,
+      "validation_loss": 0.04310791939496994,
+      "seconds": 0.10989442199934274
+    },
+    {
+      "epoch": 2,
+      "training_loss": 0.018195965623999385,
+      "validation_loss": 0.04495973512530327,
+      "seconds": 0.13713435899990145
+    },
+    {
+      "epoch": 3,
+      "training_loss": 0.009859673992207416,
+      "validation_loss": 0.040112368762493134,
+      "seconds": 0.16359052699408494
+    },
+    {
+      "epoch": 4,
+      "training_loss": 0.003057913932825776,
+      "validation_loss": 0.031490668654441833,
+      "seconds": 0.18937051299144514
+    },
+    {
+      "epoch": 5,
+      "training_loss": 0.0021027167703145796,
+      "validation_loss": 0.03393220156431198,
+      "seconds": 0.21563344199967105
+    },
+    {
+      "epoch": 6,
+      "training_loss": 0.0014498929554720072,
+      "validation_loss": 0.030662426725029945,
+      "seconds": 0.24237707399879582
+    },
+    {
+      "epoch": 7,
+      "training_loss": 0.0013700148754860046,
+      "validation_loss": 0.029537230730056763,
+      "seconds": 0.26907987499726005
+    },
+    {
+      "epoch": 8,
+      "training_loss": 0.0017705841498808926,
+      "validation_loss": 0.029379356652498245,
+      "seconds": 0.295806055990397
+    },
+    {
+      "epoch": 9,
+      "training_loss": 0.0008121335849127053,
+      "validation_loss": 0.030154874548316002,
+      "seconds": 0.32260856199718546
+    },
+    {
+      "epoch": 10,
+      "training_loss": 0.000496935348042763,
+      "validation_loss": 0.03135088458657265,
+      "seconds": 0.3494585089938482
+    },
+    {
+      "epoch": 11,
+      "training_loss": 0.0004258201664886902,
+      "validation_loss": 0.034032221883535385,
+      "seconds": 0.37491423900064547
+    },
+    {
+      "epoch": 12,
+      "training_loss": 0.0006793713794629771,
+      "validation_loss": 0.029917510226368904,
+      "seconds": 0.40053076700132806
+    },
+    {
+      "epoch": 13,
+      "training_loss": 0.0003919619013591435,
+      "validation_loss": 0.031196923926472664,
+      "seconds": 0.42617051499837544
+    },
+    {
+      "epoch": 14,
+      "training_loss": 0.00032308387049857594,
+      "validation_loss": 0.03324494510889053,
+      "seconds": 0.4516909480007598
+    },
+    {
+      "epoch": 15,
+      "training_loss": 0.00022244179574842113,
+      "validation_loss": 0.033249154686927795,
+      "seconds": 0.4780725930031622
+    },
+    {
+      "epoch": 16,
+      "training_loss": 0.00020868522596934842,
+      "validation_loss": 0.03310396149754524,
+      "seconds": 0.5047848039976088
+    },
+    {
+      "epoch": 17,
+      "training_loss": 0.00017911237118878136,
+      "validation_loss": 0.034343596547842026,
+      "seconds": 0.5314894539915258
+    },
+    {
+      "epoch": 18,
+      "training_loss": 0.0002217191703356983,
+      "validation_loss": 0.032812077552080154,
+      "seconds": 0.5580581879912643
+    },
+    {
+      "epoch": 19,
+      "training_loss": 0.00015962866293949986,
+      "validation_loss": 0.034008871763944626,
+      "seconds": 0.5847874699975364
+    },
+    {
+      "epoch": 20,
+      "training_loss": 0.0001351940767652523,
+      "validation_loss": 0.035072874277830124,
+      "seconds": 0.6114912210032344
+    },
+    {
+      "epoch": 21,
+      "training_loss": 0.00012848532566550535,
+      "validation_loss": 0.03589056804776192,
+      "seconds": 0.6370436349970987
+    },
+    {
+      "epoch": 22,
+      "training_loss": 0.00011568502564643872,
+      "validation_loss": 0.0362827330827713,
+      "seconds": 0.662584228994092
+    },
+    {
+      "epoch": 23,
+      "training_loss": 0.00010685393166983009,
+      "validation_loss": 0.035382989794015884,
+      "seconds": 0.6879801559989573
+    },
+    {
+      "epoch": 24,
+      "training_loss": 9.94206737920721e-05,
+      "validation_loss": 0.03676747530698776,
+      "seconds": 0.713514089002274
+    },
+    {
+      "epoch": 25,
+      "training_loss": 8.899658855835694e-05,
+      "validation_loss": 0.03650502488017082,
+      "seconds": 0.7389138459984679
+    },
+    {
+      "epoch": 26,
+      "training_loss": 8.63557430350287e-05,
+      "validation_loss": 0.03706465661525726,
+      "seconds": 0.7644307489972562
+    },
+    {
+      "epoch": 27,
+      "training_loss": 8.061178058706641e-05,
+      "validation_loss": 0.036756809800863266,
+      "seconds": 0.7899289810011396
+    },
+    {
+      "epoch": 28,
+      "training_loss": 7.400346976431988e-05,
+      "validation_loss": 0.03723711892962456,
+      "seconds": 0.8154315529973246
+    },
+    {
+      "epoch": 29,
+      "training_loss": 6.588278983932352e-05,
+      "validation_loss": 0.03816696256399155,
+      "seconds": 0.8408580309915124
+    },
+    {
+      "epoch": 30,
+      "training_loss": 6.819251371324985e-05,
+      "validation_loss": 0.03715942054986954,
+      "seconds": 0.8663915749930311
+    }
+  ],
+  "donors": [
+    {
+      "donor": "GSE253429:PN1",
+      "role": "train",
+      "malignant_cells": 749,
+      "normal_ductal_cells": 262,
+      "sensitivity_at_08": 1.0,
+      "false_positive_rate_at_08": 0.0,
+      "accuracy_at_05": 0.9999999403953552
+    },
+    {
+      "donor": "GSE253429:PN10",
+      "role": "validation",
+      "malignant_cells": 620,
+      "normal_ductal_cells": 31,
+      "sensitivity_at_08": 0.9967741966247559,
+      "false_positive_rate_at_08": 0.09677419066429138,
+      "accuracy_at_05": 0.9923195242881775
+    },
+    {
+      "donor": "GSE253429:PN13",
+      "role": "train",
+      "malignant_cells": 1120,
+      "normal_ductal_cells": 725,
+      "sensitivity_at_08": 1.0,
+      "false_positive_rate_at_08": 0.0,
+      "accuracy_at_05": 1.0
+    },
+    {
+      "donor": "GSE253429:PN14",
+      "role": "validation",
+      "malignant_cells": 1926,
+      "normal_ductal_cells": 0,
+      "sensitivity_at_08": 0.9989616274833679,
+      "false_positive_rate_at_08": null,
+      "accuracy_at_05": 0.9989616274833679
+    },
+    {
+      "donor": "GSE253429:PN15",
+      "role": "train",
+      "malignant_cells": 1096,
+      "normal_ductal_cells": 84,
+      "sensitivity_at_08": 1.0,
+      "false_positive_rate_at_08": 0.0,
+      "accuracy_at_05": 1.0
+    },
+    {
+      "donor": "GSE253429:PN17",
+      "role": "train",
+      "malignant_cells": 1635,
+      "normal_ductal_cells": 190,
+      "sensitivity_at_08": 1.0,
+      "false_positive_rate_at_08": 0.0,
+      "accuracy_at_05": 1.0
+    },
+    {
+      "donor": "GSE253429:PN18",
+      "role": "train",
+      "malignant_cells": 1220,
+      "normal_ductal_cells": 0,
+      "sensitivity_at_08": 1.0,
+      "false_positive_rate_at_08": null,
+      "accuracy_at_05": 1.0
+    },
+    {
+      "donor": "GSE253429:PN19",
+      "role": "validation",
+      "malignant_cells": 1865,
+      "normal_ductal_cells": 81,
+      "sensitivity_at_08": 0.9989275932312012,
+      "false_positive_rate_at_08": 0.07407407462596893,
+      "accuracy_at_05": 0.9958890676498413
+    },
+    {
+      "donor": "GSE253429:PN2",
+      "role": "train",
+      "malignant_cells": 1233,
+      "normal_ductal_cells": 538,
+      "sensitivity_at_08": 0.9999999403953552,
+      "false_positive_rate_at_08": 0.0,
+      "accuracy_at_05": 1.0
+    },
+    {
+      "donor": "GSE253429:PN23",
+      "role": "validation",
+      "malignant_cells": 1900,
+      "normal_ductal_cells": 0,
+      "sensitivity_at_08": 0.9994736313819885,
+      "false_positive_rate_at_08": null,
+      "accuracy_at_05": 0.9994736313819885
+    },
+    {
+      "donor": "GSE253429:PN24",
+      "role": "validation",
+      "malignant_cells": 644,
+      "normal_ductal_cells": 17,
+      "sensitivity_at_08": 0.9829192757606506,
+      "false_positive_rate_at_08": 0.0,
+      "accuracy_at_05": 0.9924356937408447
+    },
+    {
+      "donor": "GSE253429:PN27",
+      "role": "train",
+      "malignant_cells": 401,
+      "normal_ductal_cells": 408,
+      "sensitivity_at_08": 1.0,
+      "false_positive_rate_at_08": 0.0,
+      "accuracy_at_05": 1.0
+    },
+    {
+      "donor": "GSE253429:PN28",
+      "role": "train",
+      "malignant_cells": 655,
+      "normal_ductal_cells": 254,
+      "sensitivity_at_08": 1.0,
+      "false_positive_rate_at_08": 0.0,
+      "accuracy_at_05": 1.0
+    },
+    {
+      "donor": "GSE253429:PN3",
+      "role": "validation",
+      "malignant_cells": 352,
+      "normal_ductal_cells": 1763,
+      "sensitivity_at_08": 0.9545454978942871,
+      "false_positive_rate_at_08": 0.0005672149709425867,
+      "accuracy_at_05": 0.9929077625274658
+    },
+    {
+      "donor": "GSE253429:PN4",
+      "role": "validation",
+      "malignant_cells": 1100,
+      "normal_ductal_cells": 1117,
+      "sensitivity_at_08": 0.9954545497894287,
+      "false_positive_rate_at_08": 0.003581020515412092,
+      "accuracy_at_05": 0.9954893589019775
+    },
+    {
+      "donor": "GSE253429:PN6",
+      "role": "validation",
+      "malignant_cells": 601,
+      "normal_ductal_cells": 206,
+      "sensitivity_at_08": 0.9051580429077148,
+      "false_positive_rate_at_08": 0.014563106931746006,
+      "accuracy_at_05": 0.9405204653739929
+    },
+    {
+      "donor": "GSE253429:PN8",
+      "role": "train",
+      "malignant_cells": 1924,
+      "normal_ductal_cells": 926,
+      "sensitivity_at_08": 1.0,
+      "false_positive_rate_at_08": 0.0,
+      "accuracy_at_05": 1.0
+    }
+  ],
+  "source_packs": [
+    {
+      "file": "GSM8020617.npz",
+      "sha256": "ba27e49cf9532d9b8b701f8bee1a9edd8ee1ec01d66e38120ced091579494150"
+    },
+    {
+      "file": "GSM8020618.npz",
+      "sha256": "6aeab3b7e9ba8fcb191bd66d0ba313291ba74686c0ce73b58d824db71432a785"
+    },
+    {
+      "file": "GSM8020619.npz",
+      "sha256": "f6aebddda6679774952ce8c7118cfff5fb40b53455b2733587e42282bb850fc3"
+    },
+    {
+      "file": "GSM8020620.npz",
+      "sha256": "37fd7b5bd1c221c058795c6f044bc466ec7145716cb70e25445755f0c6981018"
+    },
+    {
+      "file": "GSM8020621.npz",
+      "sha256": "32aa0f6f603de4c6fa107fb109cf3ed842528da147a55a7a61f38e57dbc53615"
+    },
+    {
+      "file": "GSM8020622.npz",
+      "sha256": "5bdab350989c3958a8c070ce18e234ff6106a938e535fd4d7c70e9770ad862e6"
+    },
+    {
+      "file": "GSM8020623.npz",
+      "sha256": "ad0d5abd0dc2334e9c62c387654d104a50eb826dd1c1a8e2f36d49d7472550dc"
+    },
+    {
+      "file": "GSM8020624.npz",
+      "sha256": "6f6d14c954c27cf0626071600a66724755d2c5fcf3475021f6217c95d68cd01a"
+    },
+    {
+      "file": "GSM8020625.npz",
+      "sha256": "263d4dbad7669fbce67151b7c15bf534a81517fffa34e70bf1248ad6bdbfa7fb"
+    },
+    {
+      "file": "GSM8020626.npz",
+      "sha256": "8735a52e29761d987946d665a7838c0793cc46233bd427f7661981e361162190"
+    },
+    {
+      "file": "GSM8020627.npz",
+      "sha256": "5824209012ddc159d302db7d27444fc93d24ffee6135e6666f213faa8176194c"
+    },
+    {
+      "file": "GSM8020628.npz",
+      "sha256": "86802b41d28774b393445a9a110ebdb927e9a237e4a4b2bb1ea4a7922f157e2f"
+    },
+    {
+      "file": "GSM8020629.npz",
+      "sha256": "cc42a1681fdc0c9c7deb1e0957244da916fabac9117aaf1706f06d5354ae3cf2"
+    },
+    {
+      "file": "GSM8020630.npz",
+      "sha256": "30dec26a52ed373745f83b37ccc787bc5760d9a23b8f4678c4bb03fdf3b856cd"
+    },
+    {
+      "file": "GSM8020631.npz",
+      "sha256": "89d9621c5669efedd2dde05c130192fe8ac558d9980db2adbfb0de3e8b899191"
+    },
+    {
+      "file": "GSM8020632.npz",
+      "sha256": "fe43cb12af8bb5e84dfe2d42a2874f6492e3fa21bf885bead4143f8bdf80563e"
+    },
+    {
+      "file": "GSM8020633.npz",
+      "sha256": "792898de583119ffbb66529d0523035da62cef563cfffbfa99e1c1a5320957d9"
+    },
+    {
+      "file": "GSM8020634.npz",
+      "sha256": "37f95b7613abc9e888e7891250674357612e5c20664c80913da1c7514dbb00a4"
+    },
+    {
+      "file": "GSM8020635.npz",
+      "sha256": "ea4394d00c268447d3845f1bd6b616d4ff4aeced292252817700103da2181402"
+    },
+    {
+      "file": "GSM8020636.npz",
+      "sha256": "f79eaf08a453384f4f130b875390549c663ddc8fec98890b0a54ed8cf13ccaeb"
+    },
+    {
+      "file": "GSM8020637.npz",
+      "sha256": "402f9e70927840f3a1be408b1f3974f77ec3a61e5f6ca514958414ff8447a605"
+    }
+  ],
+  "genes": 2625,
+  "device": "NVIDIA L40S",
+  "peak_vram_bytes": 1831046144,
+  "biological_gate_passed": false
+}

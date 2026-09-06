@@ -5,6 +5,7 @@ import asyncio
 import copy
 import inspect
 import json
+import os
 import re
 import tempfile
 from collections import defaultdict
@@ -28,6 +29,12 @@ source-faithful canonical name not present in a shortlist; the validator will lo
 check its owner. Do not mark a claim unresolved merely because you know its canonical name
 but it is absent from the shortlist. Categories, predicates, aspects and other closed fields
 must still use the supplied schema menus. Never supply invented identifiers.
+Use the claim's quoted evidence first. Optional source_context contains retrieved passages
+from the same paper, not the complete article. Do not infer missing experimental context;
+report what evidence is needed when the supplied passages cannot establish it.
+When fixing a name or category, preserve the finding's direction and intervention state.
+Change those only when the supplied evidence explicitly establishes the correction.
+An unspecified perturbation or treatment does not establish whether activity rose or fell.
 Return exactly one result for every supplied id. Do not combine or silently omit claims."""
 
 
@@ -49,7 +56,41 @@ def quote_supported(quote: str, text: str) -> bool:
     return True
 
 
-def _groups(failures):
+def _source_context(text, raw, limit=4000):
+    """Retrieve bounded quote neighborhoods, or lexical matches for unquoted omissions."""
+    normalized = re.sub(r"\s+", " ", text).strip()
+    quote = str(raw.get("quote") or "")
+    spans = []
+    for part in re.split(r"\[\s*(?:\.{3}|…)\s*\]|\.{3}|…", quote):
+        part = re.sub(r"\s+", " ", part).strip()
+        pos = normalized.find(part) if part else -1
+        if pos >= 0:
+            spans.append((max(0, pos - 800), min(len(normalized), pos + len(part) + 800)))
+    if spans:
+        merged = []
+        for start, end in sorted(spans):
+            if merged and start <= merged[-1][1]:
+                merged[-1] = (merged[-1][0], max(end, merged[-1][1]))
+            else:
+                merged.append((start, end))
+        return "\n[…]\n".join(normalized[start:end] for start, end in merged)[:limit]
+    query = " ".join(str(raw.get(key) or "") for key in
+                     ("subject", "object", "reason", "claim", "description"))
+    stop = {"with", "that", "this", "from", "were", "have", "claim", "unknown", "deferred"}
+    terms = set(re.findall(r"[\w-]{3,}", query.casefold())) - stop
+    if not terms:
+        return ""
+    passages = re.split(r"\n\s*\n|(?<=[.!?])\s+", text)
+    scored = []
+    for index, passage in enumerate(passages):
+        words = set(re.findall(r"[\w-]{3,}", passage.casefold()))
+        score = len(terms & words)
+        if score:
+            scored.append((-score, index, passage))
+    return "\n[…]\n".join(p for _, _, p in sorted(scored)[:3])[:limit]
+
+
+def _groups(failures, max_groups=4):
     groups = defaultdict(list)
     for failure in failures:
         raw = failure.get("raw") or {}
@@ -65,14 +106,40 @@ def _groups(failures):
         key = (surface, str(raw.get(failed_side + "_category", raw.get("category", ""))),
                str(species).strip().casefold())
         groups[key].append(failure)
-    return [rows[i:i + 8] for rows in groups.values() for i in range(0, len(rows), 8)]
+    if not failures:
+        return []
+    ordered = [failure for rows in groups.values() for failure in rows]
+    return [ordered[i:i + 10] for i in range(0, len(ordered), 10)]
+
+
+class _QueuedSession:
+    def __init__(self, socket_path, owner):
+        self.socket_path, self.owner = socket_path, owner
+        self.instructions = ""
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        pass
+
+    async def ask(self, prompt):
+        from dnhacksbio.litmap.repair_queue import submit
+        header, payload = prompt.split("\nFAILED CLAIMS (ids are local to this group)\n", 1)
+        if header.startswith("SCHEMA INSTRUCTIONS\n"):
+            self.instructions = header.removeprefix("SCHEMA INSTRUCTIONS\n")
+        records = [{**row, "source_owner": self.owner} for row in json.loads(payload)]
+        rows = await submit(self.socket_path, self.owner, records, self.instructions)
+        return json.dumps({"results": rows})
 
 
 def _session(model, cwd):
+    if os.environ.get("DNHACKS_REPAIR_SOCKET"):
+        return _QueuedSession(os.environ["DNHACKS_REPAIR_SOCKET"], os.environ["DNHACKS_REPAIR_OWNER"])
     # Session currently lacks the tool isolation options exposed by the one-shot seam. Replace
     # only this instance's not-yet-connected client; never mutate global SDK or model settings.
-    session = llm.Session(system=_SYSTEM, model=model, effort="high", max_turns=4)
-    options = llm._opts(model, _SYSTEM, "high", 4, tools_disabled=True, cwd=cwd)
+    session = llm.Session(system=_SYSTEM, model=model, effort="medium", max_turns=4)
+    options = llm._opts(model, _SYSTEM, "medium", 4, tools_disabled=True, cwd=cwd)
     options.mcp_servers = {}
     options.skills = []
     options.settings = json.dumps({"disableAllHooks": True})
@@ -134,11 +201,24 @@ async def repair_claims(text: str, failures: list[dict], *, model=llm.SONNET,
                 try:
                     async with _session(model, cwd) as session:
                         for round_no in (1, 2):
-                            prompt = ("SCHEMA INSTRUCTIONS\n" + instructions + "\nFULL SOURCE\n" + text
-                                      + "\nFAILED CLAIMS (ids are local to this group)\n"
-                                      + json.dumps([{"id": key, "original": f, "raw": latest[key],
-                                                     "validation_errors": errors[key]}
-                                                    for key, f in pending.items()], ensure_ascii=False))
+                            context = ("SCHEMA INSTRUCTIONS\n" + instructions
+                                       if round_no == 1 else
+                                       "Use the evidence and schema already supplied in this conversation. "
+                                       "Correct only the remaining records below using the new validation errors. "
+                                       "Do not repeat previously accepted or rejected records.")
+                            records = []
+                            for key, failure in pending.items():
+                                record = {"id": key, "raw": latest[key],
+                                          "validation_errors": errors[key]}
+                                ambiguous = re.search(r"\b(?:perturb\w*|treatment|treated)\b",
+                                                      str(latest[key].get("quote", "")), re.I)
+                                direction_error = any("direction" in str(error).lower() for error in errors[key])
+                                if (round_no > 1 or ambiguous or direction_error
+                                        or not quote_supported(latest[key].get("quote"), text)):
+                                    record["source_context"] = _source_context(text, latest[key])
+                                records.append(record)
+                            prompt = (context + "\nFAILED CLAIMS (ids are local to this group)\n"
+                                      + json.dumps(records, ensure_ascii=False))
                             response = await session.ask(prompt)
                             if len(response) < 1000 and any(message in response.lower() for message in
                                     ("failed to authenticate", "oauth access token has expired", "rate limit",
@@ -198,7 +278,7 @@ async def repair_claims(text: str, failures: list[dict], *, model=llm.SONNET,
                     out["unresolved"].append({"id": failure["id"], "original": failure,
                                               "reason": "; ".join(errors[key]), "last_raw": latest[key]})
 
-    await asyncio.gather(*(group_run(i, group) for i, group in enumerate(_groups(originals))))
+    await asyncio.gather(*(group_run(i, group) for i, group in enumerate(_groups(originals, max_concurrency))))
     ordering = {(type(value), value): i for i, value in enumerate(ids)}
     for name in ("accepted", "rejected", "unresolved"):
         out[name].sort(key=lambda row: ordering[(type(row["id"]), row["id"])])

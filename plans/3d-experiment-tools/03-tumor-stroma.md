@@ -1,7 +1,10 @@
 # 03 — Living tumor: a cinematic tumor–stroma experiment instrument
 
-Status: implementation plan only. The user authorized planning, with visual design the highest priority.
-This plan proposes new behavior; the current molecular artifact viewer does not implement it.
+Status: functional implementation and native/image-review demonstration delivered. Native simulation,
+artifact collection, scoped agent tools, tissue theater, action replay and actual image transport are
+implemented; the165-run source-grounded sensitivity study and numerical checks completed. The tested
+software renderer does not meet the60/30fps targets; hardware-accelerated throughput is unverified.
+See [the implementation and acceptance report](../../docs/tumor-stroma.md) for exact evidence and limits.
 The [shared studio contract](README.md) governs scene recipes, captures and image-bearing review.
 
 ## Experience and scientific purpose

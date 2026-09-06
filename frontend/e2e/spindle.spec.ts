@@ -1,0 +1,294 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { test, expect, type Page } from "@playwright/test";
+import { mockApi, investigation } from "./fixtures";
+import type { SpindleBundle, Vec3 } from "../src/components/spindle/types";
+function fixture(): SpindleBundle {
+  const radius: Vec3 = [12, 9, 8];
+  return {
+    schema_version: 1,
+    dimensionality: 3,
+    category: "illustration",
+    model_id: "deterministic-art-fixture-v1",
+    units: { length: "um", time: "s" },
+    radius,
+    runs: [
+      "Bipolar illustration",
+      "Multipolar illustration",
+      "Transient illustration",
+    ].map((condition, c) => ({
+      seed: 41,
+      condition,
+      frames: Array.from({ length: 21 }, (_, t) => {
+        const poles = Array.from({ length: 4 }, (_, i) => {
+          const start: Vec3 = [
+            Math.cos((i * Math.PI) / 2) * 5,
+            Math.sin((i * Math.PI) / 2) * 4,
+            (i % 2 ? 1 : -1) * 2,
+          ];
+          const end: Vec3 =
+            c === 1
+              ? start
+              : [
+                  i < 2 ? -5 : 5,
+                  (i % 2 ? 1 : -1) * 0.7,
+                  (i % 2 ? 1 : -1) * 0.5,
+                ];
+          const f = c === 2 ? Math.sin((t / 20) * Math.PI) : t / 20;
+          return {
+            id: `C${i + 1}`,
+            position: start.map((v, j) => v * (1 - f) + end[j] * f) as Vec3,
+          };
+        });
+        const filaments = poles.flatMap((p, k) =>
+          Array.from({ length: 100 }, (_, i) => {
+            const z = 1 - (2 * (i + 0.5)) / 100,
+              a = i * 2.39996323 + k * 0.5,
+              r = Math.sqrt(1 - z * z);
+            const target: Vec3 = [
+              radius[0] * r * Math.cos(a) * 0.96,
+              radius[1] * r * Math.sin(a) * 0.96,
+              radius[2] * z * 0.96,
+            ];
+            return {
+              id: `${p.id}-f${i}`,
+              pole: p.id,
+              points: Array.from({ length: 14 }, (_, j) => {
+                const f = j / 13;
+                return p.position
+                  .map(
+                    (v, n) =>
+                      v * (1 - f) +
+                      target[n] * f +
+                      (n === 1
+                        ? 1.8 * Math.sin(Math.PI * f) * Math.sin(i * 0.07)
+                        : n === 2
+                          ? 1.2 * Math.sin(Math.PI * f) * Math.cos(i * 0.07)
+                          : 0),
+                  )
+                  .map((x) => Number(x.toFixed(6))) as Vec3;
+              }),
+            };
+          }),
+        );
+        return { time: t * 5, poles, filaments, cortical_motors: [
+          { id: "M1", position: [12, 0, 0] as Vec3, filament: "C1-f0", force_pn: [.1, .2, .3] as Vec3, abscissa_um: 1 },
+          { id: "M2", position: [0, 9, 0] as Vec3, filament: null, force_pn: null, abscissa_um: null },
+        ] };
+      }),
+    })),
+  };
+}
+async function openSpindle(page: Page, withMovie = false) {
+  await mockApi(page);
+  const root = investigation.root;
+  const movieBytes = withMovie ? readFileSync(new URL("../../docs/spindle-review/movie.webm", import.meta.url)) : null;
+  const rawBundle = JSON.stringify(fixture());
+  const sha = createHash("sha256").update(rawBundle).digest("hex");
+  const raw = [
+    [
+      "attempt.started",
+      {
+        original_question: "Spindle art study",
+        branch_objective: "Inspect spindle trajectories",
+      },
+    ],
+    [
+      "experiment.queued",
+      { title: "Spindle visual development", method: "Illustrative geometry" },
+    ],
+    ["experiment.finished", { status: "completed", exploratory: true }],
+    [
+      "artifact",
+      {
+        artifact_id: "spindle",
+        sha256: sha,
+        name: "spindle.json",
+        kind: "filament_trajectory",
+        status: "available",
+        storage_key: "spindle",
+        provenance: { category: "illustration" },
+      },
+    ],
+  ];
+  if (movieBytes) raw.push(["artifact", { artifact_id:"movie",sha256:createHash("sha256").update(movieBytes).digest("hex"),name:"Native movie playback fixture",kind:"scene_movie",status:"available",storage_key:"movie",provenance:{category:"illustration"} }]);
+  const events = raw.map(([kind, payload], i) => ({
+    schema_version: 1,
+    sequence: i + 1,
+    run_id: root,
+    attempt_id: "fixture",
+    event_id: `s${i}`,
+    kind,
+    payload,
+    experiment_id: i ? "spindle-exp" : undefined,
+    producer: kind === "artifact" ? "collector" : "runner",
+    recorded_at: 1,
+  }));
+  await page.route("**/api/investigations**", (r) =>
+    r.fulfill({ json: [{ ...investigation, runtime: true }] }),
+  );
+  await page.route("**/api/runtime/**", (r) => {
+    const u = new URL(r.request().url());
+    if (movieBytes && u.pathname.endsWith("/blob/movie")) return r.fulfill({ body:movieBytes,contentType:"video/webm" });
+    if (u.pathname.includes("/blob/"))
+      return r.fulfill({ body: rawBundle, contentType: "application/json" });
+    if (u.pathname.endsWith("/events"))
+      return r.fulfill({
+        json: {
+          events: events.filter(
+            (e) => e.sequence > Number(u.searchParams.get("after") || 0),
+          ),
+        },
+      });
+    if (u.pathname.endsWith("/stream"))
+      return r.fulfill({
+        contentType: "text/event-stream",
+        body: ": connected\n\n",
+      });
+    return r.fulfill({ status: 404, json: { error: "fixture" } });
+  });
+  await page.goto("/");
+  await page
+    .getByRole("tablist", { name: "Investigation view" })
+    .getByRole("tab", { name: "Experiments", exact: true })
+    .click();
+  await page.getByRole("button", { name: /Spindle visual development/ }).click();
+  await page.getByRole("button", { name: "Expand scene" }).click();
+  return page.locator(".spindle-observatory");
+}
+test("spindle saved coordinates, deterministic views, condition comparison and review captures", async ({
+  page,
+}) => {
+  test.setTimeout(90_000); // Six software-rendered review PNGs plus coordinate assertions.
+  await openSpindle(page);
+  const scene = page.locator(".spindle-observatory");
+  await expect(scene).toHaveAttribute("data-scene-ready", "true");
+  const pass = process.env.SPINDLE_REVIEW_PASS || "draft";
+  for (const shot of ["front", "oblique", "detail"]) {
+    await page.getByLabel("Centrosome", { exact: true }).selectOption("C1");
+    await page.getByLabel("View", { exact: true }).selectOption(shot);
+    await expect(scene).toHaveAttribute("data-scene-ready", "true");
+    await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-${shot}.png`) });
+  }
+  await page.getByLabel("View", { exact: true }).selectOption("oblique");
+  for (const t of [0, 10, 20]) {
+    await page.getByLabel("Spindle physical time").fill(String(t));
+    await expect(scene).toHaveAttribute("data-scene-ready", "true");
+    await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-time-${t}.png`) });
+  }
+  await expect(page.locator(".spindle-readout")).toContainText(
+    "C1 · (-5.000, -0.700, -0.500)",
+  );
+});
+test("spindle condition comparison and responsive review captures", async ({
+  page,
+}) => {
+  test.setTimeout(90_000); // Four viewport captures, including the presentation frame.
+  const scene = await openSpindle(page);
+  const pass = process.env.SPINDLE_REVIEW_PASS || "draft";
+  await page.getByLabel("Centrosome", { exact: true }).selectOption("C1");
+  await page.getByLabel("Spindle physical time").fill("20");
+  await page.getByLabel("Condition", { exact: true }).selectOption("1");
+  await expect(page.locator(".spindle-caption")).toContainText("100.00 s");
+  await expect(scene).toHaveAttribute("data-scene-ready", "true");
+  await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-multipolar.png`) });
+  await page.getByLabel("Filaments", { exact: true }).selectOption("fine");
+  await expect(scene).toHaveAttribute("data-scene-ready", "true");
+  await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-fine.png`) });
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await expect(scene).toHaveAttribute("data-scene-ready", "true");
+  await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-presentation.png`) });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(scene).toHaveAttribute("data-scene-ready", "true");
+  await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-mobile.png`) });
+});
+
+test("spindle controller freezes comparison cameras and restores context", async ({
+  page,
+}) => {
+  const scene = await openSpindle(page);
+  const stage = scene.locator(".spindle-stage");
+  await stage.evaluate(async (el) => {
+    const b = (el as HTMLElement & { spindleController: any })
+      .spindleController;
+    await b.apply({
+      run: 0,
+      frame: 10,
+      compare: 1,
+      selected: "C1",
+      camera: { position: [23, 14, 40], target: [0, 0, 0] },
+    });
+    await b.ready();
+  });
+  const state = await stage.evaluate((el) =>
+    (
+      el as HTMLElement & { spindleController: any }
+    ).spindleController.inspect(),
+  );
+  expect(state.physical_time_s).toBe(50);
+  expect(state.comparison.physical_time_s).toBe(50);
+  expect(state.camera.position).toEqual(state.comparison.camera.position);
+  expect(state.poles[0].id).toBe("C1");
+  expect(state.cortical_motors[0].force_pn).toEqual([.1, .2, .3]);
+  await expect(scene.locator(".spindle-caption")).toContainText("2 cortical motors · 1 bound");
+  await stage.screenshot({ path: test.info().outputPath("spindle-scenes-comparison.png") });
+  await scene
+    .locator("canvas").nth(1)
+    .evaluate((c: HTMLCanvasElement) =>
+      c.getContext("webgl2")?.getExtension("WEBGL_lose_context")?.loseContext(),
+    );
+  await expect(page.getByRole("alert")).toContainText("Graphics context lost");
+  await page.getByRole("button", { name: "Restore spindle scene" }).click();
+  await expect(scene).toHaveAttribute("data-scene-ready", "true");
+  await expect(page.locator(".spindle-readout")).toContainText("C1");
+});
+
+
+test("saved spindle movie decodes inline and respects the history cursor", async ({page}) => {
+  await openSpindle(page, true);
+  await page.getByRole("button", {name:"Close expanded view"}).click();
+  const movie = page.getByLabel("Saved spindle trajectory movie");
+  await movie.scrollIntoViewIfNeeded();
+  await expect(movie).toBeVisible();
+  await page.waitForFunction(() => (document.querySelector('video[aria-label="Saved spindle trajectory movie"]') as HTMLVideoElement)?.readyState >= 1);
+  expect(await movie.evaluate((v:HTMLVideoElement) => v.duration)).toBeCloseTo(1.1,1);
+  await movie.evaluate((v:HTMLVideoElement) => v.play());
+  await page.waitForFunction(() => (document.querySelector('video[aria-label="Saved spindle trajectory movie"]') as HTMLVideoElement)?.currentTime > .5);
+  await movie.evaluate((v:HTMLVideoElement) => v.pause());
+  await page.getByLabel("Activity playback position").fill("4");
+  await expect(movie).toHaveCount(0);
+});
+
+for (const failure of ["missing", "corrupt"] as const) {
+  test(`spindle ${failure} artifact is explicit and cannot render stale geometry`, async ({ page }) => {
+    await openSpindle(page);
+    await page.route("**/api/runtime/**/blob/**", route => failure === "missing"
+      ? route.fulfill({ status: 404, json: { error: "Missing saved artifact" } })
+      : route.fulfill({ body: '{"changed":true}', contentType: "application/json" }));
+    await page.reload();
+    await page.getByRole("tablist", { name: "Investigation view" })
+      .getByRole("tab", { name: "Experiments", exact: true }).click();
+    await page.getByRole("button", { name: /Spindle visual development/ }).click();
+    await expect(page.getByRole("alert")).toContainText(failure === "missing" ? "Spindle artifact unavailable" : "hash");
+    await expect(page.locator(".spindle-stage canvas")).toHaveCount(0);
+  });
+}
+
+test("mobile spindle comparison toggles full-size cells without changing physical time or camera", async ({page})=>{
+  await openSpindle(page);
+  const stage=page.locator(".spindle-stage");
+  await stage.evaluate(async el=>{const c=(el as any).spindleController;await c.apply({frame:12,compare:1});await c.ready();});
+  await page.setViewportSize({width:390,height:844});
+  await stage.evaluate(async el=>await (el as any).spindleController.ready());
+  const before=await stage.evaluate(el=>(el as any).spindleController.inspect());
+  await page.getByRole("button",{name:"View comparison run"}).click();
+  const after=await stage.evaluate(el=>(el as any).spindleController.inspect());
+  expect(after.mobile_visible_run).toBe(1);expect(after.physical_time_s).toBe(before.physical_time_s);
+  expect(after.camera).toEqual(before.camera);expect(after.comparison.camera).toEqual(before.comparison.camera);
+  const boxes=await stage.locator("canvas").evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));
+  expect(boxes[0]).toBeGreaterThan(300);expect(boxes[1]).toBeCloseTo(boxes[0]);
+  await expect(stage.locator('.spindle-cell').first()).toHaveAttribute('aria-hidden','true');
+  await page.getByRole("button",{name:"View selected run"}).click();
+  await expect(stage.locator('.spindle-cell').first()).toHaveAttribute('aria-hidden','false');
+});

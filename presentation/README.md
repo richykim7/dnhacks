@@ -1,105 +1,68 @@
-# DNHacks 2026 presentation
+# DNHacks 2026 · DN Research
 
-The editable working deck is [DNHacks_2026_DN_Research.pptx](output/DNHacks_2026_DN_Research.pptx).
-Use the [PDF](output/DNHacks_2026_DN_Research.pdf) to preview it and the
-[contact sheet](output/contact-sheet.png) to see the visual system at a glance.
-The [four-slide layout kit](output/DNHacks_Layout_Kit.pptx) provides reusable evidence, result,
-demo and roadmap layouts. All text, diagrams and panels are editable PowerPoint objects;
-the actual application screenshot is a raster image.
+The current editable deck is [DNHacks_2026_DN_Research.pptx](output/DNHacks_2026_DN_Research.pptx).
+The [judge-pitch PDF](output/DNHacks_2026_DN_Research.pdf) shows the default presentation.
+The [reviewer PDF](output/DNHacks_2026_Reviewer_Copy.pdf) includes the optional discovery sequence and technical appendix.
+Every slide has a tentative script, evidence status, sources and editing instructions in PowerPoint **Notes**;
+[speaker-notes.md](speaker-notes.md) provides the same text. Use the [contact sheet](output/contact-sheet.png) for an overview.
 
-Every slide contains a tentative script in PowerPoint's **Notes** pane and Presenter View,
-plus its evidence status, sources, editing instructions and judging criteria. The same material
-is available in [speaker-notes.md](speaker-notes.md).
+This revision consolidates the earlier decks in `presentation/output/` and `presentation/pptx/`.
+The latter is retained as an archived draft; use this deck for subsequent work.
 
-## Presenting and extending
+## Presentation route
 
-- Slides **1–11** form a roughly five-minute core pitch (315 seconds of suggested timing, including
-  a 55-second demo slot). Slides **12–17** answer judging and technical questions. Stop at slide 11
-  or select slides 1–11 in PowerPoint's slide-show setup; appendices remain available for questions.
-- For a three-minute route, use **1, 2, 4, 6, 7, 8, 11**, shorten the demo to 40 seconds and rehearse
-  the transitions. Timing is a proposal; no official pitch-duration rule was supplied.
-- **DN Research is a working name**, as stated by `frontend/DESIGN.md`. Rename consistently after
-  the team decides. No team member names, customer logos, contact details or traction were invented.
-- **Open Category is the proposed framing**, not a claim about the team's submitted track.
-  The official event places DTX Ventures in Open and describes that category as a home for ambitious,
-  cross-domain work. Its Health and Public Service description emphasizes government-facing service
-  delivery. Confirm the entered track before presenting; oncology is the initial application either way.
-- **Replace slide 6 before presenting a real discovery.** Its prominent label identifies a fresh
-  capture of the actual interface using synthetic browser-test data. The real 100-paper corpus count
-  is separate from that fixture. Use an actual run's source passage, question, code, structured result
-  and feedback; preserve a local recording as fallback. Do not imply frontend review buttons exist.
-- If a scientific result lands, insert a result slide after slide 6: question, independent units,
-  method, predicted direction, measured effect/uncertainty, comparison and exact artifact. Update the
-  claim ledger and close accordingly. A candidate screen pass is not independent reproduction.
-- Duplicate slides in the layout kit or a matching core slide to add material. Keep one main argument
-  per slide, update notes and sources, and preserve implemented/measured/planned/illustrative labels.
+- **Judge pitch:** slides **1–9, 14–16**, 5 minutes 40 seconds as scripted. Technical evidence receives substantial time, reflecting the 50-point execution and AI-sophistication weights.
+- **Three-minute cut:** slides **1, 2, 4, 6, 7, 9, 16**. Shorten the spoken transitions and rehearse.
+- **Optional discovery sequence:** slides **10–13**, hidden by default. Full investigation → surviving candidates → paper fade-in → frozen corpus on the **immediately following slide**. These are explicitly unpopulated storyboards. No qualifying run or matching excluded paper was verified at the source snapshot.
+- **Technical Q&A:** slides **17–29**, hidden by default. Includes the complete rubric map, model/data/objective/split details, real training and evaluation figures, design evidence and deployment questions.
 
-## Intention and visual system
+PowerPoint **Slide Show → Custom Slide Show** contains the judge pitch, three-minute cut and a discovery-reveal route.
+Do not activate the discovery route until its four slides are populated and audited. The PPTX hides storyboards and appendices from the default show; the reviewer PDF displays them with their status labels.
+No official pitch duration was supplied. DN Research remains a working name; Open Category remains proposed rather than a claim about the submitted track.
 
-Lead with **“Point compute at the next scientific discovery.”** The project is a research instrument
-that helps a scientist select and inspect the next experiment. The narrative follows evidence →
-hypothesis → executed analysis → feedback → scientist decision. It follows the non-biology-audience
-brief in `plans/PLAN-demo-slides.md` and gives engineering and AI sophistication substantial core time.
-Slide 12 explicitly maps every supplied criterion and point weight to supporting slides.
+## Intention
 
-The style extends the existing product design: 16:9, mineral charcoal (`#17201F`), warm white
-(`#F1EFE7`), muted green (`#A6C9B8`), amber uncertainty (`#DEB577`), IBM Plex Sans and IBM Plex Mono.
-Most headlines are 36–46 pt; core body text is 19–25 pt. Small type is reserved for source/status
-metadata and appendix detail. Pale evidence slides create pacing. The conceptual graph motif is
-editable vector geometry and deliberately carries no biological or performance meaning.
+**Anticipate biology. Before it changes the balance of power.**
 
-Install the open-source [IBM Plex fonts](https://github.com/IBM/plex) on presentation machines for
-matching line breaks. The fonts are **not embedded**. The PDF preserves the reviewed appearance.
-PowerPoint can edit every text box and diagram, and the generator configures the theme fonts for new
-objects. The separate layout kit is a set of editable slide examples, not custom Slide Master layouts.
+The strategic thesis is that biology is an underappreciated future source of unilateral advantage, and that scientific lead time can support earlier defensive preparation. The opening uses the exact NSCEB 2025 report §1.3 quotation requested by the team. The product is an inspectable research engine; it does not demonstrate bioweapon prediction, operational threat prevention or clinical benefit. Reactive measures remain necessary; anticipation is the additional posture we aim to enable.
 
-## Evidence and research decisions
+For DTX Ventures, the connection is scientific infrastructure and critical-technology leadership, inferred from its public thesis. The pitch then grounds that ambition in an initial computational-biologist persona, working engineering, real artifacts, measured negative results and a small private-pilot business hypothesis. It claims no customers, pricing validation, revenue or superior discovery rate.
 
-Source snapshot: `1e83cfb158dd1c9d35894e05006bd9482a566233`, 6 September 2026.
-The checked-in deck is an evidence snapshot; the repository will continue evolving.
+The visual system combines mineral charcoal, warm ivory, muted mint and amber with IBM Plex Sans/Mono, large editable headlines and generous space. Two matching conceptual editorial backgrounds were generated through the existing LaoZhang adapter. They are decorative, never scientific evidence. Actual application captures retain their illustration/fixture labels. Research figures are generated from committed measurements with Matplotlib; no scientific images or loss histories were invented.
 
-| Claim or decision | Source and scope |
-| --- | --- |
-| 40M+ biomedical citations and abstracts | [NIH/NLM About PubMed](https://pubmed.ncbi.nlm.nih.gov/about/), accessed 2026-09-06. Not full-text papers or our corpus size. |
-| DTX audience fit | [DTX Vision](https://www.dtxventures.com/vision), accessed 2026-09-06. Its interest in U.S. critical-technology leadership motivates scientific-infrastructure framing; this is our inference, not endorsement. |
-| Proposed Open Category | [Official DNHacks site](https://dnhacks.org/), accessed 2026-09-06. DTX presents Open; entered category still unconfirmed. User supplied the detailed scoring weights. |
-| 100 curated full-text pancreatic-cancer papers | `demo/pdac/README.md`, `demo/pdac/papers.json`. Retrospective curation, 2007–2025; inclusion boundary 2026-01-25. Indexing does not establish completed claim extraction or a prospective discovery benchmark. |
-| 1.12% synthetic false alarms | `research/learned-evalue-validation/expanded-null.json`: learned encoder, 112/10,000 **ever** crossings, Wilson 95% interval 0.93–1.35%. Final rejection rate is a different quantity: 20/10,000 = 0.20%. Separate diagnostic, not live discovery accuracy or an investigation-wide guarantee. |
-| Learned real-expression diagnostic | `research/learned-evalue-validation/real-expression/README.md`: separate COVID observational cohort; 30 selected pairs, not clinical covariate matching. Show all principal comparators; the single-gene baseline has greater final evidence in the primary run. |
-| Prior art | [DeepMind Co-scientist](https://deepmind.google/blog/co-scientist-a-multi-agent-ai-partner-to-accelerate-research/) and [Elicit Research Agent](https://elicit.com/blog/introducing-elicit-research-agent), accessed 2026-09-06. Both already do substantive research. No first-autonomous-scientist or superior-performance claim. |
-| Oncology context reserved for Q&A | [NCI SEER](https://seer.cancer.gov/statfacts/html/pancreas.html), accessed 2026-09-06: 13.7% five-year relative survival, 2016–2022, pancreatic cancer overall. No PDAC-specific or prototype health-benefit inference. |
-| Editable export choice | Reviewed [nexu-io/codex-slides](https://github.com/nexu-io/codex-slides); its current PPTX exports whole-slide images. Used the already-installed [python-pptx](https://python-pptx.readthedocs.io/) instead, because this deck must keep changing. No upstream template artwork copied. |
+## Finish the discovery sequence
 
-Important reconciliations: the old local forecasting judge brief describes a superseded product story
-and is not evidence for this deck. The initial synthetic-validation README retains an earlier
-“10,000 not yet run” paragraph; its later expanded evaluation section and machine-readable summary
-record the completed 10,000-run audit used here. The architecture's “numbers are sound” shorthand
-overstates what the ordinary falsifier independently establishes: it screens agent-reported fields
-and flags. The deck says that explicitly. Human decisions are available in the backend while their
-frontend controls are hidden. Docker execution still exists despite the plan to remove it. Learned
-tool plans, statistical stopping and production hardening remain future work.
+1. Select one real run with source claim, concise logged decision, code, data identity, raw result, checks and a recorded human decision.
+2. Populate the actual survivor list, including the relevant denominator and the checks each candidate passed. A survivor is not automatically a true or novel finding.
+3. Verify the matching later paper, its exact claim, publication date and exclusion from every accessible run input. Replace the paper group on slide 12 while retaining its native 800 ms on-click fade.
+4. Keep slide 13 immediately next. Attach the frozen manifest/hash, tool-access boundary, cutoff and model-memory limitations. A curated corpus is not itself proof of a run's access boundary.
+5. Independently audit the claim, then unhide all four slides. Keep a local recording and final-state PDF fallback. Linux rendering cannot certify native PowerPoint animation playback.
 
-No source ingestion, research model calls, training, deployment, customer outreach or new scientific
-evaluation were performed to make this presentation. The roadmap communicates intention only.
+## What the technical figures establish
 
-## Build and review
+| Component | Measured material | Boundary |
+| --- | --- | --- |
+| Expression | 100 training-loss epochs; measured sequential evidence trajectories | No epoch-level validation-loss history retained. Separate observational COVID diagnostic, not PDAC. Single-gene comparator wins final evidence in the primary run. |
+| Protein | Held-out hidden-entry error comparisons from committed training report | PCA beats denoiser. The subsequent Fudan cross-assay benchmark shows weak primary-model transfer and a secondary ranking signal requiring further evaluation. No invented convergence curve. |
+| Drug response | Real CUDA validation comparisons and pancreatic-subset baseline; separate real PDO AUC validation | No pancreatic utility or full-curve PDO success established. Mean predictor wins PDO validation. |
+| Cellular ecosystems | Initial count/set-model histories and final errors; expanded 72-donor GPU train/validation histories | Cells are nested within donors. Exact PCA leads external reconstruction in the expanded study. Initial pilot and new cell-weighted metrics are not directly comparable. |
+| E-value diagnostics | Synthetic-null crossings, explicit denominators and confidence intervals | Not a product false-positive rate, biological power guarantee or investigation-wide certificate. |
+| Branch monitor | Implemented model/calibration contracts and readiness explanation | No real-trajectory fitting or calibration yet; no fabricated plot or live calibrated-pruning claim. |
 
-The presentation generator is self-contained and uses the existing Python package `python-pptx`.
-It reads the checked-in diagnostic JSON for the synthetic null numbers and uses the screenshot in
-`assets/workspace-fixture.png`. No change to the application dependencies is needed.
+[Plot manifest](assets/v2/plots/manifest.json) stores source hashes and exact plotted data. [Editorial provenance](assets/v2/provenance.json) records prompts and the adapter's estimated $0.18 generation cost; account balance/final billing could not be read using the inference key. No new scientific training or experiments were run for this presentation.
+
+## Rebuild and extend
 
 ```sh
+python3 presentation/build_figures.py
 python3 presentation/build_deck.py
-libreoffice -env:UserInstallation=file:///tmp/dnhacks-presentation-lo --headless \
-  --convert-to pdf --outdir presentation/output \
-  presentation/output/DNHacks_2026_DN_Research.pptx \
-  presentation/output/DNHacks_Layout_Kit.pptx
+python3 presentation/render_deck.py
 ```
 
-The PPTX and PDF files are delivery artifacts. `speaker-notes.md` and `output/deck-manifest.json`
-are regenerated by the script. Manual PowerPoint edits are not imported back into Python; save a
-separate version if editing the deck directly. Re-render and inspect after substantial text changes.
+The scripts use existing `python-pptx`, Matplotlib, Pillow, LibreOffice Impress and Poppler. No application dependency was added for slide authoring. The evidence snapshot is pinned in `deck_style.py` and written into the [deck manifest](output/deck-manifest.json); re-audit new findings before changing it.
 
-Review includes LibreOffice rendering of all slides, visual inspection, PowerPoint package checks
-and verification that all 21 delivered slides (17 deck + 4 kit) have notes. See
-[validation.md](validation.md) for application gates and artifact checks.
+Text, diagrams and paper-reveal panels are native editable PowerPoint objects. Artwork, charts and screenshots are raster assets; standalone chart PDFs are also provided. The [four-slide layout kit](output/DNHacks_Layout_Kit.pptx) provides reusable evidence, result, demo and roadmap examples. It is not a set of custom Slide Master layouts.
+
+Install [IBM Plex](https://github.com/IBM/plex) on the presentation machine; fonts are not embedded. The PDF preserves the reviewed appearance. Manual PowerPoint edits do not round-trip to Python, so save them as a separate version or update the generator. The reviewed [codex-slides project](https://github.com/nexu-io/codex-slides) uses image-native slides; this deck retains editable text and diagrams because the project is still evolving.
+
+Sources: [NSCEB §1.3](https://www.biotech.senate.gov/final-report/chapters/chapter-1/section-3/), [NSCEB §3.3](https://www.biotech.senate.gov/final-report/chapters/chapter-3/section-3/), [DARPA P3](https://www.darpa.mil/research/programs/pandemic-prevention-platform), [DTX Vision](https://www.dtxventures.com/vision), [DNHacks](https://dnhacks.org/). Full source/status details appear in each slide's notes. See [validation.md](validation.md) for rendering and repository checks.

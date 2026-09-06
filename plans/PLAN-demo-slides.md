@@ -1,10 +1,17 @@
 # Demo slides
 
-Status: **working deck created, scientific demo replacement pending**. The editable
-[PowerPoint and layout kit](../presentation/README.md) implement this framing with an 11-slide
-core pitch, six Q&A slides and per-slide scripts in Notes. The current demo capture is explicitly
-synthetic interface data; replace it with the selected real investigation before presenting a result.
-This file preserves the team's framing and original candidate outline.
+Status: **revised editable deck; scientific reveal still pending**. The
+[PowerPoint, judge-pitch PDF, reviewer copy and layout kit](../presentation/README.md)
+now lead with strategic biological anticipation, show real 3D software artifacts and measured
+training/evaluation results, and address the full rubric. Slides 10–13 preserve the exact complete-loop,
+survivors, paper-fade and frozen-corpus-next-slide sequence as hidden, explicitly unpopulated
+storyboards. Enable only after selecting and verifying a qualifying run and excluded matching paper.
+Every slide has a tentative script in Notes; technical appendices distinguish measured training
+histories from final held-out comparisons and untrained components.
+
+The ordinary falsifier screens reported result fields and flags; it does not independently certify
+that arbitrary numerical outputs are sound. Human review records a decision, not biological truth.
+This is the precise implementation boundary for the earlier framing shorthand below.
 
 ## Framing note (Rich, 2026-09-06)
 
@@ -51,6 +58,19 @@ and verify the candidate, matching paper, dates, and actual evidence boundary be
 reveal. Describe a later published discovery recovered from frozen evidence as such; passing the
 verification gate alone does not establish novelty or truth, and a frozen corpus alone does not rule
 out model prior knowledge. Keep the existing distinction between candidates and confirmed findings.
+
+## Technical toolkit coverage (Rich, 2026-09-06)
+
+Also explain the computational toolkit, leading with the tools that have 3D renderings. The internal
+e-value tools are part of that toolkit; cover them explicitly, along with the e-value branch-monitoring
+tool. For each learned component, explain how we trained it: data, model, objective, training/validation
+split, and what it learns or measures. Distinguish trained components from statistical logic and
+rendering code. Have real training/validation loss curves ready, plus useful technical figures such as
+null calibration, power, evidence trajectories, or baseline comparisons, so the academic and technical
+substance is clear. This plot emphasis is mainly for the e-value components; the 3D tools should lead
+with renderings and experiment outputs. Label each figure's run, dataset, and measured versus planned
+status; do not imply an untrained component was trained. This is a deck-content and asset-preparation
+note, not authorization to start new training runs.
 
 ## Candidate outline
 

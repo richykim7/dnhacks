@@ -2,17 +2,39 @@
 
 `extract_paper` reads with Opus, checks direction with Sonnet, and resolves names
 against each category's owner. Unresolved claims and the reader's upfront omissions
-then go to independent Sonnet repair sessions (at most four per paper), grouped by
-failed term, category and species. These replace the old serial Opus choice menus.
+then enter the shared repair queue in configured ingestion runs. The queue combines
+pending records across papers into batches of ten and runs at most ten repair workers.
+Every record retains its source owner; quotes are validated against that paper only.
+A final partial batch is flushed only when producers are blocked and cannot supply
+more work, rather than dispatching undersized batches on a timer. Per-record responses
+are cached durably, so a resumed producer can reuse completed repair work.
 
-Repair reads the source and can correct names, categories, species context, direction
-and representation. It receives the same claim menus and a reviewed vocabulary
-supplement. Corrected quotes must occur in the source (whitespace changes and ordered
+Local repair grouping also caps each request at ten records; it does not cap a paper
+at four total requests. Local concurrency controls submission, while the shared queue
+controls model-worker concurrency across papers. The queue receives compact schema
+instructions on both initial submissions and retries. Retry records contain only
+pending corrections and their latest validation errors; original records remain in
+the local audit rather than being duplicated in model input.
+
+The full paper is not sent to repair. Missing source-supported quotations trigger a
+bounded local passage lookup, with up to 4,000 characters of nearby source context per
+record. Successful claims are not resubmitted merely because another record needs a retry.
+These replace the old serial Opus choice menus.
+
+Repair reads quotations and retrieved source passages and can correct names, categories, species context, direction
+and representation. Its dedicated repair schema stays below 8,000 characters and includes
+closed menus, the corrected-claim shape, scientific-scope constraints and inline-experiment
+rules. It does not reuse the full extraction prompt or send the complete vocabulary
+supplement; validation feedback supplies relevant canonical labels and definitions. Corrected quotes must occur in the source (whitespace changes and ordered
 ellipsis-separated spans are allowed). Python resolves names and constructs the
 existing EntityRef, ClaimSpine, Evidence and Experiment models. Concrete lookup or
 schema errors go back for a second attempt, with retrieved alternative labels where
 available. This structural check cannot by itself prove that a claim follows from its
 quote; that remains the source-reading model's responsibility.
+
+Ambiguous perturbation/treatment quotes and flagged direction errors also receive
+bounded neighboring passages on the first attempt, so a naming repair does not
+guess the intervention direction.
 
 Repair sessions have no filesystem, shell, web or MCP tools. The application performs
 ontology lookups. They cannot create arbitrary ontology identifiers or edit the
@@ -50,3 +72,50 @@ and the existing verified ortholog conventions are preserved.
 Candidate lists are suggestions, not exhaustive entity-name menus. Repair may propose a
 source-faithful canonical name outside a shortlist for code to resolve; closed category,
 predicate and aspect fields still use their schema menus.
+
+A mutation class is a `mutant` actor even when no individual variant is named;
+`general` means the unqualified gene. A weaker rescue is not a measured null.
+Repair retains these source qualifiers and returns an actionable error for the
+unsupported plural per-claim `experiments` field instead of silently losing its assay.
+
+## Frozen corpus ingestion
+
+`scripts/ingest_frozen_corpus.py --corpus <frozen-directory> --run <durable-run-directory>
+--lexicons <processed-lexicons-directory>` extracts the selected full texts without
+search or retrieval. It keeps a rolling pool of ten concurrent papers and pins the
+reader to `claude-opus-4-8`, with `claude-sonnet-5` direction checking and repair.
+All model sessions disable tools, MCP, skills and hooks, and verify returned model
+identifiers. Ontology lookups remain available to the application.
+
+Each paper checkpoints its reader output and complete validated result. Restarting
+the same command skips completed papers and reuses saved reader output for failed
+papers. Workers retry once for ordinary failures. A model service/quota failure
+stops queued launches immediately, drains active workers, and remains resumable.
+The coordinator checks frozen file hashes, writes results through one transactional
+store writer, then publishes a closed snapshot by atomic rename as papers finish.
+An import ledger avoids rewriting unchanged paper contributions at each publication.
+A pre-ingestion
+database backup and per-paper model usage and repair audits stay in the run directory.
+The frontend can display completed papers through the existing corpus source.
+Scientific deferrals remain in the graph review queue and are distinct from service
+failures. Graph counts are deduplicated relationships, not extraction proposal counts.
+
+Both standard corpus builds and the frozen ingestion runner automatically record
+graph-construction timelines. Each completed paper immediately produces a cumulative
+replay snapshot; recording does not wait for the batch to publish. The reusable
+`litmap.timeline.TimelineRecorder` writes `timeline/events.jsonl` and self-contained
+graph snapshots under the extraction run directory. Claim IDs and content-derived evidence replay
+IDs let a player distinguish new relationships from additional supporting evidence.
+Snapshots include nodes, edges, sources, quotations, contexts and experiments, so
+later replay does not require rerunning extraction. Recording deduplicates events
+across restarts and skips published databases with an active WAL.
+
+For a run started before automatic recording was installed, the compatibility command
+`scripts/record_ingestion_timeline.py --run <run-directory> --db <corpus-kg.duckdb>
+--watch` observes completed artifacts every 1.5 seconds. Events distinguish observation
+time from artifact modification time. Earlier events recovered when the observer
+starts are not presented as precisely observed live events.
+This records replay data only; timeline controls, playback speed and animation remain
+frontend work. Replay snapshots and actual database publication events are separate:
+standard builds publish after extraction, while the rolling runner publishes completed
+papers as they arrive.
