@@ -598,4 +598,6 @@ provenance and experiment-scope checks before publication. RuntimeDetail opens t
 artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
 Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
 verification. No live design pilot, biological efficacy, runtime vision or performance acceptance
-is implied. See [supported behavior and remaining acceptance](docs/binder-design.md).
+is implied. Immutable scoped scene recipes and PNG captures support actual image observations,
+recorded action replay and independent user exploration inside the owning experiment.
+See [supported behavior and remaining acceptance](docs/binder-design.md).

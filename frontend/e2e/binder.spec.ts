@@ -7,7 +7,7 @@ const raw = readFileSync(
   "utf8",
 );
 const sha = createHash("sha256").update(raw).digest("hex");
-async function fixture(page: Page) {
+async function fixture(page: Page, recorded = false) {
   await mockApi(page);
   const root = investigation.root;
   const payloads: [string, unknown][] = [
@@ -42,6 +42,19 @@ async function fixture(page: Page) {
       },
     ],
   ];
+  if (recorded)
+    for (const preset of ["hero", "interface-close", "reverse"])
+      payloads.push([
+        "scene.recipe",
+        {
+          scene_id: "fixture-scene",
+          bundle_sha256: sha,
+          actor: "agent",
+          note: "Review " + preset,
+          recipe: { sha256: "fixture-" + preset },
+          view: { preset, style: "pearl", selected: null, camera: null },
+        },
+      ]);
   const events = payloads.map(([kind, payload], i) => ({
     schema_version: 1,
     sequence: i + 1,
@@ -110,9 +123,14 @@ test("binder artifact picking, camera stability, replay and responsive tables", 
     () => (window as any).sceneReview.inspect().camera,
   );
   await page.locator(".binder-sequence button").first().click();
-  expect(
-    await page.evaluate(() => (window as any).sceneReview.inspect().camera),
-  ).toEqual(before);
+  const after = await page.evaluate(
+    () => (window as any).sceneReview.inspect().camera,
+  );
+  for (const field of ["position", "target", "quaternion", "up"])
+    for (let i = 0; i < before[field].length; i++)
+      expect(after[field][i]).toBeCloseTo(before[field][i], 9);
+  for (const field of ["fov", "near", "far", "projection"])
+    expect(after[field]).toEqual(before[field]);
   await expect(page.locator(".binder-table table")).toBeVisible();
   const picked = await page.evaluate(() => {
     const bridge = (window as any).sceneReview;
@@ -148,6 +166,9 @@ test("binder visual review captures", async ({ page }) => {
       await (window as any).sceneReview.apply({ preset });
       await (window as any).sceneReview.ready();
     }, preset);
+    expect(
+      await page.evaluate(() => (window as any).sceneReview.inspect().preset),
+    ).toBe(preset);
     await page.screenshot({ path: `${dir}/${preset}-page.png` });
     await page
       .locator('[data-testid="binder-stage"]')
@@ -184,4 +205,33 @@ test("binder visual review captures", async ({ page }) => {
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= 390),
   ).toBeTruthy();
+});
+
+test("recorded camera actions replay at adjustable speed while exploration stays local", async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+  await fixture(page, true);
+  await expect(page.getByText(/Review reverse/)).toBeVisible();
+  await page.getByLabel("Agent scene action", { exact: true }).fill("0");
+  await expect(page.getByText(/Review hero/)).toBeVisible();
+  await page.getByLabel("Scene playback speed").selectOption("4");
+  await page
+    .getByRole("button", { name: "Replay agent inspection", exact: true })
+    .click();
+  await expect(page.getByText(/Review reverse/)).toBeVisible();
+  await page.getByRole("button", { name: "epitope", exact: true }).click();
+  await expect(page.getByText(/Your changes are local/)).toBeVisible();
+  await page
+    .getByRole("button", { name: "Follow latest agent view", exact: true })
+    .click();
+  expect(
+    await page.evaluate(() => (window as any).sceneReview.inspect().preset),
+  ).toBe("reverse");
+  await page.getByLabel("Activity playback position").fill("5");
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as any).sceneReview?.inspect().preset),
+    )
+    .toBe("hero");
 });

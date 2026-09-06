@@ -139,3 +139,82 @@ def test_real_png_bytes_are_attached_to_sdk_observation():
     with pytest.raises(ValueError):image_prompt('bad',['/tmp/image.png'])
     with pytest.raises(ValueError):image_prompt('bad',[raw]*3)
     with pytest.raises(ValueError):image_prompt('bad',[b'not png'])
+
+@pytest.fixture
+def scene_service(tmp_path, bundle):
+    from dnhacksbio.explorer.runtime import Journal
+    from dnhacksbio.binder.scenes import SceneService
+    scope=bundle['manifest']['scope']
+    j=Journal(tmp_path)
+    j.register(scope['run_id'],'Interface review',project=scope['project_id'])
+    j.append(scope['run_id'],'a','attempt.started',{'original_question':'Interface review'})
+    j.append(scope['run_id'],'a','experiment.queued',{'title':'Interface review'},experiment_id=scope['experiment_id'])
+    raw=canonical(bundle);key=j.store_bytes(raw)
+    j.append(scope['run_id'],'a','artifact',{'artifact_id':'binder','kind':'binder_bundle','status':'available','sha256':key,'storage_key':key},
+             experiment_id=scope['experiment_id'],producer='collector')
+    return SceneService(j,scope),key
+
+
+def scene_renderer(request):
+    import zlib, struct
+    def chunk(kind, data):
+        return struct.pack('>I',len(data))+kind+data+struct.pack('>I',zlib.crc32(kind+data))
+    png=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',1,1,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(b'\0\0\0\0'))+chunk(b'IEND',b'')
+    view=request['recipe']['view']
+    camera=view['camera'] or {'position':[0,0,10],'target':[0,0,0],'fov':38,'near':.1,'far':2000}
+    return {'png':png,'state':{**view,'camera':camera,'bundle_sha256':request['recipe']['bundle_sha256'],
+             'viewport':{'width':1,'height':1,'dpr':1},
+             'physical_to_scene':{'units':'angstrom','scale':1,'binder_offset':12 if view['preset']=='exploded' else 0,'illustrative':view['preset']=='exploded'}},
+            'picked':request['bundle']['structure']['residues'][0]['id']}
+
+
+def test_scene_scope_cursor_and_stale_revision(scene_service):
+    from dnhacksbio.binder.scenes import SceneService
+    service,key=scene_service
+    with pytest.raises(FileNotFoundError):service.open_scene(key,through=3)
+    first=service.open_scene(key)
+    second=service.set_scene_view(first['recipe_sha256'],{'preset':'reverse'},note='Check the opposing face')
+    assert first['recipe_sha256']!=second['recipe_sha256']
+    assert service.open_scene(key,through=first['sequence'])==first
+    with pytest.raises(ValueError,match='Stale'):service.set_scene_view(first['recipe_sha256'],{},note='old')
+    with pytest.raises(ValueError,match='obsolete'):service.capture_scene(first['recipe_sha256'],scene_renderer)
+    other=SceneService(service.journal,{**service.scope,'experiment_id':'other'})
+    with pytest.raises(FileNotFoundError):other.open_scene(key)
+    capture=service.capture_scene(second['recipe_sha256'],scene_renderer)
+    with pytest.raises(FileNotFoundError):service.read_capture(capture['capture_id'],first['sequence'])
+    picked=service.pick(capture['capture_id'],recipe_sha256=second['recipe_sha256'],x=0,y=0,renderer=scene_renderer)
+    assert picked['residue_id']
+    with pytest.raises(ValueError,match='different camera'):service.pick(capture['capture_id'],recipe_sha256=first['recipe_sha256'],x=0,y=0,renderer=scene_renderer)
+    def moved(request):
+        result=scene_renderer(request);result['state']['camera']={**result['state']['camera'],'position':[1,1,1]};return result
+    with pytest.raises(ValueError,match='differs'):service.pick(capture['capture_id'],recipe_sha256=second['recipe_sha256'],x=0,y=0,renderer=moved)
+
+
+def test_scene_capture_rejects_changes_and_bad_pixels(scene_service):
+    service,key=scene_service
+    opened=service.open_scene(key)
+    def wrong(request):
+        result=scene_renderer(request);result['state']['bundle_sha256']='0'*64;return result
+    with pytest.raises(ValueError,match='differs'):service.capture_scene(opened['recipe_sha256'],wrong)
+    def short(request):
+        result=scene_renderer(request);result['png']=b'\x89PNG\r\n\x1a\n';return result
+    with pytest.raises(ValueError,match='PNG'):service.capture_scene(opened['recipe_sha256'],short)
+    def concurrent(request):
+        service.set_scene_view(opened['recipe_sha256'],{'preset':'reverse'},note='Changed during render')
+        return scene_renderer(request)
+    with pytest.raises(ValueError,match='changed'):service.capture_scene(opened['recipe_sha256'],concurrent)
+    assert not any(e['kind']=='artifact' and e['payload'].get('kind')=='scene_capture' for e in service.history())
+
+
+def test_scene_review_transports_exact_image_and_records_scope(scene_service,monkeypatch):
+    service,key=scene_service
+    opened=service.open_scene(key);capture=service.capture_scene(opened['recipe_sha256'],scene_renderer)
+    async def complete(prompt,**kwargs):
+        assert kwargs['images']==[service.journal.read_blob(capture['image_sha256'])]
+        assert kwargs['tools_disabled']
+        return 'The image is black; no interface can be assessed.'
+    monkeypatch.setattr('dnhacksbio.llm.acomplete',complete)
+    import asyncio
+    review=asyncio.run(service.inspect_scene_capture(capture['capture_id'],question='Is the interface visible?'))
+    assert review['scope']==service.scope
+    assert service.history()[-1]['kind']=='scene.review'

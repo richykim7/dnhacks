@@ -136,3 +136,8 @@ and requires matching provenance. The explorer verifies project/run/experiment s
 publishing; a mismatch yields a rejected artifact event with no available blob reference.
 The existing exact-run and replay-cursor blob access rules apply. This capability does not add
 an audited structural result or bypass the human promotion gate. See [binder design](binder-design.md).
+
+Binder scene actions use `scene.recipe` and `scene.review` events plus collector-owned
+`scene_capture` PNG artifacts. Recipes, images and review blobs remain subject to run/cursor
+reference checks; the scene service additionally enforces the exact experiment and bundle scope.
+Capture/pick are bounded local browser operations; see the binder guide for CLI request fields.

@@ -1,6 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import Stage, { type StageHandle } from "./Stage";
-import { type Bundle, type Preset, type SceneState, label } from "./types";
+import {
+  type Bundle,
+  type Preset,
+  type SceneState,
+  type SceneAction,
+  label,
+} from "./types";
 import "./binder.css";
 
 const presets: Preset[] = [
@@ -31,9 +37,11 @@ async function sha(text: string) {
 export default function Workbench({
   url,
   sha256,
+  sceneActions = [],
 }: {
   url: string;
   sha256: string;
+  sceneActions?: SceneAction[];
 }) {
   const [bundle, setBundle] = useState<Bundle | null>(null),
     [error, setError] = useState("");
@@ -43,6 +51,75 @@ export default function Workbench({
     selected: null,
     revision: 0,
   });
+  const stageElement = useRef<HTMLDivElement>(null);
+  const [mode, setMode] = useState<"follow" | "replay" | "explore">("follow");
+  const [playing, setPlaying] = useState(false),
+    [speed, setSpeed] = useState(1),
+    [frame, setFrame] = useState(0);
+  const recorded = useMemo(
+    () => sceneActions.filter((a) => presets.includes(a.view.preset)),
+    [sceneActions],
+  );
+  const previousRecordedCount = useRef(0);
+  const recordedKey = recorded.map((a) => a.recipe_sha256).join(",");
+  const explore = useCallback(() => {
+    setMode("explore");
+    setPlaying(false);
+  }, []);
+  useEffect(() => {
+    const rewound = recorded.length < previousRecordedCount.current;
+    previousRecordedCount.current = recorded.length;
+    if (mode === "follow" && recorded.length) {
+      const index = recorded.length - 1;
+      setFrame(index);
+      setState((s) => ({
+        ...s,
+        ...recorded[index].view,
+        revision: s.revision + 1,
+      }));
+    }
+    if (rewound || (recorded.length > 0 && frame >= recorded.length)) {
+      setFrame(Math.max(0, recorded.length - 1));
+      setPlaying(false);
+      setMode("follow");
+      setState((s) => ({
+        ...s,
+        ...(recorded.at(-1)?.view ?? {
+          preset: "hero",
+          style: "pearl",
+          selected: null,
+          camera: null,
+        }),
+        revision: s.revision + 1,
+      }));
+    }
+  }, [recordedKey, mode]);
+  useEffect(() => {
+    if (!playing || mode !== "replay") return;
+    const timer = setTimeout(() => {
+      const next = frame + 1;
+      if (next >= recorded.length) {
+        setPlaying(false);
+        return;
+      }
+      setFrame(next);
+      setState((s) => ({
+        ...s,
+        ...recorded[next].view,
+        revision: s.revision + 1,
+      }));
+    }, 1000 / speed);
+    return () => clearTimeout(timer);
+  }, [playing, mode, frame, speed, recordedKey]);
+  const replayFrame = (index: number) => {
+    setMode("replay");
+    setFrame(index);
+    setState((s) => ({
+      ...s,
+      ...recorded[index].view,
+      revision: s.revision + 1,
+    }));
+  };
   const handle = useRef<StageHandle | null>(null),
     stateRef = useRef(state);
   stateRef.current = state;
@@ -69,27 +146,50 @@ export default function Workbench({
     });
     return () => controller.abort();
   }, [url, sha256]);
-  const onHandle = useCallback((h: StageHandle) => {
+  const onHandle = useCallback((h: StageHandle | null) => {
     handle.current = h;
-    h.ready().then(() => setLoaded(true));
+    h?.ready().then(() => {if(handle.current===h)setLoaded(true);});
   }, []);
   const onPick = useCallback(
-    (id: string) => setState((s) => ({ ...s, selected: id })),
-    [],
+    (id: string) => {
+      explore();
+      setState((s) => ({ ...s, selected: id }));
+    },
+    [explore],
   );
   useEffect(() => {
-    if (
-      !import.meta.env.DEV ||
-      !new URLSearchParams(location.search).has("sceneReview")
-    )
-      return;
+    if (!bundle || !stageElement.current) return;
     const w = window as unknown as { sceneReview?: unknown };
     const bridge = {
       apply: async (patch: Partial<SceneState>) => {
         if (patch.preset && !presets.includes(patch.preset))
           throw Error("Unknown preset");
+        if (patch.style && !["pearl", "copper"].includes(patch.style))
+          throw Error("Unknown material");
+        if (
+          patch.selected &&
+          !bundle.structure.residues.some((r) => r.id === patch.selected)
+        )
+          throw Error("Unknown residue");
+        if (
+          patch.camera &&
+          !["position", "target"].every(
+            (k) =>
+              Array.isArray(patch.camera![k as "position" | "target"]) &&
+              patch.camera![k as "position" | "target"].length === 3 &&
+              patch.camera![k as "position" | "target"].every(Number.isFinite),
+          )
+        )
+          throw Error("Invalid camera");
         setLoaded(false);
-        setState((s) => ({ ...s, ...patch, revision: s.revision + 1 }));
+        setMode("explore");
+        setPlaying(false);
+        setState((s) => ({
+          ...s,
+          ...patch,
+          camera: patch.camera ?? null,
+          revision: s.revision + 1,
+        }));
         await new Promise((r) =>
           requestAnimationFrame(() => requestAnimationFrame(r)),
         );
@@ -103,11 +203,14 @@ export default function Workbench({
         }
         await handle.current.ready();
       },
-      inspect: () => ({
-        ...handle.current?.inspect(),
-        ...stateRef.current,
-        bundle_sha256: sha256,
-      }),
+      inspect: () => {
+        const { camera: _camera, ...view } = stateRef.current;
+        return {
+          ...handle.current?.inspect(),
+          ...view,
+          bundle_sha256: sha256,
+        };
+      },
       pick: (x: number, y: number) => {
         const id = handle.current?.pick(x, y);
         if (id) onPick(id);
@@ -115,9 +218,18 @@ export default function Workbench({
       },
       capture: () => handle.current?.capture(),
     };
-    w.sceneReview = bridge;
+    const element = stageElement.current as HTMLDivElement & {
+      binderController?: typeof bridge;
+    };
+    element.binderController = bridge;
+    if (
+      import.meta.env.DEV &&
+      new URLSearchParams(location.search).get("sceneReview") === "1"
+    )
+      w.sceneReview = bridge;
     return () => {
       if (w.sceneReview === bridge) delete w.sceneReview;
+      if (element.binderController === bridge) delete element.binderController;
     };
   }, [sha256, onPick, bundle]);
   if (error) return <p role="alert">{error}</p>;
@@ -140,6 +252,7 @@ export default function Workbench({
   return (
     <section
       className={`binder-workbench ${expanded ? "binder-expanded" : ""}`}
+      data-bundle-sha256={sha256}
       aria-label="Interface Foundry"
     >
       <header className="binder-heading">
@@ -152,10 +265,89 @@ export default function Workbench({
           {expanded ? "Compact view" : "Expand workbench"}
         </button>
       </header>
+      <div
+        className="binder-timeline"
+        aria-label="Recorded agent scene actions"
+      >
+        <div>
+          <strong>
+            {mode === "explore"
+              ? "Your exploration"
+              : mode === "replay"
+                ? "Agent scene replay"
+                : "Following agent"}
+          </strong>
+          <span>Scene actions, not physical time</span>
+        </div>
+        {recorded.length ? (
+          <>
+            <button
+              onClick={() => {
+                if (mode !== "replay" || frame === recorded.length - 1)
+                  replayFrame(0);
+                setMode("replay");
+                setPlaying(!playing);
+              }}
+            >
+              {playing ? "Pause scene replay" : "Replay agent inspection"}
+            </button>
+            <input
+              aria-label="Agent scene action"
+              type="range"
+              min={0}
+              max={recorded.length - 1}
+              value={frame}
+              onChange={(e) => {
+                setPlaying(false);
+                replayFrame(Number(e.target.value));
+              }}
+            />
+            <label>
+              Playback speed
+              <select
+                aria-label="Scene playback speed"
+                value={speed}
+                onChange={(e) => setSpeed(Number(e.target.value))}
+              >
+                {[0.25, 0.5, 1, 2, 4].map((n) => (
+                  <option key={n} value={n}>
+                    {n}×
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              onClick={() => {
+                setPlaying(false);
+                setMode("follow");
+              }}
+            >
+              Follow latest agent view
+            </button>
+            <p>
+              {frame + 1}/{recorded.length} · {recorded[frame]?.note}
+            </p>
+          </>
+        ) : (
+          <p>
+            No agent scene actions recorded at this point. Explore the saved
+            candidate.
+          </p>
+        )}
+        {mode === "explore" && recorded.length > 0 && (
+          <small>
+            Your changes are local; the agent's recorded inspection is
+            preserved.
+          </small>
+        )}
+      </div>
       <div className="binder-layout">
         <div className="binder-specimen">
           <div
+            ref={stageElement}
             className="binder-stage"
+            onPointerDown={explore}
+            onWheel={explore}
             data-testid="binder-stage"
             aria-label="Interactive target and binder; exact contacts in table below"
           >
@@ -202,13 +394,15 @@ export default function Workbench({
                 <button
                   key={p}
                   aria-pressed={state.preset === p}
-                  onClick={() =>
+                  onClick={() => {
+                    explore();
                     setState((s) => ({
                       ...s,
                       preset: p,
+                      camera: null,
                       revision: s.revision + 1,
-                    }))
-                  }
+                    }));
+                  }}
                 >
                   {p.replaceAll("-", " ")}
                 </button>
@@ -269,12 +463,13 @@ export default function Workbench({
             Material study
             <select
               value={state.style}
-              onChange={(e) =>
+              onChange={(e) => {
+                explore();
                 setState((s) => ({
                   ...s,
                   style: e.target.value as "pearl" | "copper",
-                }))
-              }
+                }));
+              }}
             >
               <option value="pearl">Pearl / cyan</option>
               <option value="copper">Bronze / violet</option>

@@ -87,9 +87,9 @@ It supports pearl/cyan and bronze/violet studies, physical/exploded/contact-only
 exact picking, accessible contact tables, camera preservation during inspector selection and
 scene/bundle export. Exploded offsets and reduced cutaway sphere radii are presentation only.
 Rendering is demand driven, with no autonomous motion in reduced-motion mode.
-The development-only `?sceneReview=1` bridge exposes apply, ready, inspect, pick and capture.
-Readiness waits for fonts, shader compilation and settled scene renders. The bridge is excluded
-from production and is not by itself a runtime vision transport.
+The workbench element exposes a bounded controller for local browser capture; the development-only
+`?sceneReview=1` alias is also available. Readiness waits for fonts, synchronous shader compilation
+and settled renders, and stops on scene removal. Runtime capture uses the actual owning experiment.
 
 The browser review fixture is test-only (`frontend/e2e/binder-fixture.json`). Run
 `BINDER_REVIEW_DIR=/tmp/binder-review PLAYWRIGHT_BASE_URL=http://127.0.0.1:5192 npm --prefix frontend run e2e -- binder.spec.ts`.
@@ -109,4 +109,31 @@ The model seam's `acomplete(..., images=[png_bytes])` and `Session.ask(..., imag
 now attach actual SDK image content, bounded to two PNGs, 8 MiB each and 1920×1080 dimensions.
 An actual Opus observation of the supplied fixture was verified; its image hash and response
 are preserved in [the visual review](binder-review/README.md). This is image transport only;
-scoped capture-tool orchestration and replay still need their separate integration.
+scoped capture-tool orchestration and replay are described below.
+
+
+## Recorded scene actions and runtime capture
+
+The trusted local CLI supports `binder.open_scene`, `binder.set_scene_view`,
+`binder.capture_scene`, `binder.inspect_scene_capture` and `binder.pick`.
+Supply `journal_directory` (the parent of the runtime directory), the exact three-part `scope`,
+and `base_url` for capture/pick. The URL must be a local workspace server. Node and the installed
+Playwright Chromium are required. The browser opens the real owning experiment, selects the bundle
+by its hash, applies the validated recipe and waits for readiness; no fixture responses replace the API.
+
+Recipes are immutable Journal blobs with parent hashes. Each change records an agent action and note.
+Historical scene opens return only recipes available at the requested cursor; changing or capturing
+a stale revision fails. A scene permits at most 128 actions and an experiment at most 16 captures.
+Each capture is bounded to 1920×1080, 8 MiB and at most 60 seconds including browser navigation.
+The worker process group is terminated on timeout. Captures retain the source/recipe/image hashes,
+actual camera, viewport, physical transform, visible residue IDs and occlusion fractions.
+The runtime serves capture PNGs only when the collector artifact is available at the requested cursor.
+
+Image inspection attaches the saved PNG bytes to a tools-disabled vision call and journals its visual
+observation. Picking requires the capture and recipe hash, replays the saved camera, checks matching
+viewport/transform and returns a source residue identity. Visual observations do not change metrics.
+
+The workbench follows recorded actions by default, with play/pause, a scene-action slider and
+0.25–4× playback. Manual rotation, selection and material changes enter local exploration.
+Follow latest restores the agent view. Neither local exploration nor replay rewrites the recorded
+history; the timeline describes inspection actions, not molecular dynamics or generation progress.

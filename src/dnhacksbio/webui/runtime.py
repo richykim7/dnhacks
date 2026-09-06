@@ -90,7 +90,7 @@ def handle(handler, rest: str, qs: dict):
         for e in run.get("history", []):
             p = e["payload"]
             field = {"experiment.queued": "code", "tool.started": "inputs", "tool.ended": "observation",
-                     "instructions.delivered": "content"}.get(e["kind"])
+                     "instructions.delivered": "content", "scene.recipe": "recipe", "scene.review": "review"}.get(e["kind"])
             if field:
                 refs.append(p.get(field, {}))
             if e["kind"] == "experiment.finished":
@@ -99,6 +99,7 @@ def handle(handler, rest: str, qs: dict):
                 refs.extend(item.get("version", {}) for item in p.get("items", []))
             if e["kind"] == "artifact" and e["producer"] == "collector" and p.get("status") == "available":
                 refs.append(p)
+                if p.get("kind") == "scene_capture":refs.append(p.get("snapshot", {}))
         if not any(ref.get("storage_key") == key for ref in refs):
             raise FileNotFoundError("Artifact not available for this researcher at this point")
         if action == "geometry":
@@ -122,7 +123,8 @@ def handle(handler, rest: str, qs: dict):
             else:
                 raise ValueError("Unknown geometry operation")
             return handler._send_json(result)
-        return handler._send_bytes(j.read_blob(key), "text/plain; charset=utf-8")
+        media = "image/png" if any(ref.get("storage_key") == key and ref.get("kind") == "scene_capture" for ref in refs) else "text/plain; charset=utf-8"
+        return handler._send_bytes(j.read_blob(key), media)
     if action == "snapshot":
         if through is None:
             reconcile(j, root)

@@ -11,6 +11,17 @@ from .tools import prepare_target, compare, propose_followup
 
 def dispatch(request):
     action=request['action'];args=request.get('args',{})
+    if action in {'binder.open_scene','binder.set_scene_view','binder.capture_scene','binder.inspect_scene_capture','binder.pick'}:
+        import asyncio
+        from dnhacksbio.explorer.runtime import Journal
+        from .scenes import SceneService
+        from .render import browser_renderer
+        service=SceneService(Journal(request['journal_directory'],create=False),request['scope'])
+        args={**args}
+        if action in {'binder.capture_scene','binder.pick'}:
+            args['renderer']=browser_renderer(request['base_url'],service.manifest['investigation_id'])
+        result=getattr(service,action.split('.')[1])(**args)
+        return asyncio.run(result) if action=='binder.inspect_scene_capture' else result
     if action=='binder.prepare_target':
         args={**args};raw=Path(args.pop('structure_path')).read_bytes()
         return prepare_target(raw,**args)
