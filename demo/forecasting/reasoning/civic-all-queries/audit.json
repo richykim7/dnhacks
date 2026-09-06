@@ -1,0 +1,96 @@
+{
+  "condition_validity": {
+    "evolving_graph": {
+      "attempted_queries": 22,
+      "category_counting": "each invalid call counted once per category; categories can overlap",
+      "complete_queries": 8,
+      "invalid_call_categories": {
+        "incomplete_candidate_set": 9,
+        "invalid_or_missing_evidence_ids": 7,
+        "other": 1,
+        "unexpected_or_missing_fields": 9,
+        "unknown_or_duplicate_candidate_id": 2
+      },
+      "invalid_calls": 16
+    },
+    "flat_log": {
+      "attempted_queries": 22,
+      "category_counting": "each invalid call counted once per category; categories can overlap",
+      "complete_queries": 14,
+      "invalid_call_categories": {
+        "incomplete_candidate_set": 9,
+        "invalid_or_missing_evidence_ids": 4,
+        "unexpected_or_missing_fields": 7,
+        "unknown_or_duplicate_candidate_id": 2
+      },
+      "invalid_calls": 12
+    },
+    "static_graph": {
+      "attempted_queries": 22,
+      "category_counting": "each invalid call counted once per category; categories can overlap",
+      "complete_queries": 17,
+      "invalid_call_categories": {
+        "incomplete_candidate_set": 2,
+        "invalid_or_missing_evidence_ids": 2,
+        "timeout": 2,
+        "unexpected_or_missing_fields": 2
+      },
+      "invalid_calls": 6
+    }
+  },
+  "evaluation_sha256": "4c5f025ff3b382fdff015896ca2dfeb11c0a0ff4bf5ac2e86347b35695613835",
+  "implementation_sha256": {
+    "scripts/run_forecast_suite.py": "95314d9696029a259aa0b8934e9fe145d8cd2fe4d25539edf6ba9cd30c598b38",
+    "src/dnhacksbio/forecasting/reasoning.py": "b1ecaf7a3dd860029efeab14b94f4fe2fb0e792a369a5fa54b37d3d8e27c8407",
+    "src/dnhacksbio/forecasting/scoring.py": "c0f3c3127cbc8687ec4b1a97ce44afe6a1e01954fdea6f2db297ff88b3acda89",
+    "src/dnhacksbio/llm.py": "15ca75b4860a7a118820bd32ea29a48ce7aedb002a55f87938d7b8b0b39fe7ec"
+  },
+  "inference_limitations": {
+    "average_precision_eligible_queries": 1,
+    "bootstrap": "The original evaluation is retained unchanged. Its one-query AP bootstrap is degenerate and cannot support a credible confidence or significance claim; precision@5 has only two query clusters.",
+    "complete_queries": 2,
+    "planned_queries": 22,
+    "scientific_target": "Later CIViC curation additions; all outcome publications predate the historical cutoff.",
+    "selection": "The main comparison conditions on all three responses passing validation; attrition may be systematic and prevents a general ranking-advantage claim."
+  },
+  "model_protocol_unchanged": true,
+  "output_budget_audit": {
+    "interpretation": "6000 was requested through the SDK; reported usage exceeded it in three calls. It was not a verified hard execution ceiling.",
+    "over_limit_reported_calls": [
+      {
+        "condition": "evolving_graph",
+        "query_id": "civic:variant:104",
+        "query_in_main_comparison": false,
+        "reported_output_tokens": 6777,
+        "requested_ceiling": 6000,
+        "step": 2
+      },
+      {
+        "condition": "evolving_graph",
+        "query_id": "civic:variant:311",
+        "query_in_main_comparison": false,
+        "reported_output_tokens": 6229,
+        "requested_ceiling": 6000,
+        "step": 2
+      },
+      {
+        "condition": "evolving_graph",
+        "query_id": "civic:variant:425",
+        "query_in_main_comparison": false,
+        "reported_output_tokens": 6128,
+        "requested_ceiling": 6000,
+        "step": 2
+      }
+    ],
+    "requested_ceiling": 6000
+  },
+  "run_wall_seconds": 717.908117,
+  "schema_version": "forecast-suite-audit/v1",
+  "usage_totals": {
+    "interpretation": "reported usage only; two attempted calls have no usage record; not a billing estimate",
+    "planned_calls": 132,
+    "reported_calls": 130,
+    "reported_input_tokens_including_cache_creation_and_reads": 1951317,
+    "reported_output_tokens": 459721
+  }
+}
