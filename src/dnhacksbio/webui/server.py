@@ -206,10 +206,21 @@ class Handler(BaseHTTPRequestHandler):
             return self._upload(parsed.path)
         try:
             length = int(self.headers.get("Content-Length", 0))
+            if '/inhibitor/' in parsed.path and not 0<=length<=65536:
+                raise ValueError('Inhibitor request exceeds 64 KiB')
             payload = json.loads(self.rfile.read(length) or b"{}")
         except (ValueError, TypeError):
             return self._error(400, "invalid JSON body")
         try:
+            if parsed.path.startswith('/api/runtime/') and '/inhibitor/' in parsed.path:
+                from dnhacksbio.inhibitor.service import Workbench
+                from .runtime import journal
+                parts=unquote(parsed.path[len('/api/runtime/'):]).split('/')
+                if len(parts)!=3 or parts[1]!='inhibitor': raise ValueError('Invalid workbench path')
+                qs=parse_qs(parsed.query)
+                if 'through' in qs: raise ValueError('Playback is read-only')
+                wb=Workbench(journal(),parts[0],parts[2],self._project_arg(qs))
+                return self._send_json(wb.dispatch(payload,actor='user'))
             if parsed.path == "/api/projects" or parsed.path.startswith("/api/projects/"):
                 return self._projects_post(parsed.path, payload)
             if parsed.path == "/api/assistant/suggest":
