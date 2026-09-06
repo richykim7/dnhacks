@@ -1,5 +1,6 @@
 """Durable mention delivery, transport ambiguity, and private-socket regression coverage."""
 import json
+import os
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -318,9 +319,36 @@ def test_source_config_and_dependency_changes_alter_release_fingerprint(tmp_path
     assert len({first, second, third, fourth}) == 4
 
 
-def test_actual_private_socket_literal_enter_and_restart(tmp_path):
+@pytest.mark.parametrize("cache_setting", ["unset", "unusable"])
+def test_actual_private_socket_literal_enter_and_restart(tmp_path, monkeypatch, cache_setting):
+    # Sandboxed callers may not be allowed to create the real per-user lock cache.
+    unusable = tmp_path / "cache-is-a-file"
+    unusable.write_text("must remain untouched")
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
+    if cache_setting == "unusable":
+        monkeypatch.setenv("XDG_CACHE_HOME", str(unusable))
+    previous_cache, previous_socket = os.environ.get("XDG_CACHE_HOME"), nudge.TMUX_SOCKET
     evidence = service.transport_self_test(tmp_path / "transport.json")
     assert evidence["literal_text_and_enter"] == "passed"
     assert evidence["restart_and_replay"] == "one delivery"
     assert "ACK" in evidence["captured_ack"]
     assert not Path(evidence["private_socket"]).exists()
+    assert not Path(evidence["private_cache"]).exists()
+    assert os.environ.get("XDG_CACHE_HOME") == previous_cache
+    assert nudge.TMUX_SOCKET == previous_socket
+    assert unusable.read_text() == "must remain untouched"
+
+
+def test_transport_worker_timeout_cleans_only_its_private_socket(tmp_path, monkeypatch):
+    calls = []
+    def timeout_worker(args, **kwargs):
+        calls.append(args)
+        if args[0] == sys.executable:
+            raise subprocess.TimeoutExpired(args, 25)
+        return SimpleNamespace(returncode=0)
+    monkeypatch.setattr(service, "run", timeout_worker)
+    with pytest.raises(subprocess.TimeoutExpired):
+        service.transport_self_test(tmp_path / "transport.json")
+    fixture_root = Path(calls[0][-1])
+    assert calls[1] == ["tmux", "-S", str(fixture_root / "tmux.sock"), "kill-server"]
+    assert not fixture_root.exists()

@@ -152,7 +152,10 @@ python3 scripts/board_nudge_service.py self-test --output /tmp/board-transport-e
 
 `self-test` creates a temporary Python stdin receiver, sends literal text and a separate Enter,
 and checks the receiver's acknowledgment byte for byte. It reopens the database and replays
-the same delivery to verify that only one message arrived. Its temporary server is always
+the same delivery to verify that only one message arrived. The entire fixture runs in a child
+Python process with an owned temporary input-lock cache, so a sandbox's read-only home/cache
+does not turn transport verification into an ambiguous send. The caller's environment and
+live routing globals remain unchanged. Its temporary server is always
 addressed with an explicit unique `-S` socket, including cleanup. It is a transport fixture,
 not proof that a real research agent consumed a Board message.
 
