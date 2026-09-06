@@ -31,7 +31,7 @@ function Preview() {
     <section style={{ width: '64%', height: '100%' }}><BinderDemo time={time} reducedMotion={reduced} /></section>
     <aside style={{ width: '36%', padding: '0 5% 0 2%', alignSelf: 'center' }}>
       <div style={{ color: '#67e8f9', fontSize: 12, letterSpacing: '.16em', marginBottom: 22 }}>ILLUSTRATIVE GEOMETRY</div>
-      <h1 style={{ fontWeight: 450, fontSize: 'clamp(22px,2.7vw,48px)', letterSpacing: '-.035em', margin: '0 0 28px' }}>Protein–binder docking</h1>
+      <h1 style={{ fontWeight: 450, fontSize: 'clamp(22px,2.7vw,48px)', letterSpacing: '-.035em', margin: '0 0 28px' }}>Binder interaction</h1>
       <div style={{ color: '#e7f9fb', fontSize: 20, marginBottom: 32 }}>{phase}</div>
       <p style={{ color: '#a9c0cc', fontSize: 16, lineHeight: 1.8 }}>The smaller binder turns to align with the open cleft, seats between its contact sites, and moves with the protein as one complex.</p>
       <div style={{ color: '#a9c6d0', fontSize: 13, marginTop: 34 }}><span style={{ color: '#67e8f9' }}>●</span> Protein &nbsp;&nbsp; <span style={{ color: '#fb8c82' }}>●</span> Binder</div>
