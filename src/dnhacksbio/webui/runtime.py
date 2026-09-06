@@ -107,7 +107,7 @@ def handle(handler, rest: str, qs: dict):
             p = e["payload"]
             if e['kind']=='tissue.capture' and e['producer']=='scene-service':
                 refs.append({'storage_key':p.get('image_sha256'),'kind':'scene_capture'})
-            field = {"experiment.queued": "code", "tool.started": "inputs", "tool.ended": "observation",
+            field = {"experiment.queued": "code", "experiment.started": "code", "tool.started": "inputs", "tool.ended": "observation",
                      "instructions.delivered": "content", "scene.recipe": "recipe", "scene.review": "review"}.get(e["kind"])
             if field:
                 refs.append(p.get(field, {}))

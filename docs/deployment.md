@@ -51,7 +51,7 @@ The command serializes deploys, refuses nonterminal/unreadable job records,
 nonterminal or uncertain runtime journals (including paused investigations), and
 known standalone explorer/ingestion processes, fetches main into a separate
 repository and creates a commit-specific release with its own virtual environment.
-It runs frozen dependency installation, frontend build/unit/browser tests and Python
+It runs frozen dependency installation (including the host `experiments` stack), frontend build/unit/browser tests and Python
 tests against isolated test data. Missing datasets or failing tests block deployment;
 there is no skip-validation flag. Existing candidate directories are retained for
 audit and require inspection before a retry; there is no automatic deletion.

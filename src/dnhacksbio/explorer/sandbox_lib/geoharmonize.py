@@ -1,7 +1,7 @@
 """geoharmonize — robust gene-expression loading + harmonization for GEO series.
 
-STANDALONE (no dnhacksbio import): baked into the explorer sandbox image on PYTHONPATH, so experiment
-code can `import geoharmonize as gh`. Depends only on numpy/pandas/GEOparse (all in the image).
+STANDALONE (no dnhacksbio import): supplied on the host experiment PYTHONPATH, so code can
+`import geoharmonize as gh`. Dependencies come from the experiments extra.
 
 Different GEO platform records name the symbol column differently ("Gene Symbol", "GENE_SYMBOL",
 "gene_assignment", "ILMN_Gene", ...), pack several genes per probe ("MYC /// LOC391875"), bury symbols

@@ -289,8 +289,7 @@ def test_verifier_publication_recovers_idempotently_from_durable_queue(tmp_path,
         ex.close()
 
 
-@pytest.mark.skipif(os.environ.get("DN_RUNTIME_DOCKER_SMOKE") != "1", reason="Opt-in real Docker sandbox smoke")
-def test_docker_smoke_streaming_and_durable_artifact(tmp_path):
+def test_host_smoke_streaming_and_durable_artifact(tmp_path):
     from dnhacksbio.explorer.sandbox import run_code
     manifest = {"schema_version": 1, "artifacts": [{"path": "reference.pdb", "kind": "molecular_structure",
                 "format": "pdb", "provenance": {"category": "illustration", "source_ids": [],
@@ -303,7 +302,7 @@ def test_docker_smoke_streaming_and_durable_artifact(tmp_path):
             "print('finished',flush=True)\n")
     observed = []
     j = Journal(tmp_path)
-    result = run_code(code, timeout=20, cpus=1, memory="256m", network="none", data_dir=None,
+    result = run_code(code, timeout=20, cpus=1, network="none", data_dir=None,
                       journal=j, progress=lambda kind, payload: observed.append((kind, payload)),
                       job_base=str(tmp_path))
     assert result.ok, result.stderr

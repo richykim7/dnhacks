@@ -179,11 +179,11 @@ def build() -> dict:
                     "no forced survival quota",
                     "promise judging is a search heuristic, never a soundness verdict"]},
 
-        {"id": "sandbox", "label": "Experiment sandbox", "lane": "input",
+        {"id": "sandbox", "label": "Experiment execution", "lane": "input",
          "source": "explorer/sandbox.py · run_code / run_many",
          "detail": ["the only path from engine to code execution",
-                    "ephemeral container per experiment · /data read-only · non-root · mem/cpu/pid caps",
-                    "network none by default · in-container timeout hard-kill",
+                    "host Python subprocess per experiment · scoped cache/scratch/artifact paths",
+                    "no container runtime · owned process-group cancellation · recorded code and output",
                     f"run_many runs {default_arg('explorer/sandbox.py', 'run_many', 'max_parallel')} "
                     f"experiments concurrently, which is how several paths are followed at once"]},
 
