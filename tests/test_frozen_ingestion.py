@@ -63,6 +63,14 @@ def write_result(runner, args, result):
     runner.save(folder / "result.json", result)
 
 
+def test_unavailable_repair_is_incomplete_work_not_scientific_deferral(runner):
+    result = extraction(runner)
+    result["deferrals"] = [{"source_ref": 1,
+        "reason": "Repair unavailable: session limit resets at 3:30am"}]
+    with pytest.raises(runner.ServiceUnavailable, match="session limit"):
+        runner.validate_result(result, 1)
+
+
 def test_publish_retry_preserves_fulltext_and_independent_source_support(runner, corpus):
     args, manifest, target = corpus
     write_result(runner, args, extraction(runner, 1))
@@ -140,7 +148,7 @@ def test_validate_result_rejects_incomplete_or_inconsistent_records(runner, faul
         runner.validate_result(result, 1)
 
 
-def test_coordinator_records_live_batches_before_publication_and_resumes(runner, corpus, monkeypatch):
+def test_coordinator_replaces_finished_paper_while_first_is_slow_and_resumes(runner, corpus, monkeypatch):
     args, _, target = corpus
     args.lexicons = args.corpus / "lexicons"
     args.commit = "test-implementation"
@@ -152,27 +160,32 @@ def test_coordinator_records_live_batches_before_publication_and_resumes(runner,
         manifest["files_sha256"][name] = runner.digest(args.corpus / name)
     runner.save(args.corpus / "MANIFEST.json", manifest)
     active = set()
-    waves = []
     completed = set()
-    gate = None
+    launched = []
+    maximum_active = 0
+    first_wave_ready = None
+    release_slow = None
 
     async def fake_subprocess(*command, **kwargs):
-        nonlocal gate
+        nonlocal first_wave_ready, release_slow, maximum_active
         ref = int(command[command.index("--ref") + 1])
-        if not active:
-            gate = asyncio.Event()
-        current_gate = gate
+        if first_wave_ready is None:
+            first_wave_ready = asyncio.Event()
+            release_slow = asyncio.Event()
         active.add(ref)
-        expected = set(range(1, 11)) if ref <= 10 else {11, 12}
-        if ref > 10:
-            assert completed.issuperset(range(1, 11)), "next batch launched before first completed"
-        assert active <= expected and len(active) <= 10
-        if active == expected:
-            waves.append(sorted(active))
-            current_gate.set()
+        launched.append(ref)
+        maximum_active = max(maximum_active, len(active))
+        assert len(active) <= 10
+        if len(launched) == 10:
+            first_wave_ready.set()
+        if ref == 11:
+            assert 1 in active and 1 not in completed, "slow first paper blocked replacement"
+            release_slow.set()
 
         async def wait():
-            await current_gate.wait()
+            await first_wave_ready.wait()
+            if ref == 1:
+                await release_slow.wait()
             await asyncio.sleep(0)
             result = extraction(runner, ref)
             result["source_sha256"] = manifest["files_sha256"][f"{ref}.txt"]
@@ -197,9 +210,11 @@ def test_coordinator_records_live_batches_before_publication_and_resumes(runner,
         return real_publish(args, manifest)
 
     monkeypatch.setattr(runner, "publish", publish_after_replay)
-    asyncio.run(runner.coordinator(args, manifest))
-    assert waves == [list(range(1, 11)), [11, 12]]
-    assert publication_sizes == [10, 12]
+    asyncio.run(asyncio.wait_for(runner.coordinator(args, manifest), timeout=30))
+    assert launched == list(range(1, 13))
+    assert maximum_active == 10
+    assert publication_sizes[-1] == 12
+    assert publication_sizes[0] < 12
     assert not active
 
     async def no_new_workers(*a, **kw):
@@ -213,3 +228,45 @@ def test_coordinator_records_live_batches_before_publication_and_resumes(runner,
     assert any(e["type"] == "ingestion_completed" for e in rows)
     with duckdb.connect(str(target), read_only=True) as con:
         assert con.execute("SELECT count(*), count(DISTINCT source_ref) FROM evidence").fetchone() == (12, 12)
+
+
+def test_quota_exit_stops_queued_work_without_retry_and_drains_active(runner, corpus, monkeypatch):
+    args, _, target = corpus
+    args.lexicons = args.corpus / "lexicons"
+    args.commit = "test-implementation"
+    manifest = {"papers": [{"ref": ref, "text_file": f"{ref}.txt"} for ref in range(1, 13)],
+                "files_sha256": {f"{ref}.txt": f"hash-{ref}" for ref in range(1, 13)}}
+    runner.save(args.corpus / "MANIFEST.json", manifest)
+    monkeypatch.setattr(runner, "verify", lambda *a: None)
+    launched = []
+    gate = None
+
+    async def fake_subprocess(*command, **kwargs):
+        nonlocal gate
+        if gate is None:
+            gate = asyncio.Event()
+        ref = int(command[command.index("--ref") + 1])
+        launched.append(ref)
+        if len(launched) == 10:
+            gate.set()
+
+        async def wait():
+            await gate.wait()
+            if ref == 1:
+                return 75
+            await asyncio.sleep(0)
+            write_result(runner, args, extraction(runner, ref))
+            return 0
+
+        return SimpleNamespace(wait=wait)
+
+    monkeypatch.setattr(runner.asyncio, "create_subprocess_exec", fake_subprocess)
+    with pytest.raises(RuntimeError, match="service unavailable"):
+        asyncio.run(asyncio.wait_for(runner.coordinator(args, manifest), timeout=30))
+    assert launched == list(range(1, 11))
+    assert not (args.run / "001" / "result.json").exists()
+    progress = json.loads((args.run / "progress.json").read_text())
+    assert progress["completed"] == 9 and progress["active"] == 0
+    assert progress["failures"]
+    with duckdb.connect(str(target), read_only=True) as con:
+        assert con.execute("SELECT count(*) FROM evidence").fetchone()[0] == 9
