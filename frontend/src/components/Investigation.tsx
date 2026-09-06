@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -27,7 +27,12 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+  AnimatePresence,
+  LayoutGroup,
+  motion,
+  useReducedMotion,
+} from "motion/react";
 import { useAgent, useResource } from "@/lib/api";
 import type {
   Experiment,
@@ -60,19 +65,15 @@ import "@/investigation.css";
 
 const NODE_WIDTH = 286;
 const NODE_HEIGHT = 190;
-const EXPANDED_WIDTH = 600;
-const EXPANDED_HEIGHT = 660;
 type AgentData = {
   run: RunSummary;
   title: string;
   count: number;
-  expandedWidth: number;
   candidates: number;
   activity: boolean;
   state: string;
   elapsed: string;
   selected: boolean;
-  detail: ReactNode;
   onSelect: () => void;
   onCandidate: () => void;
 };
@@ -80,22 +81,17 @@ function AgentNode({ data }: NodeProps<Node<AgentData>>) {
   const r = data.run;
   const reducedMotion = useReducedMotion();
   return (
-    <div
-      style={data.selected ? { width: data.expandedWidth } : undefined}
-      className={`agent-node ${data.selected ? "selected expanded" : ""} ${data.activity ? "is-working" : ""} ${data.candidates ? "has-candidates" : ""} ${r.beam?.kept === false ? "closed-branch" : ""}`}
+    <motion.div
+      layoutId={`researcher-${r.run_id}`}
+      transition={
+        reducedMotion
+          ? { duration: 0 }
+          : { type: "spring", stiffness: 320, damping: 34 }
+      }
+      style={{ borderRadius: 12 }}
+      className={`agent-node ${data.selected ? "selected" : ""} ${data.activity ? "is-working" : ""} ${data.candidates ? "has-candidates" : ""} ${r.beam?.kept === false ? "closed-branch" : ""}`}
     >
       <Handle type="target" position={Position.Top} />
-      {data.selected && (
-        <Button
-          className="node-close nodrag"
-          size="icon"
-          variant="ghost"
-          aria-label="Close researcher detail"
-          onClick={data.onSelect}
-        >
-          <X size={15} />
-        </Button>
-      )}
       <button
         onClick={data.onSelect}
         aria-label={`${data.selected ? "Collapse" : "Inspect"} ${data.title}`}
@@ -142,66 +138,26 @@ function AgentNode({ data }: NodeProps<Node<AgentData>>) {
         )}
         <ChevronRight size={15} className="node-expand-chevron" />
       </div>
-      <AnimatePresence initial={false}>
-        {data.selected && (
-          <motion.div
-            key="detail"
-            className="inline-research-detail nodrag nowheel nopan"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{
-              duration: reducedMotion ? 0 : 0.2,
-              delay: reducedMotion ? 0 : 0.08,
-            }}
-          >
-            {data.detail}
-          </motion.div>
-        )}
-      </AnimatePresence>
       <Handle type="source" position={Position.Bottom} />
-    </div>
+    </motion.div>
   );
 }
 const nodeTypes = { agent: AgentNode };
-function FocusSelection({
-  selected,
-  expandedWidth,
-}: {
-  selected: string | null;
-  expandedWidth: number;
-}) {
+function CanvasViewport({ manual }: { manual: { current: boolean } }) {
   const flow = useReactFlow();
   const initialized = flow.viewportInitialized;
-  const fitted = useRef(false);
   useEffect(() => {
     if (!initialized) return;
+    const canvas = document.querySelector(".investigation-layout .react-flow");
     const duration = window.matchMedia("(prefers-reduced-motion: reduce)")
       .matches
       ? 0
-      : 360;
-    const canvas = document.querySelector(".investigation-layout .react-flow");
-    const focus = () => {
-      const node = selected ? flow.getNode(selected) : undefined;
-      if (node && canvas) {
-        const zoom = Math.min(
-          1,
-          (canvas.clientHeight - 42) / EXPANDED_HEIGHT,
-          (canvas.clientWidth - 36) / expandedWidth,
-        );
-        void flow.setCenter(
-          node.position.x + expandedWidth / 2,
-          node.position.y + EXPANDED_HEIGHT / 2,
-          { zoom, duration },
-        );
-      } else if (!fitted.current) {
+      : 300;
+    const fit = () => {
+      if (!manual.current)
         void flow.fitView({ padding: 0.18, maxZoom: 1, duration });
-      }
-      fitted.current = true;
     };
-    // React Flow commits measured positions after this render. Wait for its layout,
-    // then center once; live event updates never retrigger this effect.
-    let timer = window.setTimeout(focus, 340);
+    let timer = window.setTimeout(fit, 340);
     let width = canvas?.clientWidth,
       height = canvas?.clientHeight;
     const observer = new ResizeObserver(() => {
@@ -213,15 +169,14 @@ function FocusSelection({
       width = canvas.clientWidth;
       height = canvas.clientHeight;
       window.clearTimeout(timer);
-      fitted.current = false;
-      timer = window.setTimeout(focus, 180);
+      timer = window.setTimeout(fit, 180);
     });
     if (canvas) observer.observe(canvas);
     return () => {
       window.clearTimeout(timer);
       observer.disconnect();
     };
-  }, [selected, initialized, flow, expandedWidth]);
+  }, [initialized, flow, manual]);
   return null;
 }
 export const investigationTitle = (inv: InvestigationData) =>
@@ -240,21 +195,11 @@ export function Investigation({
   onRun: (id: string) => void;
   onNew: () => void;
 }) {
-  const [expandedWidth, setExpandedWidth] = useState(() =>
-    window.innerWidth < 700
-      ? Math.max(300, window.innerWidth - 100)
-      : EXPANDED_WIDTH,
-  );
-  useEffect(() => {
-    const resize = () =>
-      setExpandedWidth(
-        window.innerWidth < 700
-          ? Math.max(300, window.innerWidth - 100)
-          : EXPANDED_WIDTH,
-      );
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
+  const reducedMotion = useReducedMotion();
+  const closingRun = useRef<string | null>(null);
+  const pendingView = useRef<string | null>(null);
+  const manualViewport = useRef(false);
+  const workspace = useRef<HTMLElement>(null);
   const [railCollapsed, setRailCollapsed] = useState(
     () => window.innerWidth < 900,
   );
@@ -278,6 +223,13 @@ export function Investigation({
     setView("tree");
   };
   const [view, setView] = useState("tree");
+  const changeView = (next: string) => {
+    if (selected) {
+      closingRun.current = selected;
+      pendingView.current = next;
+      setSelected(null);
+    } else setView(next);
+  };
   const [query, setQuery] = useState("");
   const investigation =
     list.data?.find(
@@ -311,6 +263,8 @@ export function Investigation({
   const [playing, setPlaying] = useState(false);
   useEffect(() => {
     setSelected(null);
+    manualViewport.current = false;
+    pendingView.current = null;
     setSelectedExperiment(null);
     setCursor(null);
     setPlaying(false);
@@ -401,24 +355,30 @@ export function Investigation({
     if (selected && !visibleRuns.some((r) => r.run_id === selected))
       setSelected(null);
   }, [selected, visibleRuns]);
+  const closeResearcher = () => {
+    closingRun.current = selected;
+    setSelected(null);
+  };
   useEffect(() => {
     if (!selected) return;
+    const frame = requestAnimationFrame(() =>
+      workspace.current
+        ?.querySelector<HTMLButtonElement>("[data-workspace-close]")
+        ?.focus({ preventScroll: true }),
+    );
     const close = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        closingRun.current = selected;
         setSelected(null);
-        requestAnimationFrame(() =>
-          document
-            .querySelector<HTMLButtonElement>(
-              `.react-flow__node[data-id="${CSS.escape(selected)}"] .agent-button`,
-            )
-            ?.focus(),
-        );
       }
     };
     window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("keydown", close);
+    };
   }, [selected]);
-  // Only topology and expansion change geometry; streamed content never moves nodes.
+  // Expansion never changes tree geometry or the user’s viewport. Only topology lays out nodes.
   const topology = JSON.stringify(visibleRuns.map((r) => [r.run_id, r.parent]));
   const positions = useMemo(() => {
     const runs: [string, string | null][] = JSON.parse(topology);
@@ -432,8 +392,8 @@ export function Investigation({
     });
     runs.forEach(([run]) =>
       g.setNode(run, {
-        width: run === selected ? expandedWidth : NODE_WIDTH,
-        height: run === selected ? EXPANDED_HEIGHT : NODE_HEIGHT,
+        width: NODE_WIDTH,
+        height: NODE_HEIGHT,
       }),
     );
     runs.forEach(([run, parent]) => {
@@ -444,15 +404,12 @@ export function Investigation({
       runs.map(([run]) => [
         run,
         {
-          x:
-            g.node(run).x - (run === selected ? expandedWidth : NODE_WIDTH) / 2,
-          y:
-            g.node(run).y -
-            (run === selected ? EXPANDED_HEIGHT : NODE_HEIGHT) / 2,
+          x: g.node(run).x - NODE_WIDTH / 2,
+          y: g.node(run).y - NODE_HEIGHT / 2,
         },
       ]),
     );
-  }, [topology, selected, expandedWidth]);
+  }, [topology]);
   const summaries = Object.fromEntries(
     visibleRuns.map((r) => [
       r.run_id,
@@ -476,10 +433,9 @@ export function Investigation({
       id: r.run_id,
       type: "agent",
       position: positions[r.run_id],
-      width: r.run_id === selected ? expandedWidth : NODE_WIDTH,
-      height: r.run_id === selected ? EXPANDED_HEIGHT : NODE_HEIGHT,
+      width: NODE_WIDTH,
+      height: NODE_HEIGHT,
       data: {
-        expandedWidth,
         run: r,
         title:
           r.objective ||
@@ -518,32 +474,6 @@ export function Investigation({
             ? duration(summaries[r.run_id].elapsedSeconds!)
             : "",
         selected: r.run_id === selected,
-        detail:
-          r.run_id === selected ? (
-            investigation?.runtime ? (
-              <RuntimeDetail
-                experimentId={selectedExperiment}
-                runId={r.run_id}
-                run={runtimeState.runs[r.run_id]}
-                project={project}
-                cursor={historic ? runtimeState.sequence : null}
-                connection={runtime.connection}
-                onClose={() => setSelected(null)}
-              />
-            ) : (
-              <AgentDetail
-                initialTab="experiments"
-                runId={r.run_id}
-                summary={r}
-                experiments={
-                  tree.data?.nodes.filter((n) => n.run_id === r.run_id) || []
-                }
-                onClose={() => setSelected(null)}
-                historic={historic}
-                events={visibleEvents}
-              />
-            )
-          ) : null,
         onSelect: () => selectAgent(r.run_id),
       },
       draggable: false,
@@ -551,7 +481,6 @@ export function Investigation({
   }, [
     visibleRuns,
     positions,
-    expandedWidth,
     now,
     project,
     selectedExperiment,
@@ -577,6 +506,8 @@ export function Investigation({
         strokeDasharray: r.beam?.kept === false ? "5 5" : undefined,
       },
     }));
+  const selectedTitle =
+    nodes.find((node) => node.id === selected)?.data.title || "Researcher";
   const filtered =
     list.data?.filter((t) =>
       `${investigationTitle(t)} ${t.root}`
@@ -752,7 +683,7 @@ export function Investigation({
               <AnimatedTabs
                 label="Investigation view"
                 value={view}
-                onChange={setView}
+                onChange={changeView}
                 tabs={[
                   { value: "tree", label: "Search tree" },
                   { value: "experiments", label: "Experiments" },
@@ -778,7 +709,7 @@ export function Investigation({
                 {investigation.runtime && (
                   <button
                     className="candidate-badge summary-candidates"
-                    onClick={() => setView("candidates")}
+                    onClick={() => changeView("candidates")}
                     title="Review automated candidates separately from accepted discoveries"
                   >
                     <Sparkles size={13} />
@@ -813,10 +744,14 @@ export function Investigation({
                     `${tree.data.unverified_submissions.length} submissions have no verification result yet.`}
                 </div>
               )}
-            <div className="canvas-and-detail">
-              <div className="research-stage">
-                {view === "tree" && (
-                  <>
+            <LayoutGroup id={`investigation-${root}`}>
+              <div className="canvas-and-detail">
+                <div className="research-stage">
+                  <div
+                    className={`tree-layer ${view !== "tree" ? "tree-layer-hidden" : ""}`}
+                    inert={Boolean(selected) || view !== "tree"}
+                    aria-hidden={Boolean(selected) || view !== "tree"}
+                  >
                     <div className="canvas-caption">
                       <GitBranch size={15} />
                       <span>
@@ -838,6 +773,9 @@ export function Investigation({
                         nodesDraggable={false}
                         nodesConnectable={false}
                         autoPanOnNodeFocus={false}
+                        onMoveStart={(event) => {
+                          if (event) manualViewport.current = true;
+                        }}
                         colorMode="system"
                       >
                         <Background
@@ -847,169 +785,249 @@ export function Investigation({
                           color="var(--grid)"
                         />
                         <Controls showInteractive={false} />
-                        <FocusSelection
-                          selected={selected}
-                          expandedWidth={expandedWidth}
-                        />
+                        <CanvasViewport manual={manualViewport} />
                       </ReactFlow>
                     </ReactFlowProvider>
-                  </>
-                )}
-                {view === "candidates" && (
-                  <div className="activity-page candidate-queue">
-                    <h2>Candidate review</h2>
-                    <p className="muted">
-                      Automated candidate emissions await human review.
-                      Accepting a candidate records a review decision; it does
-                      not confirm a discovery.
-                    </p>
-                    {historic && (
-                      <p className="muted">
-                        Candidate state at this playback position. Return to
-                        Latest state to review.
-                      </p>
-                    )}
-                    {candidates.map(({ run, experiment }) => (
-                      <button
-                        className="experiment-row"
-                        key={`${run.run_id}:${experiment.experiment_id}`}
-                        onClick={() =>
-                          openCandidate(run.run_id, experiment.experiment_id)
-                        }
-                      >
-                        <Sparkles size={17} />
-                        <span>
-                          <strong>
-                            {experiment.title || "Candidate experiment"}
-                          </strong>
-                          <small>
-                            {run.branch_objective ||
-                              (run.parent_run_id
-                                ? "Research branch"
-                                : "Lead researcher")}{" "}
-                            · {experiment.verification || "Candidate emitted"}
-                          </small>
-                        </span>
-                        <Status
-                          label={
-                            experiment.human_review === "validated"
-                              ? "Accepted"
-                              : experiment.human_review === "rejected"
-                                ? "Rejected"
-                                : "Needs review"
-                          }
-                        />
-                        <ArrowUpRight size={14} />
-                      </button>
-                    ))}
-                    {!candidates.length && (
-                      <Empty title="No candidates at this point">
-                        Candidate emissions appear here and on the researcher
-                        that produced them.
-                      </Empty>
-                    )}
                   </div>
-                )}
-                {view === "activity" && (
-                  <div className="activity-page">
-                    <h2>Advanced event diagnostics</h2>
-                    <p className="muted">
-                      Recorded actions across every research branch.
-                    </p>
-                    {[...visibleEvents]
-                      .reverse()
-                      .slice(0, 300)
-                      .map((e, i) => (
+                  {view === "candidates" && (
+                    <div className="activity-page candidate-queue">
+                      <h2>Candidate review</h2>
+                      <p className="muted">
+                        Automated candidate emissions await human review.
+                        Accepting a candidate records a review decision; it does
+                        not confirm a discovery.
+                      </p>
+                      {historic && (
+                        <p className="muted">
+                          Candidate state at this playback position. Return to
+                          Latest state to review.
+                        </p>
+                      )}
+                      {candidates.map(({ run, experiment }) => (
                         <button
-                          className="event-row"
-                          key={e.id || `${e.run_id}-${i}`}
-                          onClick={() => selectAgent(e.run_id)}
+                          className="experiment-row"
+                          key={`${run.run_id}:${experiment.experiment_id}`}
+                          onClick={() =>
+                            openCandidate(run.run_id, experiment.experiment_id)
+                          }
                         >
-                          <span className="event-time">{date(e.t)}</span>
+                          <Sparkles size={17} />
                           <span>
-                            <strong>{actionLabel(e.action || e.type)}</strong>
-                            <small>{e.title || e.run_id}</small>
+                            <strong>
+                              {experiment.title || "Candidate experiment"}
+                            </strong>
+                            <small>
+                              {run.branch_objective ||
+                                (run.parent_run_id
+                                  ? "Research branch"
+                                  : "Lead researcher")}{" "}
+                              · {experiment.verification || "Candidate emitted"}
+                            </small>
                           </span>
+                          <Status
+                            label={
+                              experiment.human_review === "validated"
+                                ? "Accepted"
+                                : experiment.human_review === "rejected"
+                                  ? "Rejected"
+                                  : "Needs review"
+                            }
+                          />
                           <ArrowUpRight size={14} />
                         </button>
                       ))}
-                    {!visibleEvents.length && (
-                      <p>No activity recorded at this point.</p>
-                    )}
-                  </div>
-                )}
-                {view === "experiments" && (
-                  <div className="activity-page">
-                    <h2>Experiments</h2>
-                    {investigation.runtime ? (
-                      Object.values(runtimeState.runs).flatMap((r) =>
-                        Object.values(r.experiments).map((exp: any) => (
-                          <button
-                            className="experiment-row"
-                            key={exp.experiment_id}
-                            data-scene-run={r.run_id}
-                            data-scene-experiment={exp.experiment_id}
-                            onClick={() => {
-                              setView("tree");
-                              setSelected(r.run_id);
-                              setSelectedExperiment(exp.experiment_id);
-                            }}
-                          >
-                            <FlaskConical size={17} />
-                            <span>
-                              <strong>{exp.title || "Experiment"}</strong>
-                              <small>{human(exp.method)}</small>
-                            </span>
-                            <Status label={human(exp.status)} />
-                          </button>
-                        )),
-                      )
-                    ) : historic ? (
-                      <p>
-                        Return to the latest state to inspect full experiment
-                        results.
-                      </p>
-                    ) : (
-                      tree.data?.nodes
-                        .filter((n) => n.kind === "experiment")
-                        .map((n) => (
-                          <button
-                            className="experiment-row"
-                            key={n.entry_id}
-                            onClick={() => {
-                              setView("tree");
-                              setSelected(n.run_id);
-                              setSelectedExperiment(String(n.entry_id));
-                            }}
-                          >
-                            <FlaskConical size={17} />
-                            <span>
-                              <strong>{n.title}</strong>
-                              <small>
-                                {n.method
-                                  ? human(n.method)
-                                  : "Method not recorded"}
-                              </small>
-                            </span>
-                            <Status label={stageLabel(n.stage)} />
-                            <ArrowUpRight size={14} />
-                          </button>
-                        ))
-                    )}
-                    {!historic &&
-                      !investigation.runtime &&
-                      !tree.data?.nodes.some(
-                        (n) => n.kind === "experiment",
-                      ) && (
-                        <Empty title="No experiments recorded yet">
-                          Experiments appear here when a researcher records an
-                          analysis.
+                      {!candidates.length && (
+                        <Empty title="No candidates at this point">
+                          Candidate emissions appear here and on the researcher
+                          that produced them.
                         </Empty>
                       )}
-                  </div>
-                )}
+                    </div>
+                  )}
+                  {view === "activity" && (
+                    <div className="activity-page">
+                      <h2>Advanced event diagnostics</h2>
+                      <p className="muted">
+                        Recorded actions across every research branch.
+                      </p>
+                      {[...visibleEvents]
+                        .reverse()
+                        .slice(0, 300)
+                        .map((e, i) => (
+                          <button
+                            className="event-row"
+                            key={e.id || `${e.run_id}-${i}`}
+                            onClick={() => selectAgent(e.run_id)}
+                          >
+                            <span className="event-time">{date(e.t)}</span>
+                            <span>
+                              <strong>{actionLabel(e.action || e.type)}</strong>
+                              <small>{e.title || e.run_id}</small>
+                            </span>
+                            <ArrowUpRight size={14} />
+                          </button>
+                        ))}
+                      {!visibleEvents.length && (
+                        <p>No activity recorded at this point.</p>
+                      )}
+                    </div>
+                  )}
+                  {view === "experiments" && (
+                    <div className="activity-page">
+                      <h2>Experiments</h2>
+                      {investigation.runtime ? (
+                        Object.values(runtimeState.runs).flatMap((r) =>
+                          Object.values(r.experiments).map((exp: any) => (
+                            <button
+                              className="experiment-row"
+                              key={exp.experiment_id}
+                              data-scene-run={r.run_id}
+                              data-scene-experiment={exp.experiment_id}
+                              onClick={() => {
+                                setView("tree");
+                                setSelected(r.run_id);
+                                setSelectedExperiment(exp.experiment_id);
+                              }}
+                            >
+                              <FlaskConical size={17} />
+                              <span>
+                                <strong>{exp.title || "Experiment"}</strong>
+                                <small>{human(exp.method)}</small>
+                              </span>
+                              <Status label={human(exp.status)} />
+                            </button>
+                          )),
+                        )
+                      ) : historic ? (
+                        <p>
+                          Return to the latest state to inspect full experiment
+                          results.
+                        </p>
+                      ) : (
+                        tree.data?.nodes
+                          .filter((n) => n.kind === "experiment")
+                          .map((n) => (
+                            <button
+                              className="experiment-row"
+                              key={n.entry_id}
+                              onClick={() => {
+                                setView("tree");
+                                setSelected(n.run_id);
+                                setSelectedExperiment(String(n.entry_id));
+                              }}
+                            >
+                              <FlaskConical size={17} />
+                              <span>
+                                <strong>{n.title}</strong>
+                                <small>
+                                  {n.method
+                                    ? human(n.method)
+                                    : "Method not recorded"}
+                                </small>
+                              </span>
+                              <Status label={stageLabel(n.stage)} />
+                              <ArrowUpRight size={14} />
+                            </button>
+                          ))
+                      )}
+                      {!historic &&
+                        !investigation.runtime &&
+                        !tree.data?.nodes.some(
+                          (n) => n.kind === "experiment",
+                        ) && (
+                          <Empty title="No experiments recorded yet">
+                            Experiments appear here when a researcher records an
+                            analysis.
+                          </Empty>
+                        )}
+                    </div>
+                  )}
+                  <AnimatePresence
+                    onExitComplete={() => {
+                      const run = closingRun.current;
+                      if (run && !pendingView.current)
+                        document
+                          .querySelector<HTMLButtonElement>(
+                            `.react-flow__node[data-id="${CSS.escape(run)}"] .agent-button`,
+                          )
+                          ?.focus({ preventScroll: true });
+                      closingRun.current = null;
+                      if (pendingView.current) {
+                        setView(pendingView.current);
+                        pendingView.current = null;
+                      }
+                    }}
+                  >
+                    {selected && view === "tree" && (
+                      <motion.article
+                        key={selected}
+                        ref={workspace}
+                        layoutId={`researcher-${selected}`}
+                        className="researcher-workspace-overlay inline-research-detail nodrag nowheel nopan"
+                        aria-label="Expanded researcher workspace"
+                        style={{ borderRadius: 12 }}
+                        transition={
+                          reducedMotion
+                            ? { duration: 0 }
+                            : { type: "spring", stiffness: 320, damping: 34 }
+                        }
+                      >
+                        <div className="workspace-titlebar">
+                          <span title={selectedTitle}>
+                            <GitBranch size={15} />
+                            <strong>{selectedTitle}</strong>
+                          </span>
+                          <Button
+                            data-workspace-close
+                            size="sm"
+                            variant="ghost"
+                            aria-label="Close researcher detail"
+                            onClick={closeResearcher}
+                          >
+                            Back to tree <X size={16} />
+                          </Button>
+                        </div>
+                        <motion.div
+                          className="expanded-research-content"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: reducedMotion ? 0 : 0.18 }}
+                        >
+                          {investigation.runtime ? (
+                            <RuntimeDetail
+                              experimentId={selectedExperiment}
+                              runId={selected}
+                              run={runtimeState.runs[selected]}
+                              project={project}
+                              cursor={historic ? runtimeState.sequence : null}
+                              connection={runtime.connection}
+                              onClose={closeResearcher}
+                            />
+                          ) : (
+                            <AgentDetail
+                              initialTab="experiments"
+                              runId={selected}
+                              summary={visibleRuns.find(
+                                (r) => r.run_id === selected,
+                              )}
+                              experiments={
+                                tree.data?.nodes.filter(
+                                  (n) => n.run_id === selected,
+                                ) || []
+                              }
+                              onClose={closeResearcher}
+                              historic={historic}
+                              events={visibleEvents}
+                            />
+                          )}
+                        </motion.div>
+                      </motion.article>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
-            </div>
+            </LayoutGroup>
             <footer className="playback">
               <Button
                 size="icon"

@@ -248,3 +248,179 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Expanded researcher workspace: a collected scene and its research record. */
+.researcher-workspace.node-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(320px, 1fr);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.researcher-workspace .workspace-render {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: #111819;
+}
+[data-theme="light"] .researcher-workspace .workspace-render {
+  background: #edf1ed;
+}
+.researcher-workspace .workspace-empty-render {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 280px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.researcher-workspace .node-scene {
+  height: 100%;
+  container-type: normal;
+  background: transparent;
+  color: var(--fg);
+  border: 0;
+  overflow: auto;
+}
+.researcher-workspace .node-scene-header {
+  padding: 14px 22px 8px;
+  border: 0;
+  background: transparent;
+}
+.researcher-workspace .node-scene-header label {
+  color: var(--muted);
+  font-size: 10px;
+}
+.researcher-workspace .node-scene-header select {
+  color: var(--fg);
+  background: transparent;
+  border-color: var(--border);
+  padding: 7px 9px;
+  font-size: 12px;
+}
+.researcher-workspace .node-scene-close { display: none; }
+.researcher-workspace .node-scene-object { padding: 0 20px 20px; }
+.researcher-workspace .node-scene .artifact-viewer,
+.researcher-workspace .node-scene .binder-workbench,
+.researcher-workspace .node-scene .spindle-observatory {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  margin: 0;
+  color: var(--fg);
+}
+.researcher-workspace .node-scene .artifact-viewer {
+  display: flex;
+  flex-direction: column;
+}
+.researcher-workspace .node-scene .artifact-canvas,
+.researcher-workspace .node-scene .binder-stage,
+.researcher-workspace .node-scene .spindle-stage {
+  height: clamp(320px, calc(100dvh - 460px), 780px);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.researcher-workspace .node-scene .artifact-canvas { order: 0; }
+.researcher-workspace .node-scene .artifact-viewer > :not(.artifact-canvas) { order: 1; }
+.researcher-workspace .node-scene .artifact-viewer > .pocket-open { order: 3; align-self: start; margin: 0 12px 12px; }
+.researcher-workspace .node-scene .artifact-viewer > .notice { order: -1; }
+.researcher-workspace .node-scene .structure-toolbar,
+.researcher-workspace .node-scene .artifact-controls {
+  padding: 8px 12px;
+  background: transparent;
+}
+.researcher-workspace .node-scene .binder-workbench,
+.researcher-workspace .node-scene .spindle-observatory { display: flex; flex-direction: column; }
+.researcher-workspace .node-scene .binder-heading,
+.researcher-workspace .node-scene .spindle-observatory > header { order: 3; }
+.researcher-workspace .node-scene .binder-heading h3,
+.researcher-workspace .node-scene .spindle-observatory > header > div { display: none; }
+.researcher-workspace .node-scene .binder-timeline,
+.researcher-workspace .node-scene .spindle-toolbar { order: 2; border: 0; }
+.researcher-workspace .node-scene .binder-inspector { border: 0; }
+.researcher-workspace > .node-research {
+  overflow-y: auto;
+  min-height: 0;
+  padding: 8px 24px 28px;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+}
+.researcher-workspace .node-research .detail-head {
+  position: static;
+  padding: 0;
+  background: transparent;
+}
+.researcher-workspace .detail-head > span { display: none; }
+.researcher-workspace .detail-head > button { margin-left: auto; }
+.researcher-workspace .node-research .detail-intro {
+  padding: 8px 0 16px;
+  flex: 0 0 auto;
+}
+.researcher-workspace .node-research .detail-intro h2 {
+  font-size: 18px;
+  line-height: 1.5;
+  margin: 12px 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.researcher-workspace .node-research .current-work {
+  border: 0;
+  background: transparent;
+  margin: 8px 0;
+  padding: 0;
+  gap: 5px;
+}
+.researcher-workspace .node-research .research-overview {
+  padding: 0;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+.researcher-workspace .node-research .experiment-detail h4 { margin-top: 12px; }
+@media (max-width: 900px) {
+  .researcher-workspace.node-workspace {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .researcher-workspace .workspace-render { flex: 0 0 auto; overflow: visible; }
+  .researcher-workspace .node-scene { height: auto; overflow: visible; }
+  .researcher-workspace .node-scene-object { padding: 0 12px 12px; }
+  .researcher-workspace > .node-research { flex: 0 0 auto; border-left: 0; border-top: 1px solid var(--border); overflow: visible; padding: 12px 20px 24px; }
+  .researcher-workspace .node-scene .artifact-canvas,
+  .researcher-workspace .node-scene .binder-stage,
+  .researcher-workspace .node-scene .spindle-stage { height: clamp(260px, 48dvh, 460px); }
+}
+.researcher-workspace .tissue-workbench.tissue-embedded {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+.researcher-workspace .tissue-embedded > header { padding: 10px 12px; }
+.researcher-workspace .tissue-embedded .tissue-eyebrow,
+.researcher-workspace .tissue-embedded .tissue-subtitle,
+.researcher-workspace .tissue-embedded > header h3 { display: none; }
+.researcher-workspace .tissue-embedded .tissue-theater { margin: 0; border: 0; border-radius: 0; height: clamp(340px, calc(100dvh - 460px), 700px); }
+@media (max-width: 900px) {
+  .researcher-workspace .tissue-embedded .tissue-theater { height: 360px; }
+}
+.researcher-workspace .node-scene .binder-layout { display: contents; }
+.researcher-workspace .node-scene .binder-specimen { order: 0; }
+.researcher-workspace .node-scene .binder-timeline { order: 1; }
+.researcher-workspace .node-scene .binder-inspector { order: 2; }
+.researcher-workspace .tissue-workbench.tissue-embedded { display: flex; flex-direction: column; }
+.researcher-workspace .tissue-embedded > * { order: 1; }
+.researcher-workspace .tissue-embedded > .tissue-theater { order: 0; }
+@media (max-width: 900px) {
+  .researcher-workspace .workspace-empty-render { min-height: 80px; height: 80px; }
+}

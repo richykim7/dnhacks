@@ -173,7 +173,12 @@ export function RuntimeDetail({
       .filter(
         (artifact: JsonRecord) =>
           artifact.status === "available" &&
-          ["binder_bundle", "molecular_structure"].includes(artifact.kind),
+          [
+            "binder_bundle",
+            "molecular_structure",
+            "filament_trajectory",
+            "tissue_simulation",
+          ].includes(artifact.kind),
       )
       .map((artifact: JsonRecord) => ({
         key: `${experiment.experiment_id}:${artifact.artifact_id}`,
@@ -192,19 +197,107 @@ export function RuntimeDetail({
     sceneChoices.find((c) => c.artifact.kind === "binder_bundle") ||
     sceneChoices[0];
   return (
-    <div className={`node-workspace ${activeScene ? "has-scene" : ""}`}>
-      {activeScene && (
-        <NodeScene
-          choices={sceneChoices}
-          active={activeScene}
-          onSelect={setChosenScene}
-          onClose={onClose}
-          events={events}
-          runId={runId}
-          project={project}
-          cursor={cursor}
-        />
-      )}
+    <div
+      className={`node-workspace researcher-workspace ${activeScene ? "has-scene" : ""}`}
+    >
+      <div className="workspace-render">
+        {activeScene ? (
+          ["binder_bundle", "molecular_structure"].includes(
+            activeScene.artifact.kind,
+          ) ? (
+            <NodeScene
+              choices={sceneChoices}
+              active={activeScene}
+              onSelect={setChosenScene}
+              onClose={onClose}
+              events={events}
+              runId={runId}
+              project={project}
+              cursor={cursor}
+            />
+          ) : (
+            <section className="node-scene" aria-label="Research scene">
+              <header className="node-scene-header">
+                <label>
+                  Scene source
+                  <select
+                    aria-label="Scene source"
+                    value={activeScene.key}
+                    onChange={(event) => setChosenScene(event.target.value)}
+                  >
+                    {sceneChoices.map((choice) => (
+                      <option key={choice.key} value={choice.key}>
+                        {choice.experiment.title || "Experiment"} ·{" "}
+                        {choice.artifact.name || human(choice.artifact.kind)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </header>
+              <div
+                className="node-scene-object"
+                data-scene-experiment-id={activeScene.experiment.experiment_id}
+              >
+                <Suspense fallback={<Loading label="Opening recorded scene" />}>
+                  {activeScene.artifact.kind === "tissue_simulation" ? (
+                    <TissueWorkbench
+                      embedded
+                      key={activeScene.key}
+                      actions={
+                        events.filter(
+                          (e) =>
+                            e.kind === "tissue.scene" &&
+                            e.experiment_id ===
+                              activeScene.experiment.experiment_id &&
+                            e.payload.artifact_sha256 ===
+                              activeScene.artifact.sha256,
+                        ) as any
+                      }
+                      owner={`${activeScene.experiment.title || "Experiment"} · ${runId}`}
+                      url={runtimeUrl(
+                        runId,
+                        `blob/${activeScene.artifact.storage_key}`,
+                        project,
+                        cursor,
+                      )}
+                    />
+                  ) : (
+                    <SpindleObservatory
+                      key={activeScene.key}
+                      sha256={activeScene.artifact.sha256}
+                      sceneActions={events
+                        .filter(
+                          (e) =>
+                            e.kind === "scene.recipe" &&
+                            e.experiment_id ===
+                              activeScene.experiment.experiment_id &&
+                            e.payload.bundle_sha256 ===
+                              activeScene.artifact.sha256,
+                        )
+                        .map((e) => ({
+                          sequence: e.sequence,
+                          note: e.payload.note,
+                          recipe_sha256: e.payload.recipe.sha256,
+                          view: e.payload.view,
+                        }))}
+                      url={runtimeUrl(
+                        runId,
+                        `blob/${activeScene.artifact.storage_key}`,
+                        project,
+                        cursor,
+                      )}
+                    />
+                  )}
+                </Suspense>
+              </div>
+            </section>
+          )
+        ) : (
+          <div className="workspace-empty-render">
+            <p>No visual artifact recorded</p>
+          </div>
+        )}
+      </div>
       <section
         className="node-research"
         aria-label="Research activity and findings"
@@ -252,9 +345,19 @@ export function RuntimeDetail({
             </div>
           }
           <Disclosure title="Full objective and intent">
-            <p><strong>Research question:</strong> {run?.original_question || "Not recorded"}</p>
-            <p><strong>Branch objective:</strong> {run?.branch_objective || "Not recorded"}</p>
-            {run?.intent && <p><strong>Current intent:</strong> {run.intent}</p>}
+            <p>
+              <strong>Research question:</strong>{" "}
+              {run?.original_question || "Not recorded"}
+            </p>
+            <p>
+              <strong>Branch objective:</strong>{" "}
+              {run?.branch_objective || "Not recorded"}
+            </p>
+            {run?.intent && (
+              <p>
+                <strong>Current intent:</strong> {run.intent}
+              </p>
+            )}
           </Disclosure>
         </div>
         <div className="detail-scroll research-overview">
@@ -329,7 +432,14 @@ export function RuntimeDetail({
                 )}
                 <CandidateReview
                   runId={runId}
-                  experiment={{ ...exp, candidate_emitted: (run?.history || []).some((e: RuntimeEvent) => e.experiment_id === exp.experiment_id && e.payload.verification === "CANDIDATE") }}
+                  experiment={{
+                    ...exp,
+                    candidate_emitted: (run?.history || []).some(
+                      (e: RuntimeEvent) =>
+                        e.experiment_id === exp.experiment_id &&
+                        e.payload.verification === "CANDIDATE",
+                    ),
+                  }}
                   project={project}
                   cursor={cursor}
                 />
@@ -436,65 +546,17 @@ export function RuntimeDetail({
                     key={artifact.artifact_id}
                   >
                     {artifact.status === "available" &&
-                    artifact.kind === "tissue_simulation" ? (
-                      <Suspense
-                        fallback={<Loading label="Opening tissue experiment" />}
-                      >
-                        <TissueWorkbench
-                          actions={
-                            events.filter(
-                              (e) =>
-                                e.kind === "tissue.scene" &&
-                                e.experiment_id === exp.experiment_id &&
-                                e.payload.artifact_sha256 === artifact.sha256,
-                            ) as any
-                          }
-                          owner={`${exp.title || "Experiment"} · ${runId}`}
-                          url={runtimeUrl(
-                            runId,
-                            `blob/${artifact.storage_key}`,
-                            project,
-                            cursor,
-                          )}
-                        />
-                      </Suspense>
-                    ) : artifact.status === "available" &&
-                      artifact.kind === "filament_trajectory" ? (
-                      <Suspense
-                        fallback={
-                          <Loading label="Opening spindle observatory" />
-                        }
-                      >
-                        <SpindleObservatory
-                          sha256={artifact.sha256}
-                          sceneActions={(run?.history ?? [])
-                            .filter(
-                              (e: RuntimeEvent) =>
-                                e.kind === "scene.recipe" &&
-                                e.experiment_id === exp.experiment_id &&
-                                e.payload.bundle_sha256 === artifact.sha256,
-                            )
-                            .map((e: RuntimeEvent) => ({
-                              sequence: e.sequence,
-                              note: e.payload.note,
-                              recipe_sha256: e.payload.recipe.sha256,
-                              view: e.payload.view,
-                            }))}
-                          url={runtimeUrl(
-                            runId,
-                            `blob/${artifact.storage_key}`,
-                            project,
-                            cursor,
-                          )}
-                        />
-                      </Suspense>
-                    ) : artifact.status === "available" &&
-                      ["molecular_structure", "binder_bundle"].includes(
-                        artifact.kind,
-                      ) ? (
+                    [
+                      "molecular_structure",
+                      "binder_bundle",
+                      "filament_trajectory",
+                      "tissue_simulation",
+                    ].includes(artifact.kind) ? (
                       <>
                         <h4>{artifact.name}</h4>
-                        <Status label={human(artifact.provenance.category)} />
+                        {artifact.provenance?.category && (
+                          <Status label={human(artifact.provenance.category)} />
+                        )}
                         <Button
                           size="sm"
                           variant="ghost"
@@ -511,7 +573,7 @@ export function RuntimeDetail({
                             ? "Viewing in research scene"
                             : "View in research scene"}
                         </Button>
-                        <Disclosure title="Structure provenance">
+                        <Disclosure title="Artifact provenance">
                           <pre>
                             {JSON.stringify(artifact.provenance, null, 2)}
                           </pre>

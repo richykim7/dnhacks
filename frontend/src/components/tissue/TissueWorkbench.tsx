@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { Fragment, useEffect, useRef, useState, useMemo } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import TissueScene from "./TissueScene";
 import {
@@ -18,10 +18,12 @@ export default function TissueWorkbench({
   url,
   owner,
   actions = [],
+  embedded = false,
 }: {
   url: string;
   owner: string;
   actions?: SceneAction[];
+  embedded?: boolean;
 }) {
   const [data, setData] = useState<Tissue | null>(null),
     [error, setError] = useState(""),
@@ -182,7 +184,7 @@ export default function TissueWorkbench({
     if (readyCount.current >= (view.comparison ? 2 : 1)) setReady(true);
   };
   useEffect(() => {
-    if (!open) return;
+    if (!open && !embedded) return;
     const api = {
       apply: async (p: Partial<View>) => change(p),
       ready: () =>
@@ -204,7 +206,7 @@ export default function TissueWorkbench({
     return () => {
       delete (window as any).tissueReview;
     };
-  }, [open, view]);
+  }, [open, embedded, view]);
   if (error) return <p role="alert">{error}</p>;
   if (!data) return <p>Loading tissue experiment…</p>;
   const condition = data.conditions[view.condition],
@@ -222,26 +224,29 @@ export default function TissueWorkbench({
       )
     : [];
   const indices = conditionIndices(view);
+  const Portal = embedded ? Fragment : Dialog.Portal;
+  const Content = embedded ? "section" : Dialog.Content;
+  const Title = embedded ? "h3" : Dialog.Title;
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger
+      {!embedded && <Dialog.Trigger
         className="tissue-open"
         data-artifact-sha256={new URL(url, location.origin).pathname
           .split("/")
           .pop()}
       >
         Open living tissue <span>Spatial alanine experiment ↗</span>
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="tissue-overlay" />
-        <Dialog.Content
-          className={`tissue-workbench ${light ? "tissue-light" : ""}`}
+      </Dialog.Trigger>}
+      <Portal>
+        {!embedded && <Dialog.Overlay className="tissue-overlay" />}
+        <Content
+          className={`tissue-workbench ${embedded ? "tissue-embedded" : ""} ${light ? "tissue-light" : ""}`}
           aria-describedby={undefined}
         >
           <header>
             <div>
               <p className="tissue-eyebrow">SPATIAL BIOLOGY / 03</p>
-              <Dialog.Title>Living tissue</Dialog.Title>
+              <Title>Living tissue</Title>
               <p className="tissue-subtitle">{owner}</p>
             </div>
             <div className="tissue-header-actions">
@@ -250,7 +255,7 @@ export default function TissueWorkbench({
                   ? "Illustrative fixture"
                   : "Simulation"}
               </span>
-              <Dialog.Close aria-label="Return to experiment">✕</Dialog.Close>
+              {!embedded && <Dialog.Close aria-label="Return to experiment">✕</Dialog.Close>}
             </div>
           </header>
           <AgentPlayback actions={actions} view={view} apply={change} />
@@ -538,8 +543,8 @@ export default function TissueWorkbench({
               Save scene PNG
             </button>
           </footer>
-        </Dialog.Content>
-      </Dialog.Portal>
+        </Content>
+      </Portal>
     </Dialog.Root>
   );
 }
