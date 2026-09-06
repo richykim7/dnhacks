@@ -24,6 +24,20 @@ operational failure, distinct from a parent prune. The UI renders these actual l
 Operational caps are not the fixed statistical success horizon. No trajectory model, calibrated
 threshold or scientific-performance result is established by these controller tests. The private collection/comparison and separate operator service are described below.
 
+### Branching policy version
+
+New runs freeze policy `parent-allocation-divergent-v1`. Their parent sees the current round objective,
+prior allocations on that exact node, and remaining tree/action capacity. It is instructed to prefer
+forking distinct feasible independent questions, rather than continually broadening one node's scope.
+Same-question completion, controls/debugging, and genuinely sequential preparation still warrant
+continuation. A single useful question need not be padded with a dummy sibling. Capacity is advisory
+until the controller's atomic grant check; the action/checkpoint/depth/slot limits are unchanged.
+
+This changes the allocation preference, not a deterministic fork quota or the evidence rubric.
+Recorded `parent-allocation-actions-v1` and timed `parent-allocation-v1` runs keep the previous prompt
+and context on resume. Monitoring results and calibration must remain scoped to the frozen policy;
+do not pool the new policy with old trajectories as if the continuation policy were identical.
+
 ## Private monitoring pipeline (inactive until a corpus is ready)
 
 The private package is `dnhacksbio.branch_monitoring`. Nothing in `Explorer`, the ordinary research
@@ -60,7 +74,7 @@ A minimal enrollment file has this shape (values shown are examples, not a valid
 The example's 288-action horizon is not a recommended success deadline. The runtime now enforces
 prospective subtree contracts in `explorer/budget.py`, in the same SQLite transactions as parent grants.
 Pass `--budget-spec contract.json` to the explorer CLI; Python callers use `subtree_budget`.
-New runs default to version 2, policy `parent-allocation-actions-v1`: 2880 research actions, with all
+New runs default to version 2, policy `parent-allocation-divergent-v1`: 2880 research actions, with all
 wall-clock allowance fields set to null. Checkpoint/parent allocation and finite action accounting
 remain enforced. This can define a research-action horizon, not an accounted-seconds horizon.
 An explicit empty budget spec selects the legacy timed engineering contract: 43200 summed operation

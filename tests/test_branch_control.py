@@ -190,3 +190,107 @@ def test_restart_preserves_parent_granted_objective(tmp_path,monkeypatch):
         assert "Inspect the approved donor manifest" in prompts[1]
         assert ex.control.get("study")["total_actions"] == 1
     finally: ex.close()
+
+
+def _policy_explorer(tmp_path, monkeypatch, *, policy_id=None, actions=12, run_id='policy'):
+    from dnhacksbio.explorer.explorer import Explorer
+    from dnhacksbio.explorer import budget, embed
+    monkeypatch.setattr(embed, 'embed_one', lambda *_: None)
+    spec = dict(budget.ACTION_CONTRACT, actions=actions)
+    if policy_id is not None:
+        spec['policy_id'] = policy_id
+    async def unused(_):
+        raise AssertionError('No research/model call belongs in this context check')
+    ex = Explorer(run_id, 'Original question', db_path=tmp_path/'policy.duckdb', trace_dir=tmp_path,
+                  subtree_budget=spec, complete_fn=unused)
+    ex.control.start(run_id, 0)
+    ex.control.patch(run_id, status='reporting')
+    ex.control.save_report(run_id, report('continue'))
+    return ex
+
+
+def test_branching_context_respects_other_branches_action_reservations(tmp_path, monkeypatch):
+    from dnhacksbio.explorer.budget import BRANCHING_POLICY_ID
+    ex = _policy_explorer(tmp_path, monkeypatch)
+    try:
+        ex.control.start('policy~1', 8)
+        before = ex.control.budgets('policy')
+        ctx = ex._allocation_context(ex)
+        assert ctx['branching_policy'] == BRANCHING_POLICY_ID
+        assert ctx['working_objective'] == 'Original question'
+        assert ctx['fork_capacity']['unreserved_actions'] == 4
+        assert ctx['fork_capacity']['options'] == [
+            {'children': 2, 'max_actions_per_child': 2},
+            {'children': 3, 'max_actions_per_child': 1},
+        ]
+        assert ex.control.budgets('policy') == before
+    finally:
+        ex.close()
+
+
+@pytest.mark.parametrize('constraint', ['actions', 'slots', 'depth'])
+def test_branching_context_does_not_offer_infeasible_forks(tmp_path, monkeypatch, constraint):
+    rid = 'policy' + '~1' * 6 if constraint == 'depth' else 'policy'
+    ex = _policy_explorer(tmp_path, monkeypatch, actions=1 if constraint == 'actions' else 12, run_id=rid)
+    try:
+        if constraint == 'slots':
+            with ex.control.connect() as c:
+                c.execute('UPDATE trees SET remaining=1 WHERE id=?', ('policy',))
+        assert ex._allocation_context(ex)['fork_capacity']['options'] == []
+    finally:
+        ex.close()
+
+
+def test_prior_allocations_are_ordered_and_scoped_to_the_current_node(tmp_path, monkeypatch):
+    ex = _policy_explorer(tmp_path, monkeypatch)
+    try:
+        for version, objective in enumerate(['Complete measurement A', 'Resolve condition B'], 1):
+            ex.control.decide('policy', version, {'action':'continue', 'reason':'Finish existing work',
+                              'objective':objective, 'allowance':1})
+            ex.control.patch('policy', status='reporting')
+            ex.control.save_report('policy', report('continue'))
+        ready(ex.control, 'unrelated')
+        ex.control.decide('unrelated', 1, {'action':'continue', 'reason':'Unrelated evidence',
+                          'objective':'Do not leak sibling context', 'allowance':1})
+        ctx=ex._allocation_context(ex)
+        assert ctx['working_objective'] == 'Resolve condition B'
+        assert [d['report_version'] for d in ctx['prior_allocations']] == [1,2]
+        assert [d['objective'] for d in ctx['prior_allocations']] == ['Complete measurement A','Resolve condition B']
+        assert 'Do not leak sibling context' not in json.dumps(ctx)
+    finally:
+        ex.close()
+
+
+def test_existing_frozen_policy_does_not_receive_new_allocation_inputs(tmp_path, monkeypatch):
+    ex = _policy_explorer(tmp_path, monkeypatch, policy_id='parent-allocation-actions-v1')
+    try:
+        before=ex.control.budgets('policy')
+        ctx=ex._allocation_context(ex)
+        assert not {'branching_policy','working_objective','prior_allocations','fork_capacity'} & set(ctx)
+        assert ex.control.budgets('policy') == before
+    finally:
+        ex.close()
+
+
+def test_versioned_branching_policy_reaches_parent_and_preserves_explicit_decision(tmp_path, monkeypatch):
+    from dnhacksbio import llm
+    from dnhacksbio.explorer.budget import BRANCHING_POLICY_ID
+    ex=_policy_explorer(tmp_path, monkeypatch)
+    captured=[]
+    decision={'action':'fork','reason':'Two independent feasible questions','allowance':2,
+              'branches':[{'objective':x,'information_gain':'Distinct measurement','feasibility':'Inputs available'} for x in ['A','B']]}
+    async def allocate(prompt, **kwargs):
+        captured.append(prompt)
+        return json.dumps(decision)
+    monkeypatch.setattr(llm,'acomplete',allocate)
+    try:
+        actual=asyncio.run(ex._parent_decision(ex))
+        assert actual == decision
+        ctx=json.loads(captured[0].split('\n')[-1])
+        assert ctx['branching_policy'] == BRANCHING_POLICY_ID
+        record=ex.control.decide('policy',1,actual)
+        assert len(record['children']) == 2
+        assert ex.control.get('policy')['status'] == 'forking'
+        assert ex.control.budgets('policy')[0]['contract']['actions'] == 12
+    finally:
+        ex.close()

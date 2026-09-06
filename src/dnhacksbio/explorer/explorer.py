@@ -30,7 +30,7 @@ from dnhacksbio.explorer import embed as EMB
 from dnhacksbio.explorer import lineage as LIN
 from dnhacksbio.explorer import skills as SK
 from dnhacksbio.explorer.runtime import Journal, process_identity, safe_id
-from dnhacksbio.explorer.budget import BudgetUnavailable, ACTION_CONTRACT
+from dnhacksbio.explorer.budget import BudgetUnavailable, ACTION_CONTRACT, BRANCHING_POLICY_ID
 from dnhacksbio.explorer.control import ControlStore, REPORT_PROMPT, validate_report, validate_decision
 from dnhacksbio.explorer.exploration import ExplorationLog
 from dnhacksbio.explorer.fulltext import FullTextStore
@@ -1341,7 +1341,7 @@ class Explorer:
     async def _parent_decision(self, child):
         return await child._funded("judge", lambda: self._parent_decision_inner(child))
 
-    async def _parent_decision_inner(self, child):
+    def _allocation_context(self, child):
         state = self.control.get(child.run_id)
         context = {"objective": child.manifest["branch_objective"], "report": state["report"],
                    "report_version": state["version"], "current_round_objective": state.get("objective"),
@@ -1350,6 +1350,28 @@ class Explorer:
                    "actions_used": state["total_actions"], "rounds": state["rounds"],
                    "max_branch_actions": BRANCH_TOTAL_STEPS, "max_rounds": MAX_CONTINUATIONS,
                    "depth": LIN.depth(child.run_id), "max_depth": MAX_DEPTH}
+        budgets = context["subtree_budgets"]
+        if budgets and budgets[0]["contract"]["policy_id"] == BRANCHING_POLICY_ID:
+            free_actions = min(b["contract"]["actions"] - b["actions"] - sum(b["action_holds"].values()) for b in budgets)
+            slots = child.control.remaining(child.run_id)
+            fork_options = []
+            if context["depth"] < MAX_DEPTH:
+                for count in range(2, MAX_BRANCHES_PER_FORK + 1):
+                    allowance = min(CHILD_MAX_STEPS, max(0, free_actions) // count)
+                    if slots >= count and allowance:
+                        fork_options.append({"children": count, "max_actions_per_child": allowance})
+            context.update(
+                branching_policy=BRANCHING_POLICY_ID,
+                working_objective=state.get("objective") or child.manifest["branch_objective"],
+                prior_allocations=[{"report_version": r["report_version"], **r["decision"]}
+                                   for r in child.control.decision_history(child.run_id)],
+                fork_capacity={"remaining_tree_slots": slots, "unreserved_actions": max(0, free_actions),
+                               "options": fork_options, "advisory": "Final grants are rechecked atomically"},
+            )
+        return context
+
+    async def _parent_decision_inner(self, child):
+        context = self._allocation_context(child)
         prompt = ("You are the parent allocation controller. Inspect the objective, report and evidence. "
                   "Choose continue, fork, finish or prune. Do not demand a positive result each round: "
                   "credible unfinished work, preparation and useful falsification deserve fair consideration. "
@@ -1357,6 +1379,21 @@ class Explorer:
                   "useful concurrent subquestions with feasible inputs. Return one JSON object: "
                   "action, reason; for continue also objective and allowance (1..18); for fork also allowance "
                   "and branches (2..3 objects with objective, information_gain, feasibility). Respect caps.\n"
+                  + ("\nBRANCHING PREFERENCE: Compare the proposed work with working_objective and prior_allocations, "
+                     "not merely the broad original research goal. Prefer fork when two or three distinct, "
+                     "independently executable questions have feasible inputs and fit fork_capacity. This includes "
+                     "different mechanisms, hypotheses, data regimes, or separable analyses contributing to the "
+                     "same broad goal. Do not repeatedly expand one node to absorb these new questions merely "
+                     "because each follow-up is cheap. Once the current question is answered, divergent useful "
+                     "follow-ups should normally become child branches. Continue on the same node for unfinished "
+                     "work on the same question, required controls, debugging, or preparation with genuine sequential "
+                     "dependencies. If only one useful feasible question remains, continuation is allowed; do not "
+                     "invent a second question to force a fork. Respect exhausted budget/depth/tree capacity. "
+                     "Do not fork inaccessible, duplicate or pointless work, and do not impose a minimum branch "
+                     "count or reward positive results. In reason, explain whether this grant finishes the existing "
+                     "question or opens distinct questions; when continuing despite multiple feasible alternatives, "
+                     "explain their dependency or why branching is not useful.\n"
+                     if context.get("branching_policy") == BRANCHING_POLICY_ID else "")
                   + json.dumps(context, default=str))
         started = time.monotonic()
         cap = {}

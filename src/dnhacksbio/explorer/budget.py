@@ -23,7 +23,8 @@ DEFAULT_CONTRACT = dict(version=1, policy_id="parent-allocation-v1", seconds=432
 
 
 # Version 2 preserves an action horizon without wall-clock cutoffs.
-ACTION_CONTRACT = dict(version=2, policy_id="parent-allocation-actions-v1", seconds=None, actions=2880,
+BRANCHING_POLICY_ID = "parent-allocation-divergent-v1"
+ACTION_CONTRACT = dict(version=2, policy_id=BRANCHING_POLICY_ID, seconds=None, actions=2880,
                        research_seconds=None, report_seconds=None, report_attempts=3,
                        judge_seconds=None, fork_seconds=None)
 

@@ -269,7 +269,13 @@ runs have no app-imposed report deadline or custom output-token ceiling; at most
 A valid report leaves `awaiting_parent`; neither state is completion or scientific failure.
 
 The parent controller inspects the report and supporting work and explicitly continues, forks, finishes
-or prunes. There is no top-two quota or experiment-count renewal. `run()` produces one checkpoint;
+or prunes. New runs use the `parent-allocation-divergent-v1` policy: prefer two or three
+independent feasible child questions over repeatedly expanding one node's scope. The parent receives
+the current round objective, prior same-node allocations and advisory fork/action capacity. Same-question
+completion, required controls, debugging and sequential preparation may continue on the same node;
+blocked or duplicate questions do not justify a fork. This is a model allocation preference, not a forced
+branch-count quota or a change to scientific verification. Existing frozen policy IDs keep their earlier
+allocator behavior. There is no top-two quota or experiment-count renewal. `run()` produces one checkpoint;
 `run_investigation()` runs parent allocation, including the root controller. Concurrent children report
 and receive decisions individually. Accepted splits transfer work to two or three specified descendants;
 code executes the approved questions from the child's saved context. SQLite stores report versions,
