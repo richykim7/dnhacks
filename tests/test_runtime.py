@@ -184,7 +184,8 @@ def test_real_incremental_stdout_stderr_before_exit():
     rc, out, err, timeout = stream_process([sys.executable, "-u", "-c", "import time,sys; print('first'); time.sleep(.2); print('last',file=sys.stderr)"], 3,
                                           on_output=chunks.append)
     assert rc == 0 and not timeout and "first" in out and "last" in err
-    assert chunks[0]["text"] == "first\n" and chunks[0]["offset"] == 0
+    assert chunks[0]["stream"] == "stdout" and chunks[0]["offset"] == 0
+    assert "".join(c["text"] for c in chunks if c["stream"] == "stdout") == "first\n"
 
 
 @pytest.mark.parametrize("path", ["../outside.pdb", "/etc/passwd", "linked.pdb", "invalid.pdb"])

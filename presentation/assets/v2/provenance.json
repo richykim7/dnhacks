@@ -1,0 +1,72 @@
+{
+  "created_utc": "2026-09-06T08:24:22.028682+00:00",
+  "purpose": "Conceptual editorial backgrounds for DNHacks presentation v2",
+  "provider": "laozhang",
+  "model": "gemini-3-pro-image-preview",
+  "tool": "Existing installed rsimg CLI and LaoZhang adapter",
+  "session_id": "dnhacks-presentation-v2-20260906",
+  "session_budget_usd": 1.0,
+  "requested_aspect": "16:9",
+  "requested_resolution": "4K",
+  "actual_dimensions_note": "Provider delivered 5504x3072; use PowerPoint cover/crop for exact 16:9. Originals preserved.",
+  "source_type": "AI-generated conceptual illustration; not microscopy, molecule coordinates, experimental outputs or scientific evidence",
+  "assets": [
+    {
+      "name": "cover",
+      "path": "cover/out_0.png",
+      "sha256": "15fbf6175a72b31a7d20e219c05cebdaf0df6425e93cb3044e140bf62427f53f",
+      "bytes": 18692332,
+      "width": 5504,
+      "height": 3072,
+      "prompt_file": "cover.prompt.txt",
+      "manifest": "cover/manifest.json",
+      "operation_id": "rsimg_6549d841435cd1eddcb7a7fc12ed03a9",
+      "provider_request_ids": [],
+      "cost_estimate_usd": 0.09,
+      "visual_review": "Accepted on first generation; no text, logos or measurement labels; clear negative space; conceptual cellular art, not an experimental image."
+    },
+    {
+      "name": "closing",
+      "path": "closing/out_0.png",
+      "sha256": "d582cbdde839b3855cde154225db047d1228d4ec34107af4183cbd8f53ce9a69",
+      "bytes": 16849266,
+      "width": 5504,
+      "height": 3072,
+      "prompt_file": "closing.prompt.txt",
+      "manifest": "closing/manifest.json",
+      "operation_id": "rsimg_f2db2ebc71a6f262abe9c9ee5150942e",
+      "provider_request_ids": [],
+      "cost_estimate_usd": 0.09,
+      "visual_review": "Accepted on first generation; no text, logos or measurement labels; clear negative space; conceptual cellular art, not an experimental image."
+    }
+  ],
+  "ledger_rows": [
+    {
+      "ts": "2026-09-06T08:22:09Z",
+      "provider": "laozhang",
+      "model": "gemini-3-pro-image-preview",
+      "capability": "generate",
+      "n": 1,
+      "cost_usd": 0.09,
+      "ok": 1,
+      "request_ids": "[]",
+      "out_dir": "/home/ubuntu/dnhacks-worktrees/presentation-v2/presentation/assets/v2/cover"
+    },
+    {
+      "ts": "2026-09-06T08:23:32Z",
+      "provider": "laozhang",
+      "model": "gemini-3-pro-image-preview",
+      "capability": "generate",
+      "n": 1,
+      "cost_usd": 0.09,
+      "ok": 1,
+      "request_ids": "[]",
+      "out_dir": "/home/ubuntu/dnhacks-worktrees/presentation-v2/presentation/assets/v2/closing"
+    }
+  ],
+  "ledger_recorded_cost_usd": 0.18,
+  "cost_basis": "rsimg ledger uses configured provider price estimates for LaoZhang. Account billing route requires a separate system AccessToken unavailable to this task; no independent final billed receipt verified.",
+  "retries": 0,
+  "pricing_source": "https://docs.laozhang.ai/en/api-capabilities/nano-banana-pro-image",
+  "no_credentials_in_artifacts": true
+}

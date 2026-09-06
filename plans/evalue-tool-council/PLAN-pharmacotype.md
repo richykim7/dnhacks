@@ -1,6 +1,69 @@
-# Learned pharmacotype association
+# DEPRECATED — Learned pharmacotype association
 
-Planning specification, 2026-09-06. No implementation, acquisition, training or confirmation is authorized by this document. Read together with [the shared native evidence contract](native-evidence-contract.md). Proposed interfaces below are not existing capabilities.
+> **Deprecated and cancelled by the user on 2026-09-06.** This document is
+> historical reference only, not an active plan or an autonomous assignment.
+> Do not resume implementation, training, data acquisition or author outreach
+> from its instructions or earlier continuation goals. Any future work requires
+> a new explicit user request. No successor plan is designated.
+
+The intended deliverable was a learned **e-value association tool** connecting
+baseline RNA to complete PDO response profiles. The implementation effort
+drifted toward conventional AUC prediction and failed to deliver the intended
+real-data e-value tool. Existing code and experimental results are retained;
+their presence does not establish successful completion or authorize further work.
+
+## Outcome: failed to deliver the requested usable ML model
+
+Failure record (2026-09-06, requested by the user): this implementation attempt
+failed the end-to-end objective. A validated, useful PDO response-prediction
+model was not delivered. Passing software tests, acquiring data, training models,
+and achieving high synthetic detection power do not constitute that deliverable.
+
+The real 38-PDO benchmark uses AUC summaries, not the required complete dose
+curves. Its learned models do not beat the training-mean baseline on validation.
+For example, the pathway model's validation RMSE is 0.1692 versus 0.1562 for the
+baseline. Its lower test error is mixed development evidence on an already
+inspected cohort, not independent proof of success. No verified paired PDO
+RNA/full-dose-response dataset or scientific confirmation was established.
+
+Execution also failed: status messages overstated completion and later treated
+author email as necessary without establishing that other public access routes
+were exhausted. The work expanded software and synthetic diagnostics without
+first testing an obvious remaining use of the acquired data: cell-line
+pretraining followed by PDO-specific adaptation. That combined experiment has
+not been implemented or evaluated; the assertion that the available datasets
+are necessarily sufficient was also unsupported.
+
+Salvage remains possible, not demonstrated. The audited public datasets, GPU
+training code, development operations and replay tests are reusable research
+assets. An assay-aware transfer experiment could use PRISM RNA/curves and PDO
+RNA/AUC with separate response heads and donor-held-out evaluation. It must not
+pool incompatible response scales, reconstruct unmeasured PDO curves from AUC,
+or treat repeatedly inspected donors as fresh validation. A usable PDO AUC
+research model would still be a narrower outcome than this plan's full-curve
+endpoint. Nothing here establishes that further training will succeed, or that
+the project is impossible to salvage. Further experiments require an explicit
+decision to continue; this failure record does not authorize them.
+
+## Retained implementation and evidence
+
+Implementation inventory (2026-09-06): development operations, audited public PRISM/CCLE
+acquisition, real GPU training/evaluation, and private frozen or adaptive
+score-before-train replay are implemented. The original CPU pilot is preserved
+as historical provenance; subsequent production fitting is CUDA-only. Public
+Shi 2022 RNA and paired AUC data from 38 PDOs have been acquired and audited.
+Nine baseline fits, a 60-setting gene-level search and a 20-setting fixed
+Hallmark pathway search retain all results. See the [model card](../../docs/pharmacotype-training.md)
+and [operations and remaining gates](../../docs/pharmacotype.md). PCA remains selected;
+PDAC utility and the production critic's power target are not established. A
+separate experimental MLP clears the synthetic power target but is not
+integrated into the private ledger or validated on real PDOs. The PDO mean
+baseline remains selected because learned alternatives have worse validation
+error. Paired PDO full-dose-curve/RNA access, fresh independent donor audit and
+reviewed scientific confirmation remain required; AUC cannot replace curves.
+The specification below retains the full target and original source proposals.
+
+Original planning specification, 2026-09-06. The document itself did not authorize implementation, acquisition, training or confirmation; subsequent user instruction authorized the implementation described above. Read together with [the shared native evidence contract](native-evidence-contract.md). The target interfaces below extend beyond the current implementation.
 All training follows the [shared single-GPU scheduling rule](native-evidence-contract.md#coordination-on-the-shared-gpu): CPU work can overlap, but initial GPU pilots run serially; concurrency requires measured combined memory and throughput, a shared queue/lease, and separate artifacts. Individual job caps are not simultaneous GPU reservations.
 
 ## Biological tool and first endpoint
@@ -33,7 +96,9 @@ Fit RNA scaling, gene order, response scaling and all batch transformations on d
 
 ## Public source feasibility and split decisions
 
-These are candidate resources, not acquired datasets or verified untouched confirmation sets. Primary records were checked on 2026-09-06; exact joins, licenses and usable independent denominators require a subsequent authorized metadata audit.
+The following records are the original source proposals. The completed PRISM/CCLE
+audit and verified PDO access limitations are recorded in the model card above;
+none is a verified untouched confirmation set.
 
 - **Broad PRISM/CCLE: training and development.** The primary study reports 4,518 compounds across 578 cell lines using pooled molecular barcoding. Those are neither 578 PDAC patients nor 4,518 complete dose-response series. Audit primary versus dose-response releases, CCLE expression joins and donor aliases. Use this broad source to train response representations and predictors, with PDAC held-out development slices; do not transfer its assay scale directly to PDO viability. Shared pools are a particular confirmation obstacle. [Broad primary study record](https://www.broadinstitute.org/publications/broad650611), [author-hosted study](https://golublab.broadinstitute.org/files/golub-lab/files/corsello-2020-discovering-the-anticancer-potentia_1.pdf).
 - **Tiriac PDO library: preferred PDAC development candidate.** The primary publication is verified; reviewer inventories report 114 cultures from 101 patients and 66 pharmacotyped PDOs. These figures require source-table rechecking: this session's PMC full text was challenged and the Europe PMC XML endpoint unavailable. They must not become confirmation denominators. Audit paired baseline expression, donor repeats, exact drug/dose coverage and downloadable processed responses before selecting splits. Published signature/outcome exposure makes development the conservative default. An untouched split is a candidate only if the operator documents no outcome-informed selection. [Primary publication record](https://pubmed.ncbi.nlm.nih.gov/29853643/).

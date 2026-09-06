@@ -81,7 +81,23 @@ def handle(handler, rest: str, qs: dict):
     through = int(qs["through"][0]) if "through" in qs else None
     if through is not None and through < 0:
         raise ValueError("Invalid playback cursor")
-    if action == "blob" and len(parts) == 3:
+    if action == 'inhibitor' and len(parts) == 3:
+        from dnhacksbio.inhibitor.service import Workbench
+        wb=Workbench(j,run_id,parts[2],project,through)
+        if 'bundle' in qs:
+            return handler._send_json(wb.bundle(qs['bundle'][0]))
+        if 'file' in qs:
+            key=qs['file'][0]
+            permitted=set()
+            for artifact in wb.bundles():
+                permitted.update(wb.bundle(artifact['storage_key']).get('files',{}).values())
+            for e in wb.history():
+                if e['kind']=='scene.capture': permitted.add(e['payload']['image_hash'])
+            if key not in permitted: raise FileNotFoundError('File outside experiment/cursor')
+            raw=j.read_blob(key)
+            return handler._send_bytes(raw,'image/png' if raw.startswith(b'\x89PNG') else 'application/octet-stream')
+        return handler._send_json(wb.describe(qs.get('source_hash',[None])[0]))
+    if action in {"blob", "geometry", "tissue"} and len(parts) == 3:
         # A digest is not authority: it must be referenced by this exact run at this cursor.
         key = parts[2]
         state = j.snapshot(root, through)
@@ -89,8 +105,10 @@ def handle(handler, rest: str, qs: dict):
         refs = []
         for e in run.get("history", []):
             p = e["payload"]
+            if e['kind']=='tissue.capture' and e['producer']=='scene-service':
+                refs.append({'storage_key':p.get('image_sha256'),'kind':'scene_capture'})
             field = {"experiment.queued": "code", "tool.started": "inputs", "tool.ended": "observation",
-                     "instructions.delivered": "content"}.get(e["kind"])
+                     "instructions.delivered": "content", "scene.recipe": "recipe", "scene.review": "review"}.get(e["kind"])
             if field:
                 refs.append(p.get(field, {}))
             if e["kind"] == "experiment.finished":
@@ -99,9 +117,44 @@ def handle(handler, rest: str, qs: dict):
                 refs.extend(item.get("version", {}) for item in p.get("items", []))
             if e["kind"] == "artifact" and e["producer"] == "collector" and p.get("status") == "available":
                 refs.append(p)
+                if p.get("kind") in {"scene_capture","scene_movie"}:refs.append(p.get("snapshot", {}))
         if not any(ref.get("storage_key") == key for ref in refs):
             raise FileNotFoundError("Artifact not available for this researcher at this point")
-        return handler._send_bytes(j.read_blob(key), "text/plain; charset=utf-8")
+        if action == "tissue":
+            from dnhacksbio.tissue.artifacts import read_frame, frame_parts
+            artifact = next((ref for ref in refs if ref.get("storage_key") == key and ref.get("kind") == "tissue_simulation"), None)
+            if artifact is None:
+                raise FileNotFoundError("Not a tissue artifact")
+            part=qs.get('part',['frame'])[0]
+            if part in {'metadata','field'}:
+                frame,raw=frame_parts(j,key,int(qs.get('condition',['0'])[0]),int(qs.get('frame',['0'])[0]))
+                return handler._send_json(frame) if part=='metadata' else handler._send_bytes(raw,'application/octet-stream')
+            if part!='frame':raise ValueError('Unknown tissue frame part')
+            return handler._send_json(read_frame(j, key, int(qs.get("condition", ["0"])[0]), int(qs.get("frame", ["0"])[0])))
+        if action == "geometry":
+            from dnhacksbio.inhibitor import normalize, define_pocket, measure, audit_pose, preparation_audit
+            artifact = next((ref for ref in refs if ref.get("storage_key") == key
+                             and ref.get("kind") == "molecular_structure"), None)
+            if artifact is None:
+                raise FileNotFoundError("Not a molecular artifact")
+            geometry = normalize(j.read_blob(key), artifact["format"], key)
+            operation = qs.get("operation", ["describe"])[0]
+            if operation == "measure":
+                result = measure(geometry, qs.get("atom", []))
+            elif operation == "pocket":
+                result = define_pocket(geometry, qs.get("residue", [""])[0], float(qs.get("margin", ["5"])[0]))
+            elif operation == "contacts":
+                result = audit_pose(geometry, qs.get("residue", [""])[0])
+            elif operation == "preparation":
+                result = preparation_audit(geometry)
+            elif operation == "describe":
+                result = geometry
+            else:
+                raise ValueError("Unknown geometry operation")
+            return handler._send_json(result)
+        media = "image/png" if any(ref.get("storage_key") == key and ref.get("kind") == "scene_capture" for ref in refs) else "text/plain; charset=utf-8"
+        if any(ref.get("storage_key") == key and ref.get("kind") == "scene_movie" for ref in refs):media="video/webm"
+        return handler._send_bytes(j.read_blob(key), media)
     if action == "snapshot":
         if through is None:
             reconcile(j, root)

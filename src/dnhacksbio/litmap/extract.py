@@ -114,6 +114,82 @@ SYSTEM = (
 )
 
 
+def build_repair_instructions(doc_type: str) -> str:
+    """Repair-only schema: no first-reader task, article, or whole vocabulary dump."""
+    slots = "; ".join(
+        f"{name}=[{_menu(spec['closed'])}]" if "closed" in spec else f"{name}=source term"
+        for name, spec in CONTEXT_SLOTS.items())
+    inherit = (
+        "Context may be inherited from this study's Methods or figure legends; mark inherited and quote its source."
+        if inheritance_allowed(doc_type) else
+        "Review: never inherit experimental context or attach a study's experiment to a retelling; use only context stated with the claim.")
+    instructions = f"""Repair only the supplied failed records; do not extract a new paper or add unrelated findings.
+Return each record in the repair response format supplied separately. Each corrected raw claim uses:
+{{"subject":"source name", "predicate":"menu token", "object":"source name", "quote":"supporting passage",
+"subject_category":"menu token", "object_category":"menu token", "object_aspect":"menu token",
+"subject_state":{{"functional":"menu token","variant":"source variant","isoform":"source isoform","protein_construct":"source construct"}},
+"object_state":{{"functional":"menu token","variant":"source variant","isoform":"source isoform","protein_construct":"source construct"}},
+"section":"source section", "study_type":"menu token", "evidence_type":"menu token",
+"quantifier":"all|most|some", "certainty":"demonstrated|suggested|predicted|hypothesized",
+"context":{{"slot":{{"value":"supported value","provenance":"stated|inherited","quote":"source passage"}}}},
+"experiment":{{"unit":"","intervention":"","control":"","readout":"","assay":"","timepoint":"","n":null,"effect":"","uncertainty":"","statistic":"","quote":"actual assay passage"}}}}
+Omit unsupported optional fields; do not fill placeholders. Required: subject, predicate, object, quote.
+CATEGORIES: {_menu(CATEGORIES)}
+PREDICATES: {_menu(PREDICATES)}
+OBJECT ASPECTS: {_menu(ASPECT_INPUTS)}
+FUNCTIONAL STATES: {_menu(FUNCTIONAL_STATES)}
+STUDY TYPES: {_menu(STUDY_TYPES)}
+EVIDENCE TYPES: {_menu(EVIDENCE_TYPES)}
+CLINICAL ENDPOINTS: {_menu(CLINICAL_ENDPOINTS)}
+EXPERIMENTAL ENDPOINTS: {_menu(EXPERIMENTAL_PHENOTYPES)}
+CONTEXT SLOTS: {slots}
+Names are source-faithful free text, not a closed candidate list. Use canonical labels from validation feedback
+when appropriate; other supported names may be resolved. Do not invent identifiers or collapse related concepts.
+One gene product is gene; a protein family stays family, never a guessed member. ROS are chemical species.
+Processes, cellular phenotypes and cell populations may be subjects. Distinguish normal process from
+pathological_process, and disease from the process producing it. Preserve genomic region and construct identity.
+Entity-like objects may have an aspect; processes, diseases, phenotypes and endpoints take none.
+Tissues/cell types are expression context, except present_in/absent_in assertions with the location as object.
+Clinical endpoints use predicts_better/predicts_worse/stratifies; experimental endpoints can increase/decrease.
+The subject depends_on the object. Preserve causation versus association: no fallback to associated_with
+when the finding is not correlational. A co-mention is not a claim. Keep hedging and prior-result attribution;
+use author_statement_prior for retellings and preserve printed citation markers in their quotes.
+Preserve all/most/some for group claims; omission does not mean all. Do not change supported direction
+just to repair a name. Quote enough of the intervention and outcome to establish sign. A knockout is not
+proof that the normal gene decreases the outcome: avoid inverting loss twice through both state and context.
+Keep conformational_stability (folding), conformational_dynamics (movement) and half_life (turnover) distinct.
+Use the source aspect (e.g. degradation/rigidity); code handles its sign rewrite.
+Organism context is required for phenotype claims. {inherit}
+Every quote must match actual source passages in order (whitespace and ellipsis omission allowed).
+No invented wording or values. Numbers n/effect/uncertainty/statistic must occur in the linked experiment's
+own quote; omit them if unsupported, and never borrow a sample count from another figure panel.
+"""
+    instructions += (
+            "\nREPAIR IDENTITY AND SCIENTIFIC SCOPE: The existing graph normalizes supported "
+            "model-organism orthologs onto the HGNC `gene` node, while preserving the actual "
+            "organism in evidence context. If validation says a symbol is human-resolvable and "
+            "category `gene` owns it, use the supported canonical gene candidate and retain "
+            "the source species; do not keep retrying mouse capitalization under non_human_gene. "
+            "This does not authorize guessing an ortholog: verified collisions with unrelated "
+            "human symbols and species-specific genes still require non_human_gene. "
+            "Preserve mutation, loss, activation and construct qualifiers that define the finding. "
+            "A statement about mutations must not become a general or wild-type gene claim merely "
+            "to pass validation; use mutant state when supported without inventing a specific variant. "
+            "Weaker rescue, incomplete restoration, or an effect smaller than another intervention "
+            "does not establish no_effect_on. Require evidence of a measured null for that predicate; "
+            "otherwise preserve the supported comparative finding or leave it unresolved. "
+            "Do not strengthen the source's scientific conclusion to increase claim retention.")
+    instructions += ("\nREPAIR EXPERIMENT OVERRIDE: Never output numeric experiment references. "
+                         "Use the singular field `experiment`, never `experiments`, with an inline "
+                         "experiment and its actual source passage only when it supports "
+                         "this specific finding, readout and experimental system; otherwise omit it. "
+                         "An intervention assay cannot support an unrelated expression or cell-line "
+                         "correlation claim merely because it is in the same paper. "
+                         "Check all copied experiment metadata against the corrected claim. "
+                         "Each failed claim includes its own linked experiment when available.")
+    return instructions
+
+
 def build_prompt(field: str, doc_type: str, text: str) -> str:
     inherit = ("You may inherit context from the Methods or a figure legend when the paper's own claim "
                "sentence omits it; mark provenance 'inherited' and quote the Methods sentence it came "
@@ -263,10 +339,10 @@ ENTITY STATE. Which form of the gene/protein is this claim about? Mutant and wil
 actors and must not be conflated.
   functional, choose one:
     wild-type      the normal form
-    mutant         a mutated form (give `variant` if the paper names one)
+    mutant         a mutated form or mutations as a class (give `variant` only if the paper names one)
     null_loss      knocked out, deleted, lost
     overexpressed  present at forced/elevated levels
-    general        the paper means the gene as a whole, or "EGFR mutations" as a class
+    general        the paper means the gene as a whole, without a mutation-specific qualifier
     unknown        the paper is about some particular form and you cannot tell which
 
   State is the actor the claim is about, not the experiment that revealed it. When you invert a
@@ -280,7 +356,7 @@ actors and must not be conflated.
   paper must land on one claim with two pieces of evidence.
 
   `general` and `unknown` are not interchangeable:
-    "EGFR mutations shorten survival"        -> general   (a claim about the class)
+    "EGFR mutations shorten survival"      -> mutant    (a mutation class; no named variant)
     "EGFR activated MYC in these cells"    -> unknown   (some specific EGFR, unstated)
   `general` says the paper is generalising; `unknown` says you cannot tell. Never use `general` to mean
   "not stated", and do not reach for `general` because you cannot name the variant: "exon 19 mutations
@@ -1165,6 +1241,9 @@ async def extract_paper(text: str, *, source_ref: int, source_label: str = "", f
                     process_map[key] = hit
 
     def build(rc, reader):
+        if "experiments" in rc:
+            raise DeferralError("claim field `experiments` is not supported; use singular `experiment` "
+                                "with the source-supported assay for this finding, or omit it")
         if not quote_supported(rc.get("quote", ""), text):
             raise DeferralError("quote does not match the source text; restore the verbatim passage")
         rc_org = _claim_organism(rc, paper_org)
@@ -1213,6 +1292,9 @@ async def extract_paper(text: str, *, source_ref: int, source_label: str = "", f
         return Claim(spine=spine, mechanism=rc.get("mechanism") or "", evidence=[ev]), exp, notes
 
     async def validate(rc):
+        if "experiments" in rc:
+            return ("claim field `experiments` is not supported; use singular `experiment` "
+                    "with one inline source-supported assay for this finding, or omit it")
         if rc.get("experiment") is not None and not isinstance(rc["experiment"], dict):
             return "repair must provide an inline source-supported experiment or omit it; numeric experiment pointers are not accepted"
         if not quote_supported(rc.get("quote", ""), text):
@@ -1345,15 +1427,7 @@ async def extract_paper(text: str, *, source_ref: int, source_label: str = "", f
             if feedback:
                 failure["reason"] += "; validation feedback: " + str(feedback)
         await asyncio.gather(*(enrich_failure(failure) for failure in failures))
-        instructions = build_prompt(field, doc_type, "[Source is supplied separately below]")
-        instructions += ("\nREPAIR EXPERIMENT OVERRIDE: Never output numeric experiment references. "
-                         "Use an inline experiment with its actual source passage only when it supports "
-                         "this specific finding, readout and experimental system; otherwise omit it. "
-                         "An intervention assay cannot support an unrelated expression or cell-line "
-                         "correlation claim merely because it is in the same paper. "
-                         "Check all copied experiment metadata against the corrected claim. "
-                         "Original reader experiment table for reference: " + json.dumps(got.get("experiments", [])))
-        instructions += "\nVerified vocabulary supplement (local IDs are explicitly local definitions):\n" + json.dumps(supplement_menu)
+        instructions = build_repair_instructions(doc_type)
         repaired = await repair_claims(text, failures, model=repair_model, validate=validate,
                                       instructions=instructions, max_concurrency=4)
         for row in repaired["accepted"]:

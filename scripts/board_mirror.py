@@ -7,7 +7,8 @@ just uses `board.py` and the GitHub issue.
 Every poll (default 30 s):
   1. New board comments -> one Telegram message each in the group chat.
      Comments that contain @<tmux-session-name> also nudge that session's
-     pane (only when it is idle).
+     pane (only when it is idle). Pending mentions persist across restarts
+     without expiry; possibly partial sends require explicit reconciliation.
   2. New lines in the group's inbox file (humans typing in the group)
      -> posted to the board as "<first name> (telegram)". So both humans can
      talk to every agent from their phones. Needs the harness to route the
@@ -30,10 +31,13 @@ import sys
 import threading
 import time
 from pathlib import Path
+from datetime import datetime, timedelta
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import board  # noqa: E402
+from board_inbox import Inbox  # noqa: E402
+from tmux_input import send_board_message  # noqa: E402
 
 HARNESS = Path(os.environ.get("HARNESS_ROOT", "/home/dev/projects/dashboard"))
 TGX = HARNESS / "telegram" / "tgx"
@@ -98,12 +102,11 @@ def session_idle(name: str) -> bool:
     return p is not None and p.returncode == 0 and p.stdout.strip() == "idle"
 
 
-def nudge(session: str, text: str, dry: bool):
+def nudge(session: str, text: str, dry: bool, before_send=None):
     if dry:
         log("DRY nudge ->", session, "|", text[:120])
         return True
-    p = run_helper([str(FLEETCTL), "send-keys", session, text])
-    return p is not None and p.returncode == 0
+    return send_board_message(session, text, before_send=before_send)
 
 
 def format_tg(p: dict) -> str:
@@ -140,25 +143,35 @@ def main():
     icur = cache / f"mirror-inbox-{sanitize(str(a.to))}.json"
     inbox = Path(a.inbox) if a.inbox else None
 
-    if bcur.exists():
+    deliveries = Inbox(bcur.with_suffix(".sqlite3"), dry=a.dry_run)
+    recovered = deliveries.recover()
+    if recovered:
+        log("uncertain interrupted nudges:", recovered)
+    if deliveries.get("cursor") is not None:
+        st = deliveries.get("cursor")
+        seen_id, since = st["id"], st["since"]
+    elif bcur.exists():
         st = json.loads(bcur.read_text())
         seen_id, since = st.get("id", 0), st.get("since")
     else:
         seen_id, since = 0, board.now_utc().isoformat().replace("+00:00", "Z")
-        bcur.write_text(json.dumps({"id": 0, "since": since}))
+    with deliveries.db:
+        deliveries.set("cursor", {"id": seen_id, "since": since})
     if icur.exists():
         inbox_line = json.loads(icur.read_text()).get("line", 0)
     else:
         inbox_line = sum(1 for _ in inbox.open()) if inbox and inbox.exists() else 0
-        icur.write_text(json.dumps({"line": inbox_line}))
+        if not a.dry_run:
+            icur.write_text(json.dumps({"line": inbox_line}))
 
     log(f"mirror up: {board.issue_url(repo, n)} <-> chat {a.to}"
         f"{' (inbox ' + str(inbox) + ')' if inbox else ' (send-only)'}, every {a.interval}s")
-    pending: list[tuple[str, str, int]] = []
 
     while True:
         try:
-            comments = board.fetch_comments(repo, n, since)
+            comments = board.fetch_comments(repo, n,
+                (datetime.fromisoformat(since.replace("Z", "+00:00")) - timedelta(seconds=2))
+                .isoformat().replace("+00:00", "Z") if since else None)
         except SystemExit as e:
             log("board fetch failed:", e)
             comments = []
@@ -169,30 +182,54 @@ def main():
             if p and not p["agent"].endswith(TG_SUFFIX):
                 if not tg_send(str(a.to), format_tg(p), a.dry_run):
                     break  # Keep this comment pending for the next poll.
-            seen_id, since = c["id"], c["created_at"]
-            bcur.write_text(json.dumps({"id": seen_id, "since": since}))
-            if not p:
-                continue
-            sessions = live_sessions()
-            for m in MENTION_RE.findall(p.get("text", "")):
-                real = sessions.get(sanitize(m))
-                if real and real != p["agent"]:
-                    first = p["text"].splitlines()[0][:200]
-                    pending.append((real, f"Board: {p['agent']} mentioned you: \"{first}\" "
-                                          f"Run `python3 scripts/board.py show` and answer on the board.", 0))
+            # Persist recipients and fetch position together, before any terminal input.
+            with deliveries.db:
+                if p:
+                    sessions = live_sessions()
+                    for m in set(MENTION_RE.findall(p.get("text", ""))):
+                        real = sessions.get(sanitize(m), m)
+                        if real and real != p["agent"]:
+                            key = f"{repo}:{n}:{c['id']}:{real}"
+                            first = p["text"].splitlines()[0][:200]
+                            deliveries.put(key, c["id"], real,
+                                f"Board: {p['agent']} mentioned you: \"{first}\" "
+                                f"Run `python3 scripts/board.py show` and answer on the board. "
+                                f"Source: {p['url']}")
+                            log("queued", key)
+                seen_id, since = c["id"], c["created_at"]
+                deliveries.set("cursor", {"id": seen_id, "since": since})
 
-        still = []
-        for sess, text, tries in pending:
-            if session_idle(sess):
-                if nudge(sess, text, a.dry_run):
-                    log("nudged", sess)
-                else:
-                    log("dropped failed nudge", sess)
-            elif tries < 20:
-                still.append((sess, text, tries + 1))
-            else:
-                log("dropped nudge for busy session", sess)
-        pending = still
+        sessions = live_sessions()
+        for item in deliveries.pending():
+            key, sess = item["key"], item["recipient"]
+            real = sessions.get(sanitize(sess))
+            if not real or not session_idle(real):
+                if item["last_error"] != "busy/offline":
+                    log("pending busy/offline", key)
+                    deliveries.mark(key, "pending", error="busy/offline")
+                continue
+            if a.dry_run:
+                log("DRY nudge", key)
+                continue
+            started = False
+            def before_send():
+                nonlocal started
+                deliveries.mark(key, "sending")
+                started = True
+            try:
+                accepted = nudge(real, item["text"], False, before_send)
+            except (OSError, ValueError, subprocess.SubprocessError):
+                accepted = False
+            if not accepted and not started:
+                if item["last_error"] != "input guard deferred":
+                    log("pending input guard", key)
+                    deliveries.mark(key, "pending", error="input guard deferred")
+                continue
+            # False after starting can mean text was pasted but Enter failed.
+            deliveries.mark(key, "delivered" if accepted else "uncertain",
+                receipt="tmux accepted text and Enter; consumption unconfirmed" if accepted else "",
+                error="" if accepted else "Transport unconfirmed; inspect receiver before retry")
+            log("nudged" if accepted else "uncertain", key)
 
         if inbox and inbox.exists():
             with inbox.open() as fh:
@@ -217,7 +254,8 @@ def main():
                             break
                     log("forwarded telegram -> board")
                 inbox_line = i + 1
-                icur.write_text(json.dumps({"line": inbox_line}))
+                if not a.dry_run:
+                    icur.write_text(json.dumps({"line": inbox_line}))
 
         time.sleep(a.interval)
 

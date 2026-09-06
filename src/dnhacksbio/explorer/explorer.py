@@ -30,6 +30,7 @@ from dnhacksbio.explorer import embed as EMB
 from dnhacksbio.explorer import lineage as LIN
 from dnhacksbio.explorer import skills as SK
 from dnhacksbio.explorer.runtime import Journal, process_identity, safe_id
+from dnhacksbio.explorer.budget import BudgetUnavailable
 from dnhacksbio.explorer.control import ControlStore, REPORT_PROMPT, validate_report, validate_decision
 from dnhacksbio.explorer.exploration import ExplorationLog
 from dnhacksbio.explorer.fulltext import FullTextStore
@@ -160,8 +161,14 @@ Actions:
 - read_paper     {"paper_id": "<id>", "max_chars": 30000, "offset": 0}  -> a paper's text, local or just
                    fetched. Long papers come back truncated and say so; call again with the offset given to
                    read on. A truncated read never supports "the paper does not mention X".
+- binder         {"operation": "<operation>", "experiment_id": "<owned ID>", "args": {...}} -> scoped exploratory binder records, receipts and actual scene/vision tools; get_skill binder-interface first
+- spindle        {"operation": "<operation>", "experiment_id": "<owned ID>", "args": {...}} -> provisional native spindle jobs and scoped scene/vision workflow; get_skill spindle-interface first
 - search_skills  {"query": "<method or question>"}              -> which methods fit; then get_skill for the how
+- tissue         {"experiment_id":"<id>","operation":"<operation>","args":{...}} -> conditional spatial model; get_skill tissue-interface first
 - get_skill      {"name": "<skill>"}                            -> full method guidance, rigor invariants and an example
+- private_experiment {"method_id":"paired-pathway-v1|dependency-chronos-v1|biomarker_auc.v1", "spec":{...}, "input":{"cohort_id":"...","manifest_sha256":"..."}}
+                   -> submit an operator-registered experiment with runner-owned provenance; load the corresponding experiment skill first.
+                      Returns only a receipt. Never manufacture RESULT or submit that receipt to legacy verification.
 - run_experiments{"experiments": [ {"hypothesis","subject","object","method","expected_sign":-1|0|1,"code"}, ... ]}
                    -> runs each `code` in a parallel sandbox. Your code must print one line with json.dumps:
                       print("RESULT:", json.dumps({"effect":..,"p_null":..,"null_model":"..","n_units":..,"robust":true}))
@@ -250,7 +257,7 @@ class Explorer:
                  resume_sid: str | None = None, branch_brief: str | None = None, fork_fn=None,
                  fork_enabled: bool = True, judge_fn=None, trace_dir: str | None = None,
                  project_id: str | None = None, branch_objective: str | None = None,
-                 allocation_fn=None):
+                 allocation_fn=None, subtree_budget=None):
         self.run_id = safe_id(run_id)
         self.goal = goal
         self.model = model
@@ -310,6 +317,7 @@ class Explorer:
         self._transcript_path = str(td / f"transcript_{run_id}.jsonl")  # raw SDK message stream per step
         self._trace_dir = str(td)
         self._last_capture: dict = {}
+        self._session_connected = False
         self._session = None                    # persistent resumable session (opened in run(); None in tests)
         self._seen_fb: set = set()              # feedback ids already surfaced (per-turn delta dedup)
         self._seen_corr: set = set()            # correction ids already surfaced
@@ -329,6 +337,12 @@ class Explorer:
         self._has_forked = False       # a node splits once; the tree grows through survivors
         self.journal = share_from.journal if share_from else Journal(td)
         self.control = share_from.control if share_from else ControlStore(td)
+        if share_from is None:
+            existing_budget = self.control.budgets(self.run_id)
+            if subtree_budget is not None or not existing_budget:
+                self.control.freeze_budget(self.run_id, subtree_budget)
+        elif subtree_budget is not None:
+            self.control.freeze_budget(self.run_id, subtree_budget)
         self._allocation_fn = allocation_fn if allocation_fn is not None else (share_from._allocation_fn if share_from else None)
         self._report_reason = "allowance_exhausted"
         self.vq.runtime_journal = self.journal
@@ -532,10 +546,13 @@ class Explorer:
             return text
         cap: dict = {}
         if self._session is not None:
+            if not self._session_connected:
+                await self._session.__aenter__()
+                self._session_connected = True
             text = await asyncio.wait_for(self._session.ask(prompt, capture=cap), timeout=self.model_timeout_s)
         else:
             text = await asyncio.wait_for(llm.acomplete(prompt, model=self.model, system=_SYS, effort="high",
-                                       max_turns=24, thinking=True, capture=cap), timeout=self.model_timeout_s)
+                                       max_turns=1, tools_disabled=True, thinking=True, capture=cap), timeout=self.model_timeout_s)
         self._last_capture = cap
         if self.control.get(self.run_id):
             self.control.cost(self.run_id, "research", 0., _capture_usage(cap))
@@ -570,7 +587,13 @@ class Explorer:
     def _budget_line(self) -> str:
         state = self.control.get(self.run_id)
         left = max(0, state["allowance"] - state["used"]) if state else self._round_max_steps
-        return (f"RESEARCH ALLOWANCE: {left} actions remain before mandatory reporting. "
+        limits = self.control.budgets(self.run_id)
+        if limits:
+            left = min(left, *(b["action_holds"].get(self.run_id, 0) for b in limits))
+        shared = " ".join(f"Subtree {b['run_id']}: {b['contract']['actions'] - b['actions']} total actions and "
+                          f"{max(0., b['contract']['seconds'] - b['spent']):.1f} accounted seconds remain, shared with descendants."
+                          for b in limits)
+        return (shared + f" RESEARCH ALLOWANCE: {left} actions remain before mandatory reporting. "
                 "checkpoint reports early; done requests completion; neither means automatic pruning. "
                 + ("Wrap up current work and prepare to report unfinished progress." if left <= 3 else ""))
 
@@ -880,6 +903,18 @@ class Explorer:
         self._pending_skills[name] = skill
         return f"Complete {name} guidance will accompany the next model request (version {skill['sha256']})."
 
+    async def _act_tissue(self, args) -> str:
+        if "tissue-interface" not in self._delivered:
+            return "(tissue blocked: get_skill tissue-interface and receive its guidance first)"
+        from dnhacksbio.tissue.tools import operate
+        scope = {"project_id": self.manifest["project_id"], "run_id": self.run_id,
+                 "experiment_id": str(args.get("experiment_id", ""))}
+        try:
+            result = await operate(self.journal, scope, str(args.get("operation", "")), args.get("args", {}))
+        except (ValueError, FileNotFoundError, KeyError, IndexError, TimeoutError, RuntimeError) as exc:
+            result = {"status": "failed", "operation": args.get("operation"), "error": str(exc)[:2000]}
+        return json.dumps(result, allow_nan=False)
+
     async def _act_run_experiments(self, args) -> str:
         exps = [e for e in (args.get("experiments") or []) if isinstance(e, dict) and e.get("code")]
         if not exps:
@@ -888,6 +923,9 @@ class Explorer:
             return "(at most 8 experiments per action)"
         for e in exps:
             method = e.get("method_id")
+            if method == "binder-interface":
+                self._event("policy.rejected", {"reason": "Binder guide is not an audited method", "method_id": method})
+                return "(binder-interface is an exploratory tool guide; use method_id exploratory)"
             required = "agent-runtime" if method == "exploratory" else method
             if not required or required not in self._skill_snapshots or required not in self._delivered:
                 self._event("policy.rejected", {"reason": "Method guidance not delivered", "method_id": method})
@@ -902,7 +940,12 @@ class Explorer:
             from dnhacksbio.explorer.sandbox import run_many
             def progress(index, kind, payload):
                 self._event(kind, payload, experiment_id=identities[index])
-            run = lambda codes: run_many(codes, max_parallel=self.max_parallel, timeout=600,
+            def scoped_codes(codes):
+                return ["import os as _runtime_os\n_runtime_os.environ['DNHACKS_EXPERIMENT_SCOPE'] = "
+                        + repr(json.dumps({"project_id": self.manifest.get("project_id"),
+                                           "run_id": self.run_id, "experiment_id": expid})) + "\nexec(compile(" + repr(code) + ", '<experiment>', 'exec'))"
+                        for code, expid in zip(codes, identities)]
+            run = lambda codes: run_many(scoped_codes(codes), max_parallel=self.max_parallel, timeout=600,
                                          network=self.network, cache_dir=self.cache_dir,
                                          scratch_dir=self.scratch_dir, pool=self.sandbox_pool,
                                          progress=progress, journal=self.journal,
@@ -944,6 +987,11 @@ class Explorer:
                         "stderr": self.journal.blob(getattr(r, "stderr", "") or ""),
                         "exploratory": e["method_id"] == "exploratory"}, experiment_id=expid)
             for artifact in getattr(r, "artifacts", None) or []:
+                if artifact.get("kind") == "binder_bundle" and artifact.get("binder_scope") != {
+                        "project_id": self.manifest.get("project_id"), "run_id": self.run_id,
+                        "experiment_id": expid}:
+                    artifact = {"artifact_id": artifact["artifact_id"], "status": "rejected",
+                                "failure_reason": "Binder bundle belongs to a different experiment scope"}
                 self._event("artifact", {**artifact, "schema_version": 1, "run_id": self.run_id,
                             "investigation_id": LIN.root(self.run_id), "attempt_id": self.attempt_id,
                             "experiment_id": expid}, experiment_id=expid, producer="collector")
@@ -1190,7 +1238,9 @@ class Explorer:
                 self.session_id = sid
                 self._persist_session(sid)
                 self.control.patch(self.run_id, session_id=sid)
-            await self._session.__aexit__()
+            if self._session_connected:
+                await self._session.__aexit__()
+            self._session_connected = False
             self._session = None
         report_session = None
         if self._inject_complete is None:
@@ -1202,9 +1252,8 @@ class Explorer:
             report_session = llm.Session(system=_SYS, model=self.model, resume=sid,
                                          max_turns=1, tools_disabled=True, max_output_tokens=4096)
         error = ""
+        report_connected = False
         try:
-            if report_session:
-                await report_session.__aenter__()
             for attempt in range(state["report_attempts"], 3):
                 self.control.patch(self.run_id, report_attempts=attempt + 1)
                 started = time.monotonic()
@@ -1213,9 +1262,14 @@ class Explorer:
                 try:
                     prompt = REPORT_PROMPT + "\nObjective: " + self.manifest["branch_objective"] + "\nTrigger: " + self._report_reason + "\n" + error
                     self._event("model.started", {"phase": "report", "label": "Writing mandatory report"})
-                    raw = await asyncio.wait_for(
-                        self._inject_complete(prompt) if self._inject_complete else report_session.ask(prompt, capture=cap),
-                        timeout=min(90, self.model_timeout_s))
+                    async def ask_report():
+                        nonlocal report_connected
+                        if report_session and not report_connected:
+                            await report_session.__aenter__()
+                            report_connected = True
+                        return await asyncio.wait_for(self._inject_complete(prompt) if self._inject_complete
+                            else report_session.ask(prompt, capture=cap), timeout=min(90, self.model_timeout_s))
+                    raw = await self._funded("report", ask_report)
                     report = validate_report(json.loads(raw))
                     if report_session and report_session.truncated:
                         raise ValueError("Report output limit reached")
@@ -1223,7 +1277,8 @@ class Explorer:
                     report_cost_saved = True
                     saved = self.control.save_report(self.run_id, report)
                     self._event("checkpoint.report", {"version": saved["version"], "report": report,
-                                                      "total_actions": saved["total_actions"], "costs": saved["costs"]})
+                                                      "total_actions": saved["total_actions"], "costs": saved["costs"],
+                                                      "budget_scopes": self.control.budgets(self.run_id)})
                     self._event("lifecycle", {"lifecycle": "awaiting_parent", "reason": "Valid child report saved"})
                     return
                 except (ValueError, TypeError) as exc:
@@ -1244,7 +1299,8 @@ class Explorer:
                     self._persist_session(self.session_id)
                     self.control.patch(self.run_id, session_id=self.session_id)
                 try:
-                    await report_session.__aexit__()
+                    if report_connected:
+                        await report_session.__aexit__()
                 except Exception:
                     pass
         self.control.patch(self.run_id, status="reporting_blocked")
@@ -1263,11 +1319,28 @@ class Explorer:
             size += length
         return {"records": items, "shown": len(items), "total": len(rows), "truncated": len(items) < len(rows)}
 
+    async def _funded(self, phase, call):
+        op = self.control.reserve_operation(self.run_id, phase)
+        started, interrupted = time.monotonic(), False
+        try:
+            return await asyncio.wait_for(call(), timeout=op["seconds"]) if op else await call()
+        except (asyncio.CancelledError, TimeoutError):
+            interrupted = True
+            raise
+        finally:
+            saved = self.control.settle_operation(op, time.monotonic() - started, interrupted)
+            if saved:
+                self._event("budget.operation", saved)
+
     async def _parent_decision(self, child):
+        return await child._funded("judge", lambda: self._parent_decision_inner(child))
+
+    async def _parent_decision_inner(self, child):
         state = self.control.get(child.run_id)
         context = {"objective": child.manifest["branch_objective"], "report": state["report"],
                    "report_version": state["version"], "current_round_objective": state.get("objective"),
                    "supporting_records": child._allocation_records(),
+                   "subtree_budgets": child.control.budgets(child.run_id),
                    "actions_used": state["total_actions"], "rounds": state["rounds"],
                    "max_branch_actions": BRANCH_TOTAL_STEPS, "max_rounds": MAX_CONTINUATIONS,
                    "depth": LIN.depth(child.run_id), "max_depth": MAX_DEPTH}
@@ -1296,6 +1369,17 @@ class Explorer:
             self.control.cost(child.run_id, "judge", time.monotonic() - started, _capture_usage(cap))
 
     async def _allocate(self, child):
+        """Serialize a node's controller, including restart/partial-fork execution."""
+        import fcntl
+        lock_path = self.control.path.parent / ("allocation-" + child.run_id + ".lock")
+        with lock_path.open("a") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return
+            return await self._allocate_unlocked(child)
+
+    async def _allocate_unlocked(self, child):
         """One child can report/receive allocation without waiting for siblings."""
         while True:
             state = self.control.get(child.run_id)
@@ -1303,6 +1387,11 @@ class Explorer:
                 await child._execute_fork(self.control.decision(state["decision_id"]))
                 return
             if state["status"] != "awaiting_parent":
+                return
+            if not self.control.research_available(child.run_id):
+                self.control.patch(child.run_id, status="completed", terminal_reason="budget_endpoint")
+                child._event("lifecycle", {"lifecycle": "completed", "reason": "Fixed shared budget reached after mandatory report"})
+                self.control.finalize_budgets(child.run_id)
                 return
             try:
                 decision = await self._parent_decision(child)
@@ -1339,7 +1428,9 @@ class Explorer:
                     if fork_fn is None:
                         from claude_agent_sdk import fork_session
                         fork_fn = lambda parent_sid: fork_session(parent_sid, directory=os.getcwd())
-                    sid = getattr(fork_fn(self.session_id or self._resume_sid), "session_id", None)
+                    async def launch():
+                        return fork_fn(self.session_id or self._resume_sid)
+                    sid = getattr(await self._funded("fork", launch), "session_id", None)
                     if self._inject_complete is None and not sid:
                         raise RuntimeError("No fork session")
                     self.control.launch_state(record["decision_id"], rid, "launched", sid)
@@ -1353,7 +1444,10 @@ class Explorer:
                 state = c.control.get(c.run_id)
                 if state["status"] in {"working", "reporting"}:
                     await c.run(max_steps=record["decision"]["allowance"])
-                await self._allocate(c)
+                try:
+                    await self._allocate(c)
+                finally:
+                    self.control.finalize_budgets(c.run_id)
             tasks.append(work())
         self._event("lifecycle", {"lifecycle": "waiting", "reason": "Authorized descendants executing"})
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -1372,11 +1466,48 @@ class Explorer:
         if state and state["status"] != "working":
             raise RuntimeError("Research paused; dispatch prohibited")
         name, args = action.get("action"), action.get("args", {})
+        if name == "private_experiment":
+            from .private_experiments import dispatch
+            return await dispatch(self, args)
+        if name == 'inhibitor':
+            if 'inhibitor-interface' not in self._delivered:
+                return self._act_get_skill({'name':'inhibitor-interface'})
+            from dnhacksbio.inhibitor.service import Workbench
+            wb=Workbench(self.journal,self.run_id,args['experiment_id'],self.manifest.get('project_id'))
+            if args.get('operation')=='inspect_scene_capture':
+                from dnhacksbio.inhibitor.review import inspect
+                observation,cap=await inspect(wb,args['capture_id'],args.get('question','Describe geometry and occlusion; propose a grounded numerical countercheck.'),self.model)
+                self.control.cost(self.run_id,'research',0.,_capture_usage(cap))
+                return observation
+            return json.dumps(await asyncio.to_thread(wb.dispatch,args,'agent'),allow_nan=False)
         h = {"search_kg": self._act_search_kg, "search_papers": self._act_search_papers,
              "read_paper": self._act_read_paper, "search_skills": self._act_search_skills,
              "get_skill": self._act_get_skill, "log": self._act_log, "submit": self._act_submit,
              "recall": self._act_recall, "neighbors": self._act_neighbors,
              "subgraph": self._act_subgraph, "path": self._act_path}
+        if name == "tissue":
+            return await self._act_tissue(args)
+        if name == "binder":
+            if "binder-interface" not in self._delivered:
+                return "(binder blocked: get_skill binder-interface before dispatch)"
+            from dnhacksbio.binder.runtime import dispatch
+            usage={}
+            try:
+                result=await dispatch(self.journal,self.manifest.get("project_id"),self.run_id,args,usage_capture=usage)
+                return json.dumps(result,allow_nan=False)
+            except (ValueError,KeyError,TypeError,FileNotFoundError,RuntimeError,TimeoutError) as exc:
+                return json.dumps({"error":str(exc)})
+            finally:
+                if usage:self.control.cost(self.run_id,"research",0.,_capture_usage(usage))
+        if name == "spindle":
+            if "spindle-interface" not in self._delivered:
+                return "(spindle blocked: get_skill spindle-interface before dispatch)"
+            from dnhacksbio.spindle.runtime import dispatch
+            try:
+                result=await dispatch(self.journal,self.manifest.get("project_id"),self.run_id,args)
+                return json.dumps(result,allow_nan=False)
+            except (ValueError,KeyError,FileNotFoundError,RuntimeError,TimeoutError) as exc:
+                return json.dumps({"error":str(exc)})
         if name == "run_experiments":
             return await self._act_run_experiments(args)
         if name == "fetch_papers":
@@ -1397,6 +1528,10 @@ class Explorer:
         return fn(args) if fn else f"(unknown action {name!r})"
 
     async def step(self, message: str) -> tuple[dict, str]:
+        self.control.start(self.run_id, CHILD_MAX_STEPS)
+        return await self._funded("research", lambda: self._step(message))
+
+    async def _step(self, message: str) -> tuple[dict, str]:
         """One think→act→observe cycle on the persistent session. `message` is turn 1's full standing
         context or a turn-2+ delta (last observation + any new feedback). Returns (action, observation)."""
         state = self.control.get(self.run_id)
@@ -1483,7 +1618,7 @@ class Explorer:
             if self._inject_complete is None:
                 self._session = llm.Session(system=_SYS, model=self.model, effort="high", max_turns=1,
                                             thinking=True, resume=self._resume_sid, tools_disabled=True)
-                await self._session.__aenter__()
+                self._session_connected = False
             self._round_max_steps = state["allowance"]
             self._steps_at_round_start = self.steps - state["used"]
             message = (self._branch_brief or self._state()) + "\n" + self._budget_line()
@@ -1494,9 +1629,17 @@ class Explorer:
                 for _ in range(max(0, state["allowance"] - state["used"])):
                     if heartbeat.done():
                         heartbeat.result()
+                    if not self.control.research_available(self.run_id):
+                        self._report_reason = "subtree_budget_exhausted"
+                        self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
+                        break
                     started = time.monotonic()
                     try:
                         action, obs = await self.step(message)
+                    except BudgetUnavailable:
+                        self._report_reason = "subtree_budget_exhausted"
+                        self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
+                        break
                     finally:
                         self.control.cost(self.run_id, "research", time.monotonic() - started)
                     if self._session and self._session.session_id:
@@ -1519,7 +1662,9 @@ class Explorer:
                 heartbeat.cancel()
                 await asyncio.gather(heartbeat, return_exceptions=True)
             if self._session:
-                await self._session.__aexit__()
+                if self._session_connected:
+                    await self._session.__aexit__()
+                self._session_connected = False
                 self._session = None
         return self._run_summary()
 
@@ -1530,8 +1675,11 @@ class Explorer:
 
     async def run_investigation(self, max_steps: int = 18):
         """Root uses the same allocation controller as every child."""
-        await self.run(max_steps)
-        await self._allocate(self)
+        try:
+            await self.run(max_steps)
+            await self._allocate(self)
+        finally:
+            self.control.finalize_budgets(self.run_id)
         return self._run_summary()
 
     def _persist_session(self, sid: str) -> None:

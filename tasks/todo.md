@@ -1,5 +1,39 @@
 # Research workspace review
 
+## Review — sandbox-safe Board transport fixture
+
+- Reproduced the private transport test's `uncertain` failure with an unwritable input-lock cache; ordinary and isolated-PID probes passed.
+- Moved the complete fixture into a child Python process with its own temporary cache. The actual shared input guards, byte-identical literal/Enter acknowledgment and replay checks remain in use; caller environment and routing globals stay unchanged.
+- Validation: 65 coordination/input/mirror tests passed with an unwritable inherited cache. A separate user/PID namespace also passed actual literal/Enter delivery and one-delivery replay. Regressions cover absent/unusable cache settings, caller-state preservation and timeout cleanup. No other agent session or mirror is involved.
+
+## Review — presentation revision and reliable local Board delivery
+
+- Consolidated the current [editable judge deck](../presentation/README.md): 29 slides, a 12-slide default pitch, four hidden discovery-reveal storyboards and 13 technical appendix slides, plus a four-layout kit. Every slide has a tentative script, status, sources and editing instructions in Notes.
+- Led with biological anticipation and the window of unilateral advantage, including the verified NSCEB §1.3 quote. Retained DTX relevance without claiming threat prediction, clinical benefit or customer traction.
+- Incorporated current inhibitor image-to-coordinate review, negative docking recovery, real model training and held-out comparisons, and the larger external protein benchmark. Added 14 reproducible PNG/PDF research figures; no new scientific training or experiments were run.
+- Used the existing LaoZhang adapter for two matching conceptual backgrounds, estimated total $0.18. Preserved prompts/provenance and local originals; tracked delivery JPEGs. Remaining credits/final billing were unavailable with the inference key.
+- Preserved the required full loop → survivors → paper fade → frozen-corpus-next-slide sequence. It remains hidden until a real qualifying run and excluded matching paper are verified; no discovery was fabricated.
+- Installed one persistent Board nudger with explicit identity routes, durable SQLite cursor/outbox, guarded tmux transport, Herdr delivery, automatic crash recovery and source/config/dependency updates. Both a direct and a managed-service probe arrived as actual messages in this active session. No Rich agent was contacted and no Telegram mirror was started.
+- Validation passed: 529 Python tests (33 optional/opt-in skips), 24 browser cases, six UI units, the production build and final isolation check. Fixed an incidental process-reaping assertion race; its OS-level check passed 50 repetitions. The revised PPTX and both PDFs were sent to Telegram.
+- Final rendering, repository gates and limitations are recorded in [presentation/validation.md](../presentation/validation.md); nudger operation and update behavior are documented in [docs/board-nudger.md](../docs/board-nudger.md).
+
+## Review — DNHacks judge presentation
+
+- Created [editable PowerPoint, PDF preview, speaker notes and reusable layout kit](../presentation/README.md)
+  with an 11-slide core story and six Q&A slides. Every criterion and weight is mapped explicitly.
+- Extended the existing IBM Plex, charcoal, warm-white and green design. Distinguished real corpus
+  metadata and measured standalone statistics from synthetic interface data and future plans.
+- Researched official DTX/event sources, PubMed, SEER and current research-agent prior art. Chose Open
+  Category as a proposed framing and retained DN Research as a working name; neither is a team decision.
+- Reconciled the old forecasting pitch and historical evaluation-pilot statements. The ordinary
+  falsifier screens reported fields; no independent reproduction or new biological discovery is claimed.
+- Source validation: build, six UI unit tests, 19 browser tests after an unchanged serial retry, and
+  270 tracked Python tests passed with 18 optional-dependency/opt-in skips. The initial parallel browser
+  run hit one 30-second geometry timeout. Wider ignored/local tests were not copied into this worktree.
+- Reviewed rendered slides and notes; delivery checks and limitations are in
+  [presentation/validation.md](../presentation/validation.md). Scientific demo, final team name and
+  pilot measurements remain future additions. No scientific model runs, training or outreach performed.
+
 ## Review — policy lab proofs and experiments
 
 - Delivered the [formal model and complete proofs](research/policy-lab/report.md), [primary-paper audit](research/policy-lab/literature.md), [independent adversarial review](research/policy-lab/adversarial-review.md), [executable prototype](../research_spikes/policy_lab/README.md), and [standalone demo/figure](research/policy-lab/demo.html).
@@ -18,3 +52,10 @@
 - Coordinated shared API changes before editing. The runtime owner is handling remembered investigation selection and exact experiment navigation. E-values, exploration policy, deferred evaluations and model calls remain outside this change.
 - Validation: production build, 2 frontend unit tests, all 16 browser tests and 101 Python tests passed; one optional learned-evalue module skipped because Torch is absent. The wider unversioned local vocabulary tests were not copied into this isolated checkout. Dark/light and mobile screenshots of the actual React UI were inspected; clearly synthetic browser fixtures demonstrate interaction, not scientific results. Existing 3Dmol build warning remains. Diff whitespace check passed.
 - Tested from isolated backend 8784 and Vite 5189. The shared public preview has no populated normal research collection; this change does not manufacture one. Final integration commit is recorded on the Board.
+
+## Review — judge deck (presentation/pptx)
+
+- Built a reproducible PowerPoint deck: `presentation/pptx/build_deck.py` writes `dnhacks-deck.pptx` (22 slides, 16:9) in the product's own visual system (IBM Plex, charcoal, sea-green / amber / rose semantics). Every slide carries a provenance tag (MEASURED / IMPLEMENTED / PLANNED / ILLUSTRATIVE) and a speaker script with timings and the source file for each number in its notes; unfilled items are marked `[TODO]` on the slide and in the notes. `README.md` there lists the five-minute cut and the pre-demo fill list.
+- Framing follows `ARCHITECTURE.md` (discovery loop, falsifier with no answer key, human gate) and the non-bio-audience note in `plans/PLAN-demo-slides.md`. Judging criteria for all three prizes are mapped slide by slide in appendix A. The archived CIViC backtest from the removed forecasting module appears only as appendix C with its reconciliation caveats.
+- Audience research: DTX Ventures presents the Open Category at DNHacks 2026 (Sept 5–6, Station DC); their public thesis line and the NSCEB "dangerously close to falling behind China" sentence were verified against primary pages and recorded in `dtx_context.json`. No public DTX pitch-deck guidance was found.
+- Validation: deck built from a clean worktree at origin/main; rendered through LibreOffice to PDF/PNG and every slide inspected for overflow and overlap; `git diff --check` clean. No engine, frontend or test code changed.

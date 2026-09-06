@@ -5,7 +5,11 @@ Records the user's agreed design, including full-subtree outcomes and checkpoint
 Implementation status: checkpoint reporting, explicit parent allocation, a private observation-only
 monitor pipeline and separate authenticated operator console are implemented. User deferred actual
 trajectory scoring/training until corpus ingestion. Controlled statistical deployment remains blocked
-on representative rollouts, a frozen/enforced total compute horizon, calibration and account separation.
+on representative rollouts, pilot-selected horizons, calibration and account separation. Shared runtime
+action/time reservations and artifact-based private outcome labeling are implemented and fixture-tested.
+Outcome adapters cover legacy submissions and runner-owned registered pathway, Chronos dependency
+and biomarker/AUC receipts, including private review routing. Other receipt methods are not implicitly
+supported. Real assessor/rollout validation remains required before statistical deployment.
 See [implementation and limitations](../docs/branch-monitoring.md).
 The paper analysis remains in [the research review](../docs/evaluator-tree-search-review.md).
 
@@ -22,7 +26,7 @@ assess whether a biological finding should be accepted.
 in a separate report-only turn. A runtime-generated summary is not a substitute. Budget exhaustion
 alone is neither scientific failure nor permission to prune.
 
-## Current behavior and issues being addressed
+## Pre-change baseline and issues addressed
 
 `Explorer._act_fork` runs new leaves with forking disabled until they emit `done` or consume 18
 actions. It waits for the sibling batch, invokes `_judge_promise`, retains up to two and enables
@@ -293,12 +297,14 @@ remove an already submitted finding, cancel its review, or replace a human decis
 useful completed result can coexist with little value in continuing its branch. Conversely, a surviving
 branch has no automatic right to scientific acceptance.
 
-**Private scoring requires an additional review adapter.** Today's expression command produces a receipt
-and has no callback into verification/human review; a receipt is not a valid RESULT. Do not ask an agent
-to read private evidence and manufacture that RESULT. Proposed operator-side routing joins a declared
-finding/experiment ID, immutable receipt, scoring method/null, provenance and results into a private
-human-review record. The receipt associates work; neither the agent nor the parent recreates it.
-Scoring failures remain failures/unavailable, not positive or negative scientific findings.
+**Private scoring uses a separate outcome/review adapter.** The `private_experiment` runtime action
+submits registered pathway, dependency and drug-response experiments with runner-owned request IDs.
+`registered-receipts-v1` reconciles exact public request artifacts with operator queue aliases, frozen
+settings and immutable completion snapshots. It automatically creates private review records after
+method-specific validation. Standalone CLI stdout receipts remain unbound and cannot supply labels;
+a receipt is not a valid RESULT. Scoring failures remain unavailable/censored, not negative findings.
+Legacy TPM learned diagnostic outputs and other native methods require separate explicit contracts;
+they are not promoted to confirmation by these adapters.
 
 Humans may inspect submitted work before branch completion. They should see method-specific evidence,
 data limitations and whether confirmation is pending, valid or unavailable. Native e-values and
@@ -312,7 +318,7 @@ information even if the number itself were removed. During the frozen discovery/
 keep score-derived notes, acceptance/rejection, and resulting master-graph updates outside all relevant
 agent views, recall and parent/judge context. Record review privately now; disclose or refresh the
 discovery snapshot only at the predefined boundary. Ordinary feedback that uses no private confirmation
-information can retain its existing path. A separate private review store and explicit disclosure export now implement this separation for associated receipts; automatic receipt routing and discovery-snapshot refresh remain pending. Same-user filesystem access also needs an actual service/account boundary.
+information can retain its existing path. A separate private review store and explicit disclosure export implement this separation. Registered receipt routing is implemented through outcome adjudication and the model-free live `route` worker; discovery-snapshot refresh remains pending. Same-user filesystem access also needs an actual service/account boundary.
 
 ## Implementation stages and acceptance criteria
 
