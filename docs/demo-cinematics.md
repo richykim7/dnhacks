@@ -11,7 +11,7 @@ Each scene default-exports a React component accepting
 `[0, 18]`. Each component owns its Canvas, fills its parent and contains no page controls.
 All positions and camera motion derive from this time and fixed seeded local inputs;
 no accumulated deltas or wall-clock randomness. Explicit reset may restart the sequence.
-Reduced motion should show a stable composition while allowing deliberate scrubbing.
+Reduced motion shows a stable composition; the shell labels it as a static view.
 
 Sequence: 0–5 seconds establish with slow rotation; 5–11 approach/change;
 11–15 interaction highlight; 15–18 hold. The shell owns play/pause/reset/scrub/fullscreen.
@@ -41,7 +41,10 @@ From an isolated checkout with frontend dependencies installed:
 npm --prefix frontend run dev -- --port 5191 --strictPort
 ```
 
-Open <http://127.0.0.1:5191/?demo=cinematic>. No Python/backend process is needed.
+Open <http://127.0.0.1:5191/?demo=cinematic>. For a built preview, run
+`npm --prefix frontend run build` followed by
+`npm --prefix frontend run preview -- --port 5192 --strictPort` and open
+<http://127.0.0.1:5192/?demo=cinematic>. No Python/backend process is needed.
 Click a scene node to reveal it; use the transport controls to replay or inspect time.
 The scene selector only enables components present in this checkout. No deployment
 or running research service is involved.
@@ -60,3 +63,17 @@ node reveal, seeking, pause, reset, return focus, reduced-motion default, mobile
 and absence of API requests. Captures use Chromium SwiftShader; they are visual review
 artifacts, not a claim about hardware frame rate. Use a local `npm ci` installation:
 Vite can block font assets when node_modules is symlinked outside the checkout.
+
+The inspected `captures/binder-node-reveal.webm` records a 1920×1080 node click and
+the complete 18-second sequence. Reproduce only that recording with the capture
+command above plus `--grep "record binder node reveal"`. The clip uses SwiftShader.
+
+## Visual review
+
+Reviewed the integrated binder, tissue and spindle 1080p stills for the shared ink,
+cyan/coral palette, translucent geometry, uncluttered stage and readable transport.
+The binder clip was inspected at approach, interaction and hold. Playback-rate checks
+cover all three scenes; the recorded sequence reaches 18.0 seconds and stops.
+The tissue owner's follow-up fixes the observed 390×844 framing and label collision;
+its integrated mobile capture is in `scenes/tissue/assets/tissue-shell-mobile.png`.
+No frame-rate benchmark or scientific output is implied.
