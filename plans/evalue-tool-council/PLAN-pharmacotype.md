@@ -1,6 +1,11 @@
 # Learned pharmacotype association
 
-Planning specification, 2026-09-06. No implementation, acquisition, training or confirmation is authorized by this document. Read together with [the shared native evidence contract](native-evidence-contract.md). Proposed interfaces below are not existing capabilities.
+Implementation status (2026-09-06): CPU development contracts/encoders/operations and
+private fully-frozen native replay are implemented; see [operations and remaining gates](../../docs/pharmacotype.md).
+Acquired-data audits, biological training/evaluation, adaptive critic updates and
+confirmation release remain pending. The specification below retains the full target.
+
+Original planning specification, 2026-09-06. The document itself did not authorize implementation, acquisition, training or confirmation; subsequent user instruction authorized the implementation described above. Read together with [the shared native evidence contract](native-evidence-contract.md). The target interfaces below extend beyond the current implementation.
 All training follows the [shared single-GPU scheduling rule](native-evidence-contract.md#coordination-on-the-shared-gpu): CPU work can overlap, but initial GPU pilots run serially; concurrency requires measured combined memory and throughput, a shared queue/lease, and separate artifacts. Individual job caps are not simultaneous GPU reservations.
 
 ## Biological tool and first endpoint

@@ -370,6 +370,11 @@ These are in the package and tested, and deliberately not connected to the falsi
   evidence. Optional `count_expression.py` records approximate paired PyDESeq2 effects privately.
   The `expression_experiment --dataset-id` route accepts identifiers only; legacy TPM uploads remain
   available. No confirmation cohort is bundled, and no statistical result enters discovery feedback.
+- `pharmacotype_data.py`, `pharmacotype_encoder.py`, `pharmacotype.py`: declared donor/curve
+  preparation, CPU separate-view encoders and development prediction/neighborhood/program tools.
+  `pharmacotype_scoring.py` provides receipt-only operator-frozen association replay through the
+  shared native ledger. No biological model, confirmation cohort, adaptive critic update or GPU
+  training path is bundled. See [pharmacotype operations](docs/pharmacotype.md).
 - `expr_encoder.py`: frozen PCA or masked-gene autoencoder encoders with recorded training provenance,
   trained by `scripts/train_expr_encoder.py`.
 - `evalues.py`: p-to-e calibration, merging and e-BH helpers. Inputs must already be valid.
