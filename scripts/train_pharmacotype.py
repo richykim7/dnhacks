@@ -10,17 +10,17 @@ from dnhacksbio.pharmacotype_encoder import train, predict
 from dnhacksbio.pharmacotype_data import prepare
 
 
-def run(directory, *, epochs=150, backend='numpy', device='cpu'):
+def run(directory, *, epochs=150, backend='torch', device='cuda'):
     directory = Path(directory)
     data = prepare(json.loads((directory/'development.json').read_text()))
     splits = json.loads((directory/'splits.json').read_text())
-    train_indices = [data['donors'].index(d) for d in splits['train']]
-    mean = data['y'][train_indices].mean(axis=0)
+    mean=None
     results, models = [], {}
-    kinds=('identity','pca','mlp') if backend=='numpy' else ('mlp',)
+    kinds=('identity','pca','mlp')
     for kind in kinds:
         for seed in (0,1,2):
             model = train(data,splits,kind=kind,latent=32,seed=seed,epochs=epochs,ridge=10.,backend=backend,device=device)
+            if mean is None:mean=np.asarray(model['response']['mean'])
             path=directory/f'{kind}-seed{seed}.json'
             path.write_text(json.dumps(model,allow_nan=False))
             models[(kind,seed)] = model
@@ -47,6 +47,6 @@ def run(directory, *, epochs=150, backend='numpy', device='cpu'):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data',required=True);parser.add_argument('--epochs',type=int,default=150)
-    parser.add_argument('--backend',choices=['numpy','torch'],default='numpy')
-    parser.add_argument('--device',choices=['cpu','cuda'],default='cpu')
+    parser.add_argument('--backend',choices=['numpy','torch'],default='torch')
+    parser.add_argument('--device',choices=['cpu','cuda'],default='cuda')
     args=parser.parse_args();run(args.data,epochs=args.epochs,backend=args.backend,device=args.device)

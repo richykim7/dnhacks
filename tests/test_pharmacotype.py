@@ -213,13 +213,19 @@ def test_separate_view_encoding():
     assert changed['response'] != model['response']
 
 
-def test_optional_torch_artifact_and_invalid_device():
-    _,data,model=fitted()
-    with pytest.raises(ValueError):train(data,model['splits'],device='cuda')
-    pytest.importorskip('torch')
-    learned=train(data,model['splits'],kind='mlp',epochs=5,backend='torch')
+@pytest.mark.parametrize('kind',['identity','pca','mlp'])
+def test_optional_torch_artifact_and_invalid_device(kind,monkeypatch):
+    data=prepare(document());donors=data['donors']
+    splits={'train':donors[:8],'validation':donors[8:10],'test':donors[10:]}
+    with pytest.raises(ValueError):train(data,splits,device='cuda')
+    torch=pytest.importorskip('torch')
+    if not torch.cuda.is_available():pytest.skip('CUDA fitting test requires GPU')
+    def forbidden(*args,**kwargs):raise AssertionError('CPU training kernel invoked')
+    monkeypatch.setattr(np.linalg,'svd',forbidden);monkeypatch.setattr(np.linalg,'solve',forbidden)
+    learned=train(data,splits,kind=kind,epochs=5,backend='torch',device='cuda')
     assert np.isfinite(predict(data['x'],learned)).all()
-    assert learned['resource_metrics']['device']=='cpu'
+    assert learned['resource_metrics']['fitting_device']=='cuda'
+    assert learned['resource_metrics']['host_critic_features'] is False
 
 
 def test_constant_critic_is_wealth_one_not_unavailable(tmp_path):
