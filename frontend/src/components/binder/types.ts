@@ -29,7 +29,8 @@ export type Bundle = {
     provenance: { category: string; source_ids: string[] };
     scope: Record<string, string>;
   };
-  structure: { atoms: Atom[]; residues: Residue[] };
+  structure: { atoms: Atom[]; residues: Residue[]; source_sha256: string };
+  surface_options?: Record<string, number>;
   target_chains: string[];
   binder_chains: string[];
   metrics: {
@@ -42,6 +43,14 @@ export type Bundle = {
   };
   files: Record<string, { base64: string; sha256: string }>;
 };
+export type SurfaceMesh = {
+  positions: Float32Array;
+  indices: Uint32Array;
+  normals: Float32Array;
+  sourceAtoms: Uint32Array;
+  protocol: Record<string, unknown>;
+};
+export type Representation = "atoms" | "surface" | "ribbon";
 export type Preset =
   | "hero"
   | "epitope"
@@ -72,6 +81,7 @@ export type SceneState = {
   selected: string | null;
   revision: number;
   camera?: CameraRecipe | null;
+  representation?: Representation;
 };
 export const label = (r: Residue) =>
   `${r.chain} · ${r.name} ${r.auth_seq_id}${r.insertion_code}`;

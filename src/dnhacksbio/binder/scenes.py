@@ -17,12 +17,19 @@ PRESETS = {'hero','epitope','interface-close','reverse','exploded','candidate-co
 
 
 def validate_view(view: dict, bundle: dict) -> dict:
-    if set(view) - {'preset','style','selected','camera'}:
+    if set(view) - {'preset','style','selected','camera','representation'}:
         raise ValueError('Unsupported scene fields; scientific coordinates are read-only')
     result={'preset':view.get('preset','hero'),'style':view.get('style','pearl'),
-            'selected':view.get('selected'), 'camera':view.get('camera')}
+            'selected':view.get('selected'), 'camera':view.get('camera'),
+            'representation':view.get('representation','surface' if bundle.get('surface_options') else 'atoms')}
     if result['preset'] not in PRESETS or result['style'] not in {'pearl','copper'}:
         raise ValueError('Unsupported preset or material study')
+    if result['representation'] not in {'atoms','surface','ribbon'}:raise ValueError('Unknown molecular representation')
+    if result['preset'] in {'interface-close','reverse'}:result['representation']='atoms'
+    if result['representation']=='surface' and not bundle.get('surface_options'):raise ValueError('No precomputed surface in this bundle')
+    if result['representation']=='ribbon':
+        from .surfaces import has_backbone_trace
+        if not has_backbone_trace(bundle):raise ValueError('Connected C-alpha trace unavailable on one or both chains')
     if result['selected'] is not None and result['selected'] not in {r['id'] for r in bundle['structure']['residues']}:
         raise ValueError('Unknown residue selection')
     if result['camera'] is not None:
@@ -162,7 +169,9 @@ class SceneService:
         if not 1<=width<=1920 or not 1<=height<=1080:raise ValueError('Rendered PNG dimensions exceed capture bounds')
         if state.get('bundle_sha256')!=recipe['bundle_sha256'] or any(state.get(k)!=recipe['view'][k] for k in ('preset','style','selected')):
             raise ValueError('Rendered state differs from requested source/view')
-        checked=validate_view({k:state.get(k) for k in ('preset','style','selected','camera')},bundle)
+        expected_rep=recipe['view'].get('representation','surface' if bundle.get('surface_options') else 'atoms')
+        if state.get('representation',expected_rep)!=expected_rep:raise ValueError('Rendered representation differs from requested view')
+        checked=validate_view({k:state.get(k) for k in ('preset','style','selected','camera')}|{'representation':expected_rep},bundle)
         if checked['camera'] is None or checked['camera']!=state['camera']:
             raise ValueError('Capture requires a valid actual camera')
         if state.get('physical_to_scene')!={'units':'angstrom','scale':1,'binder_offset':12 if recipe['view']['preset']=='exploded' else 0,'illustrative':recipe['view']['preset']=='exploded'}:
