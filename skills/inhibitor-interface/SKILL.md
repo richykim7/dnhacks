@@ -99,3 +99,43 @@ Operator/standalone equivalent: `python scripts/inhibitor_tool.py --trace-dir DI
 --run RUN --experiment EXP --project PROJECT --actor agent --request request.json`.
 Creating a separate demonstration investigation additionally requires
 `--create-investigation`; it never copies demo data into a production corpus.
+
+## Make a useful recording
+
+Start recording before the scientific work, not only when polishing the final
+camera. Record a view and an explanatory note when locating the reference,
+checking preparation changes, comparing independent seeds to the reference,
+examining the displaced/clashing controls, and choosing a numerical countercheck.
+Each note should explain the question, the observed result, and the next action.
+Inspect actual pixels before claiming a view is legible. Finish with the recovery
+result and its limitations, including failed recovery. Do not add redundant
+camera bookmarks just to lengthen playback or reconstruct unrecorded decisions as
+if they were historical agent actions.
+
+`describe.timeline` contains source-scoped, actor-labelled operation receipts:
+scene changes, docking jobs, captures, image observations, measurements and reviews.
+The UI plays these real operations with a continuous scrubber, pause, previous/next
+and 0.5–8× speed. Animated presentation assigns 6–10 seconds to each operation; an original-timing option preserves receipt intervals. Browser-side camera and annotation choreography is presentation only. The expandable activity list
+shows observations and evidence. Switching back to Explore restores the user's
+saved view. Atom clicks label the selection and draw coordinate-based distances;
+the measurement action also persists the scientific receipt.
+
+
+## Describe operations; let the browser animate them
+
+A real receipt drives a continuous three-phase visual sequence. Give each scene
+change a scientific purpose in its note: locate the reference, inspect a specific
+pocket, inspect preparation changes, compare a named available pose, or select a
+numerical countercheck. Supply grounded recipe fields and atom IDs through the
+normal tool. Do not send frame-by-frame camera commands or pad history with
+redundant bookmarks. The browser animates the approach, coordinate-grounded
+annotations and inspection phase deterministically, with pause/seek/speed control.
+
+Inspect the source before docking, record preparation and result comparisons when
+they are actually available, examine controls, capture and inspect the pixels,
+then measure and record the conclusion. This produces a fuller real workflow.
+Keep unsuccessful recovery visible. A search-volume scan is a presentation guide;
+pose overlays are actual discrete outputs, not a computed path through pose space.
+Image capture uses the exact pinned recipe, not a partial animation frame. Users
+can take control on pointer-down while the actual agent history continues; return
+to Follow joins the latest view from their currently displayed camera.

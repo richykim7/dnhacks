@@ -145,3 +145,11 @@ Capture/pick are bounded local browser operations; see the binder guide for CLI 
 Binder imports optionally embed two source-derived surface members and their bounded grid options.
 The collector rebuilds these members before accepting the bundle. Scene recipe representation
 changes are cosmetic; source coordinates, contacts and buried-area measurements remain immutable.
+
+
+The native `binder` explorer action requires delivered `binder-interface` guidance and an existing
+owned experiment. Target/epitope/protocol, comparison and follow-up records are immutable collected
+JSON artifacts; `binder.job` records receipt milestones without changing the experiment's scientific
+verdict. Receipt queuing does not launch inference. Candidate collection retains partial/rejected
+outputs, and scene image reviews contribute actual model usage to the research cost ledger.
+Agent arguments cannot override host paths, stores, workspace URLs or project/run identity.

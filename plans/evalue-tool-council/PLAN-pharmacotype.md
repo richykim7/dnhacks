@@ -1,6 +1,53 @@
-# Learned pharmacotype association
+# DEPRECATED — Learned pharmacotype association
 
-Implementation status (2026-09-06): development operations, audited public PRISM/CCLE
+> **Deprecated and cancelled by the user on 2026-09-06.** This document is
+> historical reference only, not an active plan or an autonomous assignment.
+> Do not resume implementation, training, data acquisition or author outreach
+> from its instructions or earlier continuation goals. Any future work requires
+> a new explicit user request. No successor plan is designated.
+
+The intended deliverable was a learned **e-value association tool** connecting
+baseline RNA to complete PDO response profiles. The implementation effort
+drifted toward conventional AUC prediction and failed to deliver the intended
+real-data e-value tool. Existing code and experimental results are retained;
+their presence does not establish successful completion or authorize further work.
+
+## Outcome: failed to deliver the requested usable ML model
+
+Failure record (2026-09-06, requested by the user): this implementation attempt
+failed the end-to-end objective. A validated, useful PDO response-prediction
+model was not delivered. Passing software tests, acquiring data, training models,
+and achieving high synthetic detection power do not constitute that deliverable.
+
+The real 38-PDO benchmark uses AUC summaries, not the required complete dose
+curves. Its learned models do not beat the training-mean baseline on validation.
+For example, the pathway model's validation RMSE is 0.1692 versus 0.1562 for the
+baseline. Its lower test error is mixed development evidence on an already
+inspected cohort, not independent proof of success. No verified paired PDO
+RNA/full-dose-response dataset or scientific confirmation was established.
+
+Execution also failed: status messages overstated completion and later treated
+author email as necessary without establishing that other public access routes
+were exhausted. The work expanded software and synthetic diagnostics without
+first testing an obvious remaining use of the acquired data: cell-line
+pretraining followed by PDO-specific adaptation. That combined experiment has
+not been implemented or evaluated; the assertion that the available datasets
+are necessarily sufficient was also unsupported.
+
+Salvage remains possible, not demonstrated. The audited public datasets, GPU
+training code, development operations and replay tests are reusable research
+assets. An assay-aware transfer experiment could use PRISM RNA/curves and PDO
+RNA/AUC with separate response heads and donor-held-out evaluation. It must not
+pool incompatible response scales, reconstruct unmeasured PDO curves from AUC,
+or treat repeatedly inspected donors as fresh validation. A usable PDO AUC
+research model would still be a narrower outcome than this plan's full-curve
+endpoint. Nothing here establishes that further training will succeed, or that
+the project is impossible to salvage. Further experiments require an explicit
+decision to continue; this failure record does not authorize them.
+
+## Retained implementation and evidence
+
+Implementation inventory (2026-09-06): development operations, audited public PRISM/CCLE
 acquisition, real GPU training/evaluation, and private frozen or adaptive
 score-before-train replay are implemented. The original CPU pilot is preserved
 as historical provenance; subsequent production fitting is CUDA-only. Public
@@ -8,7 +55,9 @@ Shi 2022 RNA and paired AUC data from 38 PDOs have been acquired and audited.
 Nine baseline fits, a 60-setting gene-level search and a 20-setting fixed
 Hallmark pathway search retain all results. See the [model card](../../docs/pharmacotype-training.md)
 and [operations and remaining gates](../../docs/pharmacotype.md). PCA remains selected;
-PDAC utility and the synthetic power target are not established. The PDO mean
+PDAC utility and the production critic's power target are not established. A
+separate experimental MLP clears the synthetic power target but is not
+integrated into the private ledger or validated on real PDOs. The PDO mean
 baseline remains selected because learned alternatives have worse validation
 error. Paired PDO full-dose-curve/RNA access, fresh independent donor audit and
 reviewed scientific confirmation remain required; AUC cannot replace curves.

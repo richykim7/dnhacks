@@ -1,5 +1,11 @@
 # Native spindle runtime review
 
+**Cortical-location erratum:** native field export subsequently showed that the
+original `placement=off` configuration left cortical motors at the origin. The
+archived image/vision workflow remains reproducible, but these early runs do not
+represent their intended cortical-localization conditions. See the
+[corrected motor-field validation](spindle-motors.md). Original receipts are preserved.
+
 The engineering pilot actually ran the pinned 3D Cytosim worker through the registered
 runtime dispatcher and published its trajectory and numerical ensemble metrics into
 its owning experiment. It used one seed, two initial centrosomes, 32 filaments per

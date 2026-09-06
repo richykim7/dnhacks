@@ -1,6 +1,42 @@
 # Protein private finite replay
 
-The implemented independent-group adapter reuses `learned_two_sample_e`, its bounded
+## Frozen witness integration
+
+`protein-group-frozen-linear-v1` implements the actual externally fitted affine
+witness through the same production odd-contrast kernel and private ledger. It
+retains16 unscored burn-in pairs and the48-pair minimum; all later pairs are scored
+in blocks of up to8, including a partial final block. No coefficient, scale,
+threshold or critic is fitted on submitted confirmation data. Small CPU scoring
+uses float64; this is inference, not a CPU training fallback.
+
+Use `native_group_replay.witness_from_artifact(path)` to load the saved module
+coefficients, intercept and ordered symbols from the actual portable power-study
+artifact with pickle disabled. The resulting witness also contains its source
+artifact SHA256. In the frozen specification, replace `max_epochs` with `witness`
+and set `model_hash = native_evidence.digest(witness)`. This semantic model hash
+binds exact coefficients, intercept, feature order and source artifact. Every input
+group must additionally declare the identical ordered `feature_ids`; mismatched
+orders/dimensions are rejected. Values must be finite in the coordinates for which
+the coefficients were fitted. Any source-only imputation/assay mapping belongs in
+the frozen preprocessing review; do not standardize these values a second time.
+
+The private power attestation must identify `method: protein-group-frozen-linear-v1`
+and reference this semantic model hash, the witness
+artifact SHA256 (`witness_artifact_sha256`), the matching `preprocessing_hash`,
+`minimum_effect: 0.4`, `stopping_rule: final`, and `burn_in_pairs: 16`, in addition
+to the existing sample-budget, null and power requirements. A kernel model's hash
+or an anytime-power result cannot authorize this module's final-wealth process.
+These are still trusted operator attestations requiring independent review; the
+schema does not authenticate a reviewer or establish real cohort eligibility.
+
+Both methods use the existing receipt-only HTTP envelope and one shared donor
+consumption table. Switching method, witness or alias cannot reuse consumed donors.
+An interrupted full replay rolls back atomically; a committed retry exports the
+same final wealth. Frozen reports record the exact burned/scored pairs, zero
+training updates and the bound witness identity. No append or real-data release
+is enabled by implementing this route. The original adaptive route remains supported.
+
+The original adaptive adapter reuses `learned_two_sample_e`, its bounded
 odd payoff and adaptive neural critic. Eight-pair batches and two burn-in batches
 leave 32 scored pairs from the minimum 48 independent pairs. Training uses older
 batches, validation uses the preceding batch, and scoring uses the fresh batch.

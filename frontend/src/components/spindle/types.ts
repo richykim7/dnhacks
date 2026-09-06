@@ -1,10 +1,13 @@
 export type Vec3 = [number, number, number];
+export type CorticalMotor = { id: string; position: Vec3; force_pn: Vec3 | null; filament: string | null; abscissa_um: number | null };
 export type SpindleFrame = {
+  cortical_motors?: CorticalMotor[];
   time: number;
   poles: { id: string; position: Vec3 }[];
   filaments: { id: string; pole: string; points: Vec3[] }[];
 };
 export type SpindleBundle = {
+  display_sampling?: { schema: "spindle_display_sampling.v1"; source_trajectory_sha256: string; source_frame_counts: number[]; source_frame_indices: number[][]; method: string };
   schema_version: 1;
   dimensionality: 2 | 3;
   category: "illustration" | "simulation";
@@ -63,6 +66,17 @@ export function validateBundle(value: unknown): SpindleBundle {
       )
         throw Error("Invalid sampled frame");
       previous = f.time;
+      if (f.cortical_motors != null) {
+        if (!Array.isArray(f.cortical_motors) || f.cortical_motors.length > 1000) throw Error("Invalid motor field");
+        const motorIds = new Set<string>();
+        for (const m of f.cortical_motors) {
+          if (!m.id || motorIds.has(m.id) || !vector(m.position)) throw Error("Invalid cortical motor");
+          motorIds.add(m.id);
+          if (m.filament == null) {
+            if (m.force_pn !== null || m.abscissa_um !== null) throw Error("Unbound motor has bound measurements");
+          } else if (!f.filaments.some(x => x.id === m.filament) || !vector(m.force_pn!) || !Number.isFinite(m.abscissa_um)) throw Error("Invalid bound motor");
+        }
+      }
       const ids = new Set(f.poles.map((p) => p.id));
       if (ids.size !== f.poles.length) throw Error("Duplicate pole identity");
       for (const p of f.poles)
@@ -89,6 +103,20 @@ export function validateBundle(value: unknown): SpindleBundle {
         }
       }
     }
+  }
+  const sampling = b.display_sampling;
+  if (sampling != null) {
+    if (sampling.schema !== "spindle_display_sampling.v1" || !/^[a-f0-9]{64}$/.test(sampling.source_trajectory_sha256)
+      || typeof sampling.method !== "string" || !Array.isArray(sampling.source_frame_counts)
+      || !Array.isArray(sampling.source_frame_indices) || sampling.source_frame_counts.length !== b.runs.length
+      || sampling.source_frame_indices.length !== b.runs.length) throw Error("Invalid display sampling manifest");
+    b.runs.forEach((run, r) => {
+      const count = sampling.source_frame_counts[r], indices = sampling.source_frame_indices[r];
+      if (!Number.isInteger(count) || count < 1 || count > 2000 || !Array.isArray(indices)
+        || indices.length !== run.frames.length || indices[0] !== 0 || indices.at(-1) !== count - 1
+        || indices.some((n, i) => !Number.isInteger(n) || n < 0 || n >= count || (i > 0 && n <= indices[i - 1])))
+        throw Error("Invalid source frame mapping");
+    });
   }
   return b;
 }

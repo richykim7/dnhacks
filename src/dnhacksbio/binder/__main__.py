@@ -33,8 +33,10 @@ def dispatch(request):
     if action=='binder.plan_design':return plan_design(**args)
     if action=='binder.compare':return compare(**args)
     if action=='binder.propose_followup':return propose_followup(**args)
-    if action in {'binder.start_design','binder.collect_candidates','binder.cancel'}:
+    if action in {'binder.start_design','binder.collect_candidates','binder.cancel','binder.recover','binder.attach_candidate'}:
         store=DesignStore(request['store'])
+        if action=='binder.attach_candidate':
+            args={**args};args['bundle_raw']=Path(args.pop('bundle_path')).read_bytes()
         return getattr(store,action.split('.')[1])(**args)
     raise ValueError('Unknown binder operation; execution is an operator-side adapter action')
 
@@ -44,7 +46,7 @@ def main():
     parser.add_argument('request',type=Path);parser.add_argument('--output',type=Path)
     args=parser.parse_args()
     try:result={'ok':True,'output':dispatch(json.loads(args.request.read_text()))}
-    except (ValueError,KeyError,FileNotFoundError) as exc:result={'ok':False,'error':str(exc)}
+    except (ValueError,KeyError,FileNotFoundError,RuntimeError,TimeoutError) as exc:result={'ok':False,'error':str(exc)}
     raw=canonical(result)
     if args.output:args.output.write_bytes(raw)
     else:print(raw.decode())

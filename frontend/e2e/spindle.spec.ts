@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { test, expect, type Page } from "@playwright/test";
 import { mockApi, investigation } from "./fixtures";
 import type { SpindleBundle, Vec3 } from "../src/components/spindle/types";
@@ -70,14 +71,18 @@ function fixture(): SpindleBundle {
             };
           }),
         );
-        return { time: t * 5, poles, filaments };
+        return { time: t * 5, poles, filaments, cortical_motors: [
+          { id: "M1", position: [12, 0, 0] as Vec3, filament: "C1-f0", force_pn: [.1, .2, .3] as Vec3, abscissa_um: 1 },
+          { id: "M2", position: [0, 9, 0] as Vec3, filament: null, force_pn: null, abscissa_um: null },
+        ] };
       }),
     })),
   };
 }
-async function openSpindle(page: Page) {
+async function openSpindle(page: Page, withMovie = false) {
   await mockApi(page);
   const root = investigation.root;
+  const movieBytes = withMovie ? readFileSync(new URL("../../docs/spindle-review/movie.webm", import.meta.url)) : null;
   const rawBundle = JSON.stringify(fixture());
   const sha = createHash("sha256").update(rawBundle).digest("hex");
   const raw = [
@@ -106,6 +111,7 @@ async function openSpindle(page: Page) {
       },
     ],
   ];
+  if (movieBytes) raw.push(["artifact", { artifact_id:"movie",sha256:createHash("sha256").update(movieBytes).digest("hex"),name:"Native movie playback fixture",kind:"scene_movie",status:"available",storage_key:"movie",provenance:{category:"illustration"} }]);
   const events = raw.map(([kind, payload], i) => ({
     schema_version: 1,
     sequence: i + 1,
@@ -123,6 +129,7 @@ async function openSpindle(page: Page) {
   );
   await page.route("**/api/runtime/**", (r) => {
     const u = new URL(r.request().url());
+    if (movieBytes && u.pathname.endsWith("/blob/movie")) return r.fulfill({ body:movieBytes,contentType:"video/webm" });
     if (u.pathname.includes("/blob/"))
       return r.fulfill({ body: rawBundle, contentType: "application/json" });
     if (u.pathname.endsWith("/events"))
@@ -223,6 +230,8 @@ test("spindle controller freezes comparison cameras and restores context", async
   expect(state.comparison.physical_time_s).toBe(50);
   expect(state.camera.position).toEqual(state.comparison.camera.position);
   expect(state.poles[0].id).toBe("C1");
+  expect(state.cortical_motors[0].force_pn).toEqual([.1, .2, .3]);
+  await expect(scene.locator(".spindle-caption")).toContainText("2 cortical motors · 1 bound");
   await stage.screenshot({ path: test.info().outputPath("spindle-scenes-comparison.png") });
   await scene
     .locator("canvas").nth(1)
@@ -233,4 +242,53 @@ test("spindle controller freezes comparison cameras and restores context", async
   await page.getByRole("button", { name: "Restore spindle scene" }).click();
   await expect(scene).toHaveAttribute("data-scene-ready", "true");
   await expect(page.locator(".spindle-readout")).toContainText("C1");
+});
+
+
+test("saved spindle movie decodes inline and respects the history cursor", async ({page}) => {
+  await openSpindle(page, true);
+  await page.getByRole("button", {name:"Close expanded view"}).click();
+  const movie = page.getByLabel("Saved spindle trajectory movie");
+  await movie.scrollIntoViewIfNeeded();
+  await expect(movie).toBeVisible();
+  await page.waitForFunction(() => (document.querySelector('video[aria-label="Saved spindle trajectory movie"]') as HTMLVideoElement)?.readyState >= 1);
+  expect(await movie.evaluate((v:HTMLVideoElement) => v.duration)).toBeCloseTo(1.1,1);
+  await movie.evaluate((v:HTMLVideoElement) => v.play());
+  await page.waitForFunction(() => (document.querySelector('video[aria-label="Saved spindle trajectory movie"]') as HTMLVideoElement)?.currentTime > .5);
+  await movie.evaluate((v:HTMLVideoElement) => v.pause());
+  await page.getByLabel("Activity playback position").fill("4");
+  await expect(movie).toHaveCount(0);
+});
+
+for (const failure of ["missing", "corrupt"] as const) {
+  test(`spindle ${failure} artifact is explicit and cannot render stale geometry`, async ({ page }) => {
+    await openSpindle(page);
+    await page.route("**/api/runtime/**/blob/**", route => failure === "missing"
+      ? route.fulfill({ status: 404, json: { error: "Missing saved artifact" } })
+      : route.fulfill({ body: '{"changed":true}', contentType: "application/json" }));
+    await page.reload();
+    await page.getByRole("tablist", { name: "Investigation view" })
+      .getByRole("tab", { name: "Experiments", exact: true }).click();
+    await page.getByRole("button", { name: /Spindle visual development/ }).click();
+    await expect(page.getByRole("alert")).toContainText(failure === "missing" ? "Spindle artifact unavailable" : "hash");
+    await expect(page.locator(".spindle-stage canvas")).toHaveCount(0);
+  });
+}
+
+test("mobile spindle comparison toggles full-size cells without changing physical time or camera", async ({page})=>{
+  await openSpindle(page);
+  const stage=page.locator(".spindle-stage");
+  await stage.evaluate(async el=>{const c=(el as any).spindleController;await c.apply({frame:12,compare:1});await c.ready();});
+  await page.setViewportSize({width:390,height:844});
+  await stage.evaluate(async el=>await (el as any).spindleController.ready());
+  const before=await stage.evaluate(el=>(el as any).spindleController.inspect());
+  await page.getByRole("button",{name:"View comparison run"}).click();
+  const after=await stage.evaluate(el=>(el as any).spindleController.inspect());
+  expect(after.mobile_visible_run).toBe(1);expect(after.physical_time_s).toBe(before.physical_time_s);
+  expect(after.camera).toEqual(before.camera);expect(after.comparison.camera).toEqual(before.comparison.camera);
+  const boxes=await stage.locator("canvas").evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));
+  expect(boxes[0]).toBeGreaterThan(300);expect(boxes[1]).toBeCloseTo(boxes[0]);
+  await expect(stage.locator('.spindle-cell').first()).toHaveAttribute('aria-hidden','true');
+  await page.getByRole("button",{name:"View selected run"}).click();
+  await expect(stage.locator('.spindle-cell').first()).toHaveAttribute('aria-hidden','false');
 });

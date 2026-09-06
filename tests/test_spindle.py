@@ -132,7 +132,22 @@ def test_real_cytosim_pilot_when_operator_build_available(tmp_path):
     entry=next(a for a in result['artifacts'] if a['name']=='trajectory.json')
     b=validate(store.read_blob(receipt,scope,entry['hash']))
     assert len(b['runs'])==2
-    assert b['runs'][0]['frames'][0]==b['runs'][1]['frames'][0]
+    for field in ('time','poles','filaments'):
+        assert b['runs'][0]['frames'][0][field]==b['runs'][1]['frames'][0][field]
+    assert b['runs'][0]['frames'][0]['cortical_motors']==[]
+    assert len(b['runs'][1]['frames'][0]['cortical_motors'])==8
+    # A native placement regression previously left fixed motors at the origin.
+    from dnhacksbio.spindle.cytosim import export_run
+    run_dir=store.root/'runs'/receipt/'41-1'
+    anchors=run_dir/'motor-anchors.txt'
+    lines=anchors.read_text().splitlines()
+    for i,line in enumerate(lines):
+        if line.strip() and not line.lstrip().startswith('%'):
+            row=line.split();row[2:5]=['0','0','0'];lines[i]=' '.join(row);break
+    anchors.write_text('\n'.join(lines)+'\n')
+    with pytest.raises(ValueError,match='prescribed surface'):
+        export_run(run_dir,protocol(),protocol()['conditions'][1],41)
+
     assert any(p['position'][2]!=0 for p in b['runs'][0]['frames'][-1]['poles'])
     with pytest.raises(ValueError):store.execute(receipt,scope,sim=sim,report=report,build_manifest=build)
 
@@ -286,3 +301,71 @@ def test_pending_native_queue_is_bounded(tmp_path):
     store=SpindleStore(tmp_path);scope={'project_id':'p','run_id':'r','experiment_id':'e'}
     for i in range(4):store.run_spindle_experiment(protocol(),scope=scope,idempotency_key=str(i),budget={'wall_seconds':1,'artifact_bytes':10000})
     with pytest.raises(ValueError,match='queue is full'):store.run_spindle_experiment(protocol(),scope=scope,idempotency_key='extra',budget={'wall_seconds':1,'artifact_bytes':10000})
+
+
+def test_motor_fields_are_scoped_finite_and_lossless():
+    from dnhacksbio.spindle.chunks import encode_frame,decode_frame
+    b=bundle();f=b['runs'][0]['frames'][0]
+    f['filaments']=[{'id':'f','pole':'0','points':[[0,0,0],[1,0,0]]}]
+    f['cortical_motors']=[{'id':'m','position':[0,1,0],'filament':'f','force_pn':[.12345678901234567,0,0],'abscissa_um':.5}]
+    validate(json.dumps(b).encode())
+    metadata,raw=encode_frame(f)
+    assert decode_frame(metadata,raw)==f
+    f['cortical_motors'][0]['filament']='missing'
+    with pytest.raises(ValueError,match='filament'):validate(json.dumps(b).encode())
+    f['cortical_motors'][0]['filament']=None
+    with pytest.raises(ValueError,match='Unbound'):validate(json.dumps(b).encode())
+
+
+def test_failed_vision_cannot_create_a_visual_verdict(tmp_path,monkeypatch):
+    import asyncio
+    import dnhacksbio.llm
+    service,key=spindle_scene(tmp_path)
+    opened=service.open_scene(key)
+    capture=service.capture_scene(opened['recipe_sha256'],spindle_renderer,viewport=[320,320])
+    async def unavailable(*args,**kwargs):raise RuntimeError('Provider quota exhausted')
+    monkeypatch.setattr(dnhacksbio.llm,'acomplete',unavailable)
+    with pytest.raises(RuntimeError,match='no observation recorded'):
+        asyncio.run(service.inspect_scene_capture(capture['capture_id'],question='Check visibility'))
+    assert any(e['kind']=='scene.review.failed' for e in service.history())
+    assert not any(e['kind']=='scene.review' for e in service.history())
+
+
+def spindle_movie_renderer(request):
+    import base64
+    result=spindle_renderer(request);shots=[]
+    for i,frame in enumerate(request['movie']['frames']):
+        changed=copy.deepcopy(request);changed['recipe']['view']['frame']=frame
+        state=spindle_renderer(changed)['state']
+        shots.append({'frame':frame,'presentation_time_s':i/request['movie']['fps'],'state':state})
+    # Encoder is mocked here; the actual native export is decoded separately.
+    result['movie']={'bytes':base64.b64encode(bytes.fromhex('1a45dfa3')+b'unit-encoder').decode(),
+        'frames':shots,'fps':request['movie']['fps'],'duration_s':len(shots)/request['movie']['fps'],
+        'interpolation':'none','camera':result['state']['camera'],'render_p95_ms':1}
+    return result
+
+
+def test_movie_scoping_mime_cursor_and_physical_frame_integrity(tmp_path,monkeypatch):
+    from dnhacksbio.webui import runtime as api
+    service,key=spindle_scene(tmp_path);opened=service.open_scene(key)
+    result=service.export_scene_movie(opened['recipe_sha256'],[0,1,2],10,spindle_movie_renderer)
+    monkeypatch.setattr(api,'journal',lambda:service.journal)
+    class Handler:
+        def _project_arg(self,qs):return 'p'
+        def _send_bytes(self,raw,media):return raw,media
+    raw,media=api.handle(Handler(),'r/blob/'+result['movie_sha256'],{})
+    assert media=='video/webm' and raw.startswith(bytes.fromhex('1a45dfa3'))
+    assert api.handle(Handler(),'r/blob/'+result['manifest_sha256'],{})[0]
+    with pytest.raises(FileNotFoundError):
+        api.handle(Handler(),'r/blob/'+result['movie_sha256'],{'through':[str(result['sequence']-1)]})
+    service.journal.register('other','Another experiment',project='p')
+    with pytest.raises(FileNotFoundError):api.handle(Handler(),'other/blob/'+result['movie_sha256'],{})
+    def wrong_time(request):
+        rendered=spindle_movie_renderer(request)
+        rendered['movie']['frames'][1]['state']['physical_time_s']+=1
+        return rendered
+    with pytest.raises(ValueError,match='physical frame'):
+        service.export_scene_movie(opened['recipe_sha256'],[0,1,2],10,wrong_time)
+    with pytest.raises(ValueError,match='increasing'):
+        service.export_scene_movie(opened['recipe_sha256'],[0,0],10,spindle_movie_renderer)
+    assert sum(e['kind']=='artifact' and e['payload'].get('kind')=='scene_movie' for e in service.history())==1

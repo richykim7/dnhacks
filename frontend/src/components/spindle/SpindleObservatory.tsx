@@ -22,6 +22,13 @@ export default function SpindleObservatory({
   sha256?: string;
   sceneActions?: SceneAction[];
 }) {
+  const [small, setSmall] = useState(() => matchMedia("(max-width:600px)").matches);
+  const [mobileSide, setMobileSide] = useState(0);
+  const presentationRef=useRef({small,mobileSide});presentationRef.current={small,mobileSide};
+  useEffect(() => {
+    const query=matchMedia("(max-width:600px)"); const update=()=>setSmall(query.matches);
+    query.addEventListener("change",update);return()=>query.removeEventListener("change",update);
+  },[]);
   const [bundle, setBundle] = useState<SpindleBundle>(),
     [error, setError] = useState(""),
     [expanded, setExpanded] = useState(false),
@@ -110,9 +117,8 @@ export default function SpindleObservatory({
         setReadyRevision(-1);
         setMode("explore");
         setRecipe((r) => ({ ...r, ...view, revision: r.revision + 1 }));
-        await new Promise((r) =>
-          requestAnimationFrame(() => requestAnimationFrame(r)),
-        );
+        // ready() owns completion; do not add two unconditional display intervals.
+        await Promise.resolve();
       },
       ready: async () => {
         const deadline = performance.now() + 30000;
@@ -140,6 +146,7 @@ export default function SpindleObservatory({
         ...actual.current,
         bundle_sha256: sha256,
         compare: stateRef.current.compare ?? null,
+        mobile_visible_run: presentationRef.current.small ? (presentationRef.current.mobileSide && stateRef.current.compare != null ? stateRef.current.compare : stateRef.current.run) : null,
         comparison:
           stateRef.current.compare == null ? null : otherActual.current,
         viewport:
@@ -290,6 +297,7 @@ export default function SpindleObservatory({
           {expanded ? "Close expanded view" : "Expand scene"}
         </button>
       </header>
+      {bundle.display_sampling && <p className="spindle-sampling">Display: {run.frames.length} of {bundle.display_sampling.source_frame_counts[recipe.run]} saved frames. Ensemble metrics use the full scientific trajectory.</p>}
       {sceneActions.length > 0 && (
         <div className="spindle-toolbar" aria-label="Recorded scene actions">
           <button onClick={() => setMode("follow")}>Follow agent</button>
@@ -333,12 +341,17 @@ export default function SpindleObservatory({
           </button>
         </p>
       )}
+      {small && otherRun && <div className="spindle-mobile-switch" aria-label="Mobile condition view">
+        <button aria-pressed={mobileSide===0} onClick={()=>setMobileSide(0)} aria-label="View selected run">Selected run</button>
+        <button aria-pressed={mobileSide===1} onClick={()=>setMobileSide(1)} aria-label="View comparison run">Comparison run</button>
+      </div>}
       <div
         className={`spindle-stage ${otherRun ? "spindle-comparison" : ""}`}
         ref={stage}
+        data-mobile-side={mobileSide}
         onContextMenu={(e) => e.preventDefault()}
       >
-        <div className="spindle-cell">
+        <div className="spindle-cell" aria-hidden={small && recipe.compare != null && mobileSide === 1}>
           <SpindleScene
             key={generation}
             bundle={bundle}
@@ -349,7 +362,7 @@ export default function SpindleObservatory({
           />
         </div>
         {otherRun && (
-          <div className="spindle-cell">
+          <div className="spindle-cell" aria-hidden={small && mobileSide === 0}>
             <SpindleScene
               key={`comparison-${generation}`}
               bundle={bundle}
@@ -370,6 +383,7 @@ export default function SpindleObservatory({
               <strong>
                 {otherRun.frames[otherFrame].poles.length} centrosomes
               </strong>
+              {otherRun.frames[otherFrame].cortical_motors && <span>{otherRun.frames[otherFrame].cortical_motors!.length} cortical motors · {otherRun.frames[otherFrame].cortical_motors!.filter(m => m.filament != null).length} bound</span>}
               <span>
                 {otherRun.frames[otherFrame].time.toFixed(2)} s · saved physical
                 time
@@ -388,12 +402,14 @@ export default function SpindleObservatory({
           <br />
           Pearl: centrosomes · Cyan: filaments
           {recipe.trails ? " · Amber: pole tracks" : ""}
+          {frame.cortical_motors && <><br />Gold dots: native cortical anchors</>}
         </div>
         <div className="spindle-caption">
           <span>
             {run.condition} · seed {run.seed}
           </span>
           <strong>{frame.poles.length} centrosomes</strong>
+          {frame.cortical_motors && <span>{frame.cortical_motors.length} cortical motors · {frame.cortical_motors.filter(m => m.filament != null).length} bound</span>}
           <span>{frame.time.toFixed(2)} s · saved physical time</span>
         </div>
       </div>
@@ -528,6 +544,14 @@ export default function SpindleObservatory({
           µm
         </p>
       )}
+      {frame.cortical_motors && <details>
+        <summary>Cortical motor measurements · {frame.cortical_motors.length} anchors</summary>
+        <p>Saved anchor coordinates in µm; force vector in pN. Unbound motors have no bound-filament force measurement.</p>
+        <div style={{ maxHeight: 260, overflow: "auto" }}>
+          <table><thead><tr><th>Motor</th><th>Anchor (µm)</th><th>Filament</th><th>Force (pN)</th></tr></thead>
+            <tbody>{frame.cortical_motors.map(m => <tr key={m.id}><td>{m.id}</td><td>{m.position.map(x => x.toFixed(3)).join(", ")}</td><td>{m.filament ?? "Unbound"}</td><td>{m.force_pn?.map(x => x.toFixed(4)).join(", ") ?? "Unavailable"}</td></tr>)}</tbody></table>
+        </div>
+      </details>}
       <details>
         <summary>Trajectory & presentation</summary>
         <p>

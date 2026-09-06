@@ -1,0 +1,184 @@
+{
+  "capture_id": "9d9ccc55839223e7d769a2c8e48bcf102413b813044dcb338c8a5f4c6d80dcde",
+  "image_sha256": "18a1ba89c2305526be889ef79939a06a249312ba4b54e6bea2ff7d50008c3164",
+  "recipe_sha256": "35630401a3d6ad2e5f339292ba0bb7186a350c9d691ccaa357bdeb25b54468d9",
+  "sequence": 18,
+  "state": {
+    "representation": "surface",
+    "representation_protocol": {
+      "target": {
+        "envelope": "union of heavy-atom spheres; visualization only",
+        "grid_shape": [
+          48,
+          40,
+          47
+        ],
+        "grid_spacing_angstrom": 0.8,
+        "hausdorff_bound": "not established",
+        "max_vertex_field_residual_angstrom": 0.4392858140979907,
+        "method": "marching-tetrahedra.v1",
+        "probe_angstrom": 1.4,
+        "radii_angstrom": {
+          "Br": 1.85,
+          "C": 1.7,
+          "Cl": 1.75,
+          "D": 1.2,
+          "F": 1.47,
+          "H": 1.2,
+          "I": 1.98,
+          "N": 1.55,
+          "O": 1.52,
+          "P": 1.8,
+          "S": 1.8
+        },
+        "requested_spacing_angstrom": 0.8,
+        "simplification": "none",
+        "topology_guarantee": false,
+        "whole_triangle_field_residual_bound_angstrom": 1.8191452985763923,
+        "shading": "Gaussian blend of source sphere normals, width0.6\u00c5; mesh coordinates unchanged",
+        "gpu_position_precision": "float32"
+      },
+      "binder": {
+        "envelope": "union of heavy-atom spheres; visualization only",
+        "grid_shape": [
+          48,
+          40,
+          47
+        ],
+        "grid_spacing_angstrom": 0.8,
+        "hausdorff_bound": "not established",
+        "max_vertex_field_residual_angstrom": 0.43928581409799117,
+        "method": "marching-tetrahedra.v1",
+        "probe_angstrom": 1.4,
+        "radii_angstrom": {
+          "Br": 1.85,
+          "C": 1.7,
+          "Cl": 1.75,
+          "D": 1.2,
+          "F": 1.47,
+          "H": 1.2,
+          "I": 1.98,
+          "N": 1.55,
+          "O": 1.52,
+          "P": 1.8,
+          "S": 1.8
+        },
+        "requested_spacing_angstrom": 0.8,
+        "simplification": "none",
+        "topology_guarantee": false,
+        "whole_triangle_field_residual_bound_angstrom": 1.8191452985763925,
+        "shading": "Gaussian blend of source sphere normals, width0.6\u00c5; mesh coordinates unchanged",
+        "gpu_position_precision": "float32"
+      }
+    },
+    "picking_definition": "source atom associated with nearest intersected triangle vertex",
+    "camera": {
+      "position": [
+        37.55472901858934,
+        25.177267730219427,
+        68.44053220924759
+      ],
+      "quaternion": [
+        -0.11226378633582956,
+        0.13520429588974708,
+        0.015420392857087167,
+        0.9843164390248867
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "target": [
+        20.0935,
+        10.2105,
+        6.078999999999999
+      ],
+      "projection": "PerspectiveCamera",
+      "fov": 38,
+      "near": 0.1,
+      "far": 2000
+    },
+    "renderer": {
+      "type": "WebGL2",
+      "three": "180",
+      "device": "WebKit WebGL"
+    },
+    "visible_residue_ids": [
+      "[\"A\",35,\"\",\"\",null]",
+      "[\"A\",36,\"\",\"\",null]",
+      "[\"A\",39,\"\",\"\",null]",
+      "[\"A\",40,\"\",\"\",null]",
+      "[\"B\",5,\"\",\"\",null]",
+      "[\"B\",24,\"\",\"\",null]",
+      "[\"B\",28,\"\",\"\",null]"
+    ],
+    "occlusion_fractions": {
+      "[\"A\",1,\"\",\"\",null]": 1,
+      "[\"A\",2,\"\",\"\",null]": 1,
+      "[\"A\",3,\"\",\"\",null]": 1,
+      "[\"A\",10,\"\",\"\",null]": 1,
+      "[\"A\",35,\"\",\"\",null]": 0.25,
+      "[\"A\",36,\"\",\"\",null]": 0.2857142857142857,
+      "[\"A\",37,\"\",\"\",null]": 1,
+      "[\"A\",38,\"\",\"\",null]": 1,
+      "[\"A\",39,\"\",\"\",null]": 0.1428571428571429,
+      "[\"A\",40,\"\",\"\",null]": 0.8333333333333334,
+      "[\"B\",5,\"\",\"\",null]": 0.5714285714285714,
+      "[\"B\",24,\"\",\"\",null]": 0.8,
+      "[\"B\",25,\"\",\"\",null]": 1,
+      "[\"B\",26,\"\",\"\",null]": 1,
+      "[\"B\",27,\"\",\"\",null]": 1,
+      "[\"B\",28,\"\",\"\",null]": 0.5714285714285714,
+      "[\"B\",29,\"\",\"\",null]": 1,
+      "[\"B\",30,\"\",\"\",null]": 1,
+      "[\"B\",31,\"\",\"\",null]": 1,
+      "[\"B\",32,\"\",\"\",null]": 1
+    },
+    "physical_to_scene": {
+      "units": "angstrom",
+      "scale": 1,
+      "binder_offset": 0,
+      "illustrative": false
+    },
+    "frame_times_ms": [
+      53.30000019073486,
+      132,
+      48.89999985694885,
+      39.90000009536743,
+      45.700000047683716,
+      119,
+      117,
+      135.79999995231628,
+      47.5,
+      132.59999990463257,
+      108.10000014305115,
+      60.19999980926514,
+      83.30000019073486,
+      54.89999985694885,
+      57.5,
+      50,
+      64.29999995231628,
+      66.30000019073486,
+      51.39999985694885,
+      46.60000014305115,
+      52.39999985694885,
+      156.60000014305115,
+      165.59999990463257
+    ],
+    "triangles": 76442,
+    "atoms": 654,
+    "viewport": {
+      "width": 1275,
+      "height": 670,
+      "top": 176.5,
+      "left": 20,
+      "dpr": 1
+    },
+    "preset": "hero",
+    "style": "pearl",
+    "selected": null,
+    "revision": 3,
+    "bundle_sha256": "92699fd667c29651c36255ddef8a54e920ff6c451bd44532266e4798f22eb1b5"
+  }
+}

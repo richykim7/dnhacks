@@ -12,7 +12,7 @@ from pathlib import Path
 
 from .drug_response_scoring import Store as RegistryStore, canonical, digest
 from .experiment_transport import REQUEST_ID, serve
-from .native_group_replay import PrivateGroupReplayStore, canonical_inputs, runtime_hash, METHOD
+from .native_group_replay import PrivateGroupReplayStore, canonical_inputs, runtime_hash, METHOD, FROZEN_METHOD
 
 
 class EvidenceUnavailable(ValueError):
@@ -43,6 +43,14 @@ def release_check(manifest):
         if not isinstance(value, str) or len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
             raise EvidenceUnavailable("Reviewed artifact hash required")
     power = release["power_report"]
+    if manifest["spec"].get("method") == FROZEN_METHOD:
+        spec = manifest["spec"]
+        if (power.get("method") != FROZEN_METHOD or
+            power.get("witness_artifact_sha256") != spec["witness"]["artifact_sha256"] or
+            power.get("preprocessing_hash") != spec["preprocessing_hash"] or
+            power.get("minimum_effect") != .4 or power.get("stopping_rule") != "final" or
+            power.get("burn_in_pairs") != 16):
+            raise EvidenceUnavailable("Frozen witness power/processing/stopping policy mismatch")
     if (power.get("model_hash") != manifest["spec"]["model_hash"] or
         power.get("panel_hash") != manifest["spec"]["panel_hash"] or
         power.get("alpha") != .05 or power.get("null_streams", 0) < 10000 or
@@ -90,7 +98,7 @@ class Store(RegistryStore):
 
     def registration(self):
         c = self.config()
-        return {"spec": {"method": METHOD}, "input": {"manifest_sha256": c["manifest_sha256"]}}
+        return {"spec": {"method": c["manifest"]["spec"]["method"]}, "input": {"manifest_sha256": c["manifest_sha256"]}}
 
     def experiment_key(self, payload):
         m = self.config()["manifest"]

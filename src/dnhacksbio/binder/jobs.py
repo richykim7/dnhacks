@@ -116,13 +116,65 @@ class DesignStore:
             con.execute('INSERT INTO events(receipt,event_key,body) VALUES(?,?,?)',(receipt,'running',canonical({'state':'running'}).decode()))
             return json.loads(row['protocol'])
 
+    def recover(self,receipt,scope):
+        """Mark a demonstrably dead local worker interrupted; never reclaim or rerun it.
+
+        Different PID namespaces cannot establish absence. An operator must recover those
+        receipts from the original host/namespace instead of relying on an elapsed lease.
+        """
+        from dnhacksbio.explorer.runtime import process_identity
+        with self.connect() as con:
+            row=self._job(con,receipt,scope)
+            if row['status']!='running':return {'receipt':receipt,'state':row['status']}
+            here=process_identity()
+            try:
+                boot,namespace,pid,ticks=row['owner'].split('|')
+                current_boot,current_namespace,_,_=here.split('|')
+                pid=int(pid)
+                if pid<=0 or not ticks.isdigit():raise ValueError()
+            except (AttributeError,TypeError,ValueError):
+                raise ValueError('Worker process identity cannot be verified') from None
+            if boot!=current_boot:
+                raise ValueError('Original boot differs; explicit operator reconciliation required')
+            if namespace!=current_namespace:
+                raise ValueError('Recover from the original worker PID namespace')
+            actual=process_identity(pid)
+            if actual==row['owner']:
+                raise ValueError('Worker is still alive; cancel it explicitly')
+            if actual is None and Path(f'/proc/{pid}').exists():
+                raise ValueError('Worker identity inaccessible; absence is not established')
+            reason='Original local worker exited; partial outputs retained; no automatic retry'
+            con.execute("UPDATE jobs SET status='interrupted',updated=? WHERE receipt=?",(time.time(),receipt))
+            con.execute('INSERT INTO events(receipt,event_key,body) VALUES(?,?,?)',
+                        (receipt,'terminal',canonical({'state':'interrupted','reason':reason}).decode()))
+            return {'receipt':receipt,'state':'interrupted'}
+
+    def attach_candidate(self,receipt,scope,bundle_raw:bytes,*,mapping_review,rejection_reason=None):
+        """Attach explicitly reviewed raw output after generation ends, including partial failures."""
+        return self._publish_candidate(receipt,scope,None,bundle_raw,rejection_reason=rejection_reason,
+                                       mapping_review=mapping_review)
+
     def candidate(self,receipt,scope,owner,bundle_raw:bytes,*,rejection_reason=None):
+        return self._publish_candidate(receipt,scope,owner,bundle_raw,rejection_reason=rejection_reason)
+
+    def _publish_candidate(self,receipt,scope,owner,bundle_raw:bytes,*,rejection_reason=None,mapping_review=None):
         from .bundle import validate_bundle
         bundle=validate_bundle(bundle_raw,scope);key=digest(bundle_raw)
         with self.connect() as con:
             row=self._job(con,receipt,scope)
-            if row['status']!='running' or row['owner']!=owner:raise ValueError('Worker no longer owns running job')
             protocol=json.loads(row['protocol'])
+            if mapping_review is None:
+                if row['status']!='running' or row['owner']!=owner:raise ValueError('Worker no longer owns running job')
+            else:
+                if row['status'] not in TERMINAL:raise ValueError('Mapped import requires a terminal generator receipt')
+                if not isinstance(mapping_review,dict) or set(mapping_review)!={'source_sha256','target_sha256','policy'}:
+                    raise ValueError('Explicit source/target mapping review required')
+                if (mapping_review['source_sha256']!=bundle['structure']['source_sha256'] or
+                    mapping_review['target_sha256']!=protocol['target_sha256'] or
+                    not isinstance(mapping_review['policy'],str) or not 1<=len(mapping_review['policy'].strip())<=2000):
+                    raise ValueError('Mapping review source/target identity mismatch')
+            if rejection_reason is not None and (not isinstance(rejection_reason,str) or not 1<=len(rejection_reason.strip())<=2000):
+                raise ValueError('Rejection reason must be a concise nonempty string')
             if bundle['protocol']!=protocol:raise ValueError('Candidate protocol mismatch')
             event_key='candidate:'+key
             if con.execute('SELECT 1 FROM events WHERE receipt=? AND event_key=?',(receipt,event_key)).fetchone():return key
@@ -140,16 +192,17 @@ class DesignStore:
                     import os
                     os.fsync(f.fileno())
             body={'state':'candidate','bundle_sha256':key,'byte_length':len(bundle_raw),
-                  'candidate_id':bundle['manifest']['candidate_id'],'rejection_reason':rejection_reason}
+                  'candidate_id':bundle['manifest']['candidate_id'],'rejection_reason':rejection_reason,
+                  'mapping_review':mapping_review,'generator_state':row['status']}
             con.execute('INSERT INTO events(receipt,event_key,body) VALUES(?,?,?)',(receipt,event_key,canonical(body).decode()))
         return key
 
-    def finish(self,receipt,scope,owner,state,reason):
+    def finish(self,receipt,scope,owner,state,reason,*,preserve_terminal=False):
         if state not in TERMINAL or not reason:raise ValueError('Explicit terminal state and reason required')
         with self.connect() as con:
             row=self._job(con,receipt,scope)
             if row['status'] in TERMINAL:
-                if row['status']==state:return
+                if row['status']==state or preserve_terminal:return
                 raise ValueError('Terminal state immutable')
             if row['owner']!=owner:raise ValueError('Worker identity mismatch')
             con.execute('UPDATE jobs SET status=?,updated=? WHERE receipt=?',(state,time.time(),receipt))

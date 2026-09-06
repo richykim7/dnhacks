@@ -16,11 +16,13 @@ from .geometry import canonical, digest
 PRESETS = {'hero','epitope','interface-close','reverse','exploded','candidate-compare','small-screen'}
 
 
-def validate_view(view: dict, bundle: dict) -> dict:
-    if set(view) - {'preset','style','selected','camera','representation'}:
+def validate_view(view: dict, bundle: dict, comparison: dict | None = None) -> dict:
+    if set(view) - {'preset','style','selected','camera','representation','comparison_bundle_sha256','comparison_selected'}:
         raise ValueError('Unsupported scene fields; scientific coordinates are read-only')
     result={'preset':view.get('preset','hero'),'style':view.get('style','pearl'),
             'selected':view.get('selected'), 'camera':view.get('camera'),
+            'comparison_bundle_sha256':view.get('comparison_bundle_sha256'),
+            'comparison_selected':view.get('comparison_selected'),
             'representation':view.get('representation','surface' if bundle.get('surface_options') else 'atoms')}
     if result['preset'] not in PRESETS or result['style'] not in {'pearl','copper'}:
         raise ValueError('Unsupported preset or material study')
@@ -32,12 +34,23 @@ def validate_view(view: dict, bundle: dict) -> dict:
         if not has_backbone_trace(bundle):raise ValueError('Connected C-alpha trace unavailable on one or both chains')
     if result['selected'] is not None and result['selected'] not in {r['id'] for r in bundle['structure']['residues']}:
         raise ValueError('Unknown residue selection')
+    if result['comparison_bundle_sha256'] is not None:
+        if comparison is None:raise ValueError('Comparison source must be resolved in the owning experiment')
+        validate_view({'preset':result['preset'],'style':result['style'],'selected':result['comparison_selected'],
+                       'representation':result['representation']},comparison)
+    elif result['comparison_selected'] is not None:
+        raise ValueError('Comparison selection requires a second source')
     if result['camera'] is not None:
         c=result['camera']
-        if set(c)-{'position','target','up','fov','near','far','projection','zoom','quaternion'}:
+        if set(c)-{'position','target','up','fov','near','far','projection','zoom','quaternion','height'}:
             raise ValueError('Unsupported camera field')
-        if c.get('projection','PerspectiveCamera')!='PerspectiveCamera':
-            raise ValueError('Only perspective camera replay currently supported')
+        orthographic=c.get('projection')=='OrthographicCamera'
+        if c.get('projection','PerspectiveCamera') not in {'PerspectiveCamera','OrthographicCamera'}:
+            raise ValueError('Unsupported camera projection')
+        if orthographic:
+            if type(c.get('height')) not in (int,float) or not math.isfinite(c['height']) or not .01<=c['height']<=10000:
+                raise ValueError('Orthographic camera requires a bounded height in angstroms')
+        elif 'height' in c:raise ValueError('Camera height requires orthographic projection')
         for key in ('position','target',*(['up'] if 'up' in c else [])):
             if not isinstance(c.get(key),list) or len(c[key])!=3 or any(type(v) not in (int,float) or not math.isfinite(v) or abs(v)>1e6 for v in c[key]):
                 raise ValueError('Finite camera position and target required')
@@ -46,13 +59,16 @@ def validate_view(view: dict, bundle: dict) -> dict:
         if 'quaternion' in c:
             if not isinstance(c['quaternion'],list) or len(c['quaternion'])!=4 or any(type(v) not in (int,float) or not math.isfinite(v) for v in c['quaternion']):
                 raise ValueError('Invalid camera quaternion')
-        if 'zoom' in c and c['zoom']!=1:raise ValueError('Camera zoom must be one')
+        if 'zoom' in c and (type(c['zoom']) not in (int,float) or not math.isfinite(c['zoom']) or
+                           not .01<=c['zoom']<=1000 or (not orthographic and c['zoom']!=1)):
+            raise ValueError('Invalid camera zoom')
         if sum((a-b)**2 for a,b in zip(c['position'],c['target']))<1e-10:
             raise ValueError('Camera position equals target')
         for key in ('fov','near','far'):
             if key in c and (type(c[key]) not in (int,float) or not math.isfinite(c[key])):
                 raise ValueError('Invalid camera lens/clipping value')
         c={**c,'fov':max(15,min(80,c.get('fov',38))),'near':max(.01,min(100,c.get('near',.1)))}
+        if orthographic:c.pop('fov',None)
         c['far']=max(c['near']+.1,min(10000,c.get('far',2000)))
         result['camera']=c
     canonical(result)
@@ -149,9 +165,45 @@ class SceneService:
             old=self._recipe(recipe_sha256)
             if self._latest(old['scene_id'])!=recipe_sha256:raise ValueError('Stale scene recipe; refresh before changing view')
             if 'preset' in view and 'camera' not in view:view={**view,'camera':None}
-            resolved=validate_view({**old['view'],**view},self.bundle(old['bundle_sha256']))
+            proposed={**old,'view':{**old['view'],**view}}
+            comparison=self._comparison(proposed)
+            resolved=validate_view(proposed['view'],self.bundle(old['bundle_sha256']),comparison)
             recipe={**old,'view':resolved,'parent_recipe':recipe_sha256}
             return self._save_recipe(recipe,note)
+
+    def _comparison(self,recipe,through=None):
+        key=recipe['view'].get('comparison_bundle_sha256')
+        if key is None:
+            if recipe['view']['preset']=='candidate-compare':raise ValueError('Candidate comparison requires a second available bundle')
+            return None
+        if key==recipe['bundle_sha256']:raise ValueError('Comparison requires distinct candidates')
+        other=self.bundle(key,through)
+        from .tools import compare
+        compare([self.bundle(recipe['bundle_sha256'],through),other])
+        return other
+
+    def _comparison_state(self,state,recipe,width,height,through=None):
+        key=recipe['view'].get('comparison_bundle_sha256')
+        if state.get('comparison_bundle_sha256')!=key or state.get('comparison_selected')!=recipe['view'].get('comparison_selected'):
+            raise ValueError('Rendered comparison source/selection mismatch')
+        if key is None:
+            if state.get('views'):raise ValueError('Unexpected comparison viewports')
+            return
+        views=state.get('views')
+        if not isinstance(views,list) or len(views)!=2:raise ValueError('Comparison requires two saved viewports')
+        for index,(view,source) in enumerate(zip(views,[recipe['bundle_sha256'],key])):
+            css=state['viewport']
+            expected={'x':css['width']*index/2,'y':0,'width':css['width']/2,'height':css['height'],'dpr':1}
+            if view.get('bundle_sha256')!=source or not same_state(view.get('viewport'),expected):
+                raise ValueError('Comparison viewports must have equal size and exact source identity')
+            if not same_state(view.get('camera'),state['camera']) or not same_state(view.get('physical_to_scene'),state['physical_to_scene']):
+                raise ValueError('Comparison requires a shared camera and physical scale')
+            bundle=self.bundle(source,through)
+            ids={r['id'] for r in bundle['structure']['residues']}
+            if not isinstance(view.get('visible_residue_ids'),list) or any(r not in ids for r in view['visible_residue_ids']):
+                raise ValueError('Comparison visibility must identify source residues')
+            if view.get('representation')!=state['representation']:
+                raise ValueError('Comparison requires matching representations')
 
     def capture_scene(self,recipe_sha256,renderer,*,viewport=(1600,1000),render_seconds=30):
         if len(viewport)!=2 or any(type(v) is not int for v in viewport) or not 320<=viewport[0]<=1920 or not 320<=viewport[1]<=1080:
@@ -161,7 +213,9 @@ class SceneService:
         if self._latest(recipe['scene_id'])!=recipe_sha256:raise ValueError('Cannot capture obsolete scene revision')
         captures=[e for e in self.history() if e['kind']=='artifact' and e['payload'].get('kind')=='scene_capture']
         if len(captures)>=16:raise ValueError('Experiment capture quota exhausted')
-        result=renderer({'recipe':recipe,'bundle':bundle,'viewport':list(viewport),'render_seconds':render_seconds})
+        comparison=self._comparison(recipe)
+        result=renderer({'recipe':recipe,'bundle':bundle,'comparison_bundle':comparison,
+                         'viewport':list(viewport),'render_seconds':render_seconds})
         png=result['png'];state=result['state']
         if not isinstance(png,bytes) or not 33<=len(png)<=8*1024*1024 or png[:8]!=b'\x89PNG\r\n\x1a\n':
             raise ValueError('Renderer did not return bounded PNG bytes')
@@ -179,8 +233,9 @@ class SceneService:
         if state.get('viewport',{}).get('dpr')!=1 or any(abs(state['viewport'].get(k,0)-v)>1 for k,v in zip(('width','height'),(width,height))):
             raise ValueError('Capture viewport differs from PNG dimensions')
         requested_camera=recipe['view'].get('camera')
-        if requested_camera and any(not same_state(state['camera'].get(k),v) for k,v in requested_camera.items() if k not in {'quaternion','zoom'}):
+        if requested_camera and any(not same_state(state['camera'].get(k),v) for k,v in requested_camera.items() if k != 'quaternion'):
             raise ValueError('Rendered camera differs from requested pose')
+        self._comparison_state(state,recipe,width,height)
         canonical(state)
         with self.locked():
             if self._latest(recipe['scene_id'])!=recipe_sha256:raise ValueError('Scene changed while capture rendered')
@@ -196,9 +251,9 @@ class SceneService:
                         'sha256':key,'storage_key':key,'byte_length':len(png),'capture_id':capture_id,
                         'snapshot':{'sha256':capture_id,'storage_key':capture_id,'byte_length':len(snapshot_raw)},
                         'recipe_sha256':recipe_sha256,'bundle_sha256':recipe['bundle_sha256'],
-                        'provenance':{'category':'derived_geometry','source_ids':[recipe['bundle_sha256']],
+                        'provenance':{'category':'derived_geometry','source_ids':[recipe['bundle_sha256']]+([recipe['view']['comparison_bundle_sha256']] if comparison else []),
                                       'tool':'binder scene capture','tool_version':'1'}})
-            return {'capture_id':capture_id,'image_sha256':key,'recipe_sha256':recipe_sha256,'sequence':event['sequence'],'state':state}
+            return {'capture_id':capture_id,'image_sha256':key,'recipe_sha256':recipe_sha256,'sequence':event['sequence'],'state':state,'image_size':[width,height]}
 
     def read_capture(self,capture_id,through=None):
         if not any(e['kind']=='artifact' and e['producer']=='collector' and e['payload'].get('kind')=='scene_capture'
@@ -208,15 +263,22 @@ class SceneService:
         if snapshot['scope']!=self.scope:raise ValueError('Capture scope mismatch')
         return snapshot
 
-    async def inspect_scene_capture(self,capture_id,*,question,through=None):
+    async def inspect_scene_capture(self,capture_id,*,question,through=None,usage_capture=None):
         from dnhacksbio.llm import acomplete
         if not isinstance(question,str) or not 1<=len(question)<=2000:raise ValueError('Bounded visual question required')
         snapshot=self.read_capture(capture_id,through)
         png=self.journal.read_blob(snapshot['image_sha256'])
-        note=await asyncio.wait_for(acomplete(
-            'Inspect this exact molecular image. Describe observable geometry and occlusion; do not infer affinity, '
-            'specificity or biological efficacy. Scene actions are not physical time. Question: '+question,
-            images=[png],tools_disabled=True,max_turns=1,max_attempts=1,max_output_tokens=768,effort='low'),timeout=90)
+        try:
+            note=await asyncio.wait_for(acomplete(
+                'Inspect this exact molecular image. Describe observable geometry and occlusion; do not infer affinity, '
+                'specificity or biological efficacy. Scene actions are not physical time. Question: '+question,
+                images=[png],tools_disabled=True,max_turns=1,max_attempts=1,max_output_tokens=768,effort='low',capture=usage_capture),timeout=90)
+        except Exception as exc:
+            from dnhacksbio.explorer.runtime import redact
+            # Provider SDK errors are not necessarily RuntimeError subclasses. Keep the
+            # saved capture reusable, record no observation, and preserve caller usage.
+            detail=redact(str(exc))[:1000] or type(exc).__name__
+            raise RuntimeError('Visual observation unavailable: '+detail) from exc
         review={'schema':'visual_review.v1','scope':self.scope,'capture_id':capture_id,
                 'image_sha256':snapshot['image_sha256'],'recipe_sha256':snapshot['recipe_sha256'],
                 'observation':note,'status':'visual observation, not scientific verification'}
@@ -234,6 +296,7 @@ class SceneService:
         recipe=self._recipe(recipe_sha256,through)
         recipe={**recipe,'view':{**recipe['view'],'camera':snapshot['state']['camera']}}
         result=renderer({'recipe':recipe,'bundle':self.bundle(recipe['bundle_sha256'],through),
+                         'comparison_bundle':self._comparison(recipe,through),
                          'viewport':snapshot['render_viewport'],'render_seconds':render_seconds,'pick':[x,y],
                          'image_size':snapshot['image_size']})
         actual=result.get('state',{})
@@ -242,7 +305,14 @@ class SceneService:
                 raise ValueError('Pick render differs from capture snapshot')
         if actual.get('bundle_sha256')!=snapshot['bundle_sha256']:
             raise ValueError('Pick render source mismatch')
+        key=recipe['view'].get('comparison_bundle_sha256')
+        self._comparison_state(actual,recipe,*snapshot['image_size'],through)
         picked=result.get('picked')
-        if picked is not None and picked not in {r['id'] for r in self.bundle(recipe['bundle_sha256'],through)['structure']['residues']}:
+        source=key if key and x>=snapshot['image_size'][0]/2 else recipe['bundle_sha256']
+        if key and picked is not None:
+            if not isinstance(picked,dict) or set(picked)!={'bundle_sha256','residue_id'} or picked['bundle_sha256']!=source:
+                raise ValueError('Comparison pick must identify the source under the saved pixel')
+            picked=picked['residue_id']
+        if picked is not None and picked not in {r['id'] for r in self.bundle(source,through)['structure']['residues']}:
             raise ValueError('Renderer pick does not identify a source residue')
-        return {'capture_id':capture_id,'recipe_sha256':recipe_sha256,'residue_id':picked}
+        return {'capture_id':capture_id,'recipe_sha256':recipe_sha256,'bundle_sha256':source,'residue_id':picked}

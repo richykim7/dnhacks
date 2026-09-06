@@ -9,10 +9,22 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Download } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+} from "lucide-react";
 import type { JsonRecord } from "@/lib/types";
 import {
-  center,
+  sceneCamera,
+  actionKind,
+  actionSeconds,
+  actionPhases,
+  actionProgress,
+  type ActionPresentation,
   validateGeometry,
   poseGeometry,
   type Bundle,
@@ -75,12 +87,14 @@ export default function InhibitorWorkbench({
   owner,
   experimentId,
   onClose,
+  embedded = false,
 }: {
   artifact: JsonRecord;
   url: string;
   owner: string;
   experimentId: string;
   onClose: () => void;
+  embedded?: boolean;
 }) {
   const [g, setG] = useState<Geometry | null>(null),
     [error, setError] = useState(""),
@@ -92,14 +106,55 @@ export default function InhibitorWorkbench({
     }),
     [bundle, setBundle] = useState<Bundle | null>(null),
     [loadedBundle, setLoadedBundle] = useState<string | null>(null);
+  const [showControls, setShowControls] = useState(false);
+  const [, followFrame] = useState(0);
   const [query, setQuery] = useState(""),
     [tab, setTab] = useState("contacts"),
     [measurement, setMeasurement] = useState<JsonRecord | null>(null),
     [contacts, setContacts] = useState<JsonRecord | null>(null);
-  const [mode, setMode] = useState<"explore" | "follow" | "replay">("explore"),
+  const [mode, setModeState] = useState<"explore" | "follow" | "replay">("follow"),
     [cursor, setCursor] = useState(0),
     [playing, setPlaying] = useState(false),
-    [speed, setSpeed] = useState(1);
+    [speed, setSpeed] = useState(1),
+    [elapsed, setElapsed] = useState(0);
+  const modeRef = useRef(mode);
+  const setMode = useCallback((next: typeof mode) => {
+    modeRef.current = next;
+    setModeState(next);
+  }, []);
+  const [timing, setTiming] = useState<"presentation" | "recorded">(
+    "presentation",
+  );
+  const presentation = useRef<ActionPresentation>({
+    active: false,
+    playing: false,
+    sequence: 0,
+    kind: "focus",
+    progress: 1,
+    updatedAt: 0,
+    speed: 1,
+    duration: 8,
+  });
+  const joinFrom = useRef<{
+    sequence: number;
+    camera: { position: Vec3; target: Vec3 };
+  } | null>(null);
+  const followStart = useRef({ sequence: -1, at: 0 });
+  const playbackTimer = useRef<number | null>(null);
+  const playbackTime = useRef(0);
+  const setTime = useCallback((value: number) => {
+    playbackTime.current = value;
+    setElapsed(value);
+  }, []);
+  const stopPlayback = useCallback(() => {
+    if (playbackTimer.current !== null)
+      window.clearInterval(playbackTimer.current);
+    playbackTimer.current = null;
+    setElapsed(playbackTime.current);
+    setPlaying(false);
+  }, []);
+  const exploration = useRef<Recipe | null>(null);
+  const defaultRecipe = useRef<Recipe | null>(null);
   const [spec, setSpec] = useState(""),
     [busy, setBusy] = useState(false);
   const latest = useRef(recipe);
@@ -213,7 +268,7 @@ export default function InhibitorWorkbench({
     );
     return () => clearInterval(timer);
   }, [refresh, base]);
-  const actionsJson = JSON.stringify(state.scenes);
+  const actionsJson = JSON.stringify(state.timeline || state.scenes);
   const actions = useMemo(
     () => JSON.parse(actionsJson) as JsonRecord[],
     [actionsJson],
@@ -222,42 +277,132 @@ export default function InhibitorWorkbench({
     () => actions.filter((s) => s.actor === "agent"),
     [actions],
   );
-  const patch = useCallback((p: Partial<Recipe>) => {
-    setMode("explore");
-    setPlaying(false);
-    rendered.current = -1;
-    setRecipe((r) => (r ? { ...r, ...p, revision: ++revision.current } : r));
-  }, []);
+  const durations = useMemo(
+    () =>
+      agents.map((action, i) =>
+        timing === "recorded" && agents[i + 1]
+          ? Math.max(0.1, agents[i + 1].recorded_at - action.recorded_at)
+          : actionSeconds[actionKind(action, agents[i - 1])],
+      ),
+    [agents, timing],
+  );
+  const starts = useMemo(
+    () =>
+      durations.map((_, i) => durations.slice(0, i).reduce((a, b) => a + b, 0)),
+    [durations],
+  );
+  const total = durations.reduce((a, b) => a + b, 0);
+  const seek = (index: number) => {
+    joinFrom.current = null;
+    if (mode === "explore") exploration.current = latest.current;
+    setMode("replay");
+    stopPlayback();
+    setTime(starts[index] || 0);
+    setCursor(index);
+  };
+  const changeMode = (next: typeof mode) => {
+    if (next === "follow") followStart.current.sequence = -1;
+    else joinFrom.current = null;
+    stopPlayback();
+    if (mode === "explore") exploration.current = latest.current;
+    if (next === "explore" && exploration.current)
+      setRecipe(structuredClone(exploration.current));
+    setMode(next);
+  };
+  useEffect(() => {
+    if (recipe && !defaultRecipe.current) {
+      defaultRecipe.current = structuredClone(recipe);
+      exploration.current = structuredClone(recipe);
+    }
+  }, [recipe]);
+  const patch = useCallback(
+    (p: Partial<Recipe>) => {
+      presentation.current.active = false;
+      setMode("explore");
+      stopPlayback();
+      rendered.current = -1;
+      setRecipe((r) => (r ? { ...r, ...p, revision: ++revision.current } : r));
+    },
+    [stopPlayback],
+  );
   const applyRecorded = useCallback((r: Recipe) => {
+    if (modeRef.current === "explore") return;
     if (JSON.stringify(latest.current) === JSON.stringify(r)) return;
     rendered.current = -1;
     revision.current = Math.max(revision.current, r.revision);
-    setRecipe(structuredClone(r));
+    setRecipe((current) =>
+      modeRef.current === "explore" ? current : structuredClone(r),
+    );
   }, []);
+  const operationRecipe = useCallback((action: JsonRecord): Recipe => {
+    const r = structuredClone(action.recipe || defaultRecipe.current!);
+    if (action.kind === "inhibitor.job") {
+      const spec = action.details?.spec;
+      const target = g?.residues.find((residue) =>
+        residue.model === 0 && residue.chain === spec?.chain &&
+        residue.sequence === spec?.ligand_sequence && residue.name === spec?.ligand_name,
+      );
+      if (target) { r.ligand = target.id; r.model = target.model; }
+      r.bundle = action.details?.status === "completed"
+        ? action.details.artifact.storage_key : undefined;
+      r.selected = [];
+      r.pose = "reference";
+      r.prepared = false;
+      r.shot = "pocket";
+      delete r.camera;
+    }
+    if (action.kind === "scene.measurement") {
+      r.selected = action.details.atom_ids;
+      r.pose = action.details.pose || "reference";
+      r.bundle = action.details.bundle || undefined;
+      r.prepared = false;
+    }
+    return r;
+  }, [g]);
   useEffect(() => {
-    if (g && mode === "follow" && agents.length)
-      applyRecorded(agents[agents.length - 1].recipe);
-  }, [g, mode, agents, applyRecorded]);
+    if (g && mode === "follow" && agents.length) {
+      applyRecorded(operationRecipe(agents[agents.length - 1]));
+      setCursor(agents.length - 1);
+    }
+  }, [g, mode, agents, applyRecorded, operationRecipe]);
   useEffect(() => {
     if (g && mode === "replay" && agents[cursor])
-      applyRecorded(agents[cursor].recipe);
-  }, [g, mode, cursor, agents, applyRecorded]);
+      applyRecorded(operationRecipe(agents[cursor]));
+  }, [g, mode, cursor, agents, applyRecorded, operationRecipe]);
+  const operationReady =
+    !!g &&
+    !!recipe &&
+    (!agents[cursor] ||
+      JSON.stringify(recipe) === JSON.stringify(operationRecipe(agents[cursor]))) &&
+    (!recipe.bundle || (!!bundle && loadedBundle === recipe.bundle));
   useEffect(() => {
-    if (!playing || mode !== "replay" || cursor >= agents.length - 1) {
-      if (cursor >= agents.length - 1) setPlaying(false);
-      return;
-    }
-    const delay =
-      Math.max(
-        100,
+    if (!playing || mode !== "replay" || !operationReady) return;
+    const started = performance.now(),
+      origin = playbackTime.current;
+    const timer = window.setInterval(() => {
+      if (playbackTimer.current !== timer) return;
+      setTime(
         Math.min(
-          30000,
-          (agents[cursor + 1].recorded_at - agents[cursor].recorded_at) * 1000,
+          starts[cursor + 1] ?? total,
+          origin + ((performance.now() - started) / 1000) * speed,
         ),
-      ) / speed;
-    const t = setTimeout(() => setCursor((c) => c + 1), delay);
-    return () => clearTimeout(t);
-  }, [playing, mode, cursor, speed, agents]);
+      );
+    }, 40);
+    playbackTimer.current = timer;
+    return () => {
+      window.clearInterval(timer);
+      if (playbackTimer.current === timer) playbackTimer.current = null;
+    };
+  }, [playing, mode, speed, total, setTime, operationReady, cursor, starts]);
+  useEffect(() => {
+    if (mode !== "replay") return;
+    const index = starts.reduce(
+      (found, t, i) => (elapsed >= t ? i : found),
+      -1,
+    );
+    if (index >= 0) setCursor(index);
+    if (total && elapsed >= total) stopPlayback();
+  }, [elapsed, starts, total, mode, stopPlayback]);
   const pinned = new URLSearchParams(location.search).has("sceneRevision");
   useEffect(() => {
     const q = new URLSearchParams(location.search);
@@ -266,16 +411,19 @@ export default function InhibitorWorkbench({
     const action = actions.find(
       (s) =>
         s.actor === (q.get("sceneActor") || "agent") &&
-        s.recipe.revision === Number(requested),
+        s.recipe?.revision === Number(requested) &&
+        (!s.kind || s.kind === "scene.changed"),
     );
     if (action) {
       applyRecorded(action.recipe);
       if (action.actor === "agent") {
         setMode("replay");
-        setCursor(agents.findIndex((s) => s.sequence === action.sequence));
+        const index = agents.findIndex((s) => s.sequence === action.sequence);
+        setCursor(index);
+        setTime(starts[index] || 0);
       }
     }
-  }, [g, actions, agents, applyRecorded]);
+  }, [g, actions, agents, applyRecorded, starts]);
   const activeBundle =
     recipe?.bundle ||
     (!pinned && mode === "explore"
@@ -283,6 +431,7 @@ export default function InhibitorWorkbench({
       : undefined);
   useEffect(() => {
     if (!activeBundle) {
+      setLoadedBundle(null);
       setBundle(null);
       return;
     }
@@ -308,44 +457,29 @@ export default function InhibitorWorkbench({
             recipe.bundle && bundle && !recipe.prepared
               ? bundle.docking_geometry
               : g,
-            bundle,
-            recipe.prepared ? {...recipe,pose:'reference'} : recipe,
+            recipe.bundle ? bundle : null,
+            recipe.prepared ? { ...recipe, pose: "reference" } : recipe,
           )
         : g,
     [g, bundle, recipe],
   );
-  const viewRecipe = useMemo(() => {
-    if (!g || !recipe || recipe.camera) return recipe;
-    const atoms = g.atoms.filter((a) => a.model === recipe.model),
-      ligand = atoms.filter((a) => a.residue_id === recipe.ligand);
-    const target = center(
-      recipe.shot === "arrival" ? atoms : ligand.length ? ligand : atoms,
-    );
-    const radius = Math.max(
-      10,
-      ...atoms.map((a) =>
-        Math.hypot(...a.position.map((v, i) => v - target[i])),
-      ),
-    );
-    const dist = recipe.shot === "arrival" ? radius * 2.8 : 25;
-    const offset =
-      recipe.shot === "oblique" ? [0.85, 0.38, 0.9] : [0.2, 0.22, 1.3];
-    return {
-      ...recipe,
-      camera: {
-        target,
-        position: target.map((v, i) => v + offset[i] * dist) as Vec3,
-      },
-    };
-  }, [g, recipe]);
+  const viewRecipe = useMemo(
+    () =>
+      g && recipe ? { ...recipe, camera: sceneCamera(g, recipe) } : recipe,
+    [g, recipe],
+  );
   const comparison = useMemo(() => {
     if (!g || !recipe) return g;
-    if (recipe.prepared && bundle) return poseGeometry(bundle.docking_geometry,bundle,{...recipe,pose:'reference'});
+    if (recipe.prepared && bundle)
+      return poseGeometry(bundle.docking_geometry, bundle, {
+        ...recipe,
+        pose: "reference",
+      });
     return poseGeometry(g, bundle, { ...recipe, pose: "reference" });
   }, [g, bundle, recipe]);
   useEffect(() => {
     if (!recipe?.ligand) return;
-    if (bundle) {
+    if (bundle && recipe.bundle) {
       setContacts(bundle.contacts?.[recipe.pose || "reference"] || null);
       return;
     }
@@ -359,7 +493,10 @@ export default function InhibitorWorkbench({
     return () => {
       live = false;
     };
-  }, [url, get, recipe?.ligand, recipe?.pose, bundle]);
+  }, [url, get, recipe?.ligand, recipe?.pose, recipe?.bundle, bundle]);
+  useEffect(() => {
+    setMeasurement(null);
+  }, [recipe?.pose, recipe?.bundle, recipe?.ligand, recipe?.selected]);
   const ack = useCallback((rev: number, el: HTMLCanvasElement) => {
     if (latest.current?.revision === rev) {
       rendered.current = rev;
@@ -369,10 +506,17 @@ export default function InhibitorWorkbench({
   const onCamera = useCallback(
     (position: Vec3, target: Vec3) => {
       setMode("explore");
-      setPlaying(false);
+      stopPlayback();
       patch({ camera: { position, target } });
     },
     [patch],
+  );
+  const ackComparison = useCallback((rev: number) => {
+    secondary.current = rev;
+  }, []);
+  const comparisonRecipe = useMemo(
+    () => (viewRecipe ? { ...viewRecipe, pose: "reference" } : null),
+    [viewRecipe],
   );
   const pick = useCallback(
     (id: string) => {
@@ -385,6 +529,13 @@ export default function InhibitorWorkbench({
       setMeasurement(null);
     },
     [patch],
+  );
+  const pickComparison = useCallback(
+    (id: string) => {
+      pick(id);
+      if (recipe?.prepared) patch({ prepared: false });
+    },
+    [pick, patch, recipe?.prepared],
   );
   const ready = useCallback(async () => {
     await document.fonts.ready;
@@ -453,6 +604,7 @@ export default function InhibitorWorkbench({
     };
   }, [g, ready, capture, patch]);
   useEffect(() => {
+    if (embedded) return;
     const old = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const key = (e: KeyboardEvent) => {
@@ -463,7 +615,7 @@ export default function InhibitorWorkbench({
       document.body.style.overflow = old;
       document.removeEventListener("keydown", key);
     };
-  }, [onClose]);
+  }, [onClose, embedded]);
   async function execute(fn: () => Promise<unknown>) {
     setBusy(true);
     try {
@@ -480,7 +632,7 @@ export default function InhibitorWorkbench({
       const value = await call({
         operation: "measure",
         atom_ids: recipe!.selected,
-        bundle: activeBundle,
+        bundle: recipe!.prepared ? undefined : recipe!.bundle,
         pose: recipe!.pose || "reference",
       });
       setMeasurement(value);
@@ -543,12 +695,144 @@ export default function InhibitorWorkbench({
     pose = [...(bundle?.poses || []), ...(bundle?.controls || [])].find(
       (p) => p.id === recipe?.pose,
     );
+  const currentAction = agents[cursor];
+  const choreographyKind = actionKind(currentAction, agents[cursor - 1]);
+  useEffect(() => {
+    if (mode !== "follow" || !currentAction) return;
+    const timer = window.setInterval(() => {
+      if (!operationReady) followStart.current.at = performance.now();
+      followFrame((n) => n + 1);
+      if (
+        performance.now() - followStart.current.at >
+        actionSeconds[choreographyKind] * 1000
+      )
+        window.clearInterval(timer);
+    }, 80);
+    return () => window.clearInterval(timer);
+  }, [mode, currentAction?.sequence, choreographyKind, operationReady]);
+  const actionData = useMemo(() => {
+    const spec = currentAction?.details?.spec;
+    let region: ActionPresentation["region"];
+    if (g && recipe && spec) {
+      const target = g.residues.find((residue) =>
+        residue.model === 0 && residue.chain === spec.chain &&
+        residue.sequence === spec.ligand_sequence && residue.name === spec.ligand_name,
+      );
+      const atoms = g.atoms.filter(
+        (a) =>
+          a.residue_id === target?.id &&
+          !["H", "D"].includes(a.element) &&
+          (!a.altloc || a.altloc === spec.altloc),
+      );
+      if (atoms.length) {
+        const lo = [0, 1, 2].map(
+          (i) =>
+            Math.min(...atoms.map((a) => a.position[i])) - spec.margin_angstrom,
+        );
+        const hi = [0, 1, 2].map(
+          (i) =>
+            Math.max(...atoms.map((a) => a.position[i])) + spec.margin_angstrom,
+        );
+        region = {
+          center: lo.map((v, i) => (v + hi[i]) / 2) as Vec3,
+          size: lo.map((v, i) => hi[i] - v) as Vec3,
+        };
+      }
+    }
+    const preparedIds = new Set(
+      bundle?.docking_geometry.atoms.map((a) => a.id),
+    );
+    return {
+      region,
+      removed:
+        g?.atoms.filter(
+          (a) =>
+            a.model === recipe?.model &&
+            a.kind !== "ligand" &&
+            !preparedIds.has(a.id),
+        ) || [],
+      added:
+        bundle?.docking_geometry.atoms.filter((a) =>
+          a.id.startsWith("prepared/"),
+        ) || [],
+      poses:
+        bundle?.poses
+          .filter((p) => p.rank === 1)
+          .slice(0, 5)
+          .map((p) => p.positions) || [],
+    };
+  }, [g, bundle, recipe?.model, recipe?.ligand, currentAction]);
+  const now = performance.now();
+  if (followStart.current.sequence !== currentAction?.sequence) {
+    followStart.current = { sequence: currentAction?.sequence ?? -1, at: now };
+    if (
+      mode === "follow" &&
+      canvas.current?.dataset.cameraPosition &&
+      canvas.current?.dataset.cameraTarget
+    )
+      joinFrom.current = {
+        sequence: currentAction?.sequence || 0,
+        camera: {
+          position: JSON.parse(canvas.current.dataset.cameraPosition),
+          target: JSON.parse(canvas.current.dataset.cameraTarget),
+        },
+      };
+  }
+  const animationDuration = Math.min(
+    durations[cursor] || 8,
+    actionSeconds[choreographyKind],
+  );
+  const within =
+    mode === "follow"
+      ? (now - followStart.current.at) / 1000
+      : elapsed - (starts[cursor] || 0);
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const animated = !!currentAction && mode !== "explore" && !pinned;
+  presentation.current = {
+    ...actionData,
+    active: animated,
+    playing: operationReady && !reduced && (playing || mode === "follow"),
+    sequence: currentAction?.sequence || 0,
+    kind: choreographyKind,
+    progress: reduced
+      ? 1
+      : Math.max(0, Math.min(1, within / animationDuration)),
+    updatedAt: now,
+    speed: mode === "follow" ? 1 : speed,
+    duration: animationDuration,
+    from:
+      mode === "follow" &&
+      joinFrom.current &&
+      joinFrom.current.sequence === currentAction?.sequence
+        ? joinFrom.current!.camera
+        : g && recipe
+          ? sceneCamera(
+              g,
+              agents[cursor - 1]
+                ? operationRecipe(agents[cursor - 1])
+                : { ...recipe, camera: undefined, shot: "arrival" },
+            )
+          : undefined,
+  };
+  const episodeProgress = actionProgress(presentation.current, now);
+  const episodePhase =
+    actionPhases[choreographyKind][
+      Math.min(2, Math.floor(episodeProgress * 3))
+    ];
+  const captureId =
+    currentAction?.details?.image_hash || currentAction?.details?.capture_id;
+  const captureUrl = useMemo(() => {
+    if (!captureId) return undefined;
+    const u = new URL(base);
+    u.searchParams.set("file", captureId);
+    return u.toString();
+  }, [base, captureId]);
   const readonly = base.searchParams.has("through");
-  return createPortal(
+  const content = (
     <div
-      className="pocket-workbench"
-      role="dialog"
-      aria-modal="true"
+      className={`pocket-workbench ${embedded ? "pocket-embedded" : ""} ${showControls ? "controls-open" : ""}`}
+      role={embedded ? "region" : "dialog"}
+      aria-modal={embedded ? undefined : true}
       aria-label="Inhibitor workbench"
     >
       <header className="pocket-header">
@@ -567,9 +851,13 @@ export default function InhibitorWorkbench({
         <div>
           <p className="pocket-eyebrow">MOLECULAR INSTRUMENTS / 01</p>
           <h1>
-            The pocket observatory<span>.</span>
+            {String(artifact.name || "Inhibitor").replace(/\.(cif|pdb)$/i, "")}{" "}
+            <span>/</span> Binding pocket
           </h1>
-          <p>Prepare · dock · compare · verify the geometry.</p>
+          <p>
+            {ligand?.name || "Ligand"} · inspect the structure, compare poses,
+            test a contact.
+          </p>
         </div>
         <button disabled={!recipe} onClick={() => void exportPlate()}>
           <Download size={16} /> Evidence plate
@@ -581,70 +869,17 @@ export default function InhibitorWorkbench({
           <button onClick={() => setError("")}>Dismiss</button>
         </div>
       )}
-      <section className="pocket-timeline" aria-label="Agent scene timeline">
-        <label>
-          Interaction mode
-          <select
-            value={mode}
-            onChange={(e) => {
-              setMode(e.target.value as typeof mode);
-              setPlaying(false);
-            }}
-          >
-            <option value="explore">Explore myself</option>
-            <option value="follow">Watch agent live</option>
-            <option value="replay">Replay agent actions</option>
-          </select>
-        </label>
-        <button
-          disabled={!agents.length}
-          onClick={() => {
-            setMode("replay");
-            if (cursor >= agents.length - 1) setCursor(0);
-            setPlaying((p) => !p);
-          }}
-        >
-          {playing ? "Pause" : "Play"}
-        </button>
-        <input
-          aria-label="Agent scene action"
-          type="range"
-          min="0"
-          max={Math.max(0, agents.length - 1)}
-          value={cursor}
-          disabled={!agents.length}
-          onChange={(e) => {
-            setMode("replay");
-            setCursor(Number(e.target.value));
-            setPlaying(false);
-          }}
-        />
-        <label>
-          Speed
-          <select
-            aria-label="Playback speed"
-            value={speed}
-            onChange={(e) => setSpeed(Number(e.target.value))}
-          >
-            {[0.5, 1, 2, 4, 8].map((s) => (
-              <option key={s} value={s}>
-                {s}×
-              </option>
-            ))}
-          </select>
-        </label>
-        <span>
-          {agents.length
-            ? `${cursor + 1}/${agents.length} · ${agents[cursor]?.note || "Scene action"}`
-            : "No agent scene actions recorded yet"}
-        </span>
-        <small>
-          Action replay · no physical simulation time. Exploring preserves agent
-          history.
-        </small>
-      </section>
       <div className="pocket-layout">
         <main className="pocket-stage">
+          {embedded && (
+            <button
+              className="pocket-controls-toggle"
+              aria-expanded={showControls}
+              onClick={() => setShowControls((v) => !v)}
+            >
+              {showControls ? "Close controls" : "Scene controls"}
+            </button>
+          )}
           <div className="pocket-stage-meta">
             <span>{artifact.name}</span>
             <span>
@@ -665,6 +900,8 @@ export default function InhibitorWorkbench({
               >
                 <InhibitorScene
                   g={posed}
+                  presentation={presentation}
+                  sample={elapsed + (mode === "follow" ? now : 0)}
                   surface={bundle?.surface}
                   recipe={viewRecipe}
                   pick={pick}
@@ -674,11 +911,11 @@ export default function InhibitorWorkbench({
                 {viewRecipe.compare && comparison && (
                   <InhibitorScene
                     g={comparison}
-                    recipe={{ ...viewRecipe, pose: "reference" }}
-                    pick={pick}
-                    ack={(rev) => {
-                      secondary.current = rev;
-                    }}
+                    presentation={presentation}
+                    sample={elapsed + (mode === "follow" ? now : 0)}
+                    recipe={comparisonRecipe!}
+                    pick={pickComparison}
+                    ack={ackComparison}
                     onCamera={onCamera}
                   />
                 )}
@@ -688,6 +925,28 @@ export default function InhibitorWorkbench({
             <p className="pocket-loading">
               {error ? "Geometry unavailable" : "Loading canonical geometry…"}
             </p>
+          )}
+          {animated && (
+            <div
+              className="pocket-episode"
+              style={
+                { "--episode-progress": episodeProgress } as React.CSSProperties
+              }
+            >
+              <span className="pocket-episode-kind">
+                {choreographyKind} ·{" "}
+                {Math.min(3, Math.floor(episodeProgress * 3) + 1)} / 3
+              </span>
+              <strong>{episodePhase}</strong>
+              <p>{currentAction?.note}</p>
+              {captureUrl &&
+                ["capture", "review"].includes(choreographyKind) && (
+                  <img src={captureUrl} alt="Actual recorded scene capture" />
+                )}
+              <div className="pocket-episode-progress">
+                <i style={{ width: `${episodeProgress * 100}%` }} />
+              </div>
+            </div>
           )}
           <div className="pocket-scene-caption">
             <span className="pocket-amber-dot" />
@@ -709,6 +968,9 @@ export default function InhibitorWorkbench({
                 : ""}
             </span>
           </div>
+          <span className="pocket-orbit-hint">
+            Drag to orbit · scroll to zoom · click atoms to measure
+          </span>
           <div className="pocket-camera-tools">
             {(["arrival", "pocket", "oblique"] as const).map((shot) => (
               <button
@@ -793,7 +1055,14 @@ export default function InhibitorWorkbench({
               {bundle && (
                 <>
                   <button
-                    onClick={() => patch({ compare: true, prepared: true, pose:'reference', bundle:activeBundle })}
+                    onClick={() =>
+                      patch({
+                        compare: true,
+                        prepared: true,
+                        pose: "reference",
+                        bundle: activeBundle,
+                      })
+                    }
                   >
                     Compare deposited / prepared
                   </button>
@@ -820,15 +1089,133 @@ export default function InhibitorWorkbench({
           )}
           {tab === "docking" && (
             <div className="pocket-audit">
-              <label>
-                Frozen preparation & docking protocol
+              <p>Freeze a preparation policy before running a new search.</p>
+              {state.jobs.length > 0 && (
+                <button
+                  onClick={() =>
+                    setSpec(JSON.stringify(state.jobs.at(-1).spec, null, 2))
+                  }
+                >
+                  Reuse last docking protocol
+                </button>
+              )}
+              {(() => {
+                let values: JsonRecord;
+                try {
+                  values = JSON.parse(spec);
+                } catch {
+                  return (
+                    <p role="alert">Invalid advanced JSON. Correct it below.</p>
+                  );
+                }
+                const field = (name: string, value: unknown) =>
+                  setSpec(
+                    JSON.stringify({ ...values, [name]: value }, null, 2),
+                  );
+                return (
+                  <div className="pocket-protocol">
+                    <label>
+                      Missing atoms
+                      <select
+                        value={values.repair_policy}
+                        onChange={(e) => field("repair_policy", e.target.value)}
+                      >
+                        <option value="reject">
+                          Reject incomplete residues
+                        </option>
+                        <option value="pdbfixer-missing-atoms">
+                          Rebuild missing atoms (PDBFixer)
+                        </option>
+                      </select>
+                    </label>
+                    <label>
+                      Search margin · Å
+                      <input
+                        type="number"
+                        min={2}
+                        max={12}
+                        value={values.margin_angstrom}
+                        onChange={(e) =>
+                          field("margin_angstrom", Number(e.target.value))
+                        }
+                      />
+                    </label>
+                    <label>
+                      Search effort
+                      <select
+                        value={values.exhaustiveness}
+                        onChange={(e) =>
+                          field("exhaustiveness", Number(e.target.value))
+                        }
+                      >
+                        {[1, 4, 8, 16, 32].map((n) => (
+                          <option key={n} value={n}>
+                            {n}
+                            {n === 4
+                              ? " · quick"
+                              : n === 8
+                                ? " · standard"
+                                : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Seeds (1–5, comma separated)
+                      <input
+                        value={values.seeds.join(", ")}
+                        onChange={(e) =>
+                          field(
+                            "seeds",
+                            e.target.value
+                              .split(",")
+                              .map((v) => Number(v.trim())),
+                          )
+                        }
+                      />
+                    </label>
+                    <label>
+                      Explicit additive exclusions
+                      <input
+                        value={values.exclude_additives.join(", ")}
+                        placeholder="A:901:IOD, …"
+                        onChange={(e) =>
+                          field(
+                            "exclude_additives",
+                            e.target.value
+                              .split(",")
+                              .map((v) => v.trim())
+                              .filter(Boolean),
+                          )
+                        }
+                      />
+                    </label>
+                    <label>
+                      Why are these choices appropriate?
+                      <textarea
+                        rows={3}
+                        value={values.rationale}
+                        onChange={(e) => field("rationale", e.target.value)}
+                      />
+                    </label>
+                    <p>
+                      Chain {values.chain} · {values.ligand_name}{" "}
+                      {values.ligand_sequence} · waters excluded ·
+                      standard-template protonation · functional cofactors
+                      rejected. These choices must fit your question.
+                    </p>
+                  </div>
+                );
+              })()}
+              <details>
+                <summary>Advanced protocol JSON</summary>
                 <textarea
                   aria-label="Docking protocol"
                   value={spec}
                   onChange={(e) => setSpec(e.target.value)}
                   rows={12}
                 />
-              </label>
+              </details>
               <button
                 disabled={readonly || busy}
                 onClick={() =>
@@ -850,7 +1237,8 @@ export default function InhibitorWorkbench({
               {state.jobs.map((job: JsonRecord) => (
                 <div key={job.job_id}>
                   <strong>{job.status}</strong>
-                  <p>{job.error}</p>
+                  <p>{job.progress?.message || job.error}</p>
+                  {job.error && job.progress && <p role="alert">{job.error}</p>}
                   {["running", "queued"].includes(job.status) && (
                     <button
                       onClick={() =>
@@ -1022,12 +1410,20 @@ export default function InhibitorWorkbench({
               for angle
             </p>
             <button
+              disabled={!recipe?.selected.length}
+              onClick={() => patch({ selected: [] })}
+            >
+              Clear selection
+            </button>
+            <button
               disabled={
                 readonly || !recipe || recipe.selected.length < 2 || busy
               }
               onClick={() => void measure()}
             >
-              {activeBundle?'Measure prepared-receptor geometry':'Measure canonical geometry'}
+              {recipe?.bundle && !recipe.prepared
+                ? "Measure prepared-receptor geometry"
+                : "Measure canonical geometry"}
             </button>
             {measurement && (
               <output>
@@ -1044,6 +1440,139 @@ export default function InhibitorWorkbench({
             )}
           </div>
         </aside>
+        <section className="pocket-timeline" aria-label="Agent scene timeline">
+          <div className="pocket-transport">
+            <label className="pocket-mode">
+              Interaction mode
+              <select
+                value={mode}
+                onChange={(e) => changeMode(e.target.value as typeof mode)}
+              >
+                <option value="explore">Explore myself</option>
+                <option value="follow">Watch agent live</option>
+                <option value="replay">Replay agent actions</option>
+              </select>
+            </label>
+            <button
+              aria-label="Previous action"
+              disabled={!agents.length || cursor === 0}
+              onClick={() => seek(Math.max(0, cursor - 1))}
+            >
+              <SkipBack size={15} />
+            </button>
+            <button
+              className="pocket-play"
+              aria-label={playing ? "Pause" : "Play"}
+              disabled={!agents.length}
+              onClick={() => {
+                if (mode === "explore") exploration.current = latest.current;
+                setMode("replay");
+                if (mode === "follow" || elapsed >= total) {
+                  setTime(0);
+                  setCursor(0);
+                }
+                if (playing) stopPlayback();
+                else setPlaying(true);
+              }}
+            >
+              {playing ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+            <button
+              aria-label="Next action"
+              disabled={!agents.length || cursor >= agents.length - 1}
+              onClick={() => seek(Math.min(agents.length - 1, cursor + 1))}
+            >
+              <SkipForward size={15} />
+            </button>
+            <input
+              aria-label="Agent scene action"
+              type="range"
+              min="0"
+              max={total || 1}
+              step=".01"
+              value={elapsed}
+              disabled={!agents.length}
+              onChange={(e) => {
+                changeMode("replay");
+                setTime(Number(e.target.value));
+              }}
+            />
+            <output className="pocket-clock">
+              {Math.floor(elapsed)} / {Math.ceil(total)}s
+            </output>
+            <select
+              aria-label="Playback speed"
+              value={speed}
+              onChange={(e) => setSpeed(Number(e.target.value))}
+            >
+              {[0.5, 1, 2, 4, 8].map((s) => (
+                <option key={s} value={s}>
+                  {s}×
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="pocket-action-caption">
+            <select
+              aria-label="Replay timing"
+              value={timing}
+              onChange={(e) => {
+                stopPlayback();
+                setTiming(e.target.value as typeof timing);
+                setTime(0);
+                setCursor(0);
+                setMode("replay");
+              }}
+            >
+              <option value="presentation">Animated presentation</option>
+              <option value="recorded">Original recorded timing</option>
+            </select>
+            <span>
+              {agents.length
+                ? `${cursor + 1}/${agents.length} · ${agents[cursor]?.note || "Scene action"}`
+                : "No agent actions recorded. Explore the structure or start docking."}
+            </span>
+            <small>
+              {timing === "presentation"
+                ? "Animated operations · waits compressed"
+                : "Original operation intervals"}{" "}
+              · molecular coordinates remain recorded snapshots
+            </small>
+          </div>
+          {agents.length > 0 && (
+            <details className="pocket-action-log">
+              <summary>
+                Activity & evidence · {agents.length} recorded operations
+              </summary>
+              <ol>
+                {agents.map((action, i) => (
+                  <li key={action.sequence}>
+                    <button
+                      aria-current={i === cursor ? "step" : undefined}
+                      onClick={() => seek(i)}
+                    >
+                      <span>{String(i + 1).padStart(2, "0")}</span>
+                      {action.note || "Changed the scene"}
+                      <small>
+                        {action.kind?.replace("scene.", "") || "view"}
+                      </small>
+                    </button>
+                    {i === cursor && action.details && (
+                      <p>
+                        {action.details.observation ||
+                          action.details.observations ||
+                          action.details.error ||
+                          (action.details.atom_ids
+                            ? action.details.atom_ids.join(" → ")
+                            : "")}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
+        </section>
       </div>
       {bundle && (
         <section className="pocket-pose-rail" aria-label="Pose gallery">
@@ -1055,6 +1584,7 @@ export default function InhibitorWorkbench({
                 setMode("explore");
                 patch({
                   pose: p.id,
+                  prepared: false,
                   bundle: activeBundle,
                   ligand: bundle.ligand_residue,
                   selected: [],
@@ -1085,7 +1615,7 @@ export default function InhibitorWorkbench({
           ))}
         </details>
       </footer>
-    </div>,
-    document.body,
+    </div>
   );
+  return embedded ? content : createPortal(content, document.body);
 }

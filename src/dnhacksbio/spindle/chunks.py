@@ -17,6 +17,7 @@ def encode_frame(frame: dict) -> tuple[dict,bytes]:
     raw=struct.pack('<'+'d'*len(coordinates),*coordinates)
     index={'schema':'spindle_frame_chunk.v1','time_s':frame['time'],'dtype':'<f8','shape':[len(coordinates)//3,3],
            'sha256':digest(raw),'byte_length':len(raw),'poles':poles,'filaments':filaments}
+    if 'cortical_motors' in frame:index['cortical_motors']=frame['cortical_motors']
     return index,raw
 
 
@@ -36,7 +37,9 @@ def decode_frame(index: dict, raw: bytes) -> dict:
     for f in index['filaments']:
         if type(f['count']) is not int or f['count']<2 or f['count']>index['shape'][0]:raise ValueError('Invalid filament count')
         filaments.append({'id':f['id'],'pole':f['pole'],'points':[point(f['offset']+i) for i in range(f['count'])]})
-    return {'time':index['time_s'],'poles':poles,'filaments':filaments}
+    result={'time':index['time_s'],'poles':poles,'filaments':filaments}
+    if 'cortical_motors' in index:result['cortical_motors']=index['cortical_motors']
+    return result
 
 
 def export_chunks(directory, runs):

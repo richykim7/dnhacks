@@ -72,9 +72,12 @@ backend/coordination-only edits do not require unrelated UI or 3D suites.
 | Private branch-monitoring display | `e2e/monitor.spec.ts` |
 | Binder viewer/camera/export | `e2e/binder.spec.ts` |
 | Spindle viewer | `e2e/spindle.spec.ts` |
+| Tissue viewer, exact-frame inspection and agent replay | `e2e/tissue.spec.ts` |
 
-For frontend edits run the build, relevant unit tests, and the selected browser tests. Shared UI,
-API or dependency changes can require the full frontend suite at the integration milestone.
+Local tests are optional by default (see `AGENTS.md`). For frontend changes, select a build,
+focused unit/browser cases or manual visual inspection according to the affected behavior and risk.
+Shared UI, API and dependency edits do not automatically require the full frontend suite.
+Broaden only for a concrete integration risk or an explicit request.
 New viewers should add their own spec to this table.
 
 ```sh
@@ -123,6 +126,11 @@ atom-pair distances. Artifact hash checks precede rendering and historical avail
 existing event cursor. See [binder interface workbench](binder-design.md) for supported metrics,
 provenance, visual-review records and incomplete live-design acceptance.
 
+The comparison selector resolves another available binder in the same experiment. Exact target
+coordinates, residue mapping and metric protocol must agree. One canvas and camera drive equal-size
+views; picks return the candidate identity and its own contact metrics. Captures retain both source
+hashes and viewport metadata, and historical playback removes unavailable comparison sources.
+
 ### Spindle trajectory development
 
 Selected experiments can display validated `filament_trajectory` JSON artifacts
@@ -136,6 +144,18 @@ local exploration. Replay uses only recipes visible at the current runtime curso
 workbench element provides a bounded controller for the local capture worker; only its convenient
 window alias requires `?sceneReview=1`. Scene replay is not physical simulation time.
 
+The selected experiment supports `tissue_simulation` artifacts through the Living tissue theater.
+Exterior, Core and Neighborhood use instanced cell geometry and an optional bounded 3D field pass.
+A section plane, exact simulation frame, shared comparison range and source-ID selection are
+keyboard accessible. Dark/light styles and mobile single-condition exploration share the same
+numerical data. Frame payloads load on demand with a three-frame cache; field textures are disposed
+on replacement. The viewport scale is in micrometers at the focal plane. Membrane shading and
+elongated CAF glyphs are illustration layers, never sampled measurements. Fixtures live only in
+`frontend/e2e/tissue/`. See `docs/tumor-stroma.md` for implementation status and scientific boundaries.
+
+For headless hosts without a usable graphics driver, set `PLAYWRIGHT_SOFTWARE_RENDERING=1` to
+explicitly use Chromium SwiftShader. This keeps the same assertions and timeouts. Record this renderer
+when reporting performance; browser screenshot success is not evidence of hardware GPU throughput.
 The browser backend explicitly rebinds application journal, project, corpus, KG and
 cache paths to its temporary data directory. Changing only the process cwd would
 leave source-rooted application state visible; the runner regression checks that
@@ -145,3 +165,25 @@ Binder bundles may include precomputed source-mapped surfaces. A browser worker 
 hash checks and normal preparation before the stage becomes ready. The representation selector
 retains atomic envelopes and a labeled Cα trace; analytical close/reverse remain atomic cutaways.
 See the binder guide for mesh approximation and exact source-picking semantics.
+
+### Persistent researcher scenes
+
+A researcher with an available binder or molecular structure now opens a split workspace:
+one selected collected source on the left, research activity and experiment records on the right.
+The scene remains mounted when switching Activity/Experiments. The scene selector is restricted
+to that researcher's available artifacts at the current cursor; rewinding removes later sources.
+The selected experiment's binder is preferred, then its reference structure. Choosing another
+source is a local viewing action and does not rewrite recorded agent activity. Mobile stacks the
+scene above the research panel with an independently reachable close control.
+
+Binder scene camera changes interpolate position, orbit target and FOV over700ms from the current
+visible pose. A new target rebases that transition; OrbitControls interaction cancels it immediately.
+Reduced motion disables transitions. Capture readiness waits for the transition and rendered frames,
+and exported scene recipes retain the actual camera after manual navigation. Inspection action time
+remains separate from physical simulation time. The projection selector also offers orthographic
+constant-scale comparison; its height/zoom travel with the saved camera and captures.
+
+The reference viewer's Open inhibitor workbench action replaces that viewer inline in the same
+left scene. Research activity remains alongside it, and Return to reference restores the original
+viewer. Only one molecular viewer is mounted. Embedded inhibitor controls open as an overlay;
+its recorded-action Follow/Replay behavior is unchanged.

@@ -46,7 +46,10 @@ def main(trace_dir, job_id):
                     if (directory/'cancel.json').exists(): raise InterruptedError('Cancelled')
                     if time.monotonic()-started>timeout: raise TimeoutError('Declared wall budget exceeded')
                     time.sleep(.1)
-                if proc.returncode: raise ValueError(f'Scientific worker failed (exit {proc.returncode}); see log')
+                if proc.returncode:
+                    failure=directory/'failure.json'
+                    message=json.loads(failure.read_text())['error'] if failure.exists() else f'Scientific worker failed (exit {proc.returncode})'
+                    raise ValueError(message)
             finally:
                 if proc.poll() is None:
                     proc.terminate()
@@ -83,7 +86,11 @@ def science(trace_dir,job_id):
     out=directory/'output'
     def progress(stage,message):
         atomic(directory/'progress.json',{'stage':stage,'message':message,'time':time.time()})
-    dock(j.read_blob(receipt['source_hash']),receipt['spec'],out,progress)
+    try:
+        dock(j.read_blob(receipt['source_hash']),receipt['spec'],out,progress)
+    except Exception as exc:
+        atomic(directory/'failure.json',{'error':f'{type(exc).__name__}: {str(exc)[:1500]}'})
+        raise
 
 
 if __name__=='__main__':

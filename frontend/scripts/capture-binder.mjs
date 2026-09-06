@@ -45,6 +45,13 @@ try {
     .getByRole("tablist", { name: "Researcher detail" })
     .getByRole("tab", { name: "Experiments", exact: true })
     .click();
+  const source = page.getByRole("combobox", { name: "Scene source", exact: true });
+  const choice = await source.locator("option").evaluateAll((options, recipe) =>
+    options.find(option => option.dataset.bundleSha256 === recipe.bundle_sha256 &&
+      option.dataset.sourceExperiment === recipe.scope.experiment_id)?.value,
+    request.recipe);
+  if (!choice) throw Error("Exact binder source unavailable at this experiment cursor");
+  await source.selectOption(choice);
   const bench = page
     .locator(".binder-workbench")
     .filter({ has: page.locator('[data-testid="binder-stage"]') });
@@ -73,7 +80,8 @@ try {
       throw Error("Capture geometry changed before picking");
     picked = await stage.evaluate(
       (el, xy) => el.binderController.pick(...xy),
-      request.pick,
+      [request.pick[0] * box.width / request.image_size[0],
+       request.pick[1] * box.height / request.image_size[1]],
     );
   }
   await writeFile(

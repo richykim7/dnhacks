@@ -146,7 +146,7 @@ class SceneService:
             return self._save_recipe(recipe,note)
 
     def capture_scene(self,recipe_sha256,renderer,*,viewport=(1600,1000),render_seconds=30):
-        if len(viewport)!=2 or any(type(v) is not int for v in viewport) or not 320<=viewport[0]<=1920 or not 320<=viewport[1]<=1080:
+        if not isinstance(viewport,(list,tuple)) or len(viewport)!=2 or any(type(v) is not int for v in viewport) or not 320<=viewport[0]<=1920 or not 320<=viewport[1]<=1080:
             raise ValueError('Capture viewport outside bounds')
         if type(render_seconds) is not int or not 1<=render_seconds<=60:raise ValueError('Invalid render-time budget')
         recipe=self._recipe(recipe_sha256);bundle=self.bundle(recipe['bundle_sha256'])
@@ -172,12 +172,14 @@ class SceneService:
         if requested_camera and any(not same_state(state['camera'].get(k),v) for k,v in requested_camera.items() if k not in {'quaternion','zoom'}):
             raise ValueError('Rendered camera differs from requested pose')
         frame=bundle['runs'][recipe['view']['run']]['frames'][recipe['view']['frame']]
+        if state.get('cortical_motors')!=frame.get('cortical_motors'):raise ValueError('Captured motor field differs from saved frame')
         if state.get('physical_time_s')!=frame['time'] or state.get('poles')!=frame['poles']:
             raise ValueError('Captured physical frame differs from saved trajectory')
         compare=recipe['view']['compare']
         if compare is not None:
             other=bundle['runs'][compare]['frames'];nearest=min(range(len(other)),key=lambda i:abs(other[i]['time']-frame['time']))
             comparison=state.get('comparison',{})
+            if comparison.get('cortical_motors')!=other[nearest].get('cortical_motors'):raise ValueError('Comparison motor field differs from saved frame')
             if comparison.get('physical_time_s')!=other[nearest]['time'] or comparison.get('poles')!=other[nearest]['poles']:
                 raise ValueError('Comparison is not synchronized to nearest saved physical time')
             if not same_state(comparison.get('camera'),state['camera']):raise ValueError('Comparison cameras differ')
@@ -200,6 +202,53 @@ class SceneService:
                                       'tool':'spindle scene capture','tool_version':'1'}})
             return {'capture_id':capture_id,'image_sha256':key,'recipe_sha256':recipe_sha256,'sequence':event['sequence'],'state':state}
 
+    def export_scene_movie(self,recipe_sha256,frames,fps,renderer,*,viewport=(1600,1000)):
+        import base64
+        if not isinstance(frames,list) or not 2<=len(frames)<=120 or any(type(v) is not int or v<0 or (i and v<=frames[i-1]) for i,v in enumerate(frames)):
+            raise ValueError('Movie requires 2-120 increasing saved frame indices')
+        if type(fps) is not int or not 1<=fps<=30:raise ValueError('Movie rate must be 1-30 fps')
+        if not isinstance(viewport,(list,tuple)) or len(viewport)!=2 or any(type(v) is not int for v in viewport) or not 320<=viewport[0]<=1920 or not 320<=viewport[1]<=1080:
+            raise ValueError('Movie viewport outside bounds')
+        recipe=self._recipe(recipe_sha256);bundle=self.bundle(recipe['bundle_sha256'])
+        for frame in frames:validate_view({**recipe['view'],'frame':frame},bundle)
+        if self._latest(recipe['scene_id'])!=recipe_sha256:raise ValueError('Cannot export obsolete scene revision')
+        if sum(e['kind']=='artifact' and e['payload'].get('kind')=='scene_movie' for e in self.history())>=4:raise ValueError('Movie quota exhausted')
+        try:
+            result=renderer({'recipe':recipe,'bundle':bundle,'viewport':list(viewport),'render_seconds':300,'movie':{'frames':frames,'fps':fps}})
+        except Exception as exc:
+            self._append('scene.export.failed',{'recipe_sha256':recipe_sha256,'error_type':type(exc).__name__})
+            raise RuntimeError(f'Movie export unavailable ({type(exc).__name__})') from exc
+        movie=result.get('movie')
+        if not isinstance(movie,dict) or movie.get('fps')!=fps or movie.get('interpolation')!='none' or len(movie.get('frames',[]))!=len(frames):raise ValueError('Incomplete movie render receipt')
+        raw=base64.b64decode(movie.pop('bytes'),validate=True)
+        if not raw.startswith(bytes.fromhex('1a45dfa3')) or len(raw)>8*1024*1024:raise ValueError('Invalid or oversized WebM')
+        camera=movie['camera'];validate_view({**recipe['view'],'camera':camera},bundle)
+        for key,value in (recipe['view']['camera'] or {}).items():
+            if key!='quaternion' and not same_state(camera.get(key),value):raise ValueError('Movie ignored prescribed camera')
+        if movie.get('duration_s')!=len(frames)/fps:raise ValueError('Movie presentation duration mismatch')
+        for index,(wanted,shot) in enumerate(zip(frames,movie['frames'])):
+            if shot.get('presentation_time_s')!=index/fps:raise ValueError('Movie presentation clock mismatch')
+            state=shot['state'];expected=bundle['runs'][recipe['view']['run']]['frames'][wanted]
+            if shot['frame']!=wanted or state.get('bundle_sha256')!=recipe['bundle_sha256'] or not same_state(state['camera'],camera):raise ValueError('Movie frame/camera/source mismatch')
+            if state.get('physical_time_s')!=expected['time'] or state.get('poles')!=expected['poles'] or state.get('cortical_motors')!=expected.get('cortical_motors'):raise ValueError('Movie disagrees with saved physical frame')
+            if state.get('physical_to_scene')!={'units':'um','scale':1,'interpolation':'none'}:raise ValueError('Movie coordinate transform changed')
+            compare=recipe['view']['compare']
+            if compare is not None:
+                others=bundle['runs'][compare]['frames'];other=min(others,key=lambda f:abs(f['time']-expected['time']))
+                actual=state.get('comparison',{})
+                if not same_state(actual.get('camera'),camera) or actual.get('physical_time_s')!=other['time'] or actual.get('poles')!=other['poles'] or actual.get('cortical_motors')!=other.get('cortical_motors'):raise ValueError('Movie comparison mismatch')
+        with self.locked():
+            if self._latest(recipe['scene_id'])!=recipe_sha256:raise ValueError('Scene changed during movie export')
+            if sum(e['kind']=='artifact' and e['payload'].get('kind')=='scene_movie' for e in self.history())>=4:raise ValueError('Movie quota exhausted')
+            key=self.journal.store_bytes(raw)
+            manifest={'schema':'spindle_movie.v1','scope':self.scope,'recipe_sha256':recipe_sha256,'bundle_sha256':recipe['bundle_sha256'],
+                'video_sha256':key,'byte_length':len(raw),'browser':result['state'].get('browser'),'served_assets':result['state'].get('served_assets'),
+                'capture_script_sha256':result['state'].get('capture_script_sha256'),'renderer':result['state'].get('renderer'),**movie}
+            metadata=canonical(manifest);meta_key=self.journal.store_bytes(metadata)
+            event=self._append('artifact',{'kind':'scene_movie','artifact_id':meta_key,'status':'available','format':'webm','name':'Saved spindle trajectory movie',
+                'sha256':key,'storage_key':key,'byte_length':len(raw),'snapshot':{'sha256':meta_key,'storage_key':meta_key,'byte_length':len(metadata)}})
+            return {'movie_sha256':key,'manifest_sha256':meta_key,'sequence':event['sequence'],'frames':len(frames),'render_p95_ms':movie['render_p95_ms']}
+
     def read_capture(self,capture_id,through=None):
         if not any(e['kind']=='artifact' and e['producer']=='collector' and e['payload'].get('kind')=='scene_capture'
                    and e['payload'].get('status')=='available' and e['payload'].get('capture_id')==capture_id for e in self.history(through)):
@@ -213,10 +262,15 @@ class SceneService:
         if not isinstance(question,str) or not 1<=len(question)<=2000:raise ValueError('Bounded visual question required')
         snapshot=self.read_capture(capture_id,through)
         png=self.journal.read_blob(snapshot['image_sha256'])
-        note=await asyncio.wait_for(acomplete(
-            'Inspect this exact spindle image. Describe visible pole IDs, occlusion, depth and comparison balance. '
-            'Do not infer motor forces, clustering statistics, chromosome accuracy or viability from pixels. Question: '+question,
-            images=[png],tools_disabled=True,max_turns=1,max_attempts=1,max_output_tokens=768,effort='low'),timeout=90)
+        try:
+            note=await asyncio.wait_for(acomplete(
+                'Inspect this exact spindle image. Describe visible pole IDs, occlusion, depth and comparison balance. '
+                'Do not infer motor forces, clustering statistics, chromosome accuracy or viability from pixels. Question: '+question,
+                images=[png],tools_disabled=True,max_turns=1,max_attempts=1,max_output_tokens=768,effort='low'),timeout=90)
+        except Exception as exc:
+            self._append('scene.review.failed',{'capture_id':capture_id,'image_sha256':snapshot['image_sha256'],
+                'error_type':type(exc).__name__,'status':'No visual observation produced'})
+            raise RuntimeError(f'Vision review unavailable ({type(exc).__name__}); no observation recorded') from exc
         review={'schema':'visual_review.v1','scope':self.scope,'capture_id':capture_id,
                 'image_sha256':snapshot['image_sha256'],'recipe_sha256':snapshot['recipe_sha256'],
                 'observation':note,'status':'visual observation, not scientific verification'}
