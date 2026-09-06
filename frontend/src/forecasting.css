@@ -920,3 +920,15 @@
     scroll-behavior: auto;
   }
 }
+@media (max-width: 700px) {
+  .forecast-graph-scene {
+    overflow-x: auto;
+    justify-content: flex-start;
+    scrollbar-width: thin;
+  }
+  .forecast-graph-scene > svg {
+    width: 720px;
+    min-width: 720px;
+    flex: 0 0 720px;
+  }
+}

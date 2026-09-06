@@ -52,9 +52,27 @@ def test_model_presenter_keeps_evaluation_separate(artifacts, monkeypatch, tmp_p
     base.mkdir(parents=True)
     comparison = {'scenario_id': 'dated', 'origin': 'model', 'conditions': {}}
     (base / 'comparison.json').write_text(json.dumps(comparison))
-    assert forecasting.reasoning_packet() == {'status': 'ready', 'comparison': comparison, 'evaluation': None}
+    assert forecasting.reasoning_packet() == {'status': 'ready', 'comparison': comparison, 'evaluation': None, 'study': None}
     evaluation = {'evaluation_status': 'no_positive_cohort', 'models': {}}
     (base / 'evaluation.json').write_text(json.dumps(evaluation))
     packet = forecasting.reasoning_packet()
     assert packet['evaluation'] == evaluation
     assert 'evaluation' not in packet['comparison']
+
+
+def test_study_progress_does_not_require_or_expose_unsealed_evaluation(artifacts, monkeypatch, tmp_path):
+    paths, _ = artifacts
+    scenario = json.loads(paths[0].read_text())
+    monkeypatch.setenv('DNHACKS_FORECAST_STUDY', str(tmp_path))
+    manifest = {'historical_packet_sha256': forecasting._digest(scenario), 'candidate_count': 40,
+                'budget': {'output_tokens': 6000}, 'queries': [{'query_id': 'q1', 'file': 'q1.json'}, {'query_id': 'q2', 'file': 'q2.json'}]}
+    (tmp_path / 'manifest.json').write_text(json.dumps(manifest))
+    (tmp_path / 'q1.json').write_text(json.dumps({'query_id': 'q1'}))
+    (tmp_path / 'q2.json').write_text('{')
+    (tmp_path / 'evaluation.json').write_text(json.dumps({'coverage': {'complete_queries': 1}}))
+    packet = forecasting.study_packet(scenario)
+    assert packet == {'status': 'running', 'planned_queries': 2, 'saved_queries': 1, 'planned_candidates': 40, 'requested_output_tokens': 6000}
+    (tmp_path / 'sealed.json').write_text('{}')
+    assert forecasting.study_packet(scenario)['evaluation']['coverage']['complete_queries'] == 1
+    scenario['nodes'] = [{'id': 'changed'}]
+    assert forecasting.study_packet(scenario) is None
