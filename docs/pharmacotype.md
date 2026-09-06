@@ -142,11 +142,15 @@ No independent PDO denominator is established by the published library sizes.
 The [EGA record](https://ega-archive.org/datasets/EGAD00001005217), checked
 2026-09-06, lists 31 sequencing samples and committee-controlled access; it does
 not establish 31 eligible independent PDAC donors. No access request was sent.
-Tiriac molecular access is verified at [dbGaP phs001611.v1.p1](https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=phs001611.v1.p1),
-with an authorized-access application and data-use certification. Public
+Tiriac raw sequencing access is controlled at [dbGaP phs001611.v1.p1](https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=phs001611.v1.p1),
+but processed RNA quantification is open through
+[GDC](https://portal.gdc.cancer.gov/projects/ORGANOID-PANCREATIC). Public
 PRISM/CCLE acquisition, canonical metadata join and real CPU/GPU training are
 complete; [source audit](pharmacotype-sources.json) and [model card](pharmacotype-training.md)
 record the counts, hashes, outcomes and domain limitations.
+The training script now defaults to CUDA for all model fitting, including PCA,
+ridge and critic optimization. The model card includes the completed nine-fit
+CUDA rerun and the ongoing public PDO source audit.
 
 Remaining scientific release work: accessible paired PDO measurements and donor
 audit, sufficient untouched independent donors, assay-specific power and

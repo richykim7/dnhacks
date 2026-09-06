@@ -136,6 +136,10 @@ def _train(data, splits, *, kind='pca', latent=8, seed=0, epochs=100, ridge=1., 
     if any(len(g) < 2 for g in groups) or len(set(flattened)) != len(flattened) or set(flattened) != set(data['donors']):
         raise ValueError('Exhaustive disjoint canonical-donor splits required (>=2 each)')
     ix = [[data['donors'].index(d) for d in group] for group in groups]
+    if backend=='torch':
+        from .pharmacotype_torch import fit
+        return fit(data,splits,ix,kind=kind,latent=latent,seed=seed,epochs=epochs,
+                   ridge=ridge,missing_tolerance=missing_tolerance,device=device)
     x, y = data['x'], data['y']
     fill = np.nanmean(x[ix[0]], axis=0)
     if not np.isfinite(fill).all():

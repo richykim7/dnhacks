@@ -97,9 +97,9 @@ class Store(BaseStore):
 
     @staticmethod
     def worker_hash():
-        from . import pharmacotype_data, pharmacotype_encoder, native_evidence, experiment_transport, drug_response_scoring
+        from . import pharmacotype_data, pharmacotype_encoder, pharmacotype_torch, native_evidence, experiment_transport, drug_response_scoring
         return digest({Path(m.__file__).name: hashlib.sha256(Path(m.__file__).read_bytes()).hexdigest()
-                       for m in (pharmacotype_data, pharmacotype_encoder, native_evidence, experiment_transport, drug_response_scoring)} |
+                       for m in (pharmacotype_data, pharmacotype_encoder, pharmacotype_torch, native_evidence, experiment_transport, drug_response_scoring)} |
                       {'pharmacotype_scoring.py': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()})
 
     def registration(self):

@@ -40,3 +40,32 @@ def test_join_donor_selection_and_training_only_features(tmp_path):
     metadata={'files':[{'name':'Model.csv','computed_md5':'0'*32}], 'license':{'name':'synthetic'}}
     (raw/'article-27993248.json').write_text(json.dumps(metadata))
     with pytest.raises(ValueError,match='integrity'):builder.build(raw,out,genes=1)
+
+
+def test_pdo_auc_identity_audit_and_curve_separation(tmp_path, monkeypatch):
+    spec=importlib.util.spec_from_file_location('pdo_builder',Path(__file__).parents[1]/'scripts/build_pharmacotype_pdo.py')
+    pdo=importlib.util.module_from_spec(spec);spec.loader.exec_module(pdo)
+    raw=tmp_path/'raw';raw.mkdir();out=tmp_path/'out'
+    ids=[f'CAS-DAC-{i}' for i in range(100)]
+    records=[{'B':d,'F':'1','K':'Yes'} for d in ids]
+    records[0]['F']='2'  # Repeated patient samples are not independent units.
+    records[1]['K']='No'
+    monkeypatch.setattr(pdo,'worksheet',lambda path:[{},{}]+records)
+    (raw/'metadata.xlsx').write_bytes(b'synthetic metadata fixture')
+    pd.DataFrame(np.ones((3,100)),index=['A','B','C'],columns=ids).to_csv(raw/'expression.txt.gz',sep='\t')
+    responses=pd.DataFrame(np.ones((5,100))*.4,index=list(pdo.PANEL),columns=ids)
+    responses.to_csv(raw/'drug_screening.txt.gz',sep='\t')
+    audit=pdo.build(raw,out)
+    data=json.loads((out/'auc-development.json').read_text())
+    assert audit['eligible_pdac']==98
+    assert not set(ids[:2]) & set(data['donors'])
+    assert not audit['confirmation_enabled']
+    assert all('doses' not in p for p in data['panel'])
+    with pytest.raises(ValueError,match='schema'):prepare(data)
+    before=data['splits']
+    responses.iloc[:]=.8
+    responses.to_csv(raw/'drug_screening.txt.gz',sep='\t')
+    pdo.build(raw,out)
+    assert json.loads((out/'auc-development.json').read_text())['splits']==before
+    records.append(records[2])
+    with pytest.raises(ValueError,match='Duplicate source organoid'):pdo.build(raw,out)
