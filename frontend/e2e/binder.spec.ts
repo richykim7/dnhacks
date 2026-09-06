@@ -6,7 +6,15 @@ const baseRaw = readFileSync(
   new URL("./binder-fixture.json", import.meta.url),
   "utf8",
 );
-async function fixture(page: Page, recorded = false, raw = baseRaw) {
+async function fixture(
+  page: Page,
+  recorded = false,
+  raw = baseRaw,
+  extra: {
+    payloads?: [string, unknown][];
+    blobs?: Record<string, string>;
+  } = {},
+) {
   const sha = createHash("sha256").update(raw).digest("hex");
   await mockApi(page);
   const root = investigation.root;
@@ -42,6 +50,7 @@ async function fixture(page: Page, recorded = false, raw = baseRaw) {
       },
     ],
   ];
+  payloads.push(...(extra.payloads ?? []));
   if (recorded)
     for (const preset of ["hero", "interface-close", "reverse"])
       payloads.push([
@@ -85,7 +94,10 @@ async function fixture(page: Page, recorded = false, raw = baseRaw) {
         contentType: "text/event-stream",
         body: ": connected\n\n",
       });
-    if (u.pathname.includes("/blob/")) return r.fulfill({ body: raw });
+    if (u.pathname.includes("/blob/"))
+      return r.fulfill({
+        body: extra.blobs?.[u.pathname.split("/").at(-1)!] ?? raw,
+      });
     return r.fulfill({ status: 404, json: { error: "unavailable" } });
   });
   await page.goto("/?sceneReview=1");
@@ -152,7 +164,9 @@ test("binder visual review captures", async ({ page }) => {
   test.setTimeout(180000);
   await fixture(page);
   await page.getByRole("button", { name: "Expand workbench" }).click();
-  const dir = process.env.BINDER_REVIEW_DIR || test.info().outputPath("binder-review-r01");
+  const dir =
+    process.env.BINDER_REVIEW_DIR ||
+    test.info().outputPath("binder-review-r01");
   mkdirSync(dir, { recursive: true });
   for (const preset of [
     "hero",
@@ -226,7 +240,9 @@ test("recorded camera actions replay at adjustable speed while exploration stays
     .getByRole("button", { name: "Follow latest agent view", exact: true })
     .click();
   await expect
-    .poll(() => page.evaluate(() => (window as any).sceneReview?.inspect().preset))
+    .poll(() =>
+      page.evaluate(() => (window as any).sceneReview?.inspect().preset),
+    )
     .toBe("reverse");
   await page.getByLabel("Activity playback position").fill("5");
   await expect
@@ -327,4 +343,62 @@ test("source-mapped surface and backbone trace preserve the coordinate assessmen
     await page.evaluate(() => document.documentElement.scrollWidth <= 390),
   ).toBeTruthy();
   expect(errors).toEqual([]);
+});
+
+test("native binder records and real job states respect the experiment cursor", async ({
+  page,
+}) => {
+  const record = JSON.stringify({
+    schema: "binder_target.v1",
+    scope: { project_id: "fixture", run_id: "fixture", experiment_id: "exp1" },
+    data: {
+      construct_policy: "Illustrative chain crop; accessibility unavailable",
+    },
+  });
+  const key = createHash("sha256").update(record).digest("hex");
+  await fixture(page, false, baseRaw, {
+    blobs: { [key]: record },
+    payloads: [
+      [
+        "artifact",
+        {
+          artifact_id: "target",
+          kind: "binder_target",
+          name: "Target review",
+          status: "available",
+          sha256: key,
+          storage_key: key,
+          provenance: { category: "derived_geometry" },
+        },
+      ],
+      ["binder.job", { receipt: "fixture-only", state: "queued", cursor: 1 }],
+      [
+        "binder.job",
+        {
+          receipt: "fixture-only",
+          state: "canceled",
+          cursor: 2,
+          reason: "Canceled by experiment owner; partial candidates retained",
+        },
+      ],
+    ],
+  });
+  await page.getByText("Inspect Binder target", { exact: true }).click();
+  await expect(
+    page.getByText(/Illustrative chain crop; accessibility unavailable/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Download record" }),
+  ).toHaveAttribute("href", new RegExp(key));
+  await page.getByText("Binder design activity", { exact: true }).click();
+  await expect(
+    page.getByText(/Canceled by experiment owner; partial candidates retained/),
+  ).toBeVisible();
+  await page.getByLabel("Activity playback position").fill("4");
+  await expect(
+    page.getByText("Inspect Binder target", { exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByText("Binder design activity", { exact: true }),
+  ).toHaveCount(0);
 });

@@ -607,10 +607,18 @@ Worker-parsed surfaces and labeled Cα traces remain visual representations of i
 provenance and experiment-scope checks before publication. RuntimeDetail opens those collected
 artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
 Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
-verification. No live design pilot, biological efficacy, runtime vision or performance acceptance
+verification. No live design pilot, biological efficacy or performance acceptance
 is implied. Immutable scoped scene recipes and PNG captures support actual image observations,
 recorded action replay and independent user exploration inside the owning experiment.
 See [supported behavior and remaining acceptance](docs/binder-design.md).
+
+The provisional native `binder` action is instruction-gated by `binder-interface` and restricted to
+an existing experiment owned by the current researcher. It records target/epitope/protocol and
+comparison/follow-up artifacts, real receipt milestones, collected candidates and scoped scene/image
+reviews. Queuing requires a separate operator launch; no agent-provided executables or host paths
+are accepted. Image-review usage is recorded in the research ledger. This adds no audited structural
+method, statistical verdict or master-graph promotion path.
+
 
 ## Tumor–stroma instrument
 

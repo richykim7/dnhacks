@@ -198,3 +198,38 @@ names. Setup errors after claim record interruption; every exit terminates desce
 when the generator leader has already exited. Fast exits also receive final byte/trajectory checks.
 These are polled caps, so a short-lived output overshoot is detected and rejected, not prevented
 by a filesystem quota. No dependency deployment or live design run is implied by lifecycle tests.
+
+
+## Native scientist action
+
+After `get_skill binder-interface` is delivered, the explorer accepts
+`{"action":"binder","args":{"operation":"open_scene","experiment_id":"OWNED_EXPERIMENT",
+"args":{"bundle_sha256":"AVAILABLE_HASH"}}}`. The runtime supplies project/run scope and the
+operator's journal/store/server configuration. It rejects agent host paths, URLs, executables,
+store directories and scope overrides. The experiment must already exist in the current researcher.
+
+Native preparation uses a collected `molecular_structure` hash as `source_ref`; it records immutable
+`binder_target`, `binder_epitope` and `binder_protocol` artifacts. Subsequent operations use their
+`artifact_sha256` as `target_ref`, `epitope_ref` or `protocol_ref`. Native import inherits source
+provenance, so a software illustration cannot silently become a prediction. Evaluation reads the
+validated bundle's existing metrics. Comparison rebuilds sources and requires identical full target
+residue metadata/coordinates and one experiment scope; it saves a `binder_comparison` record.
+Follow-up proposals save `binder_followup` records with an explicit human-review status.
+
+Native `start_design` only queues a durable receipt and returns its actual state, including on retry.
+It never starts an executable. The operator must configure and invoke the pinned launch adapter.
+`collect_candidates` records real `binder.job` events and publishes each validated stored bundle
+once; failure/cancellation and rejection notes remain visible in the owning experiment. The UI
+shows these records and job events only at their available cursor, without simulated progress.
+
+Native scene operations use the same immutable service as the CLI. `BINDER_SCENE_BASE_URL`
+configures the trusted local workspace (default `http://127.0.0.1:8765`). Capture/pick run off the
+async event loop; image review passes actual PNG bytes and records model usage in the research
+cost ledger, including usage returned before a failure. These provisional actions do not register
+an audited structural method, create statistical results, or promote graph edges.
+
+Provider review failures return a bounded, redacted error and preserve the saved capture;
+no observation event is appended. `binder-interface` is explicitly rejected as an audited
+`run_experiments` method ID; custom analysis must use `exploratory`.
+See the [native capture and review status](binder-review/native-review.md) for actual
+browser evidence and the provider-quota limitation on the latest image observation.
