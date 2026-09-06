@@ -63,7 +63,7 @@ def make_explorer(tmp_path, monkeypatch, replies, sandbox=None):
             raise item
         return json.dumps(item)
     ex = Explorer("study", "Original research question", db_path=tmp_path / "kg.duckdb",
-                  trace_dir=str(tmp_path), complete_fn=complete, sandbox_run=sandbox)
+                  trace_dir=str(tmp_path), complete_fn=complete, sandbox_run=sandbox, subtree_budget={})
     monkeypatch.setattr(ex, "_state", lambda: "Question")
     monkeypatch.setattr(ex, "_turn_message", lambda obs: obs)
     return ex, prompts

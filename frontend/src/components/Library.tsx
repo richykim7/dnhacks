@@ -874,7 +874,7 @@ export function LaunchInvestigation({
   onStarted: (run: string) => void;
 }) {
   const [goal, setGoal] = useState("");
-  const [steps, setSteps] = useState(30);
+  const [steps, setSteps] = useState(18);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => setError(""), [open]);
@@ -917,19 +917,18 @@ export function LaunchInvestigation({
             placeholder="What would you like to understand or test?"
           />
         </label>
-        <Disclosure title="Research budget">
+        <Disclosure title="Research checkpoints">
           <label>
-            Maximum steps
+            Actions before checkpoint
             <input
               type="number"
               min={1}
-              max={200}
               value={steps}
               onChange={(e) => setSteps(Number(e.target.value))}
             />
             <small>
-              Bounds the number of research actions. Longer investigations can
-              use more model compute.
+              The researcher reports progress after this many actions. The
+              investigation has no automatic time or generation limit.
             </small>
           </label>
         </Disclosure>

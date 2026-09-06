@@ -14,11 +14,11 @@ allowance. Forking atomically reserves all child slots and transfers the origina
 A launch recorded as `launching` without a saved session stays blocked after restart: repeating a fork
 could duplicate paid work. Existing children resume their stored transcript and control state.
 
-The report-only SDK connection disables tools/MCP and caps output at 4096 tokens and the frozen report-phase time allowance (600 seconds by default) per
-attempt; two formatting repairs are allowed. An outage blocks immediately. `reporting_blocked` requires
-explicit operator intervention; invoking normal run again does not silently restart it. A blocked parent
-decision leaves `awaiting_parent` and can be retried by the controller. Failed/cancelled research remains
-operational failure, distinct from a parent prune. The UI renders these actual lifecycle names.
+New ordinary investigations are unbudgeted by default: no app model/report/experiment deadlines,
+lifetime action/round/depth/tree caps, or custom output-token ceiling. Checkpoints still request parent
+allocation (18 actions initially by default), and cancellation remains available. Explicit bounded
+monitoring runs retain their frozen contracts and report repair policy. An outage can still block
+work. `reporting_blocked` requires explicit recovery; normal restart does not erase a recorded failure.
 
 Operational caps are not the fixed statistical success horizon. No trajectory model, calibrated
 threshold or scientific-performance result is established by these controller tests. The private collection/comparison and separate operator service are described below.
@@ -59,9 +59,10 @@ A minimal enrollment file has this shape (values shown are examples, not a valid
 The example's 288-action horizon is not a recommended success deadline. The runtime now enforces
 prospective subtree contracts in `explorer/budget.py`, in the same SQLite transactions as parent grants.
 Pass `--budget-spec contract.json` to the explorer CLI; Python callers use `subtree_budget`.
-The default engineering contract is 43200 summed operation seconds and 2880 research actions, with
+An explicit empty budget spec selects 43200 summed operation seconds and 2880 research actions, with
 600-second research operations, 600-second report/judge calls and 10-second fork launches. These are
-operational defaults, not empirically selected scientific horizons. Restart loads the original contract;
+bounded-mode defaults, not empirically selected scientific horizons. Unbudgeted runs cannot supply a
+finite monitor horizon. Restart loads the original contract;
 a changed contract or retrospective enrollment is rejected. Nested explicit budgets charge every ancestor.
 
 Before research, the controller reserves up to three mandatory report attempts. A fork reserves each

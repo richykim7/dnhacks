@@ -262,32 +262,31 @@ graph. The map from run id to model session id is written to disk so a stopped r
 
 ### 4.4 Checkpoints and parent allocation
 
-Each worker has at most 18 research actions per round, with a warning at three remaining. `checkpoint`,
-`fork` and `done` pause research for the same child's mandatory report; `done` requests completion.
-At the action ceiling a separate tool-disabled turn resumes that child's transcript, with a 4096-token,
-600-second default reporting allowance (enforced by the frozen phase contract) and at most two format repairs. Failure leaves `reporting_blocked` durable.
-A valid report leaves `awaiting_parent`; neither state is completion or scientific failure.
+New investigations run without app-imposed model/report/experiment deadlines, lifetime action,
+continuation-round, fork-depth or total-branch limits. The default checkpoint interval is 18 research
+actions; it requests a progress report and parent allocation rather than ending the investigation.
+The UI calls this “Actions before checkpoint.” `checkpoint`, `fork` and `done` can request an earlier
+report. Reports reuse the child's transcript with tools disabled. Unbudgeted reports and parent
+judgments have no custom output-token ceiling; model thinking is adaptive. Format repairs do not have
+an attempt ceiling in unbudgeted mode. Provider errors and invalid or unavailable audit storage can
+still block work; user cancellation remains available.
 
-The parent controller inspects the report and supporting work and explicitly continues, forks, finishes
-or prunes. There is no top-two quota or experiment-count renewal. `run()` produces one checkpoint;
-`run_investigation()` runs parent allocation, including the root controller. Concurrent children report
-and receive decisions individually. Accepted splits transfer work to two or three specified descendants;
-code executes the approved questions from the child's saved context. SQLite stores report versions,
-idempotent decisions and atomic tree-wide slot reservations. An ambiguous interrupted launch is blocked,
-never repeated speculatively. Pending reports/decisions survive restart. Reserved slots are retained on
-ambiguous launch failure. A revised decision/operator recovery is needed for blocked work.
+The parent inspects each report and explicitly continues, forks, finishes or prunes. An unbudgeted
+parent may grant any positive checkpoint interval or two or more distinct feasible subquestions.
+`run()` produces one checkpoint; `run_investigation()` drives parent allocation. Forks preserve
+transcripts, idempotent decisions, atomic launch ownership, and child identity. Ambiguous interrupted
+launches are blocked rather than repeated. CPU and concurrent-container scheduling pace work; they
+do not impose an investigation duration. Unbudgeted experiment containers have no app time or memory
+ceiling. Retrieval/display caps remain explicit and do not establish absence.
 
-Operational limits remain depth 6, 72 total descendant slots, six continuation rounds and 96 research
-actions per node. In addition, `explorer/budget.py` enforces a frozen shared action/operation-time
-contract across descendants and continuations. New investigations default to 2,880 research actions
-and 43,200 summed operation seconds (12 aggregate hours); existing frozen contracts retain their
-original allowances. The CLI `--budget-spec` can set an explicit contract before a run starts.
-Research grants reserve reporting first; fork grants,
-consumption and refunds share the controller transaction. Restart never refreshes the endpoint or
-refunds ambiguous operations. Async operation deadlines mark backend overrun/cancellation uncertainty
-as operational violations; summed operation wall time is not an OS CPU/GPU quota or calibrated horizon.
-Reported SDK tokens are retained separately. Submissions during research remain available and
-pruning preserves all findings and pending verification. Statistical stopping is not enabled.
+Explicit `--budget-spec` / `subtree_budget` contracts remain available for prospectively bounded
+monitoring experiments. An explicit empty contract selects the bounded defaults: 2,880 actions,
+43,200 summed operation seconds, 600 seconds per research/report/judge operation and 10 seconds per
+fork launch. Bounded mode retains depth 6, 72 descendant slots, six continuations, 96 actions per node,
+18 actions per round and two–three children per fork. Existing stored contracts remain unchanged.
+Reporting is reserved before research; costs and grants remain transactional. Unbudgeted mode records
+node actions, phase costs and tokens without claiming a finite statistical horizon. Failed historical
+attempts retain their failure records and original budget; a recovery is a separate recorded attempt.
 
 ### 4.5 Experiment execution
 

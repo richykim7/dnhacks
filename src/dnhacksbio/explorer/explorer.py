@@ -337,12 +337,9 @@ class Explorer:
         self._has_forked = False       # a node splits once; the tree grows through survivors
         self.journal = share_from.journal if share_from else Journal(td)
         self.control = share_from.control if share_from else ControlStore(td)
-        if share_from is None:
-            existing_budget = self.control.budgets(self.run_id)
-            if subtree_budget is not None or not existing_budget:
-                self.control.freeze_budget(self.run_id, subtree_budget)
-        elif subtree_budget is not None:
+        if subtree_budget is not None:
             self.control.freeze_budget(self.run_id, subtree_budget)
+        self._uncapped = not self.control.budgets(self.run_id)
         self._allocation_fn = allocation_fn if allocation_fn is not None else (share_from._allocation_fn if share_from else None)
         self._report_reason = "allowance_exhausted"
         self.vq.runtime_journal = self.journal
@@ -353,7 +350,7 @@ class Explorer:
             if db.parent.parent.name in {"projects", "corpora"}:
                 project_id = db.parent.name
         self.manifest = self.journal.register(run_id, goal, objective=branch_objective or "",
-                                             project=project_id, config={"model": model, "network": network})
+                                             project=project_id, config={"model": model, "network": network, "budget_mode": "unbounded" if self._uncapped else "frozen"})
         self.goal = self.manifest["original_question"]
         self.attempt_id = ""
         self._operation_id = None
@@ -364,7 +361,7 @@ class Explorer:
         self._pending_feedback: list[dict] = []
         self._cancel_sandbox = threading.Event()
         self._degraded = False
-        self.model_timeout_s = 600
+        self.model_timeout_s = None if self._uncapped else 600
         existing = [m["run_id"] for m in self.journal.manifests() if m.get("parent_run_id") == run_id]
         self._forks_spawned = max([int(r.rsplit("~", 1)[-1]) for r in existing if r.rsplit("~", 1)[-1].isdigit()] or [0])
 
@@ -508,8 +505,11 @@ class Explorer:
             parts.append("EXPERIMENTAL RIGOR (mandatory for every experiment; the verifier enforces it and "
                          "rejects what fails). Follow it whenever you write run_experiments code:\n" + rigor)
         d = LIN.depth(self.run_id)
-        parts.append(f"FORK POSITION: you are at fork-depth {d} (tree-wide branch budget remaining: "
-                     f"{self.control.remaining(self.run_id)}). {_depth_nudge(d)}")
+        if self._uncapped:
+            parts.append(f"FORK POSITION: depth {d}. There is no lifetime action, round, depth or tree-size limit. Continue useful work and fork distinct feasible questions; checkpoints request parent allocation.")
+        else:
+            parts.append(f"FORK POSITION: you are at fork-depth {d} (tree-wide branch budget remaining: "
+                         f"{self.control.remaining(self.run_id)}). {_depth_nudge(d)}")
         parts.append(_PROTOCOL)
         return "\n\n".join(parts)
 
@@ -525,7 +525,7 @@ class Explorer:
         # establish that those messages are still in the current context.
         for name in self._delivered:
             self._pending_skills.setdefault(name, self._skill_snapshots[name])
-        if sum(len(s["content"].encode()) for s in self._pending_skills.values()) > 200_000:
+        if not self._uncapped and sum(len(s["content"].encode()) for s in self._pending_skills.values()) > 200_000:
             raise ValueError("Required instruction set exceeds context delivery capacity; execution stopped")
         for name, skill in self._pending_skills.items():
             prompt = skill["content"] + "\n\n" + prompt
@@ -660,6 +660,11 @@ class Explorer:
                  f"For reference, your last reply began: {(raw or '')[:300]!r}")
         obj = self._as_action(await self._complete_capturing(retry))
         if obj is not None:
+            return obj
+        if self._uncapped:
+            while obj is None:
+                self._event("protocol.repair", {"reason": "Invalid action; requesting repair without dispatch"})
+                obj = self._as_action(await self._complete_capturing(retry))
             return obj
         raise ValueError("Action protocol error after one repair; nothing dispatched")
 
@@ -919,7 +924,7 @@ class Explorer:
         exps = [e for e in (args.get("experiments") or []) if isinstance(e, dict) and e.get("code")]
         if not exps:
             return "(no experiments provided)"
-        if len(exps) > 8:
+        if not self._uncapped and len(exps) > 8:
             return "(at most 8 experiments per action)"
         for e in exps:
             method = e.get("method_id")
@@ -945,7 +950,8 @@ class Explorer:
                         + repr(json.dumps({"project_id": self.manifest.get("project_id"),
                                            "run_id": self.run_id, "experiment_id": expid})) + "\nexec(compile(" + repr(code) + ", '<experiment>', 'exec'))"
                         for code, expid in zip(codes, identities)]
-            run = lambda codes: run_many(scoped_codes(codes), max_parallel=self.max_parallel, timeout=600,
+            run = lambda codes: run_many(scoped_codes(codes), max_parallel=self.max_parallel, timeout=None if self._uncapped else 600,
+                                        memory=None if self._uncapped else "8g",
                                          network=self.network, cache_dir=self.cache_dir,
                                          scratch_dir=self.scratch_dir, pool=self.sandbox_pool,
                                          progress=progress, journal=self.journal,
@@ -1250,11 +1256,13 @@ class Explorer:
                 self._event("lifecycle", {"lifecycle": "reporting_blocked", "reason": "No saved child session"})
                 return
             report_session = llm.Session(system=_SYS, model=self.model, resume=sid,
-                                         max_turns=1, tools_disabled=True, max_output_tokens=4096)
+                                         max_turns=1, tools_disabled=True, max_output_tokens=None if self._uncapped else 4096)
         error = ""
         report_connected = False
         try:
-            for attempt in range(state["report_attempts"], 3):
+            import itertools
+            attempts = itertools.count(state["report_attempts"]) if self._uncapped else range(state["report_attempts"], 3)
+            for attempt in attempts:
                 self.control.patch(self.run_id, report_attempts=attempt + 1)
                 started = time.monotonic()
                 cap = {}
@@ -1270,7 +1278,7 @@ class Explorer:
                         return await (self._inject_complete(prompt) if self._inject_complete
                             else report_session.ask(prompt, capture=cap))
                     raw = await self._funded("report", ask_report)
-                    report = validate_report(json.loads(raw))
+                    report = validate_report(llm.parse_json(raw), max_chars=None if self._uncapped else 24000)
                     if report_session and report_session.truncated:
                         raise ValueError("Report output limit reached")
                     self.control.cost(self.run_id, "report", time.monotonic() - started, _capture_usage(cap))
@@ -1342,15 +1350,16 @@ class Explorer:
                    "supporting_records": child._allocation_records(),
                    "subtree_budgets": child.control.budgets(child.run_id),
                    "actions_used": state["total_actions"], "rounds": state["rounds"],
-                   "max_branch_actions": BRANCH_TOTAL_STEPS, "max_rounds": MAX_CONTINUATIONS,
-                   "depth": LIN.depth(child.run_id), "max_depth": MAX_DEPTH}
+                   "max_branch_actions": None if child._uncapped else BRANCH_TOTAL_STEPS, "max_rounds": None if child._uncapped else MAX_CONTINUATIONS,
+                   "depth": LIN.depth(child.run_id), "max_depth": None if child._uncapped else MAX_DEPTH}
         prompt = ("You are the parent allocation controller. Inspect the objective, report and evidence. "
                   "Choose continue, fork, finish or prune. Do not demand a positive result each round: "
                   "credible unfinished work, preparation and useful falsification deserve fair consideration. "
                   "Do not rank by experiment counts or enforce a survival quota. Fork only for distinct "
                   "useful concurrent subquestions with feasible inputs. Return one JSON object: "
-                  "action, reason; for continue also objective and allowance (1..18); for fork also allowance "
-                  "and branches (2..3 objects with objective, information_gain, feasibility). Respect caps.\n"
+                  "action, reason; for continue also objective and allowance; for fork also allowance "
+                  "and branches (objects with objective, information_gain, feasibility).\n"
+                  + (" There are no lifetime action/round/depth/tree limits. Allowance is the next checkpoint interval, not a stopping budget; choose any positive integer and any number of distinct feasible branches. " if child._uncapped else " Allowance must be 1..18 and forks must have 2..3 children; respect the frozen caps. ")
                   + json.dumps(context, default=str))
         started = time.monotonic()
         cap = {}
@@ -1362,9 +1371,9 @@ class Explorer:
                     result = await result
             else:
                 raw = await llm.acomplete(prompt, model=self.model, tools_disabled=True,
-                    max_output_tokens=4096, max_turns=1, max_attempts=1, capture=cap)
+                    max_output_tokens=None if child._uncapped else 4096, max_turns=1, max_attempts=1, capture=cap)
                 result = json.loads(raw)
-            return validate_decision(result)
+            return validate_decision(result, max_actions=None if child._uncapped else 18, max_branches=None if child._uncapped else 3)
         finally:
             self.control.cost(child.run_id, "judge", time.monotonic() - started, _capture_usage(cap))
 
@@ -1605,7 +1614,7 @@ class Explorer:
             return await self._run_round(max_steps)
 
     async def _run_round(self, max_steps: int) -> dict:
-        state = self.control.start(self.run_id, min(max_steps, CHILD_MAX_STEPS))
+        state = self.control.start(self.run_id, max_steps if self._uncapped else min(max_steps, CHILD_MAX_STEPS))
         self.steps = state["total_actions"]
         self._report_reason = state.get("report_reason", "allowance_exhausted")
         self._resume_sid = state["session_id"] or self._resume_sid

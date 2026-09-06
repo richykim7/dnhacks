@@ -210,3 +210,50 @@ def test_reporting_obeys_its_frozen_phase_deadline(tmp_path, monkeypatch, report
             assert ex.control.get("study")["report"]["request"] == "finish"
     finally:
         ex.close()
+
+
+def test_unbudgeted_controller_has_no_lifetime_round_depth_or_fork_caps(tmp_path):
+    s = ControlStore(tmp_path)
+    s.start("free", 1)
+    assert s.unlimited("free")
+    for i in range(8):
+        s.patch("free", status="reporting")
+        s.save_report("free", report("continue"))
+        s.decide("free", i + 1, {"action": "continue", "reason": "Useful unfinished work",
+                 "objective": "Continue measurement", "allowance": 30})
+        for _ in range(30):
+            s.consume("free")
+    assert s.get("free")["total_actions"] == 240
+    deep = "free" + "~1" * 8
+    s.start(deep, 1)
+    s.patch(deep, status="reporting")
+    s.save_report(deep, report("fork"))
+    decision = s.decide(deep, 1, {"action": "fork", "reason": "Independent questions", "allowance": 25,
+        "branches": [{"objective": str(i), "information_gain": "Distinct", "feasibility": "Data available"} for i in range(4)]})
+    assert len(decision["children"]) == 4 and s.remaining("free") == -1
+
+
+def test_unbudgeted_explorer_has_no_operation_deadline_or_report_repair_cap(tmp_path, monkeypatch):
+    from dnhacksbio.explorer.explorer import Explorer
+    from dnhacksbio.explorer import embed
+    monkeypatch.setattr(embed, "embed_one", lambda *_: None)
+    calls = []
+    async def complete(_):
+        calls.append(1)
+        await asyncio.sleep(0.01)
+        return json.dumps({} if len(calls) <= 4 else report())
+    ex = Explorer("free", "Question", db_path=tmp_path / "free.duckdb", trace_dir=tmp_path, complete_fn=complete)
+    monkeypatch.setattr(ex, "_state", lambda: "Question")
+    try:
+        assert ex.model_timeout_s is None and ex.control.budgets("free") == []
+        assert asyncio.run(ex.run(0))["status"] == "awaiting_parent"
+        assert len(calls) == 5
+    finally:
+        ex.close()
+
+
+def test_unbudgeted_sandbox_omits_execution_and_memory_ceiling():
+    from dnhacksbio.explorer.sandbox import _build_run_argv
+    argv = _build_run_argv("free", "image", "/work", None, None, None, 4, "none", 1000, 1000, [])
+    assert "timeout" not in argv and "--memory" not in argv
+    assert argv[-3:] == ["image", "python", "/work/code.py"]

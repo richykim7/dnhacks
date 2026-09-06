@@ -86,7 +86,7 @@ async def main() -> dict:
     ap = argparse.ArgumentParser()
     ap.add_argument("--goal", default=None, help="the run's goal; if omitted, taken from the corpus card, "
                     "else a generic fallback")
-    ap.add_argument("--steps", type=int, default=30)
+    ap.add_argument("--steps", type=int, default=18, help="Initial checkpoint interval; not an investigation lifetime limit")
     ap.add_argument("--trace-dir", default="data/processed", help="Runtime journal/control directory")
     ap.add_argument("--prepare-only", action="store_true", help="Create runtime identity/budget for private enrollment, then exit without research or Docker startup.")
     ap.add_argument("--budget-spec", help="JSON frozen subtree contract; all descendants share it. Resume must match.")
@@ -148,8 +148,9 @@ async def main() -> dict:
     summary["usage"] = usage
     print(summary)
     if prog:
-        prog.emit("finish", "done",
-                  f"run complete — {summary.get('steps')} steps, queue {summary.get('queue')}",
+        finished = summary.get("status") in {"completed", "pruned"}
+        prog.emit("finish" if finished else "fail", "done" if finished else "error",
+                  f"investigation {summary.get('status')} — {summary.get('steps')} actions, queue {summary.get('queue')}",
                   run_id=args.run_id, summary={"run_id": args.run_id, **summary})
         prog.close()
     return summary

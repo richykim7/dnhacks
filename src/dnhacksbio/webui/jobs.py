@@ -46,7 +46,7 @@ KINDS = BUILD_KINDS + ("run",)        # every kind of job that can occupy a proj
 # A run_id is a path-encoded lineage key (explorer/lineage.py) whose separator is `~`; the base id
 # must never contain one. Project ids are already [a-z0-9_-], so the timestamp is the only new part.
 RUN_ID_FMT = "%Y%m%d-%H%M%S"
-STEPS_MIN, STEPS_MAX = 1, 200
+STEPS_MIN = 1
 # Low enough not to be a writing test, high enough that "?" or a bare gene name cannot pass for a question.
 MIN_GOAL_CHARS = 12
 
@@ -127,7 +127,7 @@ def start_build(project_id: str, *, mode: str = "build", dry: bool = False) -> d
     return job
 
 
-def start_run(project_id: str, *, goal: str = "", steps: int = 30) -> dict:
+def start_run(project_id: str, *, goal: str = "", steps: int = 18) -> dict:
     """Launch an explorer run against this project's graph.
 
     Same detached-subprocess shape as a build, pointed at `scripts/run_explorer.py`. The run needs a
@@ -147,8 +147,8 @@ def start_run(project_id: str, *, goal: str = "", steps: int = 30) -> dict:
         steps = int(steps)
     except (TypeError, ValueError):
         raise ValueError("steps must be a whole number")
-    if not STEPS_MIN <= steps <= STEPS_MAX:
-        raise ValueError(f"steps must be between {STEPS_MIN} and {STEPS_MAX}")
+    if steps < STEPS_MIN:
+        raise ValueError("checkpoint interval must be positive")
     goal = str(goal or "").strip()[:4000]
     if len(goal) < MIN_GOAL_CHARS:
         raise ValueError(

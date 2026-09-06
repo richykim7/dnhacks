@@ -318,7 +318,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._send_json(job, status=202)
         if tail == "run":
             job = jobs.start_run(pid, goal=str(payload.get("goal", "")),
-                                 steps=int(payload.get("steps") or 30))
+                                 steps=int(payload.get("steps") or 18))
             return self._send_json(job, status=202)
         if tail == "chat":
             if len(parts) == 2:
