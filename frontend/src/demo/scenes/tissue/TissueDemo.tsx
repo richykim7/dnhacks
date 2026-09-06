@@ -1,4 +1,5 @@
-import { useLayoutEffect, useMemo } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
+import SceneInteraction from "../../SceneInteraction";
 import "./tissue.css";
 import { Canvas, useThree } from "@react-three/fiber";
 import { CatmullRomCurve3, Color, DoubleSide, Vector3 } from "three";
@@ -14,6 +15,7 @@ export const tissueDemoMetadata = {
 export interface TissueDemoProps {
   time: number;
   reducedMotion?: boolean;
+  interactive?: boolean;
 }
 const cyan = "#67e8f9";
 const coral = "#fb8c82";
@@ -114,7 +116,6 @@ function Neighborhood({ time, reducedMotion }: TissueDemoProps) {
   const interaction = smooth(11, 15, t);
   return (
     <>
-      <Camera time={t} reducedMotion={reducedMotion} />
       <ambientLight intensity={0.6} />
       <directionalLight position={[-4, 7, 9]} intensity={2} color="#c4f5ff" />
       <pointLight position={[6, -1, 4]} intensity={16} color={coral} />
@@ -227,18 +228,20 @@ function Neighborhood({ time, reducedMotion }: TissueDemoProps) {
 export default function TissueDemo({
   time,
   reducedMotion = false,
+  interactive = false,
 }: TissueDemoProps) {
+  const [manualCamera, setManualCamera] = useState(false);
   const t = Number.isFinite(time) ? Math.max(0, Math.min(18, time)) : 0;
   return (
     <div
       className="tissue-demo"
       data-provenance="illustrative"
-      aria-label="Illustrative tumor and stroma neighborhood"
+      aria-label={interactive ? "Tumor and stroma simulation" : "Illustrative tumor and stroma neighborhood"}
       style={{
         width: "100%",
         height: "100%",
         position: "relative",
-        background: "#061019",
+        background: interactive ? "transparent" : "#061019",
         overflow: "hidden",
       }}
     >
@@ -246,10 +249,12 @@ export default function TissueDemo({
         frameloop="demand"
         dpr={[1, 1.5]}
         camera={{ fov: 39, near: 0.1, far: 80 }}
-        gl={{ antialias: true, alpha: false }}
-        onCreated={({ gl }) => gl.setClearColor("#061019")}
+        gl={{ antialias: true, alpha: interactive, preserveDrawingBuffer: true }}
+        onCreated={({ gl }) => gl.setClearColor("#061019", interactive ? 0 : 1)}
       >
         <Neighborhood time={t} reducedMotion={reducedMotion} />
+        {!manualCamera && <Camera time={t} reducedMotion={reducedMotion} />}
+        {interactive && <SceneInteraction onStart={() => setManualCamera(true)} />}
       </Canvas>
       <div className="tissue-demo-footer">
         <div
@@ -291,7 +296,7 @@ export default function TissueDemo({
             Surrounding stroma
           </div>
         </div>
-        <div
+        {!interactive && <div
           className="tissue-demo-provenance"
           style={{
             color: "#b6d4da",
@@ -302,7 +307,7 @@ export default function TissueDemo({
           }}
         >
           ILLUSTRATIVE · NOT A SIMULATION
-        </div>
+        </div>}
       </div>
     </div>
   );
