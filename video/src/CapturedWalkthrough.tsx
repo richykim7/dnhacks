@@ -8,7 +8,9 @@ import {
 } from "remotion";
 import capture from "./capture.generated.json";
 import { PaperReveal, EvidenceBoundary } from "./PaperReveal";
-const shots = [...capture.captures].sort((a, b) => a.t - b.t);
+const shots = [
+  ...new Map(capture.captures.map((shot) => [shot.t, shot])).values(),
+].sort((a, b) => a.t - b.t);
 const cursor = [...capture.cursor].sort((a, b) => a.t - b.t);
 const chapters = [
   [0, "01 / OPEN THE WORKSPACE", "Start with a literature collection."],

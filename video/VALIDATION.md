@@ -10,7 +10,7 @@ application captures. The earlier 138-second preview is superseded.
   page of the HA–CD44 article. Browser-local setup interception blocks all live
   API mutations. Actual existing graph/paper/history reads remain read-only.
 - TypeScript: passes. Capture and check scripts pass syntax checks.
-- Remotion Player: 56 sampled timestamps, no image-loading/page errors or caption
+- Remotion Player: 62 sampled timestamps, no image-loading/page errors or caption
   overflow. Seven UI frames exactly match the original captured pixels, including
   the library, researcher workspaces and HA–CD44 review. Paper reveal pixels remain
   identical after seeking backwards.
