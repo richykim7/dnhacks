@@ -14,7 +14,13 @@ Existing separately authorized forecasting work is not revoked or expanded by th
 
 The agent visibility, lifecycle, artifact, playback, and question-persistence direction discussed
 with the user is documented separately in [PLAN-agent-observability.md](PLAN-agent-observability.md).
-This evaluation backlog must not be pulled into that integration automatically.
+These backlog items must not be pulled into that integration automatically.
+
+## NAME-01 — Choose a product name
+
+“DN Research” is a placeholder. Come up with candidate names and agree on a final product name
+with the team, then update the UI and relevant documentation consistently. The current naming
+status is recorded in the [frontend design brief](../frontend/DESIGN.md).
 
 ## EVAL-01 — Safety and reliability demonstration
 
