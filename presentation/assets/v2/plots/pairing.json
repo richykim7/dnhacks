@@ -1,0 +1,58 @@
+{
+  "flavorgraph_published": {
+    "source": "Park, Kim, Kim, Spranger & Kang, FlavorGraph, Scientific Reports 11:931 (2021), Table 2",
+    "metric": "NMI, node clustering of 416 chemical-hub ingredients into 9 food categories",
+    "random": 0.111,
+    "recipes only": 0.079,
+    "chemistry only": 0.272,
+    "both, one graph": 0.286,
+    "both + structure loss": 0.309
+  },
+  "ours": {
+    "task": "recover held-out real claim edges, mean reciprocal rank",
+    "graph": "synthetic two-factor graph, 180 entities, 6 contexts x 6 properties x 5",
+    "holdout": 0.25,
+    "dim": 24,
+    "lam": 0.25,
+    "seeds": 5,
+    "columns": [
+      "joint",
+      "usage only",
+      "meaning only",
+      "random"
+    ],
+    "by_density": {
+      "0.15": [
+        0.09234477697822571,
+        0.0891490418293395,
+        0.27593115725784634,
+        0.0062116784471400194
+      ],
+      "0.25": [
+        0.0744137432234684,
+        0.06723001196796426,
+        0.2262841034159409,
+        0.005966111672932716
+      ],
+      "0.4": [
+        0.12768219793335472,
+        0.11266686037719136,
+        0.26183097648142517,
+        0.005753689854105629
+      ],
+      "0.6": [
+        0.22900894854285186,
+        0.18759802404241305,
+        0.28566238876200395,
+        0.005710018385039999
+      ],
+      "0.9": [
+        0.44392977978733017,
+        0.3953160996618975,
+        0.2714506834212008,
+        0.005700225753184818
+      ]
+    },
+    "caveat": "Synthetic structure with a known answer, used to test the method. Not a measurement on the PDAC corpus."
+  }
+}
