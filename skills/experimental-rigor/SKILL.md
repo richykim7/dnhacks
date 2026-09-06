@@ -30,9 +30,9 @@ your good findings survive; skip them and even a real effect gets thrown out. Th
 6. **Robustness.** Re-estimate under a **leave-one-group-out** (drop each lineage / batch / age-decile /
    platform in turn). Set `robust = true` only if the **sign is stable** across all folds. A result that
    flips when you remove one group is an artifact, not a finding.
-7. **Family-wise control (FDR).** Everything you submit is judged as a *family* with **e-BH** at `FDR ≤ 0.25`
-   (e-BH is the e-value analogue of Benjamini–Hochberg; valid even when your tests are dependent). Submitting
-   20 variants of the same idea to fish for one "hit" will not survive.
+7. **Multiple comparisons.** Declare the full family of experiments and report all planned
+   attempts. Do not select only favorable variants or claim investigation-wide error control
+   from a single experiment result.
 
 ## The exchangeable unit (the concept people get wrong most)
 
@@ -51,24 +51,11 @@ it produces a number that clears every gate above while meaning nothing. If you 
 specifications, commit to them in advance and report all of them, not the best one. Prefer a hypothesis that
 **forbids** a concrete outcome (a near-tautology that can't be wrong tells you nothing).
 
-## Native e-value — emit one when your test is a two-group comparison
+## Expression experiment submissions
 
-The family FDR gate (e-BH) runs on **e-values**. An e-value is the payoff of a fair bet against the null:
-`E[e] ≤ 1` under the null, so `e ≫ 1` is real evidence against it — and e-values **multiply** across
-independent looks, so your evidence on a hypothesis *compounds* if you re-test it on fresh data (that
-accumulation is what the run's e-value bankroll shows). Where your test is a **two-group location
-comparison** (does group A differ from group B?), emit a *native betting e-value* — it is ~2× stronger than
-the falsifier calibrating one from your p-value, and it is a one-liner:
-
-```python
-import evalue                      # provided in the sandbox at /opt/sandbox_lib — no install needed
-e = evalue.two_sample_e(a_values, b_values, expected_sign=-1)  # +1/-1 = predicted sign of mean(a)-mean(b); 0 = two-sided
-```
-
-Add `"e_value": e` to your RESULT. If your test is **not** a two-group comparison (correlation, enrichment,
-regression, …), just **omit** `e_value` — the falsifier will calibrate one from your `p_null` (valid, a bit
-weaker). **Never hand-roll an e-value or emit one you can't justify as `E[e] ≤ 1` under the null**: a
-too-generous e-value is the one thing that can silently let a false finding through.
+For independent-donor TPM distribution comparisons, use the `expression-experiment` skill's
+submission command. It returns a receipt only; do not attach extra statistics or fabricate a
+RESULT for it. The result shape below applies to ordinary exploratory analyses.
 
 ## Minimal shape your code should print
 
@@ -80,7 +67,6 @@ print("RESULT:", json.dumps({
     "null_model": "shuffled <UNIT> labels, N=<n_perm>",
     "n_units": n,                # >=8 (per group)
     "robust": lolo_sign_stable,  # leave-one-group-out sign stability
-    "e_value": e,                # OPTIONAL: native betting e-value for a two-group test (else omit)
 }))
 ```
 

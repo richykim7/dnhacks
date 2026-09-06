@@ -46,5 +46,8 @@ E-value/e-BH helpers are standalone diagnostics, not an active falsifier gate.
   `/data/interim/explorer_ready/` tables (see its SKILL.md).
 - `co_essentiality/` — genome-wide co-essentiality partners of a query gene (DepMap gene-effect matrix).
 - `geo_expression/` — loading and harmonizing a public GEO cohort (the `geoharmonize` helper).
+- `expression-experiment/` — submit a declared independent-donor TPM comparison using the repository
+  command; record its receipt without a RESULT or a verification submission. The agent writes input
+  preparation code only; this command does not return analysis statistics.
 
 Every other directory is a method guide with its own data-source section.

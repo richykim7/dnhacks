@@ -19,6 +19,13 @@ scores (with subtype / proliferation / sex controls) that are comparable across 
   scanpy), or anything where you have a local pre-materialized matrix already keyed by gene. And it does not
   decide comparability for you — see the scale warning.
 
+## Submit a TPM comparison
+
+For an independent-donor comparison of two TPM expression distributions, load the
+`expression-experiment` skill and run its submission command. Save the returned receipt.
+This is separate from the exploratory correlation example below. Do not relabel GEO
+microarray values or log-transformed matrices as TPM.
+
 ## API (import `geoharmonize as gh`)
 - `ds = gh.load("GSExxxxx", destdir="/cache")` → a `Dataset`. Caches the download in `/cache` (persists
   across experiments). Applies log2 **only** when the GEO2R rule says the values are linear; leaves already-

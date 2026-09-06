@@ -88,7 +88,7 @@ on the recorded software environment.
 
 Implemented: standalone CPU bettor, explicit sampling contract, log-wealth diagnostics and replay
 metadata, PCA/autoencoder training and loading, evidence utilities, tests, benchmark harness and
-agent usage instructions. [Usage guide](../skills/learned-evalue/SKILL.md).
+agent usage instructions. [Usage guide](../skills/expression-experiment/SKILL.md).
 
 Integration validation on the combined code at base `f7564fd`: **594 Python tests passed, 12 skipped**,
 including all 21 targeted e-value tests. The frontend production build, two frontend unit tests,
@@ -260,3 +260,30 @@ remain the separately reviewed integration phase described in the plan.
 
 Final focused CUDA validation: **33 passed** on L40S. The local CUDA-only test is skipped because
 this checkout has no GPU; the same test runs and passes on the remote device.
+
+
+## Background scoring and agent blinding
+
+The first invocation guide exposed the numerical diagnostic to the discovery agent. The revised
+interface separates experiment submission from scoring: an agent saves TPM inputs and a declared
+specification, runs `python -m dnhacksbio.expression_experiment`, and records a durable receipt.
+The client imports no numerical code and never relays service response bodies or scoring failures.
+The self-contained `expression-experiment` skill replaces the direct-call skill. General rigor and
+DepMap guidance no longer request native diagnostic emission.
+
+A separate operator service durably queues each request before acknowledgement. Stable IDs make
+transport retries idempotent; conflicting retries fail. A worker process calls the tested numerical
+implementation with a frozen encoder and fixed settings. Results, failures and complete replay
+inputs stay in the operator's database, outside the discovery journal, recall and branch feedback.
+There is no result-reading HTTP endpoint. This introduces no verifier or family-selection change.
+
+Validation covers a real command through Explorer, asynchronous scoring using the actual library,
+private result persistence, unchanged receipts before/after success or failure, rejected conflicting
+retries and malicious response-body suppression. Fixtures are synthetic and model actions scripted;
+this is an integration check, not new biological validation or a live-LLM study.
+
+A separate process does not enforce filesystem confidentiality against unrestricted code running
+as the same OS user. Production blinding requires the service's state and confirmation data to be
+outside the agent's access permissions, and human exports must not be fed back during discovery.
+The upload interface cannot prove that submitted donors were untouched during hypothesis selection.
+Operator setup and replay procedures are in [the service guide](expression-scoring.md).
