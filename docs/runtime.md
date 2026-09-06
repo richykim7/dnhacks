@@ -20,11 +20,11 @@ SQLite indexes the ordered stream; snapshots are rebuilt from history rather tha
 Large histories therefore cost more to load/reduce; pagination bounds each event response, not the total
 client history. Do not prune the journal to save space without introducing explicit cursor-expiry rules.
 
-Observability write failures stop protected dispatch, cancel sandbox work, and emit an explicit process
+Observability write failures stop protected dispatch, cancel experiment work, and emit an explicit process
 stderr warning. A heartbeat delay is shown as stale/unknown, not failure. The API reconciles a missing
 worker only with kernel boot/PID/start identity evidence and an attempt guard. Reconciliation requires
 Linux `/proc` in the worker's PID namespace; unsupported hosts or other namespaces retain unknown liveness. UI cancellation records cancellation and
-SIGTERM cancels the CLI task so its sandbox can stop and final output can be collected.
+SIGTERM cancels the CLI task so its experiment process group can stop and final output can be collected.
 
 Launch jobs register the question and queued state before spawning. CLI/harness construction registers
 its manifest before model calls. Legacy histories remain readable but are explicitly partial; their
@@ -82,19 +82,24 @@ Experiments declare an exact `method_id`. `get_skill` schedules that method's co
 for the next model request; the dispatch gate checks recorded delivery, not model claims. A custom method
 uses `exploratory`, receives common rigor, and cannot be submitted as an audited experiment. Registered
 method use still requires independent scientific verification. Tool outputs cannot emit trusted events or
-override the sandbox. Existing feedback excerpts continue to enter context with version references; this
+override the runtime policy. Existing feedback excerpts continue to enter context with version references; this
 is delivery provenance, not evidence that feedback improved future performance.
 
 ## Sandbox and artifacts
 
-The sandbox retains its network/resource/user/mount boundaries. Python output is unbuffered; both pipes
-are drained while the process runs. Events carry stream byte offsets and bounded chunks. At 1 MB per
-stream live publication stops with an explicit marker; a bounded final tail retains traceback endings.
-Known token patterns and sensitive field names are redacted before journaling/streaming. This is
-best-effort, not comprehensive secret detection; never print secrets or put them in scientific artifacts.
+Experiment code runs directly in the app's host Python environment, with no container runtime.
+Install the `experiments` extra; deployment does this automatically. Each subprocess has an owned
+process group for cancellation, temporary cwd/output, persistent cache and per-branch scratch.
+The child receives a selected environment plus declared runtime paths and scope. Host execution is
+not an OS filesystem/network security boundary: read-only-data and network settings are instructions.
+Legacy `/data`, `/cache`, `/scratch` and `/work` Python path literals resolve to actual host paths;
+`experiment.started` records those aliases, interpreter and the resolved code blob. The submitted code
+remains in `experiment.queued`; replay can access each version only after its corresponding event.
+Both output pipes stream with offsets and explicit truncation notices. Cancellation stops the owned
+process group and retains available diagnostics. Temporary files are removed after artifact collection.
 
-Before execution the runner allocates experiment IDs. The sandbox writes an output manifest under
-`/work/output` (`DN_ARTIFACT_DIR`); see the mandatory artifact skill for the precise schema. The collector
+Before execution the runner allocates experiment IDs. The process writes an output manifest under
+`DN_ARTIFACT_DIR`; see the mandatory artifact skill for the precise schema. The collector
 accepts only contained regular PDB/mmCIF files, validates actual coordinates with Gemmi, enforces
 8 files / 20 MB each / 40 MB total / 100,000 atoms, checks provenance, and stores approved bytes before
 temporary job cleanup. Rejections are recorded explicitly. A failed process cannot publish its printed

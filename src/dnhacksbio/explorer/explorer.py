@@ -1,5 +1,5 @@
 """The explorer agent: a curious computational biologist that roams the graph and reads papers, follows
-intuitions, writes and runs its own code in parallel sandboxes, does divergent tree search over
+intuitions, writes and runs its own code in parallel host processes, does divergent tree search over
 experiments, judges its own results, and hands the good ones to the verification pipeline while it keeps
 going.
 
@@ -169,8 +169,9 @@ Actions:
 - private_experiment {"method_id":"paired-pathway-v1|dependency-chronos-v1|biomarker_auc.v1", "spec":{...}, "input":{"cohort_id":"...","manifest_sha256":"..."}}
                    -> submit an operator-registered experiment with runner-owned provenance; load the corresponding experiment skill first.
                       Returns only a receipt. Never manufacture RESULT or submit that receipt to legacy verification.
-- run_experiments{"experiments": [ {"hypothesis","subject","object","method","expected_sign":-1|0|1,"code"}, ... ]}
-                   -> runs each `code` in a parallel sandbox. Your code must print one line with json.dumps:
+- run_experiments{"experiments": [ {"hypothesis","subject","object","method_id","method","expected_sign":-1|0|1,"code"}, ... ]}
+                   -> method_id is the loaded registered skill ID (or exploratory); method is only a display label.
+                   -> runs each `code` in a parallel host process. Your code must print one line with json.dumps:
                       print("RESULT:", json.dumps({"effect":..,"p_null":..,"null_model":"..","n_units":..,"robust":true}))
                       `p_null` is a probability in [0,1] and every number is finite; a malformed RESULT is
                       rejected and the experiment records no result. Everything else you print is handed
@@ -207,12 +208,13 @@ in from the first line of code. The full recipe is in the experimental-rigor sec
     until p < 0.05.
   - Control: include a negative control where you can (a pair or label that should show nothing).
 
-Your experiment code runs in a sandbox: any datasets mounted for this run are read-only at /data. Which
+Your experiment code runs directly in the host Python environment. Treat declared input data as read-only. Which
 datasets are available for this run, and their catalogs, are described in the corpus context section
 above when present; how to use a method rigorously lives in the skills (search_skills, then get_skill).
-Read both before writing analysis code. If no data is mounted, use the KG, the papers and, only when
-network is enabled (see the sandbox note), public data you fetch. Write self-contained code; dnhacksbio is
-not installed in the sandbox. Branch off promising nodes in the frontier and abandon dead ones.
+Read both before writing analysis code. Use the declared runtime path variables; legacy /data path
+literals in guide examples are resolved by the runner. If inputs are missing, use the KG, the papers
+and, only when network is authorized, public data you fetch. The project package and scientific stack
+are installed. Branch off promising nodes in the frontier and abandon dead ones.
 
 Make progress: if a search returns little, do not repeat it; switch tactics (read a paper, or design and
 run experiments). Within a few steps you should be logging ideas and running experiments, not only
@@ -265,9 +267,8 @@ class Explorer:
         # The per-run framing (goal, which /data tables are mounted and their catalogs, domain notes) lives
         # in a markdown card, not in code, so this engine runs any corpus by swapping the card.
         self.corpus_card = load_corpus_card(corpus_card)
-        self.network = network           # sandbox network for experiments: "none" (isolated) | "bridge" (internet)
-        # Host dir mounted read-write at /cache in every experiment (persists downloads); anchored to the
-        # repo so it is an absolute path regardless of cwd (docker -v reads a relative path as a named volume).
+        self.network = network           # Declared network policy: none (local inputs) | bridge (internet allowed)
+        # Shared host cache; its absolute path is supplied to each experiment process.
         self.cache_dir = cache_dir or str(_REPO / "data" / "cache" / "explorer")
         # Per-branch scratch, derived from run_id and not inherited by children: /cache is shared across
         # the fork tree, right for accession-keyed downloads and wrong for derived artifacts.
@@ -286,7 +287,7 @@ class Explorer:
             self.papers = share_from.papers
             self.vq = share_from.vq
             self.fork_budget = share_from.fork_budget
-            self.sandbox_pool = share_from.sandbox_pool   # containers are a machine resource: one pool per tree
+            self.sandbox_pool = share_from.sandbox_pool   # host processes are a machine resource: one pool per tree
             # Edge embeddings are the same for the whole investigation, so they are embedded once and the
             # cache is shared down every branch.
             self._edge_vec_cache = share_from._edge_vec_cache
@@ -304,7 +305,7 @@ class Explorer:
         # with extended thinking enabled and full-message capture, so the model's own thinking blocks and
         # the raw SDK transcript are recorded, not only the self-reported "thought" field.
         self._inject_complete = complete_fn
-        self._sandbox_run = sandbox_run            # None -> real Docker (lazy import in _act_run)
+        self._sandbox_run = sandbox_run            # None -> direct host Python (lazy import in _act_run)
         self.steps = 0
         self._round_max_steps = 0                  # this round's step allowance, and the step count it began
         self._steps_at_round_start = 0             # at — set by run(), read by _budget_line to tell the agent
@@ -485,7 +486,7 @@ class Explorer:
         parts.append(f"SKILLS AVAILABLE: {sk}")
         if self.network and self.network != "none":
             parts.append(
-                "SANDBOX: network is enabled for your experiment code. When no dataset is mounted at /data, "
+                "HOST EXECUTION: network is enabled for your experiment code. When no dataset is mounted at /data, "
                 "find and download real public data yourself rather than only simulating. Discover datasets "
                 "through repository search APIs (NCBI GEO/SRA E-utilities, EBI ArrayExpress/BioStudies, "
                 "DepMap, PRIDE, Ensembl, UCSC) or the find_datasets action, download the file, inspect its "
@@ -499,15 +500,21 @@ class Explorer:
                 "dataset is part of the job, and simulation is a fallback or plausibility check, not a "
                 "substitute. /work is wiped after each experiment; /cache persists across all your "
                 "experiments, so download datasets and install packages there and fetch once. Each run has a "
-                "generous but finite wall-clock and memory budget. Fail gracefully on network errors.")
+                "recorded action budget. Fail gracefully on network errors.")
         else:
-            parts.append("SANDBOX: network access is disabled for your experiment code; use only the "
+            parts.append("HOST EXECUTION: external network access is not authorized for this run; use only the "
                          "datasets mounted at /data plus the KG and papers.")
         # Experimental rigor is a universal contract, not a menu skill, so it is injected into every state.
         rigor = SK.get_skill("experimental-rigor")
         if rigor:
             parts.append("EXPERIMENTAL RIGOR (mandatory for every experiment; the verifier enforces it and "
                          "rejects what fails). Follow it whenever you write run_experiments code:\n" + rigor)
+        parts.append("EXECUTION: Python runs directly on the host, not in a container. Use "
+                     "os.environ['DNHACKS_DATA_DIR'], ['DNHACKS_CACHE_DIR'], ['DNHACKS_SCRATCH_DIR'] "
+                     "and ['DN_ARTIFACT_DIR'] for paths. Legacy /data, /cache, /scratch and /work path "
+                     "literals in Python examples are resolved by the runner and the executed code is recorded. "
+                     "Read only declared research data and write only to cache, scratch or artifact paths. "
+                     "Host execution is not OS filesystem/network isolation; obey the declared network policy.")
         d = LIN.depth(self.run_id)
         parts.append(f"FORK POSITION: you are at fork-depth {d} (tree-wide branch budget remaining: "
                      f"{self.control.remaining(self.run_id)}). {_depth_nudge(d)}")
@@ -942,12 +949,9 @@ class Explorer:
             from dnhacksbio.explorer.sandbox import run_many
             def progress(index, kind, payload):
                 self._event(kind, payload, experiment_id=identities[index])
-            def scoped_codes(codes):
-                return ["import os as _runtime_os\n_runtime_os.environ['DNHACKS_EXPERIMENT_SCOPE'] = "
-                        + repr(json.dumps({"project_id": self.manifest.get("project_id"),
-                                           "run_id": self.run_id, "experiment_id": expid})) + "\nexec(compile(" + repr(code) + ", '<experiment>', 'exec'))"
-                        for code, expid in zip(codes, identities)]
-            run = lambda codes: run_many(scoped_codes(codes), max_parallel=self.max_parallel, timeout=None if self._action_only else 600,
+            run = lambda codes: run_many(codes,
+                                         experiment_scopes=[{"project_id": self.manifest.get("project_id"),
+                                                             "run_id": self.run_id, "experiment_id": eid} for eid in identities], max_parallel=self.max_parallel, timeout=None if self._action_only else 600,
                                          network=self.network, cache_dir=self.cache_dir,
                                          scratch_dir=self.scratch_dir, pool=self.sandbox_pool,
                                          progress=progress, journal=self.journal,

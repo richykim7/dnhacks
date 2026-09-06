@@ -293,13 +293,22 @@ pruning preserves all findings and pending verification. Statistical stopping is
 
 ### 4.5 Experiment execution
 
-Product decision: remove Docker from experiment execution. Docker-only execution and mandatory
-container sandboxing are not architectural requirements. The replacement execution environment and
-its permissions have not yet been specified; this decision does not by itself define them.
+Experiments execute as direct host Python subprocesses using the active application's interpreter.
+No Docker/container runtime, image build or daemon is required. Install the scientific stack with
+`uv sync --extra dev --extra llm --extra experiments`; managed deployments include this extra.
+Each job has a temporary working directory and output folder, a shared download cache and branch-local
+scratch. Environment variables declare these paths and the experiment identity. Legacy Python string
+literals rooted at `/data`, `/cache`, `/scratch` or `/work` are resolved to the recorded host paths;
+new code should use `DNHACKS_DATA_DIR`, `DNHACKS_CACHE_DIR`, `DNHACKS_SCRATCH_DIR` and `DN_ARTIFACT_DIR`.
+The runtime records the original submitted code and resolved executed code. Both stdout and stderr
+stream into the journal; artifacts are collected before temporary cleanup. Cancellation terminates
+the owned process group, including ordinary child processes. Action-only runs have no execution timeout.
 
-Implementation status: `sandbox.py`, `sandbox.Dockerfile` and `sandbox_lib/` still implement the
-existing Docker runner. The backend migration has not happened yet. Its container-specific mounts,
-dependencies and restrictions describe that existing implementation, not the intended architecture.
+Host code runs under the app's OS account. Data-read-only and network settings are instructions,
+not OS filesystem/network isolation; this executor is not a security boundary. The child receives only
+selected ordinary environment variables plus its scoped runtime paths, not the app's credential
+variables. Queued concurrency and BLAS thread settings pace work without a container quota.
+Private confirmation still requires the separate-account/filesystem arrangements documented elsewhere.
 
 Experiment code must print one line, `RESULT: {json}`, with `effect`, `p_null`, `null_model`, `n_units`
 and `robust`. A malformed result is rejected and the experiment records no result. Required fields are strictly typed: positive integer `n_units`, nonempty `null_model`, explicit boolean
@@ -565,7 +574,7 @@ Custom exploratory methods cannot be submitted as audited results. Method guides
 ## 13. Running it
 
 ```
-uv sync --extra dev --extra llm          # add --extra evalue for the learned diagnostic
+uv sync --extra dev --extra llm --extra experiments  # add --extra evalue for the learned diagnostic
 npm --prefix frontend ci && npm --prefix frontend run build
 uv run python scripts/serve_ui.py --port 8765
 uv run python scripts/run_explorer.py --db data/corpora/<name>/<name>_kg.duckdb --steps 30
@@ -575,8 +584,8 @@ uv run pytest tests
 Needs Python 3.12, uv, Node 22, a logged-in `claude` CLI, and the lexicon files under
 `data/processed/`. The MiniLM embedding model downloads on first use.
 
-The current experiment runner still requires its Docker image until the migration in section 4.5
-is implemented. These commands do not yet provide a Docker-free experiment runtime.
+The experiment executor uses the host interpreter and the `experiments` dependency extra;
+no Docker setup is needed.
 
 ## 14. Invariants worth knowing before you edit
 

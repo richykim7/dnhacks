@@ -1,5 +1,5 @@
 """Run the explorer — one curious agent that roams the graph + reads papers, writes and runs its own code
-in parallel Docker sandboxes, does divergent tree-search over experiments, and hands good ones to the
+in parallel host Python processes, does divergent tree-search over experiments, and hands good ones to the
 verification pipeline WHILE it keeps going (a concurrent worker drains the queue).
 
   uv run python scripts/run_explorer.py --goal "..." --steps 30           # explore + verify
@@ -16,7 +16,7 @@ from dnhacksbio import llm
 from dnhacksbio.webui import jobs
 from dnhacksbio.explorer.explorer import (Explorer, goal_from_card, load_corpus_card,
                                             load_session_id)
-from dnhacksbio.explorer.sandbox import docker_ok, ensure_image
+from dnhacksbio.explorer.sandbox import ensure_environment
 
 # Generic fallback goal — used only when no corpus card and no --goal is given. Corpus-specific goals live
 # in the corpus card (data/corpora/<name>/corpus_card.md), not here.
@@ -88,7 +88,7 @@ async def main() -> dict:
                     "else a generic fallback")
     ap.add_argument("--steps", type=int, default=30)
     ap.add_argument("--trace-dir", default="data/processed", help="Runtime journal/control directory")
-    ap.add_argument("--prepare-only", action="store_true", help="Create runtime identity/budget for private enrollment, then exit without research or Docker startup.")
+    ap.add_argument("--prepare-only", action="store_true", help="Create runtime identity/budget for private enrollment, then exit without research.")
     ap.add_argument("--budget-spec", help="JSON frozen subtree contract; all descendants share it. Resume must match.")
     ap.add_argument("--interval", type=float, default=5.0, help="seconds between verification-worker drains")
     ap.add_argument("--run-id", default="explorer")
@@ -99,9 +99,8 @@ async def main() -> dict:
                     "(goal, which /data tables are mounted + catalogs, domain notes) injected as CORPUS "
                     "CONTEXT. If omitted, inferred from the --db path's corpus dir.")
     ap.add_argument("--network", choices=("none", "bridge"), default="none",
-                    help="sandbox network for experiment code: 'none' (isolated, DEFAULT) or 'bridge' "
-                    "(internet — lets experiments fetch papers/public datasets). The container still "
-                    "runs non-root with memory/cpu/pids caps; 'bridge' is open egress on your own machine.")
+                    help="network policy for host experiment code: 'none' (local inputs, DEFAULT) or 'bridge' "
+                    "(internet authorized). This is an instruction policy, not OS network isolation.")
     ap.add_argument("--freeze-year", type=int, default=None,
                     help="the explorer only sees literature published in or before this year")
     ap.add_argument("--resume", action="store_true",
@@ -132,14 +131,9 @@ async def main() -> dict:
         if prog: prog.close()
         return {"run_id": args.run_id, "status": "prepared"}
 
-    if not docker_ok():
-        raise SystemExit("Docker is not reachable (native or via sg). Install/enable Docker first.")
-    print("ensuring sandbox image…")
+    ensure_environment()
     if prog:
-        prog.emit("run", "progress", "preparing the sandbox image", run_id=args.run_id)
-    ensure_image()
-    if prog:
-        prog.emit("run", "progress", f"exploring — up to {args.steps} steps", run_id=args.run_id)
+        prog.emit("run", "progress", "host Python environment ready", run_id=args.run_id)
 
     summary = await _run(goal, args.steps, args.interval, args.run_id, args.db,
                          freeze_year=args.freeze_year, corpus_card=card_path, network=args.network,

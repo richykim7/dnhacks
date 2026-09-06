@@ -7,7 +7,7 @@ The frontend is a new React + TypeScript application in `frontend/`, built with 
 Use Node 22.12+ and the repository's Python environment.
 
 ```sh
-uv sync --extra dev
+uv sync --extra dev --extra llm --extra experiments
 cd frontend
 npm ci
 npm run build

@@ -92,3 +92,13 @@ def test_cross_namespace_worker_is_not_falsely_declared_dead(api):
     j.append("study", "b", "attempt.started", {"pid": 1, "process_identity": "boot|another-namespace|1|10"})
     runtime.reconcile(j, "study")
     assert j.snapshot("study")["runs"]["study"]["lifecycle"] == "running"
+
+
+def test_host_executed_code_is_scoped_and_replay_bound(api):
+    j,h,_=api
+    code=j.blob("print('resolved host code')")
+    j.append('study','a','experiment.started',{'status':'running','code':code,'execution_backend':'host'},experiment_id='host')
+    path=f"study/blob/{code['storage_key']}"
+    assert runtime.handle(h,path,{})==b"print('resolved host code')"
+    with pytest.raises(FileNotFoundError):runtime.handle(h,path,{'through':['2']})
+    with pytest.raises(FileNotFoundError):runtime.handle(h,path.replace('study/','study~1/'),{})

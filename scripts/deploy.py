@@ -155,7 +155,7 @@ def main():
         run('git', 'checkout', '--detach', sha, cwd=release)
         # Test against an isolated, initially empty data directory, never live data.
         env = {k:v for k,v in os.environ.items() if not k.startswith('DNHACKS_') and k != 'PYTHONPATH'}
-        run('uv', 'sync', '--frozen', '--extra', 'dev', '--extra', 'llm', cwd=release, env=env)
+        run('uv', 'sync', '--frozen', '--extra', 'dev', '--extra', 'llm', '--extra', 'experiments', cwd=release, env=env)
         run('npm', '--prefix', 'frontend', 'ci', cwd=release, env=env)
         for task in ('build', 'test'):
             run('npm', '--prefix', 'frontend', 'run', task, cwd=release, env=env)
