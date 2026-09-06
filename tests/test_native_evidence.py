@@ -7,6 +7,41 @@ import pytest
 from dnhacksbio.native_evidence import KERNEL, PrivateProcessStore, association_factor, frozen_scores
 
 
+def test_adaptive_scores_before_training_and_recovers(tmp_path,monkeypatch):
+    import json
+    from dnhacksbio import native_evidence as core
+    declaration=spec();declaration['schedule']=core.ADAPTIVE_SCHEDULE
+    declaration['weights']=[[0.]]
+    store=PrivateProcessStore(tmp_path);store.register('adaptive',declaration)
+    first=[[1.],[-1.]];second=[[2.],[-2.]]
+    store.advance('adaptive',0,['a','b'],first,first)
+    assert store.export('adaptive')['blocks'][0]['factor']==1.
+    expected=core.past_block_update([[0.]],first,first)
+    original=core.past_block_update
+    def checked(weights,x,y):
+        assert x==second and y==second and weights==expected
+        return original(weights,x,y)
+    monkeypatch.setattr(core,'past_block_update',checked)
+    def crash():raise RuntimeError('after score and snapshot, before commit')
+    with pytest.raises(RuntimeError):store.advance('adaptive',1,['c','d'],second,second,before_commit=crash)
+    assert store.export('adaptive')['cursor']==1
+    store=PrivateProcessStore(tmp_path)
+    store.advance('adaptive',1,['c','d'],second,second)
+    assert store.export('adaptive')['blocks'][1]['factor']==pytest.approx(association_factor(frozen_scores(second,second,expected)))
+    store.advance('adaptive',1,['c','d'],second,second)
+    assert store.export('adaptive')['cursor']==2
+    with store.connect() as con:
+        state=json.loads(con.execute('SELECT snapshot FROM blocks WHERE number=1').fetchone()[0])
+    assert state['critic']==expected and state['optimizer']['learning_rate']==.001
+    assert state['next_critic']==original(expected,second,second)
+    uninterrupted=PrivateProcessStore(tmp_path/'uninterrupted')
+    uninterrupted.register('alias',declaration)
+    monkeypatch.setattr(core,'past_block_update',original)
+    uninterrupted.advance('alias',0,['a','b'],first,first)
+    uninterrupted.advance('alias',1,['c','d'],second,second)
+    assert uninterrupted.export('alias')==store.export('adaptive')
+
+
 def spec():
     return dict(kernel=KERNEL, null='independence-of-measured-views', population='synthetic-iid', panel='synthetic',
                 model_hashes=['a'*64, 'b'*64], qc_hash='c'*64, data_hash='d'*64, crosswalk_hash='e'*64,
