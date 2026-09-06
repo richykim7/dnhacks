@@ -1,0 +1,1524 @@
+{
+  "last_publication_date": "2026-01-25",
+  "scope": "Pancreatic cancer cell survival under abnormal cell division, with functional evidence on division machinery, nutrient use, redox and protein stress, and tumor–stromal signaling. Mechanistic studies in other cell models provide transferable hypotheses whose context must be checked.",
+  "research_prompt": "Which overlooked, potentially targetable dependencies allow pancreatic tumor cells to keep dividing despite abnormal division machinery? Prioritize mechanisms connecting cellular metabolism or the local environment to division fidelity, and propose computational tests that distinguish these mechanisms from general growth inhibition.",
+  "papers": [
+    {
+      "candidate": {
+        "key": "10.1074/jbc.m110.121491",
+        "doi": "10.1074/jbc.m110.121491",
+        "pmid": "20558733",
+        "pmcid": "PMC2924079",
+        "title": "RHAMM promotes interphase microtubule instability and mitotic spindle integrity through MEK1/ERK1/2 activity.",
+        "year": 2010,
+        "publication_date": "2010-06-17"
+      },
+      "category": "Metabolism–division mechanistic bridges",
+      "rationale": "Extracellular-matrix receptor signaling has experimentally established microtubule and spindle functions.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1074/jbc.m110.121491&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/srep27278",
+        "doi": "10.1038/srep27278",
+        "pmid": "27255611",
+        "pmcid": "PMC4891703",
+        "title": "Nutrient shortage triggers the hexosamine biosynthetic pathway via the GCN2-ATF4 signalling pathway.",
+        "year": 2016,
+        "publication_date": "2016-06-03"
+      },
+      "category": "Metabolism–division mechanistic bridges",
+      "rationale": "Nutrient shortage links a general stress sensor to nucleotide-sugar biosynthesis.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1038/srep27278&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1126/science.1164368",
+        "doi": "10.1126/science.1164368",
+        "pmid": "18772397",
+        "pmcid": "PMC2848990",
+        "title": "Core signaling pathways in human pancreatic cancers revealed by global genomic analyses.",
+        "year": 2008,
+        "publication_date": "2008-09-04"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Foundational genomic alterations establish PDAC genetic context.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:18772397&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.cell.2012.01.058",
+        "doi": "10.1016/j.cell.2012.01.058",
+        "pmid": "22541435",
+        "pmcid": "PMC3472002",
+        "title": "Oncogenic Kras maintains pancreatic tumors through regulation of anabolic glucose metabolism.",
+        "year": 2012,
+        "publication_date": "2012-04-27"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Oncogenic KRAS couples proliferation to anabolic glucose use.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3472002/fullTextXML#article-meta/pub-date",
+      "date_evidence": {
+        "basis": "JATS article-meta/pub-date",
+        "value": {
+          "pub-type": "ppub",
+          "year": "2012",
+          "month": "4",
+          "day": "27"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1038/nature12040",
+        "doi": "10.1038/nature12040",
+        "pmid": "23535601",
+        "pmcid": "PMC3656466",
+        "title": "Glutamine supports pancreatic cancer growth through a KRAS-regulated metabolic pathway.",
+        "year": 2013,
+        "publication_date": "2013-03-27"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "KRAS-dependent glutamine/redox metabolism is a core PDAC survival pathway.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:23535601&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1074/jbc.m113.470047",
+        "doi": "10.1074/jbc.m113.470047",
+        "pmid": "23592772",
+        "pmcid": "PMC3663532",
+        "title": "Hyper-O-GlcNAcylation is anti-apoptotic and maintains constitutive NF-κB activity in pancreatic cancer cells.",
+        "year": 2013,
+        "publication_date": "2013-04-16"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Sugar modification supports survival signaling and resistance to apoptosis.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:23592772&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/nature12138",
+        "doi": "10.1038/nature12138",
+        "pmid": "23665962",
+        "pmcid": "PMC3810415",
+        "title": "Macropinocytosis of protein is an amino acid supply route in Ras-transformed cells.",
+        "year": 2013,
+        "publication_date": "2013-05-12"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Protein scavenging provides an alternative metabolic adaptation to nutrient limitation.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:23665962&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1158/0008-5472.can-14-2211",
+        "doi": "10.1158/0008-5472.can-14-2211",
+        "pmid": "25644265",
+        "pmcid": "PMC4316379",
+        "title": "Human pancreatic cancer tumors are nutrient poor and tumor cells actively scavenge extracellular protein.",
+        "year": 2015,
+        "publication_date": "2015-02-01"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Human tumor nutrient measurements support biologically realistic stress conditions.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:25644265&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/nature19084",
+        "doi": "10.1038/nature19084",
+        "pmid": "27509858",
+        "pmcid": "PMC5228623",
+        "title": "Pancreatic stellate cells support tumour metabolism through autophagic alanine secretion.",
+        "year": 2016,
+        "publication_date": "2016-08-10"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Stromal alanine secretion supplies tumor metabolism.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:27509858&format=json&resultType=core",
+      "date_evidence": {
+        "basis": "Europe PMC electronicPublicationDate",
+        "value": {
+          "electronicPublicationDate": "2016-08-10"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1126/science.aaf5171",
+        "doi": "10.1126/science.aaf5171",
+        "pmid": "27609895",
+        "pmcid": "PMC5245791",
+        "title": "Tissue of origin dictates branched-chain amino acid metabolism in mutant Kras-driven cancers.",
+        "year": 2016,
+        "publication_date": "2016-09-09"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Tissue-of-origin controls metabolic dependency and limits cross-cancer transfer.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC5245791/fullTextXML#article-meta/pub-date",
+      "date_evidence": {
+        "basis": "JATS article-meta/pub-date",
+        "value": {
+          "pub-type": "ppub",
+          "year": "2016",
+          "month": "9",
+          "day": "09"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1038/nm.4256",
+        "doi": "10.1038/nm.4256",
+        "pmid": "28024083",
+        "pmcid": "PMC5407288",
+        "title": "Direct evidence for cancer-cell-autonomous extracellular protein catabolism in pancreatic tumors.",
+        "year": 2017,
+        "publication_date": "2016-12-26"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Direct in vivo evidence tests whether extracellular protein scavenging is cell autonomous.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:28024083&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/nature21052",
+        "doi": "10.1038/nature21052",
+        "pmid": "28099419",
+        "pmcid": "PMC5398413",
+        "title": "Genomic deletion of malic enzyme 2 confers collateral lethality in pancreatic cancer.",
+        "year": 2017,
+        "publication_date": "2017-01-18"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Collateral metabolic dependency provides a concrete alternative therapeutic mechanism.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:28099419&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/ncomms16031",
+        "doi": "10.1038/ncomms16031",
+        "pmid": "28685754",
+        "pmcid": "PMC5504351",
+        "title": "Collagen-derived proline promotes pancreatic ductal adenocarcinoma cell survival under nutrient limited conditions.",
+        "year": 2017,
+        "publication_date": "2017-07-07"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Matrix collagen supplies proline for survival under nutrient limitation.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:28685754&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.ccell.2017.07.007",
+        "doi": "10.1016/j.ccell.2017.07.007",
+        "pmid": "28810144",
+        "pmcid": "PMC5964983",
+        "title": "Integrated Genomic Characterization of Pancreatic Ductal Adenocarcinoma.",
+        "year": 2017,
+        "publication_date": "2017-08-14"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "TCGA PDAC characterization supplies molecular subtype and expression context.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC5964983/fullTextXML#article-meta/pub-date",
+      "date_evidence": {
+        "basis": "JATS article-meta/pub-date",
+        "value": {
+          "pub-type": "ppub",
+          "year": "2017",
+          "month": "8",
+          "day": "14"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1038/nature24057",
+        "doi": "10.1038/nature24057",
+        "pmid": "29045397",
+        "pmcid": "PMC5898814",
+        "title": "Glucose feeds the TCA cycle via circulating lactate.",
+        "year": 2017,
+        "publication_date": "2017-10-18"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "In vivo carbon tracing constrains interpretation of expression-based metabolic predictions.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:29045397&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41467-018-07472-8",
+        "doi": "10.1038/s41467-018-07472-8",
+        "pmid": "30470748",
+        "pmcid": "PMC6251888",
+        "title": "Oncogenic KRAS supports pancreatic cancer through regulation of nucleotide synthesis.",
+        "year": 2018,
+        "publication_date": "2018-11-23"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Nucleotide synthesis links PDAC oncogenic signaling to proliferation.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:30470748&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41586-019-1062-1",
+        "doi": "10.1038/s41586-019-1062-1",
+        "pmid": "30918400",
+        "pmcid": "PMC6661074",
+        "title": "Syndecan 1 is a critical mediator of macropinocytosis in pancreatic cancer.",
+        "year": 2019,
+        "publication_date": "2019-03-27"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "A cell-surface proteoglycan links PDAC signaling to nutrient uptake.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:30918400&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.7554/elife.44235",
+        "doi": "10.7554/elife.44235",
+        "pmid": "30990168",
+        "pmcid": "PMC6510537",
+        "title": "Quantification of microenvironmental metabolites in murine cancers reveals determinants of tumor nutrient availability.",
+        "year": 2019,
+        "publication_date": "2019-04-16"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Measured tumor nutrient availability grounds assumptions about stress conditions.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:30990168&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.devcel.2019.05.043",
+        "doi": "10.1016/j.devcel.2019.05.043",
+        "pmid": "31257175",
+        "pmcid": "PMC6684838",
+        "title": "EGFR-Pak Signaling Selectively Regulates Glutamine Deprivation-Induced Macropinocytosis.",
+        "year": 2019,
+        "publication_date": "2019-06-27"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Glutamine starvation recruits EGFR/PAK-mediated nutrient scavenging.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:31257175&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1158/2159-8290.cd-19-1006",
+        "doi": "10.1158/2159-8290.cd-19-1006",
+        "pmid": "31649109",
+        "pmcid": "PMC6954322",
+        "title": "Atypical KRASG12R Mutant Is Impaired in PI3K Signaling and Macropinocytosis in Pancreatic Cancer.",
+        "year": 2020,
+        "publication_date": "2019-10-24"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "KRAS allele specificity constrains generalization of metabolic hypotheses.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:31649109&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1158/2159-8290.cd-19-0959",
+        "doi": "10.1158/2159-8290.cd-19-0959",
+        "pmid": "32341021",
+        "pmcid": "PMC7334074",
+        "title": "Selective Alanine Transporter Utilization Creates a Targetable Metabolic Niche in Pancreatic Cancer.",
+        "year": 2020,
+        "publication_date": "2020-04-27"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Transporter usage creates a targetable tumor-stromal nutrient dependency.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:32341021&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41575-021-00431-7",
+        "doi": "10.1038/s41575-021-00431-7",
+        "pmid": "33742165",
+        "pmcid": "PMC8249349",
+        "title": "Harnessing metabolic dependencies in pancreatic cancers.",
+        "year": 2021,
+        "publication_date": "2021-03-19"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Integrative review maps competing PDAC metabolic vulnerabilities.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:33742165&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41586-025-08917-z",
+        "doi": "10.1038/s41586-025-08917-z",
+        "pmid": "40269157",
+        "pmcid": "PMC12176661",
+        "title": "Targeting PIKfyve-driven lipid metabolism in pancreatic cancer.",
+        "year": 2025,
+        "publication_date": "2025-04-23"
+      },
+      "category": "PDAC metabolism and molecular context",
+      "rationale": "Lysosomal lipid metabolism supplies a recent alternative PDAC survival vulnerability.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:40269157&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41598-020-67814-9",
+        "doi": "10.1038/s41598-020-67814-9",
+        "pmid": "32636409",
+        "pmcid": "PMC7340786",
+        "title": "Beta 1 integrin signaling mediates pancreatic ductal adenocarcinoma resistance to MEK inhibition.",
+        "year": 2020,
+        "publication_date": "2020-07-07"
+      },
+      "category": "adhesion alternatives",
+      "rationale": "Integrin-mediated survival explains an alternative route from matrix sensing to resistance.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1038/s41598-020-67814-9&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.15252/emmm.202012010",
+        "doi": "10.15252/emmm.202012010",
+        "pmid": "33025708",
+        "pmcid": "PMC7645544",
+        "title": "FAK activity in cancer-associated fibroblasts is a prognostic marker and a druggable key metastatic player in pancreatic cancer.",
+        "year": 2020,
+        "publication_date": "2020-10-07"
+      },
+      "category": "adhesion alternatives",
+      "rationale": "Fibroblast FAK signaling is an independent testable cell-matrix dependency.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.15252/emmm.202012010&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.ccell.2022.06.011",
+        "doi": "10.1016/j.ccell.2022.06.011",
+        "pmid": "35868307",
+        "pmcid": "PMC9831277",
+        "title": "Oncogenic collagen I homotrimers from cancer cells bind to α3β1 integrin and impact tumor microbiome and immunity to promote pancreatic cancer.",
+        "year": 2022,
+        "publication_date": "2022-07-21"
+      },
+      "category": "adhesion alternatives",
+      "rationale": "Cancer-derived collagen signals through integrins and affects pancreatic tumor immunity.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1016/j.ccell.2022.06.011&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.7554/elife.86971",
+        "doi": "10.7554/elife.86971",
+        "pmid": "36942939",
+        "pmcid": "PMC10069867",
+        "title": "Purinergic GPCR-integrin interactions drive pancreatic cancer cell invasion.",
+        "year": 2023,
+        "publication_date": "2023-03-21"
+      },
+      "category": "adhesion alternatives",
+      "rationale": "Purinergic receptor-integrin interactions couple surface signaling to invasion.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.7554/elife.86971&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1158/1078-0432.ccr-15-3115",
+        "doi": "10.1158/1078-0432.ccr-15-3115",
+        "pmid": "27267855",
+        "pmcid": "PMC5143222",
+        "title": "CD44 Expression Level and Isoform Contributes to Pancreatic Cancer Cell Plasticity, Invasiveness, and Response to Therapy.",
+        "year": 2016,
+        "publication_date": "2016-06-07"
+      },
+      "category": "cell-surface plasticity",
+      "rationale": "CD44 isoforms link epithelial plasticity and invasive phenotype in PDAC.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1158/1078-0432.CCR-15-3115&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1371/journal.pone.0183871",
+        "doi": "10.1371/journal.pone.0183871",
+        "pmid": "28841710",
+        "pmcid": "PMC5571985",
+        "title": "Inhibition of ROCK1 kinase modulates both tumor cells and stromal fibroblasts in pancreatic cancer.",
+        "year": 2017,
+        "publication_date": "2017-08-25"
+      },
+      "category": "cytoskeleton alternatives",
+      "rationale": "ROCK1 perturbation affects pancreatic cancer cells and stromal fibroblasts.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1371/journal.pone.0183871&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1101/gad.1700908",
+        "doi": "10.1101/gad.1700908",
+        "pmid": "18662975",
+        "pmcid": "PMC2518815",
+        "title": "Mechanisms to suppress multipolar divisions in cancer cells with extra centrosomes.",
+        "year": 2008,
+        "publication_date": "2008-07-28"
+      },
+      "category": "division",
+      "rationale": "Foundational mechanisms suppressing multipolar division with extra centrosomes.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A18662975%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/nature08136",
+        "doi": "10.1038/nature08136",
+        "pmid": "19506557",
+        "pmcid": "PMC2743290",
+        "title": "A mechanism linking extra centrosomes to chromosomal instability.",
+        "year": 2009,
+        "publication_date": "2009-06-07"
+      },
+      "category": "division",
+      "rationale": "Extra centrosomes cause chromosome missegregation; foundational causal mechanism.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A19506557%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1371/journal.pone.0027304",
+        "doi": "10.1371/journal.pone.0027304",
+        "pmid": "22076149",
+        "pmcid": "PMC3208627",
+        "title": "p53 dependent centrosome clustering prevents multipolar mitosis in tetraploid cells.",
+        "year": 2011,
+        "publication_date": "2011-11-04"
+      },
+      "category": "division",
+      "rationale": "P53 context modifies clustering and survival after genome doubling.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A22076149%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.18632/oncotarget.1198",
+        "doi": "10.18632/oncotarget.1198",
+        "pmid": "24091544",
+        "pmcid": "PMC3858562",
+        "title": "Identification of novel small molecule inhibitors of centrosome clustering in cancer cells.",
+        "year": 2013,
+        "publication_date": "2013-09-25"
+      },
+      "category": "division",
+      "rationale": "Small-molecule proof of therapeutic targeting of clustering.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3858562/fullTextXML#article-meta/pub-date",
+      "date_evidence": {
+        "basis": "JATS article-meta/pub-date",
+        "value": {
+          "year": "2013",
+          "month": "9",
+          "day": "25"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1080/15384101.2015.1068478",
+        "doi": "10.1080/15384101.2015.1068478",
+        "pmid": "26151406",
+        "pmcid": "PMC4614944",
+        "title": "Amplified centrosomes may underlie aggressive disease course in pancreatic ductal adenocarcinoma.",
+        "year": 2015,
+        "publication_date": "2015-01-01"
+      },
+      "category": "division",
+      "rationale": "Direct evidence extra centrosomes mark aggressive PDAC; anchors disease relevance.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A26151406%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/srep21263",
+        "doi": "10.1038/srep21263",
+        "pmid": "26893288",
+        "pmcid": "PMC4759539",
+        "title": "Cep70 overexpression stimulates pancreatic cancer by inducing centrosome abnormality and microtubule disorganization.",
+        "year": 2016,
+        "publication_date": "2016-02-19"
+      },
+      "category": "division",
+      "rationale": "PDAC centrosome abundance and microtubule organization mechanism.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A26893288%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/ncomms11005",
+        "doi": "10.1038/ncomms11005",
+        "pmid": "26987684",
+        "pmcid": "PMC4802056",
+        "title": "A CEP215-HSET complex links centrosomes with spindle poles and drives centrosome clustering in cancer.",
+        "year": 2016,
+        "publication_date": "2016-03-18"
+      },
+      "category": "division",
+      "rationale": "CEP215-HSET connects centrosomes to spindle poles.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A26987684%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.devcel.2016.12.022",
+        "doi": "10.1016/j.devcel.2016.12.022",
+        "pmid": "28132847",
+        "pmcid": "PMC5296221",
+        "title": "Centrosome Amplification Is Sufficient to Promote Spontaneous Tumorigenesis in Mammals.",
+        "year": 2017,
+        "publication_date": "2017-01-26"
+      },
+      "category": "division",
+      "rationale": "Experimental sufficiency of extra centrosomes for tumor initiation.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A28132847%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1371/journal.pone.0174863",
+        "doi": "10.1371/journal.pone.0174863",
+        "pmid": "28380042",
+        "pmcid": "PMC5381904",
+        "title": "Genetic and pharmacological inhibition of TTK impairs pancreatic cancer cell line growth by inducing lethal chromosomal instability.",
+        "year": 2017,
+        "publication_date": "2017-04-05"
+      },
+      "category": "division",
+      "rationale": "Direct PDAC mitotic checkpoint vulnerability tested genetically/pharmacologically.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A28380042%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/ncomms15289",
+        "doi": "10.1038/ncomms15289",
+        "pmid": "28474672",
+        "pmcid": "PMC5424153",
+        "title": "Stat3 regulates centrosome clustering in cancer cells via Stathmin/PLK1.",
+        "year": 2017,
+        "publication_date": "2017-05-05"
+      },
+      "category": "division",
+      "rationale": "STAT3/stathmin/PLK1 is a signaling route into clustering.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A28474672%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.devcel.2018.10.026",
+        "doi": "10.1016/j.devcel.2018.10.026",
+        "pmid": "30458137",
+        "pmcid": "PMC6251975",
+        "title": "Oxidative Stress in Cells with Extra Centrosomes Drives Non-Cell-Autonomous Invasion.",
+        "year": 2018,
+        "publication_date": "2018-11-19"
+      },
+      "category": "division",
+      "rationale": "Historical extra-centrosome expression dataset E-MTAB-6415; oxidative stress and secreted signals.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6251975/fullTextXML#article-meta/pub-date",
+      "date_evidence": {
+        "basis": "JATS article-meta/pub-date",
+        "value": {
+          "year": "2018",
+          "month": "11",
+          "day": "19"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.18632/oncotarget.26714",
+        "doi": "10.18632/oncotarget.26714",
+        "pmid": "30899434",
+        "pmcid": "PMC6422193",
+        "title": "Aurora A inhibition limits centrosome clustering and promotes mitotic catastrophe in cells with supernumerary centrosomes.",
+        "year": 2019,
+        "publication_date": "2019-02-26"
+      },
+      "category": "division",
+      "rationale": "Drug perturbation connects centrosome clustering to mitotic catastrophe.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A30899434%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1371/journal.pcbi.1006832",
+        "doi": "10.1371/journal.pcbi.1006832",
+        "pmid": "30856170",
+        "pmcid": "PMC6411098",
+        "title": "Pan-cancer association of a centrosome amplification gene expression signature with genomic alterations and clinical outcome.",
+        "year": 2019,
+        "publication_date": "2019-03-11"
+      },
+      "category": "division",
+      "rationale": "Expression signature permits computational stratification across tumors.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A30856170%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1158/1541-7786.mcr-19-0509",
+        "doi": "10.1158/1541-7786.mcr-19-0509",
+        "pmid": "31604847",
+        "pmcid": "PMC6942210",
+        "title": "Centrosome Amplification in Cancer Disrupts Autophagy and Sensitizes to Autophagy Inhibition.",
+        "year": 2020,
+        "publication_date": "2019-10-11"
+      },
+      "category": "division",
+      "rationale": "Independent competing survival vulnerability: autophagy.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A31604847%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.15252/embr.201949234",
+        "doi": "10.15252/embr.201949234",
+        "pmid": "32270908",
+        "pmcid": "PMC7271317",
+        "title": "IFT proteins interact with HSET to promote supernumerary centrosome clustering in mitosis.",
+        "year": 2020,
+        "publication_date": "2020-04-09"
+      },
+      "category": "division",
+      "rationale": "IFT proteins cooperate with HSET for clustering; alternative mechanism.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A32270908%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1091/mbc.e19-04-0195",
+        "doi": "10.1091/mbc.e19-04-0195",
+        "pmid": "32966175",
+        "pmcid": "PMC7927180",
+        "title": "Growth disadvantage associated with centrosome amplification drives population-level centriole number homeostasis.",
+        "year": 2020,
+        "publication_date": "2020-09-23"
+      },
+      "category": "division",
+      "rationale": "Growth disadvantage creates a clear survival adaptation question.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A32966175%20AND%20SRC%3AMED",
+      "date_evidence": {
+        "basis": "Europe PMC electronicPublicationDate",
+        "value": {
+          "electronicPublicationDate": "2020-09-23"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41598-020-73474-6",
+        "doi": "10.1038/s41598-020-73474-6",
+        "pmid": "33020506",
+        "pmcid": "PMC7536414",
+        "title": "Cdc6 disruption leads to centrosome abnormalities and chromosome instability in pancreatic cancer cells.",
+        "year": 2020,
+        "publication_date": "2020-10-05"
+      },
+      "category": "division",
+      "rationale": "PDAC replication licensing perturbation links abnormal centrosomes and chromosome instability.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A33020506%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41467-020-20208-x",
+        "doi": "10.1038/s41467-020-20208-x",
+        "pmid": "33397932",
+        "pmcid": "PMC7782532",
+        "title": "The ATM and ATR kinases regulate centrosome clustering and tumor recurrence by targeting KIFC1 phosphorylation.",
+        "year": 2021,
+        "publication_date": "2021-01-04"
+      },
+      "category": "division",
+      "rationale": "Checkpoint kinases regulate clustering through KIFC1.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A33397932%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41586-020-03114-6",
+        "doi": "10.1038/s41586-020-03114-6",
+        "pmid": "33505028",
+        "pmcid": "PMC8262644",
+        "title": "Aneuploidy renders cancer cells vulnerable to mitotic checkpoint inhibition.",
+        "year": 2021,
+        "publication_date": "2021-01-27"
+      },
+      "category": "division",
+      "rationale": "Aneuploidy confers spindle checkpoint dependence.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A33505028%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41586-020-03133-3",
+        "doi": "10.1038/s41586-020-03133-3",
+        "pmid": "33505027",
+        "pmcid": "PMC7889737",
+        "title": "Whole-genome doubling confers unique genetic vulnerabilities on tumour cells.",
+        "year": 2021,
+        "publication_date": "2021-01-27"
+      },
+      "category": "division",
+      "rationale": "Genome doubling produces experimentally testable genetic dependencies.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A33505027%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.cub.2021.01.028",
+        "doi": "10.1016/j.cub.2021.01.028",
+        "pmid": "33592190",
+        "pmcid": "PMC8047808",
+        "title": "Centrosome amplification mediates small extracellular vesicle secretion via lysosome disruption.",
+        "year": 2021,
+        "publication_date": "2021-02-15"
+      },
+      "category": "division",
+      "rationale": "PDAC-relevant extracellular communication consequence of extra centrosomes.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A33592190%20AND%20SRC%3AMED",
+      "date_evidence": {
+        "basis": "Europe PMC electronicPublicationDate",
+        "value": {
+          "electronicPublicationDate": "2021-02-15"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41467-021-21447-2",
+        "doi": "10.1038/s41467-021-21447-2",
+        "pmid": "33619254",
+        "pmcid": "PMC7900194",
+        "title": "Chromosomally unstable tumor cells specifically require KIF18A for proliferation.",
+        "year": 2021,
+        "publication_date": "2021-02-22"
+      },
+      "category": "division",
+      "rationale": "Foundational selective KIF18A requirement in unstable tumor cells.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A33619254%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1371/journal.pcbi.1008765",
+        "doi": "10.1371/journal.pcbi.1008765",
+        "pmid": "33979341",
+        "pmcid": "PMC8143425",
+        "title": "Patterns of selection against centrosome amplification in human cell lines.",
+        "year": 2021,
+        "publication_date": "2021-05-12"
+      },
+      "category": "division",
+      "rationale": "Selection pressures and persistence of cells carrying extra centrosomes.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A33979341%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1158/1541-7786.mcr-20-0798",
+        "doi": "10.1158/1541-7786.mcr-20-0798",
+        "pmid": "34933912",
+        "pmcid": "PMC8983505",
+        "title": "Hypoxia Drives Centrosome Amplification in Cancer Cells via HIF1α-dependent Induction of Polo-Like Kinase 4.",
+        "year": 2021,
+        "publication_date": "2021-12-21"
+      },
+      "category": "division",
+      "rationale": "Hypoxia provides an environmental route to elevated centrosome numbers.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8983505/fullTextXML#article-meta/pub-date",
+      "date_evidence": {
+        "basis": "JATS article-meta/pub-date",
+        "value": {
+          "year": "2021",
+          "month": "12",
+          "day": "21"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.26508/lsa.202201470",
+        "doi": "10.26508/lsa.202201470",
+        "pmid": "35803737",
+        "pmcid": "PMC9270500",
+        "title": "KIF24 depletion induces clustering of supernumerary centrosomes in PDAC cells.",
+        "year": 2022,
+        "publication_date": "2022-07-08"
+      },
+      "category": "division",
+      "rationale": "Direct PDAC centrosome-clustering perturbation with counterintuitive phenotype.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A35803737%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1073/pnas.2208255119",
+        "doi": "10.1073/pnas.2208255119",
+        "pmid": "36191188",
+        "pmcid": "PMC9565228",
+        "title": "Hyper-active RAS/MAPK introduces cancer-specific mitotic vulnerabilities.",
+        "year": 2022,
+        "publication_date": "2022-10-03"
+      },
+      "category": "division",
+      "rationale": "Oncogenic RAS/MAPK creates cancer-specific mitotic vulnerabilities.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A36191188%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1002/1878-0261.13425",
+        "doi": "10.1002/1878-0261.13425",
+        "pmid": "36975767",
+        "pmcid": "PMC10323901",
+        "title": "NUAK1 governs centrosome replication in pancreatic cancer via MYPT1/PP1β and GSK3β-dependent regulation of PLK4.",
+        "year": 2023,
+        "publication_date": "2023-04-03"
+      },
+      "category": "division",
+      "rationale": "PDAC-specific upstream control of centrosome duplication; competing kinase vulnerability.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A36975767%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1091/mbc.e22-07-0296",
+        "doi": "10.1091/mbc.e22-07-0296",
+        "pmid": "37017483",
+        "pmcid": "PMC10208098",
+        "title": "Cortical dynein drives centrosome clustering in cells with centrosome amplification.",
+        "year": 2023,
+        "publication_date": "2023-04-05"
+      },
+      "category": "division",
+      "rationale": "Cortical force generation provides a distinct clustering mechanism.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A37017483%20AND%20SRC%3AMED",
+      "date_evidence": {
+        "basis": "Europe PMC electronicPublicationDate",
+        "value": {
+          "electronicPublicationDate": "2023-04-05"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.15252/embj.2021109738",
+        "doi": "10.15252/embj.2021109738",
+        "pmid": "37401899",
+        "pmcid": "PMC10476278",
+        "title": "Centrosome linker diversity and its function in centrosome clustering and mitotic spindle formation.",
+        "year": 2023,
+        "publication_date": "2023-07-04"
+      },
+      "category": "division",
+      "rationale": "Centrosome linker architecture and clustering mechanism.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A37401899%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1242/jcs.260644",
+        "doi": "10.1242/jcs.260644",
+        "pmid": "37701987",
+        "pmcid": "PMC10617609",
+        "title": "Loss of ATG4B and ATG4A results in two-stage cell cycle defects in pancreatic ductal adenocarcinoma cells.",
+        "year": 2023,
+        "publication_date": "2023-10-11"
+      },
+      "category": "division",
+      "rationale": "PDAC division survival connects autophagy machinery to mitotic progression.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A37701987%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41467-023-41840-3",
+        "doi": "10.1038/s41467-023-41840-3",
+        "pmid": "37845213",
+        "pmcid": "PMC10579337",
+        "title": "Molecular landscape and functional characterization of centrosome amplification in ovarian cancer.",
+        "year": 2023,
+        "publication_date": "2023-10-16"
+      },
+      "category": "division",
+      "rationale": "Historical centrosome amplification transcriptomic dataset PRJEB60280; cross-model inference.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A37845213%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41598-024-53985-2",
+        "doi": "10.1038/s41598-024-53985-2",
+        "pmid": "38388511",
+        "pmcid": "PMC10883960",
+        "title": "Prolonged overexpression of PLK4 leads to formation of centriole rosette clusters that are connected via canonical centrosome linker proteins.",
+        "year": 2024,
+        "publication_date": "2024-02-22"
+      },
+      "category": "division",
+      "rationale": "PLK4 induction model and centrosome linker architecture, contextualizes assay design.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A38388511%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.26508/lsa.202402670",
+        "doi": "10.26508/lsa.202402670",
+        "pmid": "39074902",
+        "pmcid": "PMC11287020",
+        "title": "Kinesins regulate the heterogeneity in centrosome clustering after whole-genome duplication.",
+        "year": 2024,
+        "publication_date": "2024-07-29"
+      },
+      "category": "division",
+      "rationale": "Kinesin dependencies and heterogeneity after genome doubling.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A39074902%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41467-024-55300-z",
+        "doi": "10.1038/s41467-024-55300-z",
+        "pmid": "39747049",
+        "pmcid": "PMC11697083",
+        "title": "Targeting chromosomally unstable tumors with a selective KIF18A inhibitor.",
+        "year": 2025,
+        "publication_date": "2025-01-02"
+      },
+      "category": "division",
+      "rationale": "Modern target validation for CIN-selective mitotic vulnerability.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&query=EXT_ID%3A39747049%20AND%20SRC%3AMED"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41388-020-01594-4",
+        "doi": "10.1038/s41388-020-01594-4",
+        "pmid": "33420364",
+        "pmcid": "PMC7892338",
+        "title": "C1GALT1 high expression is associated with poor survival of patients with pancreatic ductal adenocarcinoma and promotes cell invasiveness through integrin αv.",
+        "year": 2021,
+        "publication_date": "2021-01-08"
+      },
+      "category": "glycosylation adhesion",
+      "rationale": "Connects glycan processing to integrin-dependent pancreatic invasion.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1038/s41388-020-01594-4&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.3390/ijms23105459",
+        "doi": "10.3390/ijms23105459",
+        "pmid": "35628269",
+        "pmcid": "PMC9141077",
+        "title": "Truncated O-Glycan-Bearing MUC16 Enhances Pancreatic Cancer Cells Aggressiveness via α4β1 Integrin Complexes and FAK Signaling.",
+        "year": 2022,
+        "publication_date": "2022-05-13"
+      },
+      "category": "glycosylation adhesion",
+      "rationale": "Cell-surface glycan structures couple to FAK and integrin signaling.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.3390/ijms23105459&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1186/s12964-017-0204-z",
+        "doi": "10.1186/s12964-017-0204-z",
+        "pmid": "29137675",
+        "pmcid": "PMC5686803",
+        "title": "Human hyaluronic acid synthase-1 promotes malignant transformation via epithelial-to-mesenchymal transition, micronucleation and centrosome abnormalities.",
+        "year": 2017,
+        "publication_date": "2017-11-14"
+      },
+      "category": "matrix division bridge",
+      "rationale": "HAS1 perturbation ties sugar polymer biosynthesis to centrosome abnormalities and transformation.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1186/s12964-017-0204-z&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1155/2014/817613",
+        "doi": "10.1155/2014/817613",
+        "pmid": "25147816",
+        "pmcid": "PMC4131462",
+        "title": "Accumulation of extracellular hyaluronan by hyaluronan synthase 3 promotes tumor growth and modulates the pancreatic cancer microenvironment.",
+        "year": 2014,
+        "publication_date": "2014-07-24"
+      },
+      "category": "matrix metabolism",
+      "rationale": "Perturbs extracellular matrix production in pancreatic cancer, showing context-dependent tumor effects.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1155/2014/817613&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.18632/oncotarget.27172",
+        "doi": "10.18632/oncotarget.27172",
+        "pmid": "31608136",
+        "pmcid": "PMC6771457",
+        "title": "Hyaluronan activated-metabolism phenotype (HAMP) in pancreatic ductal adenocarcinoma.",
+        "year": 2019,
+        "publication_date": "2019-09-24"
+      },
+      "category": "matrix metabolism",
+      "rationale": "Tests metabolic phenotype associated with extracellular hyaluronan in PDAC.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.18632/oncotarget.27172&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1073/pnas.1219555110",
+        "doi": "10.1073/pnas.1219555110",
+        "pmid": "23407165",
+        "pmcid": "PMC3593894",
+        "title": "Strengthened glycolysis under hypoxia supports tumor symbiosis and hexosamine biosynthesis in pancreatic adenocarcinoma.",
+        "year": 2013,
+        "publication_date": "2013-02-13"
+      },
+      "category": "nucleotide-sugar bridge",
+      "rationale": "Hypoxia routes glucose through hexosamine biosynthesis in pancreatic cancer.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1073/pnas.1219555110&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1172/jci127515",
+        "doi": "10.1172/jci127515",
+        "pmid": "31613799",
+        "pmcid": "PMC6934212",
+        "title": "Targeting tumor-intrinsic hexosamine biosynthesis sensitizes pancreatic cancer to anti-PD1 therapy.",
+        "year": 2020,
+        "publication_date": "2020-01-01"
+      },
+      "category": "nucleotide-sugar bridge",
+      "rationale": "Tumor-intrinsic hexosamine perturbation alters pancreatic tumor ecosystem.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1172/jci127515&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.18632/oncotarget.28514",
+        "doi": "10.18632/oncotarget.28514",
+        "pmid": "37769033",
+        "pmcid": "PMC10538703",
+        "title": "UDP-glucose dehydrogenase (UGDH) in clinical oncology and cancer biology.",
+        "year": 2023,
+        "publication_date": "2023-09-28"
+      },
+      "category": "nucleotide-sugar bridge",
+      "rationale": "UGDH biochemical functions and experimentally supported cancer contexts.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.18632/oncotarget.28514&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41586-023-06676-3",
+        "doi": "10.1038/s41586-023-06676-3",
+        "pmid": "37880368",
+        "pmcid": "PMC10709823",
+        "title": "Disruption of sugar nucleotide clearance is a therapeutic vulnerability of cancer cells.",
+        "year": 2023,
+        "publication_date": "2023-10-25"
+      },
+      "category": "nucleotide-sugar bridge",
+      "rationale": "Genetic evidence that nucleotide-sugar homeostasis produces cancer dependencies.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1038/s41586-023-06676-3&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1007/s10585-024-10298-y",
+        "doi": "10.1007/s10585-024-10298-y",
+        "pmid": "38888874",
+        "pmcid": "PMC11499537",
+        "title": "GFPT2 expression is induced by gemcitabine administration and enhances invasion by activating the hexosamine biosynthetic pathway in pancreatic cancer.",
+        "year": 2024,
+        "publication_date": "2024-06-18"
+      },
+      "category": "nucleotide-sugar bridge",
+      "rationale": "GFPT2 induction and invasion establish pancreatic hexosamine biology.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1007/s10585-024-10298-y&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1074/jbc.m702078200",
+        "doi": "10.1074/jbc.m702078200",
+        "pmid": "17392272",
+        "pmcid": "PMC2949353",
+        "title": "The hyaluronan receptors CD44 and Rhamm (CD168) form complexes with ERK1,2 that sustain high basal motility in breast cancer cells.",
+        "year": 2007,
+        "publication_date": "2007-03-28"
+      },
+      "category": "receptor cytoskeleton bridge",
+      "rationale": "CD44 and RHAMM receptor complex connects extracellular polysaccharide signaling with motility machinery.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1074/jbc.M702078200&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1101/gad.2016111",
+        "doi": "10.1101/gad.2016111",
+        "pmid": "21406549",
+        "pmcid": "PMC3070934",
+        "title": "Pancreatic cancers require autophagy for tumor growth.",
+        "year": 2011,
+        "publication_date": "2011-03-15"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Foundational PDAC autophagy survival dependency; alternative stress adaptation.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:21406549&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/nature10189",
+        "doi": "10.1038/nature10189",
+        "pmid": "21734707",
+        "pmcid": "PMC3404470",
+        "title": "Oncogene-induced Nrf2 transcription promotes ROS detoxification and tumorigenesis.",
+        "year": 2011,
+        "publication_date": "2011-07-06"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Central genetically induced redox survival program.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:21734707&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1172/jci60144",
+        "doi": "10.1172/jci60144",
+        "pmid": "22565310",
+        "pmcid": "PMC3366404",
+        "title": "Nuclear protein 1 promotes pancreatic cancer development and protects cells from stress by inhibiting apoptosis.",
+        "year": 2012,
+        "publication_date": "2012-05-08"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "PDAC stress response dependency.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:22565310&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.cell.2014.01.014",
+        "doi": "10.1016/j.cell.2014.01.014",
+        "pmid": "24630721",
+        "pmcid": "PMC3959665",
+        "title": "Spliced X-box binding protein 1 couples the unfolded protein response to hexosamine biosynthetic pathway.",
+        "year": 2014,
+        "publication_date": "2014-03-13"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Mechanistic bridge ER stress to nucleotide sugar metabolism.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3959665/fullTextXML#article-meta/pub-date",
+      "date_evidence": {
+        "basis": "JATS article-meta/pub-date",
+        "value": {
+          "pub-type": "ppub",
+          "year": "2014",
+          "month": "3",
+          "day": "13"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1158/2159-8290.cd-14-0362",
+        "doi": "10.1158/2159-8290.cd-14-0362",
+        "pmid": "24875860",
+        "pmcid": "PMC4125497",
+        "title": "Autophagy is critical for pancreatic tumor growth and progression in tumors with p53 alterations.",
+        "year": 2014,
+        "publication_date": "2014-05-29"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Genetic evidence for autophagy requirement and genotype context.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:24875860&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1186/s13059-014-0554-4",
+        "doi": "10.1186/s13059-014-0554-4",
+        "pmid": "25476604",
+        "pmcid": "PMC4290824",
+        "title": "MAGeCK enables robust identification of essential  genes from genome-scale CRISPR/Cas9 knockout  screens.",
+        "year": 2014,
+        "publication_date": "2014-12-05"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Calibrated functional screen analysis method.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC4290824/fullTextXML#article-meta/pub-date",
+      "date_evidence": {
+        "basis": "JATS article-meta/pub-date",
+        "value": {
+          "year": "2014",
+          "month": "12",
+          "day": "5"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1038/nature14587",
+        "doi": "10.1038/nature14587",
+        "pmid": "26168401",
+        "pmcid": "PMC5086585",
+        "title": "Transcriptional control of autophagy-lysosome function drives pancreatic cancer metabolism.",
+        "year": 2015,
+        "publication_date": "2015-07-13"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "PDAC lysosomal regulatory program relevant to survival under metabolic stress.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:26168401&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.cell.2016.06.056",
+        "doi": "10.1016/j.cell.2016.06.056",
+        "pmid": "27477511",
+        "pmcid": "PMC5234705",
+        "title": "NRF2 Promotes Tumor Maintenance by Modulating mRNA Translation in Pancreatic Cancer.",
+        "year": 2016,
+        "publication_date": "2016-07-28"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Connects redox defense to protein synthesis and tumor survival.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:27477511&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1158/2159-8290.cd-17-0952",
+        "doi": "10.1158/2159-8290.cd-17-0952",
+        "pmid": "29317452",
+        "pmcid": "PMC5835190",
+        "title": "Autophagy Sustains Pancreatic Cancer Growth through Both Cell-Autonomous and Nonautonomous Mechanisms.",
+        "year": 2018,
+        "publication_date": "2018-01-09"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Disentangles tumor intrinsic from stromal survival support.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:29317452&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41591-019-0368-8",
+        "doi": "10.1038/s41591-019-0368-8",
+        "pmid": "30833752",
+        "pmcid": "PMC6484853",
+        "title": "Combination of ERK and autophagy inhibition as a treatment approach for pancreatic cancer.",
+        "year": 2019,
+        "publication_date": "2019-03-04"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Independent experimental test of adaptive survival mechanism.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:30833752&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1186/s12885-019-5455-1",
+        "doi": "10.1186/s12885-019-5455-1",
+        "pmid": "30898113",
+        "pmcid": "PMC6429770",
+        "title": "Genome-wide CRISPR screen reveals PSMA6 to be an essential gene in pancreatic cancer cells.",
+        "year": 2019,
+        "publication_date": "2019-03-21"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Proteasome dependency primary screen with competing survival target.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:30898113&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1126/science.aaw9872",
+        "doi": "10.1126/science.aaw9872",
+        "pmid": "32241947",
+        "pmcid": "PMC7681911",
+        "title": "Cysteine depletion induces pancreatic tumor ferroptosis in mice.",
+        "year": 2020,
+        "publication_date": "2020-04-03"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Solid genetic and metabolic alternative redox dependency.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7681911/fullTextXML#article-meta/pub-date",
+      "date_evidence": {
+        "basis": "JATS article-meta/pub-date",
+        "value": {
+          "pub-type": "ppub",
+          "year": "2020",
+          "month": "4",
+          "day": "03"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41586-020-2229-5",
+        "doi": "10.1038/s41586-020-2229-5",
+        "pmid": "32376951",
+        "pmcid": "PMC7296553",
+        "title": "Autophagy promotes immune evasion of pancreatic cancer by degrading MHC-I.",
+        "year": 2020,
+        "publication_date": "2020-04-22"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Autophagy alternative with mechanistic cell biology and immune consequences.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:32376951&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41580-020-0250-z",
+        "doi": "10.1038/s41580-020-0250-z",
+        "pmid": "32457508",
+        "pmcid": "PMC8867924",
+        "title": "Mechanisms, regulation and functions of the unfolded protein response.",
+        "year": 2020,
+        "publication_date": "2020-05-26"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Limited review anchor for stress regulatory pathways.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:32457508&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1126/sciadv.abf7114",
+        "doi": "10.1126/sciadv.abf7114",
+        "pmid": "33962950",
+        "pmcid": "PMC8104867",
+        "title": "NOX4 links metabolic regulation in pancreatic cancer to endoplasmic reticulum redox vulnerability and dependence on PRDX4.",
+        "year": 2021,
+        "publication_date": "2021-05-07"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Direct PDAC screen reveals ER redox stress survival dependency.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:33962950&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41467-021-24798-y",
+        "doi": "10.1038/s41467-021-24798-y",
+        "pmid": "34330913",
+        "pmcid": "PMC8324870",
+        "title": "PRMT1-dependent regulation of RNA metabolism and DNA damage response sustains pancreatic ductal adenocarcinoma.",
+        "year": 2021,
+        "publication_date": "2021-07-30"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Functional-genomic alternative survival dependency tied to cell stress.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:34330913&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.cels.2021.09.014",
+        "doi": "10.1016/j.cels.2021.09.014",
+        "pmid": "34706266",
+        "pmcid": "PMC8961722",
+        "title": "GCN2 adapts protein synthesis to scavenging-dependent growth.",
+        "year": 2022,
+        "publication_date": "2021-10-26"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "PDAC nutrient acquisition and integrated stress response connection.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:34706266&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1158/2159-8290.cd-22-0043",
+        "doi": "10.1158/2159-8290.cd-22-0043",
+        "pmid": "35771492",
+        "pmcid": "PMC9437572",
+        "title": "NCOA4-Mediated Ferritinophagy Is a Pancreatic Cancer Dependency via Maintenance of Iron Bioavailability for Iron-Sulfur Cluster Proteins.",
+        "year": 2022,
+        "publication_date": "2022-06-30"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Links recycling, iron metabolism, and tumor growth dependency.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9437572/fullTextXML#article-meta/pub-date",
+      "date_evidence": {
+        "basis": "JATS article-meta/pub-date",
+        "value": {
+          "pub-type": "epub",
+          "iso-8601-date": "2022-06-30",
+          "year": "2022",
+          "month": "6",
+          "day": "30"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1038/s41698-022-00336-x",
+        "doi": "10.1038/s41698-022-00336-x",
+        "pmid": "36543867",
+        "pmcid": "PMC9772324",
+        "title": "The deubiquitinase USP10 protects pancreatic cancer cells from endoplasmic reticulum stress.",
+        "year": 2022,
+        "publication_date": "2022-12-21"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Specific protein homeostasis survival adaptation.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:36543867&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.7150/ijbs.95962",
+        "doi": "10.7150/ijbs.95962",
+        "pmid": "38904009",
+        "pmcid": "PMC11186365",
+        "title": "CPEB1 Controls NRF2 Proteostasis and Ferroptosis Susceptibility in Pancreatic Cancer.",
+        "year": 2024,
+        "publication_date": "2024-06-03"
+      },
+      "category": "stress_and_functional_genomics",
+      "rationale": "Expression/proteostasis/redox link and ferroptosis vulnerability.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:38904009&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.tranon.2017.04.009",
+        "doi": "10.1016/j.tranon.2017.04.009",
+        "pmid": "28658650",
+        "pmcid": "PMC5487255",
+        "title": "The Role of Fibroblasts in Pancreatic Cancer: Extracellular Matrix Versus Paracrine Factors.",
+        "year": 2017,
+        "publication_date": "2017-06-26"
+      },
+      "category": "stromal alternatives",
+      "rationale": "Separates matrix and soluble paracrine fibroblast contributions.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1016/j.tranon.2017.04.009&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1158/0008-5472.can-17-2320",
+        "doi": "10.1158/0008-5472.can-17-2320",
+        "pmid": "29259015",
+        "pmcid": "PMC5935584",
+        "title": "Inactivation of Cancer-Associated-Fibroblasts Disrupts Oncogenic Signaling in Pancreatic Cancer Cells and Promotes Its Regression.",
+        "year": 2018,
+        "publication_date": "2017-12-19"
+      },
+      "category": "stromal alternatives",
+      "rationale": "Tests whether fibroblast inactivation disrupts oncogenic survival signaling.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1158/0008-5472.can-17-2320&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1084/jem.20162024",
+        "doi": "10.1084/jem.20162024",
+        "pmid": "28232471",
+        "pmcid": "PMC5339682",
+        "title": "Distinct populations of inflammatory fibroblasts and myofibroblasts in pancreatic cancer.",
+        "year": 2017,
+        "publication_date": "2017-02-23"
+      },
+      "category": "stromal heterogeneity",
+      "rationale": "Identifies distinct inflammatory and myofibroblast populations rather than one generic supportive stroma.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1084/jem.20162024&format=json&resultType=core",
+      "date_evidence": {
+        "basis": "Europe PMC electronicPublicationDate",
+        "value": {
+          "electronicPublicationDate": "2017-02-23"
+        }
+      }
+    },
+    {
+      "candidate": {
+        "key": "10.1158/2159-8290.cd-19-0094",
+        "doi": "10.1158/2159-8290.cd-19-0094",
+        "pmid": "31197017",
+        "pmcid": "PMC6727976",
+        "title": "Cross-Species Single-Cell Analysis of Pancreatic Ductal Adenocarcinoma Reveals Antigen-Presenting Cancer-Associated Fibroblasts.",
+        "year": 2019,
+        "publication_date": "2019-06-13"
+      },
+      "category": "stromal heterogeneity",
+      "rationale": "Cross-species single-cell data provide identifiable stromal populations and expression context.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1158/2159-8290.cd-19-0094&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.7554/elife.50663",
+        "doi": "10.7554/elife.50663",
+        "pmid": "31663852",
+        "pmcid": "PMC6874475",
+        "title": "Lactate-mediated epigenetic reprogramming regulates formation of human pancreatic cancer-associated fibroblasts.",
+        "year": 2019,
+        "publication_date": "2019-11-01"
+      },
+      "category": "stromal metabolism",
+      "rationale": "Lactate regulates fibroblast state by epigenetic mechanisms.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.7554/elife.50663&format=json&resultType=core"
+    },
+    {
+      "candidate": {
+        "key": "10.1016/j.biomaterials.2019.119421",
+        "doi": "10.1016/j.biomaterials.2019.119421",
+        "pmid": "31494503",
+        "pmcid": "PMC6934357",
+        "title": "Modulation of redox metabolism negates cancer-associated fibroblasts-induced treatment resistance in a heterotypic 3D culture platform of pancreatic cancer.",
+        "year": 2019,
+        "publication_date": "2019-08-12"
+      },
+      "category": "stromal redox",
+      "rationale": "Heterotypic culture tests how stromal context changes redox-dependent survival.",
+      "date_source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1016/j.biomaterials.2019.119421&format=json&resultType=core"
+    }
+  ]
+}

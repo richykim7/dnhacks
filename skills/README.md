@@ -50,4 +50,10 @@ E-value/e-BH helpers are standalone diagnostics, not an active falsifier gate.
   command; record its receipt without a RESULT or a verification submission. The agent writes input
   preparation code only; this command does not return analysis statistics.
 
+- `dependency-experiment/` — submit an operator-registered Chronos comparison and record only its
+  durable receipt. No result statistics or verification submission are returned by this command.
+
+- `drug-response-experiment/` — submit an operator-registered biomarker/AUC association; record the
+  durable receipt and continue without a RESULT or verification submission. No drug-response uploads.
+
 Every other directory is a method guide with its own data-source section.

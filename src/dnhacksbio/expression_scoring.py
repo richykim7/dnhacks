@@ -7,22 +7,19 @@ from __future__ import annotations
 
 import argparse
 import base64
-from contextlib import contextmanager
-import fcntl
 import hashlib
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import io
 import json
 import os
 from pathlib import Path
 import shutil
-import sqlite3
 import subprocess
 import sys
-import threading
 import zipfile
 
 from .expression_experiment import MAX_INPUT, REQUEST_ID
+
+from .experiment_transport import QueueStore, make_server, serve, register_method
 
 MAX_BODY = 2 * MAX_INPUT
 SPEC_FIELDS = {"hypothesis", "source", "assumptions", "unit_namespace", "input_scale"}
@@ -54,30 +51,12 @@ def validate_payload(payload):
     return raw
 
 
-class Store:
-    def __init__(self, directory):
-        self.directory = Path(directory).resolve()
-        self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
-        os.chmod(self.directory, 0o700)
-        self.path = self.directory / "scoring.sqlite3"
-        with self.connect() as con:
-            con.executescript("""
-                CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, config TEXT NOT NULL);
-                CREATE TABLE IF NOT EXISTS jobs (
-                  receipt TEXT PRIMARY KEY, digest TEXT NOT NULL, payload TEXT NOT NULL,
-                  status TEXT NOT NULL, result TEXT, error TEXT);
-            """)
-        os.chmod(self.path, 0o600)
+register_method("expression-tpm-v1", validate_payload)
 
-    @contextmanager
-    def connect(self):
-        con = sqlite3.connect(self.path, timeout=30)
-        try:
-            with con:
-                con.execute("PRAGMA synchronous=FULL")
-                yield con
-        finally:
-            con.close()
+
+class Store(QueueStore):
+    worker_module = "dnhacksbio.expression_scoring"
+    method = "expression-tpm-v1"
 
     def configure(self, encoder, config):
         source = Path(encoder).resolve()
@@ -94,48 +73,7 @@ class Store:
                 raise ValueError("Settings are frozen for this queue; use a new state directory")
             con.execute("INSERT OR IGNORE INTO settings VALUES (1, ?)", (value,))
 
-    def enqueue(self, payload):
-        validate_payload(payload)
-        value = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False)
-        digest = hashlib.sha256(value.encode()).hexdigest()
-        receipt = payload["request_id"]
-        with self.connect() as con:
-            con.execute("BEGIN IMMEDIATE")
-            if not con.execute("SELECT 1 FROM settings WHERE id=1").fetchone():
-                raise ValueError("Queue not configured")
-            existing = con.execute("SELECT digest FROM jobs WHERE receipt=?", (receipt,)).fetchone()
-            if existing and existing[0] != digest:
-                raise ValueError("Conflicting retry")
-            con.execute("INSERT OR IGNORE INTO jobs VALUES (?, ?, ?, 'queued', NULL, NULL)",
-                        (receipt, digest, value))
-        return {"receipt": receipt, "status": "accepted"}
-
-    def process_one(self, *, timeout=600):
-        with self.connect() as con:
-            con.execute("BEGIN IMMEDIATE")
-            row = con.execute("SELECT receipt FROM jobs WHERE status='queued' ORDER BY rowid LIMIT 1").fetchone()
-            if not row:
-                return False
-            receipt = row[0]
-            con.execute("UPDATE jobs SET status='running' WHERE receipt=?", (receipt,))
-        # Training globals/RNG and any numerical output stay in a separate child process.
-        # Neither stdout nor tracebacks enter the discovery journal or its shared artifact collector.
-        try:
-            proc = subprocess.run([sys.executable, "-m", "dnhacksbio.expression_scoring",
-                                   "score-one", "--state", str(self.directory), "--receipt", receipt],
-                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=timeout,
-                                  env=os.environ | {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"})
-            error = "worker_exit" if proc.returncode else "incomplete_worker"
-        except subprocess.TimeoutExpired:
-            error = "worker_timeout"
-        except OSError:
-            error = "worker_start_failed"
-        with self.connect() as con:
-            con.execute("UPDATE jobs SET status='failed', error=? WHERE receipt=? AND status='running'",
-                        (error, receipt))
-        return True
-
-    def score_one(self, receipt):
+    def _score_one(self, receipt):
         try:
             import numpy as np
             import torch
@@ -176,69 +114,6 @@ class Store:
             with self.connect() as con:
                 con.execute("UPDATE jobs SET status='failed', error=? WHERE receipt=?",
                             (type(exc).__name__, receipt))
-
-
-def make_server(store, host="127.0.0.1", port=8793):
-    class Handler(BaseHTTPRequestHandler):
-        def log_message(self, *_):
-            pass
-
-        def reply(self, status, value):
-            body = json.dumps(value).encode()
-            self.send_response(status)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-
-        def do_POST(self):
-            self.connection.settimeout(30)
-            if self.path != "/experiments":
-                self.reply(404, {"error": "not found"})
-                return
-            try:
-                size = int(self.headers.get("Content-Length", "0"))
-                if not 0 < size <= MAX_BODY:
-                    raise ValueError("Invalid size")
-                body = self.rfile.read(size)
-                if len(body) != size:
-                    raise ValueError("Incomplete body")
-                receipt = store.enqueue(json.loads(body))
-            except Exception:
-                self.reply(400, {"error": "submission not accepted"})
-                return
-            self.reply(202, receipt)
-
-        def do_GET(self):
-            self.reply(404, {"error": "not found"})
-
-    return ThreadingHTTPServer((host, port), Handler)
-
-
-def serve(store, host, port):
-    # One worker owner per queue; recover interrupted jobs only while holding this lock.
-    with (store.directory / "worker.lock").open("a") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        with store.connect() as con:
-            con.execute("UPDATE jobs SET status='queued' WHERE status='running'")
-        stop = threading.Event()
-
-        def work():
-            while not stop.is_set():
-                if not store.process_one():
-                    stop.wait(0.25)
-
-        server = make_server(store, host, port)
-        worker = threading.Thread(target=work, daemon=True)
-        worker.start()
-        try:
-            server.serve_forever()
-        except KeyboardInterrupt:
-            pass
-        finally:
-            server.server_close()
-            stop.set()
-            worker.join()
 
 
 def main(argv=None):

@@ -99,18 +99,20 @@ One fixed pipeline, run as a detached job so the console can watch it:
 
 ### 3.3 Claim extraction (`extract.py`)
 
-Three reads of each paper, all against closed menus, with deferral instead of guessing:
+Opus reads each paper against the category, predicate, aspect and context menus, returning
+claims and source quotes. A separate Sonnet session checks direction. Code then resolves
+names within each category's owner vocabulary.
 
-- **Pass 1** returns every claim as menu choices plus a verbatim quote. Menus cover the entity category,
-  the predicate, the object aspect, and the context slots.
-- **Pass 2**, in a separate session that sees only the claim and its quote, checks the direction.
-- **Pass 3** resolves the process and entity names that did not match deterministically by showing
-  retrieved candidate terms and letting the model pick one while the paper is still in context.
+Unresolved claims and upfront reader omissions go to grouped parallel Sonnet repair,
+which can correct the source name, category, species context, direction and representation.
+It receives the source, reviewed vocabulary definitions and concrete validation errors.
+Python checks source quote spans, owner identifiers and the existing claim models; a failed
+correction gets a second attempt with retrieved alternatives. There are no model tools in
+repair sessions. See [claim repair](docs/claim-repair.md) for the contract and replay controls.
 
-The model only ever picks a letter or a menu word. It never types an identifier. Grounding to identifiers is
-deterministic and happens in code. Anything that cannot be grounded becomes a **deferral** row rather than a
-guessed claim. Context (cell line, tissue, organism, condition and so on) is captured from the same sentence
-as the claim, not in a separate pass.
+Unresolved failures become **deferral** rows. Unsupported/nonclaim rejections and repair
+history are saved separately in extraction audits; warnings on retained claims do not inflate
+the failure queue. Lookup failure alone does not establish that an ontology lacks a concept.
 
 ### 3.4 Grounding (`grounding.py`)
 
@@ -130,11 +132,18 @@ permitted namespaces, then by last-resort gap fillers:
 | protein families and complexes | FamPlex |
 | repeat families | Dfam |
 | non-human genes | NCBI Gene, per species |
-| processes | OLS exact match over GO and related ontologies |
-| gap fillers | PRO, NCIt (consulted only when everything else failed) |
+| processes and cellular components | GO via OLS |
+| pathological processes | MeSH via OLS |
+| cellular outcomes absent from GO | reviewed LOCALPHENO registry |
+| populations absent from CL | reviewed LOCALCELL registry |
+| experimental reagents absent from ChEBI | reviewed LOCALREAGENT registry |
+| specific disease subtypes absent from MONDO | reviewed LOCALDISEASE registry |
 
-The lexicon files live under `data/processed/` and are not committed. Without them, extraction defers
-ungrounded entities instead of guessing. Only the entity string is ever sent over the network.
+Downloaded lexicons live under `data/processed/`. A small versioned supplement in
+`lexicon_supplement.py` stores verified aliases and explicitly local definitions with source
+provenance. Local entries do not impersonate external ontology identifiers. Missing vocabulary
+is recoverable when a reviewed entry exists; arbitrary IDs remain disallowed. Ontology lookup
+requests contain entity strings; the extraction and repair models receive the paper text.
 
 ### 3.5 The claim atom (`schema.py`, `vocab.py`)
 
@@ -334,6 +343,23 @@ These are in the package and tested, and deliberately not connected to the falsi
   receipt only. `expression_scoring.py` runs the private queue and numerical worker separately;
   it has no result-reading HTTP endpoint or feedback callback. See `docs/expression-scoring.md`
   for operator setup and the required filesystem separation when agents run unrestricted code.
+- `dependency_experiment.py`: receipt-only registered Chronos submission; `dependency_scoring.py`
+  privately validates frozen operator protocols/cohort manifests and scores blocked label permutations
+  through `dependency_evalue.py`. Unsupported exchangeability, overlap, development exposure and
+  insufficient units yield private unavailable results. No confirmation cohort is bundled.
+  Both adapters use `experiment_transport.py` for durable acceptance, canonical receipt aliases,
+  worker ownership/restart recovery and output-suppressed subprocesses. See `docs/dependency-scoring.md`.
+- `drug_response_experiment.py`: receipt-only submission of an operator-registered biomarker/AUC
+  association. `drug_response_scoring.py` uses the shared private transport and frozen donor registry;
+  `drug_response.py` computes observed log-dose inhibition area and stratified Spearman permutations.
+  No synergy evidence or biological confirmation cohort is enabled. See `docs/drug-response-scoring.md`.
+
+- `registered_expression_scoring.py`: shared-queue adapter for operator-frozen paired pathway protocols,
+  hashed expression cohorts/resources and receipt aliases. `expression_design.py` validates donor pairs
+  and prepares integer pseudobulk; `pathway_evalue.py` computes fixed weighted scores and assignment
+  evidence. Optional `count_expression.py` records approximate paired PyDESeq2 effects privately.
+  The `expression_experiment --dataset-id` route accepts identifiers only; legacy TPM uploads remain
+  available. No confirmation cohort is bundled, and no statistical result enters discovery feedback.
 - `expr_encoder.py`: frozen PCA or masked-gene autoencoder encoders with recorded training provenance,
   trained by `scripts/train_expr_encoder.py`.
 - `evalues.py`: p-to-e calibration, merging and e-BH helpers. Inputs must already be valid.
@@ -381,9 +407,9 @@ Main routes: `/api/projects` and its sub-routes for build, run, jobs, chat and a
 
 ### 9.2 Frontend (`frontend/`)
 
-React and TypeScript, built with Vite and Tailwind, with Radix components, Motion, React Flow and Dagre for
-graphs, and 3Dmol for structures. It talks only to the JSON and SSE API. A project selector in the header
-scopes every view. The views:
+React and TypeScript, built with Vite and Tailwind, with Radix components, Motion and React Flow,
+d3-force for the literature graph, Dagre for investigation trees, and 3Dmol for structures. It talks only
+to the JSON and SSE API. A project selector in the header scopes every view. The views:
 
 - **Investigations.** The project's runs grouped into fork trees. The selected investigation shows its
   search tree as a spatial graph of agents, a live activity feed streamed step by step, and each experiment
@@ -395,9 +421,11 @@ scopes every view. The views:
 - **Library.** Create a project; edit every collection field; run a dry preview or a full build; upload
   and remove documents; talk to the assistant and accept its proposed settings; see build and run history
   with progress, logs and cancellation.
-- **Knowledge.** The project's literature claim graph with status filters, entity detail, relationship
-  search over the loaded subset, exact quotations, source papers and biological context. Review controls
-  are not exposed in the frontend. Backend review endpoints and human-decision persistence remain available.
+- **Knowledge.** The project's literature claim graph with entity-kind shapes, signed relationships,
+  collection-wide database search and vocabulary filters, collection totals and a capped graph view.
+  Claim inspection shows entity forms, exact quotations, source papers, biological context, reported
+  experiments, related claims and engine-test outcomes. Review controls are not exposed in the frontend.
+  Backend review endpoints and human-decision persistence remain available.
 
 ## 10. Data on disk
 

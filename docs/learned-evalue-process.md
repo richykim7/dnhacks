@@ -1,8 +1,10 @@
 # Learned e-values: process and slide notes
 
-Current milestone: real-expression encoder training on L40S, held-out comparison, 10,000 synthetic
-null runs, and a standalone wealth report are complete. The chronology below distinguishes the
-earlier CPU/synthetic work from this GPU/real-data iteration.
+Current status (2026-09-05): GPU encoder training, held-out real-expression evaluation, 10,000
+synthetic null runs, slide figures, and the receipt-only background scoring service are implemented.
+The trained biological two-sample diagnostic is based on Pandeva et al.; it is not an implementation
+of Genentech's E-valuator agent-trajectory monitor. Sections below preserve historical milestones
+and distinguish numerical validation, operational integration and remaining scientific evidence.
 
 ## What we set out to build
 
@@ -144,8 +146,8 @@ device reports **NVIDIA L40S, 46,068 MiB memory**. The earlier training and benc
 hardware availability was not checked before those runs and should have been. Pointers now exist
 in local `CLAUDE.md` and shared `AGENTS.md` so future compute planning starts with the handoff.
 
-This was a hardware/connectivity check, not a GPU training run. The remote default system Python
-does not currently import Torch; other environments were not inventoried. At that point, the bettor and
+This was a hardware/connectivity check, not a GPU training run. At that historical check, the
+remote default system Python did not import Torch; other environments were not inventoried. At that point, the bettor and
 encoder trainer explicitly constructed CPU tensors, so installing CUDA Torch alone will not move
 training to the GPU. A GPU iteration needs an isolated environment, explicit device support,
 device/replay validation and a timed smoke run before larger training. Connection information stays
@@ -191,9 +193,8 @@ A separate real-expression null audit fixes unordered, disjoint held-out donor p
 pair an independent fair orientation. Pair order remains fixed (`pairing="in_order"`); reshuffling
 would break the conditional construction. This checks the learner on real feature geometry under
 an artificial null. It does not assert that observed COVID labels were randomized. The synthetic
-null evaluation separately targets 10,000 repetitions with disjoint seeds and the original fixed
-pilot architecture. The real-expression counts and uncertainty follow below; the expanded synthetic results are recorded
-when the fixed evaluation completes.
+null evaluation completed 10,000 repetitions with disjoint seeds and the original fixed
+pilot architecture. The real-expression counts and expanded synthetic results are recorded below.
 
 ### Held-out real-data results
 
@@ -266,7 +267,9 @@ this checkout has no GPU; the same test runs and passes on the remote device.
 
 The first invocation guide exposed the numerical diagnostic to the discovery agent. The revised
 interface separates experiment submission from scoring: an agent saves TPM inputs and a declared
-specification, runs `python -m dnhacksbio.expression_experiment`, and records a durable receipt.
+specification, runs `python -m dnhacksbio.expression_experiment`, and receives a durable receipt
+from the command. The runtime captures stdout automatically; the agent does not need to repeat,
+reconstruct or return the receipt.
 The client imports no numerical code and never relays service response bodies or scoring failures.
 The self-contained `expression-experiment` skill replaces the direct-call skill. General rigor and
 DepMap guidance no longer request native diagnostic emission.
@@ -287,3 +290,135 @@ as the same OS user. Production blinding requires the service's state and confir
 outside the agent's access permissions, and human exports must not be fed back during discovery.
 The upload interface cannot prove that submitted donors were untouched during hypothesis selection.
 Operator setup and replay procedures are in [the service guide](expression-scoring.md).
+
+
+## Source-paper identification
+
+Our numerical implementation follows [Pandeva et al., Deep anytime-valid hypothesis testing,
+AISTATS 2024](https://proceedings.mlr.press/v238/pandeva24a.html), adapted with a frozen expression
+encoder and an independent two-sample contract. Earlier use of “trained judge” described the neural
+bettor and should not be read as a claim that we implemented a learned judge of agent trajectories.
+
+The paper the user recalled is [Sadhuka et al., E-valuator: Reliable Agent Verifiers with Sequential
+Hypothesis Testing](https://arxiv.org/html/2512.03109v2), with Genentech-affiliated authors (v2,
+28 May 2026). It learns from labeled successful/unsuccessful trajectories and verifier-score histories,
+then calibrates an alarm threshold on a separate set. Its usual null is a successful trajectory;
+its false alarm is incorrectly flagging one. Estimated density ratios need calibration; they do
+not automatically inherit exact e-process guarantees. We have not implemented or evaluated this
+trajectory-monitoring method. Our biological-null benchmarks are not E-valuator benchmarks.
+
+## Background-scoring rollout and evidence index
+
+[PR #26](https://github.com/richykim7/dnhacks/pull/26) landed the GPU/real-data diagnostic work.
+[PR #34](https://github.com/richykim7/dnhacks/pull/34), main `d3d545bd`, landed the submission client,
+durable queue, worker, receipt-only skill and explicit exception to Explorer's usual RESULT instructions.
+That commit passed **117 Python tests, 6 frontend unit tests, 18 browser tests and the frontend build**.
+The two Python skips were local CUDA and opt-in Docker; the background worker tests used native processes.
+Eight dedicated integration tests cover instruction delivery, the command/worker path, persistence,
+retry identity, failures, timeout, restart recovery, frozen configuration/artifacts and feedback exclusion.
+These are scripted model actions plus real command/numerical execution, not a live autonomous-agent trial.
+
+At rollout the local service was started on localhost:8793 with the previously trained autoencoder,
+seed 0 and batch size 8. Its result HTTP route returns 404. Default minimum size is 48 donors per group
+and the numerical default is at most 500 epochs per update. This differs from the recorded real-data
+benchmark (30 pairs, batch size 4, at most 100 epochs) and the small synthetic benchmark. Do not present
+any one benchmark as an exhaustive validation of all deployed configurations or future cohorts.
+The service files remain outside the normal discovery artifact directory. This prevents routine
+feedback leakage, but unrestricted code under the same OS user can still access those files.
+
+| Evidence for slides | Artifact | Claim it supports |
+| --- | --- | --- |
+| 10,000 null repetitions | [Expanded null summary](../research/learned-evalue-validation/expanded-null.json) | Learned final rejection 0.20%; ever-crossing 1.12% (95% interval 0.93–1.35%) in the specified simulation |
+| 100 repetitions per alternative | [Expanded alternatives](../research/learned-evalue-validation/expanded-alternatives.json) | Scenario-specific power and comparison with simpler baselines; no universal winner |
+| Real RNA-seq, actual GPU training | [Real-data record](../research/learned-evalue-validation/real-expression/README.md) | A predeclared held-out comparison; learned features beat PCA here, scalar evidence was stronger |
+| Real-data evidence accumulation | [SVG](../research/learned-evalue-validation/real-expression/wealth.svg), [PNG](../research/learned-evalue-validation/real-expression/wealth.png), [HTML report](../research/learned-evalue-validation/real-expression/index.html) | Directly reusable figures with the method, comparison and threshold labeled |
+| Agent-facing integration | `tests/test_expression_scoring.py` | Numerical results stay out of the tested command output, prompts, journal and recall |
+
+Still unmeasured: scientific benefit during autonomous agent use, replication across independent disease
+cohorts, and an investigation-wide error guarantee under adaptive hypothesis/data reuse. A large
+expression-distribution e-value does not establish gene-effect direction or a causal mechanism.
+
+The user-requested independent review of candidate follow-on tools is recorded separately in
+[the tool council](evalue-tool-council.md). It proposes future work and does not authorize or claim
+implementation of those integrations.
+
+## PDAC scope and trajectory-monitoring assessment
+
+The user clarified that future tools should serve pancreatic-cancer therapeutic discovery or relevant
+basic science. Two council reviewers independently reassessed the original candidates: both prioritize
+functional dependency/resistance; measured drug response rises, while expression/pathway analysis
+remains core and survival/co-essentiality become supporting options. Their remaining disagreements,
+biological examples and evidence-unit requirements are in the [PDAC reassessment](evalue-tool-council.md#pancreatic-cancer-reassessment).
+This did not change tools or establish disease-specific validation of the existing neutrophil benchmark.
+
+Separately, the complete E-valuator v2 paper (27 pages including appendices) was downloaded with
+readable page-marked text and source metadata into ignored local `data/research/e-valuator/`.
+The [tree-search assessment](evaluator-tree-search-review.md) maps the paper to completed-action
+checkpoints, the existing sibling judge, resumable branches and runtime lineage. The user clarified
+that the intended intervention is to stop individual children, so the proposed pilot records child
+alarms and obtains full continuations before changing live allocation. Whole investigations group
+related data for fitting/calibration/test splits; they are not the proposed stopping target.
+Independent success labels and additional validation of adaptive branch selection remain necessary.
+The key limitations are missing full outcomes for
+pruned branches, correlated/adaptively selected descendants, and keeping both numerical scoring systems
+outside discovery feedback. No trajectory monitor, new training, GPU run or new evaluation was performed.
+
+For slides: the implemented result is still private biological scoring with the recorded validation.
+The next research question is whether a separately calibrated progress monitor can save compute while
+rarely discarding useful research branches. Success-versus-cost and false-stop plots remain to be measured.
+
+## Parallel integration planning
+
+At the user's request, three reviewers worked concurrently on concrete implementation plans for
+[dependency/CRISPR](../plans/evalue-dependency-integration.md),
+[drug response/combinations](../plans/evalue-drug-response-integration.md), and
+[pathway/TF/differential expression](../plans/evalue-expression-integration.md).
+The parent aligned a single shared queue/transport prerequisite with method-specific validators,
+operator-frozen protocols, private cohort references and canonical experiment identity across retries.
+The command emits a receipt; the agent never computes or reports numerical evidence.
+
+The first proposed endpoints use fixed-data randomization/permutation evidence where their design
+assumptions are justified. MAGeCK/PyDESeq2 model-based outputs and descriptive synergy do not acquire
+exact guarantees merely by conversion. Each plan specifies data needs, null/unit, code seams and
+validation; named cohorts/endpoints are proposals, not performed experiments or selected confirmation.
+The existing tools and private expression service were not changed. The trajectory document now
+targets child-branch stopping explicitly, with complete continuations for evaluation and root-grouped
+data splits; whole-investigation stopping is not the intended intervention.
+
+## Consolidated branch lifecycle and human review
+
+The [branch-monitoring plan](../plans/PLAN-branch-monitoring.md) consolidates the subsequent discussion.
+Research pauses at the action limit and the child must produce a validated report in a separate,
+tool-disabled reporting turn. A generated fallback summary does not satisfy this requirement.
+Report failures remain paused and operationally blocked. Explicit checkpoints replace ambiguous
+end-of-round `done`; parents authorize continuation/forks, and code executes approved forks.
+
+The existing candidate path was checked: an active node submits its own eligible experimental result
+without parent approval; automated checks precede human review. Pruning preserves findings and review
+jobs. Private expression receipts are not yet integrated into this path. The plan adds an operator-side
+review adapter and separates private human review from disclosure to discovery: score-derived decisions,
+notes and graph changes must not feed ongoing agents indirectly. No runtime or review behavior changed
+in this documentation task. Reporting, allocation and statistical calibration remain separately
+testable stages, with observation-only monitoring before active pruning.
+
+## Fixed subtree outcomes and monitor histories
+
+The branch plan now distinguishes the 18-action reporting cadence from the full evaluation horizon.
+Each monitored episode has a fixed terminal budget shared with descendants; checkpoints predict
+whether that subtree will produce a qualifying new outcome by the same endpoint. The horizon's
+numerical size remains a development-pilot choice, to freeze before calibration and held-out testing.
+Collect the generated bounded tree, not every possible fork. The paper's action-sequence experiments
+do not establish this recursive adaptation's guarantees.
+
+The primary success condition is a relevant, nonduplicate new finding passing applicable verification
+and a frozen evidence rubric; useful refutations can qualify. Forks and activity counts earn no
+automatic credit. Completed runs without such an outcome are unsuccessful within the budget;
+incomplete runs and pending adjudication require separate handling. Judge artifacts rather than
+persuasive summaries, and keep private assessment feedback outside research-agent context.
+
+One rollout supplies many checkpoint observations, but shared prefixes and descendant outcomes are
+correlated. Report independent root, episode and checkpoint counts separately and split by related
+investigations. The planned human view shows per-child latest monitor statistics and actual histories,
+with experimental e-values separate. A short history remains short; no invented points, automatic
+descendant-score aggregation or claims that more rows supply independent calibration samples.
+This update changes planning and process documentation only; no trajectories, training or UI added.

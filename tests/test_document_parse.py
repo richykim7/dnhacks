@@ -116,3 +116,21 @@ def test_parser_image_path_cannot_escape_scratch(monkeypatch, tmp_path):
 def test_xml_rejects_declared_entities():
     with pytest.raises(ValueError, match='entity declarations'):
         parse_document_bytes(b'<!DOCTYPE article [<!ENTITY foo "expanded">]><article><body>&foo;</body></article>', 'xml')
+
+
+def test_jats_floating_figures_preserve_captions_and_graphics():
+    source = b'''<pmc-articleset><article xmlns:xlink="http://www.w3.org/1999/xlink">
+      <front><article-title>Division study</article-title></front>
+      <body><sec><title>Results</title><p>Cells kept dividing.</p>
+        <fig id="inline"><caption><p>Inline measurement</p></caption><graphic xlink:href="inline.jpg"/></fig>
+      </sec></body>
+      <floats-group><fig id="floating"><label>Figure 2</label>
+        <caption><p>Mitotic spindle microscopy</p></caption><graphic xlink:href="spindle.jpg"/>
+      </fig></floats-group></article></pmc-articleset>'''
+    out = parse_document_bytes(source, "xml")
+    assert [f["id"] for f in out["figures"]] == ["inline", "floating"]
+    assert out["figures"][1]["url"] == "spindle.jpg"
+    assert out["figures"][1]["caption"] == "Mitotic spindle microscopy"
+    assert out["markdown"].count("Inline measurement") == 1
+    assert out["markdown"].count("Mitotic spindle microscopy") == 1
+    assert out["parser_version"] == "2"
