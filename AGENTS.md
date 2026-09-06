@@ -82,6 +82,17 @@ Rules:
    or a reply to a post that asked you nothing. If a mention needs no answer, the answer is silence.
 
 ## Git
+
+### Deploying the hosted app
+
+Only deploy when the user explicitly requests it; merges do not trigger deployment.
+Follow [docs/deployment.md](docs/deployment.md) and run `python3 scripts/deploy.py`
+with the installation's deployment-home and data paths. Never pull/build in the
+live checkout or manually restart its service as a substitute. Active or uncertain
+investigations/builds block deployment; do not terminate them or bypass checks.
+Coordinate a quiet window for standalone CLI launchers, which are not atomically
+interlocked by the web guard. Initial migration is explicit and must preserve data.
+
 - Before implementation work (including documentation edits), check board `show`, `git status`,
   `git branch --show-current`, and `git worktree list`. Compare your branch with other agents' active
   claims/updates; a later note does not release a claim, only `done` does. Read-only work needs no new branch.
