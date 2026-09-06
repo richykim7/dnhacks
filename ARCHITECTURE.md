@@ -546,3 +546,17 @@ identical replay does not add wealth, and consumed canonical donors cannot be
 reused across processes in one shared store. This infrastructure does not itself
 satisfy biological access, sampling or power gates and does not alter discovery
 promotion. Adaptive critics are not implemented. See [native evidence](docs/native-evidence.md).
+
+## Cellular ecosystem development tool
+
+The `ecosystem` CLI validates sparse UMI count provenance and a canonical donor
+crosswalk, trains separate compartment PCA or masked NB encoders, and exposes
+donor-level development profiles, coupling/comparison and segmented-cell spatial
+summaries. Counts are not passed to the TPM encoder. Fixed per-compartment
+subsamples, frozen gene/assay/state references and explicit missing coverage
+preserve measurement boundaries. The private receipt adapter uses the shared
+native frozen process ledger and requires operator-reviewed identity, access,
+sampling, transfer, selection, privacy, novelty and power artifacts. No biological
+cohort or confirmatory capability is approved; real-data audits and adequate
+power remain release gates. No graph promotion or branch-success behavior changes.
+See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limits.

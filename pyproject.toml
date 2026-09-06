@@ -15,6 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
+ecosystem = "dnhacksbio.ecosystem_experiments:main"
 protein-tool = "dnhacksbio.protein_tools:main"
 
 [project.optional-dependencies]
