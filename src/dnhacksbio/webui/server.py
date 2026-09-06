@@ -168,6 +168,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._run_detail(rest)
             if path == "/api/kg":
                 return self._kg(qs)
+            if path == "/api/review/candidate":
+                from .candidate_review import candidate
+                return self._send_json(candidate(
+                    (qs.get("run") or [""])[0], (qs.get("experiment") or [""])[0],
+                    self._project_arg(qs)))
             if path == "/api/review":
                 return self._send_json(data.review_queue(self._project_arg(qs)))
             if path == "/api/architecture":
@@ -230,6 +235,12 @@ class Handler(BaseHTTPRequestHandler):
                 res = _run_async(assistant.suggest(str(payload.get("description", "")),
                                                    str(payload.get("name", ""))))
                 return self._send_json(res)
+            if parsed.path == "/api/review/candidate":
+                from .candidate_review import decide
+                return self._send_json(decide(
+                    str(payload.get("run", "")), str(payload.get("experiment", "")),
+                    str(payload.get("decision", "")), str(payload.get("note", "")),
+                    payload.get("project") or None))
             if parsed.path == "/api/review/promotion":
                 res = data.record_promotion_decision(
                     test_id=payload.get("test_id"),

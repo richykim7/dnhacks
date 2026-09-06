@@ -153,3 +153,18 @@ JSON artifacts; `binder.job` records receipt milestones without changing the exp
 verdict. Receipt queuing does not launch inference. Candidate collection retains partial/rejected
 outputs, and scene image reviews contribute actual model usage to the research cost ledger.
 Agent arguments cannot override host paths, stores, workspace URLs or project/run identity.
+
+### Scoped Investigation human review
+
+The Investigation review card uses `GET /api/review/candidate` with exact `run`, `experiment`, and
+optional `project` parameters. Runtime manifest scope and verification-queue provenance must resolve
+one surviving engine test; ambiguous or missing associations are not guessed. Only ordinary submitted
+results, verification, source evidence and human decision records are returned.
+
+`POST /api/review/candidate` saves a required note (1–400 characters) with a `validated` or `rejected`
+decision, then applies only that test through the existing promotion gate. Saved decisions survive
+working/master writer locks and runtime-publication failure; the response distinguishes pending
+application from applied review. Identical retries finish missing publication without duplicate
+correction notes, and conflicting decisions are rejected. Old bulk promotion endpoints share the
+per-collection decision lock. Accepted records retain their supported source provenance; review events
+remain in the existing durable publication outbox and appear only after their historical cursor.

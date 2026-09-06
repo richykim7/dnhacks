@@ -30,7 +30,10 @@ def _recommend(novelty_verdict: str) -> str:
 def apply_decisions(working: KGStore, master: KGStore, decisions: dict) -> dict:
     """Apply human verdicts. A decision without a note is skipped. `validated` stamps the working-graph
     edge and copies it with its literature provenance into master; `rejected` stays field-local and pushes
-    the note to the explorer as a correction. Idempotent. Returns a summary including the rejections."""
+    the note to the explorer as a correction. Identical retries complete any missing master copy
+    without duplicating working feedback; conflicting verdicts are rejected. The web caller wraps
+    working and master writes in transactions before publishing the durable review outbox.
+    Returns a summary including the new rejections."""
     promoted = rejected = skipped = 0
     rejections = []
     elog = None
@@ -51,12 +54,16 @@ def apply_decisions(working: KGStore, master: KGStore, decisions: dict) -> dict:
         if not row:
             skipped += 1
             continue
-        working.set_human_review(test_id, decision, note)
+        already_reviewed = bool(row.get("human_review"))
+        if already_reviewed and (row["human_review"] != decision or row.get("review_note") != note):
+            raise RuntimeError(f"Candidate {test_id} already has a different human decision")
+        if not already_reviewed:
+            working.set_human_review(test_id, decision, note)
         from dnhacksbio.explorer.human_review import record_review
         record_review(working, row, decision, note)
         # route the verdict back to the explorer's exploration entry, outranking the verifier's
         ee = row.get("explore_entry")
-        if ee:
+        if ee and not already_reviewed:
             if elog is None:
                 from dnhacksbio.explorer.exploration import ExplorationLog
                 elog = ExplorationLog(con=working.con)
@@ -72,7 +79,7 @@ def apply_decisions(working: KGStore, master: KGStore, decisions: dict) -> dict:
             ev = working.evidence_for(row["kg_claim_id"]) if row.get("kg_claim_id") else []
             if master.insert_promoted(row, claim_row, ev, note) is not None:
                 promoted += 1
-        else:  # rejected
+        elif not already_reviewed:  # rejected; publication retries must not repeat feedback
             rejected += 1
             rejections.append({"test_id": test_id,
                                "edge": f"{row.get('subject')}~{row.get('object')}", "note": note})

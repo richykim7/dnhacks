@@ -926,7 +926,7 @@ def review_queue(project: str | None = None) -> dict:
     }
 
 
-def record_promotion_decision(test_id, decision: str, note: str = "",
+def _record_promotion_decision(test_id, decision: str, note: str = "",
                               project: str | None = None) -> dict:
     """Record one promotion verdict into litmap_promotion_decisions.json.
 
@@ -940,17 +940,43 @@ def record_promotion_decision(test_id, decision: str, note: str = "",
     note = (note or "").strip()
     if not note:
         raise ValueError("a written note is required for every decision")
+    if len(note) > 400:
+        raise ValueError("Decision notes must be 400 characters or fewer")
     try:
         test_id = int(test_id)
     except (TypeError, ValueError):
         raise ValueError("test_id must be an integer")
+    db = working_kg(project)
+    if project and project not in kg_sources():
+        raise FileNotFoundError("Review collection not found")
+    con = _connect_ro(db)
+    try:
+        rows = _rows(con, "SELECT status, human_review, review_note FROM engine_tests WHERE test_id=?", [test_id])
+    finally:
+        con.close()
+    if not rows:
+        raise FileNotFoundError("Candidate not found in this collection")
+    row = rows[0]
     decisions = read_promotion_decisions(project)
-    decisions[str(test_id)] = {"decision": decision, "note": note}
+    previous = decisions.get(str(test_id))
+    if previous and (previous.get("decision") != decision or previous.get("note") != note):
+        raise RuntimeError("A different decision is already saved; refresh to see it")
+    if row.get("human_review"):
+        if row["human_review"] != decision or row.get("review_note") != note:
+            raise RuntimeError("This candidate already has a human decision; refresh to see it")
+        # A pending receipt can outlive the working verdict if publication failed.
+        # Retry it before claiming the complete promotion has been applied.
+        if not previous:
+            return {"ok": True, "test_id": test_id, "decision": decision, "applied": True}
+    if str(row["status"]).lower() != "candidate":
+        raise ValueError("Only an automated candidate can receive a promotion decision")
+    decisions[str(test_id)] = previous or {"decision": decision, "note": note, "recorded_at": time.time()}
+    promotion_decisions_path(project).parent.mkdir(parents=True, exist_ok=True)
     _write_json_atomic(promotion_decisions_path(project), {"decisions": decisions})
     return {"ok": True, "test_id": test_id, "decision": decision, "pending": len(decisions)}
 
 
-def apply_promotions(project: str | None = None) -> dict:
+def _apply_promotions(project: str | None = None, test_id: int | None = None) -> dict:
     """Apply all recorded decisions via the real litmap/promote.apply_decisions:
     stamp the working graph, copy VALIDATED edges into the master graph, and push
     each note to the explorer as feedback / CORRECTION. Clears the decisions file
@@ -959,6 +985,8 @@ def apply_promotions(project: str | None = None) -> dict:
     from dnhacksbio.litmap import promote
     from dnhacksbio.litmap.store import KGStore
     decisions = read_promotion_decisions(project)
+    if test_id is not None:
+        decisions = {str(test_id): decisions[str(test_id)]} if str(test_id) in decisions else {}
     if not decisions:
         return {"promoted": 0, "rejected": 0, "skipped": 0, "rejections": [],
                 "note": "no decisions to apply"}
@@ -970,22 +998,55 @@ def apply_promotions(project: str | None = None) -> dict:
             "Apply once it finishes."
         ) from exc
     try:
-        master = KGStore(MASTER_KG)
         try:
-            summary = promote.apply_decisions(working, master, decisions)
+            master = KGStore(MASTER_KG)
+        except duckdb.Error as exc:
+            raise RuntimeError("The master graph is unavailable or locked. Your decision is saved; retry application later.") from exc
+        try:
+            # Commit the master first: after a crash, insert_promoted is idempotent,
+            # and the working verdict/feedback transaction can safely be retried.
+            working.con.execute("BEGIN TRANSACTION")
+            master_transaction = False
+            try:
+                master.con.execute("BEGIN TRANSACTION")
+                master_transaction = True
+                summary = promote.apply_decisions(working, master, decisions)
+                master.con.execute("COMMIT")
+                master_transaction = False
+                working.con.execute("COMMIT")
+            except Exception:
+                if master_transaction:
+                    master.con.execute("ROLLBACK")
+                working.con.execute("ROLLBACK")
+                raise
             from dnhacksbio.explorer.human_review import publish_reviews
             from dnhacksbio.explorer.runtime import Journal
-            publish_reviews(working, Journal(PROCESSED))
+            try:
+                publish_reviews(working, Journal(PROCESSED))
+            except Exception as exc:
+                raise RuntimeError("Your decision is saved, but runtime publication is pending. Retry application to finish.") from exc
         finally:
             master.close()
     finally:
         working.close()
-    # Decisions are now durable in the working + master graphs; clear the file.
-    try:
-        promotion_decisions_path(project).unlink()
-    except OSError:
-        pass
+    # Clear only applied decisions; a scoped review must not consume unrelated cards.
+    remaining = read_promotion_decisions(project)
+    for key in decisions:
+        remaining.pop(key, None)
+    _write_json_atomic(promotion_decisions_path(project), {"decisions": remaining})
     return summary
+
+
+def record_promotion_decision(test_id, decision: str, note: str = "", project: str | None = None) -> dict:
+    from .candidate_review import decision_lock
+    with decision_lock(project):
+        return _record_promotion_decision(test_id, decision, note, project)
+
+
+def apply_promotions(project: str | None = None) -> dict:
+    from .candidate_review import decision_lock
+    with decision_lock(project):
+        return _apply_promotions(project)
 
 
 def _count_where(db: Path | None, table: str, frag: str = "", params: list | None = None) -> int:
