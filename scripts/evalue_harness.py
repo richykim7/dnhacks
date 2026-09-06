@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import replace
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -52,6 +53,53 @@ def leaked_wealth(a, b):
     return sum(math.log1p(math.tanh(judge[tuple(x)] - judge[tuple(y)])) for x, y in zip(a, b))
 
 
+def merge_reports(paths, output):
+    """Pool rejection counts from compatible shards, never average quantiles."""
+    if not paths:
+        raise ValueError('at least one shard is required')
+    reports = [json.loads(path.read_text()) for path in paths]
+    baseline, used_seeds = None, set()
+    total = 0
+    for report in reports:
+        config = report['configuration']
+        settings = {k:v for k,v in config.items() if k not in {'seed','output','artifacts','merge'}}
+        software = report['runs'][0]['result']['metadata']['software']
+        artifacts = {r['method']:r['result']['metadata']['artifact'] for r in report['runs']
+                     if 'method' in r and r['repetition'] == 0}
+        signature = (settings, software, artifacts)
+        if baseline is None:
+            baseline = signature
+        elif signature != baseline:
+            raise ValueError('incompatible shard configurations, software, or frozen artifacts')
+        seeds = {config['seed'] + 1000003*i + j for i in range(len(config['scenarios']))
+                 for j in range(config['repetitions'])}
+        if len(seeds) != len(config['scenarios']) * config['repetitions']:
+            raise ValueError('overlapping evaluation seeds within a shard')
+        if used_seeds & seeds:
+            raise ValueError('overlapping evaluation seeds')
+        used_seeds.update(seeds)
+        total += config['repetitions']
+    result = dict(schema=1, diagnostic_only=True, repetitions_per_scenario=total,
+                  configuration=baseline[0], software=baseline[1], artifacts=baseline[2], scenarios={},
+                  source_reports=[dict(path=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
+                                       seed=r['configuration']['seed'],repetitions=r['configuration']['repetitions'],
+                                       seconds=r['seconds']) for p,r in zip(paths,reports)],
+                  limitations=reports[0]['limitations'] + ['Shard quantiles retained separately; no pooled quantile estimate.'])
+    result['configuration'] = result['configuration'] | {'repetitions': total}
+    for scenario,methods in reports[0]['scenarios'].items():
+        result['scenarios'][scenario] = {}
+        for method in methods:
+            pieces = [r['scenarios'][scenario][method] for r in reports]
+            final = sum(p['final_rejections'] for p in pieces)
+            crossing = sum(p['crossing_rejections'] for p in pieces)
+            result['scenarios'][scenario][method] = dict(final_rejections=final,final_rate=final/total,
+                final_ci95=interval(final,total),crossing_rejections=crossing,crossing_rate=crossing/total,
+                crossing_ci95=interval(crossing,total),shard_quantiles=[p['quantiles'] for p in pieces])
+    output.parent.mkdir(parents=True,exist_ok=True)
+    output.write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
+    print(f'Saved {output}: {total} repetitions per scenario')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repetitions", type=int, default=100)
@@ -60,11 +108,18 @@ def main():
     parser.add_argument("--permutations", type=int, default=999)
     parser.add_argument("--seed", type=int, default=104729)
     parser.add_argument("--alpha", type=float, default=0.05)
+    parser.add_argument("--device", default="cpu")
+    parser.add_argument("--dtype", choices=["float32", "float64"], default="float64")
+    parser.add_argument("--summary-only", action="store_true", help="retain first replay per scenario; summarize all repetitions")
+    parser.add_argument("--merge", nargs="+", type=Path, help="merge compatible disjoint-seed reports instead of running")
     parser.add_argument("--scenarios", nargs="+", choices=["null", "mean_shift", "variance_shift", "discarded_signal"],
                         default=["null", "mean_shift", "variance_shift", "discarded_signal"])
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--artifacts", type=Path, default=Path("data/processed/evalue-synthetic"))
     args = parser.parse_args()
+    if args.merge:
+        merge_reports(args.merge, args.output)
+        return
     if args.repetitions < 1 or args.pairs < 48 or args.epochs < 1 or args.permutations < 1 or not 0 < args.alpha < 1:
         parser.error("positive budgets, at least 48 pairs, and alpha in (0,1) are required")
     torch.set_num_threads(1)  # CLI-owned process; library does not modify caller thread settings.
@@ -76,8 +131,10 @@ def main():
               source="synthetic lognormal, training seed 271828", sampling="iid synthetic units",
               unit_namespace="synthetic-training", components=4)
     fit_pca(training, **kw).save(args.artifacts / "pca.npz")
-    fit_autoencoder(training, **kw, hidden=32, epochs=30, seed=314159).save(args.artifacts / "autoencoder.npz")
-    config = LearnedEConfig(hidden=(16, 16), max_epochs=args.epochs, patience=5, lr=0.005)
+    fit_autoencoder(training, **kw, hidden=32, epochs=30, seed=314159,
+                    device=args.device, dtype=args.dtype).save(args.artifacts / "autoencoder.npz")
+    config = LearnedEConfig(hidden=(16, 16), max_epochs=args.epochs, patience=5, lr=0.005,
+                            device=args.device, dtype=args.dtype)
     feature_contract = SamplingContract("synthetic", "generated normal features", "independent iid units")
     expression_contract = SamplingContract("synthetic", "generated lognormal TPM", "independent iid units",
                                            "synthetic-evaluation", "TPM")
@@ -110,7 +167,8 @@ def main():
                                              config=replace(config, seed=seed, encoder=encoder))
                 record = dict(scenario=scenario, repetition=repetition, method=method, seed=seed,
                               seconds=time.perf_counter() - tick, result=result.to_dict())
-                report["runs"].append(record)
+                if not args.summary_only or repetition == 0:
+                    report["runs"].append(record)
                 samples.setdefault(method, []).append((result.e_value, max(result.log_wealth_path) >= math.log(1 / args.alpha)))
             p = permutation_p(a, b, rng, args.permutations)
             samples.setdefault("permutation_p", []).append((p, p <= args.alpha))
@@ -119,8 +177,9 @@ def main():
             # Match the scored data budget of the valid test for the invalid control.
             leak = leaked_wealth(a[16:], b[16:])
             samples.setdefault("INVALID_label_memorization", []).append((from_log(leak), leak >= math.log(1 / args.alpha)))
-            report["runs"].append(dict(scenario=scenario, repetition=repetition, seed=seed,
-                                       permutation_p=p, calibrated_e=e, invalid_log_wealth=leak))
+            if not args.summary_only or repetition == 0:
+                report["runs"].append(dict(scenario=scenario, repetition=repetition, seed=seed,
+                                           permutation_p=p, calibrated_e=e, invalid_log_wealth=leak))
             if (repetition + 1) % 25 == 0:
                 print(f"{scenario}: {repetition + 1}/{args.repetitions}", flush=True)
         summary = {}

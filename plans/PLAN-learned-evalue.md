@@ -1,7 +1,9 @@
 # Plan: learned betting e-values for expression experiments
 
-Status: standalone diagnostics implemented; real-cohort evaluation and verification/UI integration
-remain future work. Coordinate ownership on the Board before editing shared interfaces.
+Status: standalone CPU/CUDA diagnostics, real-expression encoder training/evaluation, and a
+standalone wealth-path report are implemented. The expanded synthetic validation includes 10,000
+null repetitions and 100 repetitions for each of three predefined alternatives. Verification and application UI integration remain
+separate reviewed phases. Coordinate ownership on the Board before editing shared interfaces.
 
 Confirmed initial scope: standalone diagnostics, with existing verification decisions unchanged.
 Real expression inputs require donor identifiers and documented sampling assumptions. Synthetic or
@@ -28,8 +30,10 @@ with `scripts/train_expr_encoder.py`, `scripts/evalue_harness.py`, tracked regre
 `skills/learned-evalue/SKILL.md`. The executable API extends the sketch below with a required
 `SamplingContract` and replay metadata; encoder artifacts use non-pickle NPZ, and identity features
 are supported explicitly. Install with `uv sync --extra dev --extra evalue`.
-Initial synthetic results and remaining limitations are recorded in
-`research/learned-evalue-validation/README.md`; no real-cohort evaluation is claimed.
+Initial synthetic results and limitations are recorded in
+`research/learned-evalue-validation/README.md`. Real-expression measurements and the frozen
+GSE212041 protocol are in `research/learned-evalue-validation/real-expression/README.md`.
+The real encoder uses an independent training partition of that study; GTEx was not used.
 
 The first deliverable is a standalone two-sample test with reproducible artifacts and validation.
 Gate integration follows only after the null hypothesis and evidence-selection rules are specified.

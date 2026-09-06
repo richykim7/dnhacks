@@ -54,10 +54,17 @@ result = learned_two_sample_e(
 diagnostic = result.to_dict()
 ```
 
-Run with the installed repository package in the actual experiment environment. The module uses CPU
-float64. The CLI benchmark sets its own thread budget; the library preserves the caller's CPU RNG
-state and leaves thread settings alone. Concurrent calls that manipulate Torch's global RNG must be
+Run with the installed repository package in the actual experiment environment. Defaults are CPU
+float64; set `device="cuda"` (or `cuda:0`) and optionally `dtype="float32"` explicitly for GPU training.
+Unavailable CUDA raises an error instead of silently falling back. Execution metadata records the
+device, precision and CUDA version. Exact replay is scoped to the same software/hardware settings.
+The CLI benchmark sets its own thread budget; the library preserves the caller's CPU RNG,
+does not consume CUDA RNG and leaves thread settings alone. Concurrent calls that manipulate Torch's global RNG must be
 isolated in separate processes.
+
+Default pairing shuffles both groups using the predeclared seed. `pairing="in_order"` preserves a
+predeclared pair stream; use it for fixed-pair fair-orientation null audits. Do not repair an invalid
+pairing or donor design by rerunning seeds after examining outcomes.
 
 ## Results and interpretation
 
@@ -92,6 +99,22 @@ uv run --extra evalue python scripts/train_expr_encoder.py training.npz data/pro
 uv run --extra dev --extra evalue pytest tests/test_learned_evalue.py
 uv run --extra evalue python scripts/evalue_harness.py --repetitions 100 --output data/processed/evalue-validation.json
 ```
+
+For autoencoder GPU training, add `--device cuda --dtype float32` to its CLI. PCA remains CPU SVD.
+Before remote compute, read the local GPU handoff as directed by `AGENTS.md`; connection information
+does not belong in tracked artifacts. The reproducible public-cohort workflow is:
+
+```sh
+uv run --extra evalue python scripts/evalue_real_data.py prepare
+uv run --extra evalue python scripts/evalue_real_data.py train
+uv run --extra evalue python scripts/evalue_real_data.py evaluate --device cpu
+```
+
+`train` follows a frozen CUDA autoencoder configuration and therefore requires CUDA. `prepare`
+downloads GSE212041 TPM/metadata, excludes repeat draws and healthy controls, partitions donors,
+and freezes training-only gene selection and the evaluation protocol. Large inputs, models and
+donor-level replay remain in ignored `data/processed/evalue-real/`. See
+[process notes](../../docs/learned-evalue-process.md) for measurements and limits.
 
 The PCA trainer uses a full SVD; budget memory and time for large cohorts. The autoencoder uses fixed
 epochs and masked-entry MSE; tune only on separate development data. No real-cohort encoder is

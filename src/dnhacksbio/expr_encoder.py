@@ -153,7 +153,7 @@ def fit_pca(X, *, genes, units, source: str, sampling: str, unit_namespace: str,
 def fit_autoencoder(X, *, genes, units, source: str, sampling: str, unit_namespace: str,
                     hidden: int = 512, components: int = 128, mask_fraction: float = 0.15,
                     epochs: int = 100, batch_size: int = 64, lr: float = 1e-3,
-                    seed: int = 0) -> FrozenEncoder:
+                    seed: int = 0, device: str = "cpu", dtype: str = "float64") -> FrozenEncoder:
     """Train a masked-gene autoencoder on the declared external cohort only.
 
     Fixed epochs; tune settings using separate development data. The saved
@@ -161,6 +161,9 @@ def fit_autoencoder(X, *, genes, units, source: str, sampling: str, unit_namespa
     """
     import torch
     from torch import nn
+    from dnhacksbio.evalue_device import execution
+
+    device, precision, execution_metadata = execution(device, dtype)
 
     names, z, mean, scale, manifest = training_data(
         X, genes=genes, units=units, source=source, sampling=sampling, unit_namespace=unit_namespace)
@@ -172,17 +175,17 @@ def fit_autoencoder(X, *, genes, units, source: str, sampling: str, unit_namespa
         raise ValueError("invalid seed")
     with torch.random.fork_rng(devices=[]):
         torch.random.default_generator.manual_seed(seed)
-        encoder = nn.Sequential(nn.Linear(z.shape[1], hidden), nn.ReLU(), nn.Linear(hidden, components)).double()
-        decoder = nn.Sequential(nn.Linear(components, hidden), nn.ReLU(), nn.Linear(hidden, z.shape[1])).double()
+        encoder = nn.Sequential(nn.Linear(z.shape[1], hidden), nn.ReLU(), nn.Linear(hidden, components)).to(device=device, dtype=precision)
+        decoder = nn.Sequential(nn.Linear(components, hidden), nn.ReLU(), nn.Linear(hidden, z.shape[1])).to(device=device, dtype=precision)
         optimizer = torch.optim.Adam([*encoder.parameters(), *decoder.parameters()], lr=lr)
-        x = torch.tensor(z, dtype=torch.float64)
+        x = torch.tensor(z, dtype=precision, device=device)
         losses = []
         for _ in range(epochs):
-            order = torch.randperm(len(x))
+            order = torch.randperm(len(x)).to(device)
             total, count = 0.0, 0
             for start in range(0, len(x), batch_size):
                 target = x[order[start:start + batch_size]]
-                mask = torch.rand(target.shape) < mask_fraction
+                mask = (torch.rand(target.shape) < mask_fraction).to(device)
                 if not mask.any():
                     continue
                 damaged = target.masked_fill(mask, 0.0)
@@ -195,11 +198,11 @@ def fit_autoencoder(X, *, genes, units, source: str, sampling: str, unit_namespa
                 total += float(loss.detach()) * int(mask.sum())
                 count += int(mask.sum())
             losses.append(total / count if count else 0.0)
-        weights = (encoder[0].weight.detach().numpy().T.copy(), encoder[0].bias.detach().numpy().copy(),
-                   encoder[2].weight.detach().numpy().T.copy(), encoder[2].bias.detach().numpy().copy())
+        weights = (encoder[0].weight.detach().cpu().numpy().T.copy(), encoder[0].bias.detach().cpu().numpy().copy(),
+                   encoder[2].weight.detach().cpu().numpy().T.copy(), encoder[2].bias.detach().cpu().numpy().copy())
     manifest.update(kind="autoencoder", hidden=hidden, components=components, mask_fraction=mask_fraction,
                     epochs=epochs, batch_size=batch_size, lr=lr, seed=seed, training_loss=losses,
-                    torch_version=torch.__version__)
+                    torch_version=torch.__version__, execution=execution_metadata)
     result = FrozenEncoder(names, mean, scale, weights, manifest)
     result.validate()
     return result

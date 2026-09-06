@@ -21,6 +21,8 @@ def main():
     p.add_argument("--hidden", type=int, default=512)
     p.add_argument("--epochs", type=int, default=100)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--device", default="cpu", help="autoencoder device: cpu or cuda[:index]")
+    p.add_argument("--dtype", choices=["float32", "float64"], default="float64")
     args = p.parse_args()
     with np.load(args.input, allow_pickle=False) as data:
         kw = dict(genes=data["genes"], units=data["units"], source=args.source,
@@ -28,7 +30,8 @@ def main():
         if args.kind == "pca":
             artifact = fit_pca(data["X"], **kw)
         else:
-            artifact = fit_autoencoder(data["X"], **kw, hidden=args.hidden, epochs=args.epochs, seed=args.seed)
+            artifact = fit_autoencoder(data["X"], **kw, hidden=args.hidden, epochs=args.epochs, seed=args.seed,
+                                       device=args.device, dtype=args.dtype)
     artifact.manifest["input_sha256"] = hashlib.sha256(args.input.read_bytes()).hexdigest()
     artifact.save(args.output)
     print(f"Saved {args.kind} encoder: {args.output}")

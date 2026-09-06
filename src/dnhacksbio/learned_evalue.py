@@ -17,6 +17,7 @@ import torch
 from torch import nn
 
 from dnhacksbio.evalues import from_log
+from dnhacksbio.evalue_device import execution
 from dnhacksbio.expr_encoder import FrozenEncoder, gene_names, identifiers, unit_keys
 
 
@@ -33,8 +34,13 @@ class LearnedEConfig:
     seed: int = 0
     encoder: str | None = None
     max_missing_fraction: float = 0.2
+    device: str = "cpu"
+    dtype: str = "float64"
+    pairing: str = "shuffle"  # in_order supports predeclared fixed unordered-pair audits
 
     def validate(self):
+        if self.pairing not in {"shuffle", "in_order"}:
+            raise ValueError("pairing must be shuffle or in_order")
         for name in ("batch_pairs", "patience", "max_epochs"):
             v = getattr(self, name)
             if type(v) is not int or v < 1:
@@ -172,9 +178,11 @@ def learned_two_sample_e(Xa, Xb, *, genes, sampling: SamplingContract,
 
     Invalid contracts/data raise ValueError. No data-dependent retries, seed
     selection, feature selection, or evidence-source selection are performed.
-    This CPU implementation uses float64 and preserves the caller's Torch RNG.
+    Device and precision are explicit (CPU/float64 by default). Model initialization
+    uses the CPU RNG in an isolated scope; CUDA RNG state is never consumed.
     """
     config.validate()
+    device, dtype, execution_metadata = execution(config.device, config.dtype)
     sampling.validate()
     genes = gene_names(genes)
     a, b = np.asarray(Xa, dtype=np.float64), np.asarray(Xb, dtype=np.float64)
@@ -205,7 +213,10 @@ def learned_two_sample_e(Xa, Xb, *, genes, sampling: SamplingContract,
         artifact = encoder.identity
         missing_genes = [g for g in encoder.genes if g not in genes]
     rng = np.random.default_rng(config.seed)
-    order_a, order_b = rng.permutation(len(a)), rng.permutation(len(b))
+    if config.pairing == "shuffle":
+        order_a, order_b = rng.permutation(len(a)), rng.permutation(len(b))
+    else:
+        order_a, order_b = np.arange(len(a)), np.arange(len(b))
     n = min(len(a), len(b))
     metadata = dict(null="equal distributions of independent units in independent groups",
                     diagnostic_only=True, sampling=asdict(sampling), artifact=artifact,
@@ -215,19 +226,19 @@ def learned_two_sample_e(Xa, Xb, *, genes, sampling: SamplingContract,
                     unused_b=[ids_b[i] for i in order_b[n:]],
                     pair_order=[[ids_a[i], ids_b[j]] for i, j in zip(order_a[:n], order_b[:n])],
                     software=dict(python=platform.python_version(), numpy=np.__version__, torch=torch.__version__),
-                    training_updates=[], scored_pairs=0)
+                    execution=execution_metadata, training_updates=[], scored_pairs=0)
     nb = math.ceil(n / config.batch_pairs)
     if n < (config.burn_in + 4) * config.batch_pairs:
         return LearnedE(None, "unavailable", "need two burn-in and four full scoring batches",
                         [], [0.0], n, nb, 0, config, metadata)
-    a = torch.tensor(a[order_a[:n]], dtype=torch.float64)
-    b = torch.tensor(b[order_b[:n]], dtype=torch.float64)
+    a = torch.tensor(a[order_a[:n]], dtype=dtype, device=device)
+    b = torch.tensor(b[order_b[:n]], dtype=dtype, device=device)
     batch_size = config.batch_pairs
     logs, factors = [0.0], []
     # Only CPU RNG is used. No global NumPy seed or thread-count changes.
     with torch.random.fork_rng(devices=[]):
         torch.random.default_generator.manual_seed(config.seed)
-        model = _network(a.shape[1], config.hidden)
+        model = _network(a.shape[1], config.hidden).to(device=device, dtype=dtype)
         for batch in range(2, nb):
             train_end = (batch - 1) * batch_size
             val_end = batch * batch_size
