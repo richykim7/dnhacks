@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Branch monitoring · Operator</title><link rel="stylesheet" href="/operator.css"></head>
+<body><main><header><h1>Branch monitoring</h1><p>Observation-only · No automatic pruning</p></header>
+<form id="login"><label>Operator access token <input id="token" type="password" autocomplete="off" required></label><button>Open monitor</button></form>
+<p id="status" role="status">Connect to inspect recorded histories.</p>
+<section id="workspace" hidden><button id="refresh">Refresh</button><div class="layout"><nav aria-label="Monitored investigation tree" id="tree"></nav><article><h2 id="objective">Select a child</h2><p id="summary"></p><figure><svg id="chart" viewBox="0 0 720 340" role="img" aria-label="Recorded monitor statistic by checkpoint on a log scale"></svg><figcaption>Actual checkpoint readings only. Larger monitor statistics support stopping an unsuccessful line; these are not success probabilities or biological e-values.</figcaption></figure><table><caption>Checkpoint history</caption><thead><tr><th>Checkpoint</th><th>Cost</th><th>Statistic</th><th>Status</th></tr></thead><tbody id="history"></tbody></table><h3>Experimental evidence</h3><p>Separate private biological evidence. Human decisions stay private until the declared disclosure boundary.</p><div id="reviews"></div></article></div></section>
+</main><script src="/operator.js"></script></body></html>

@@ -433,3 +433,27 @@ resume research on a failed format or outage. Observation-only monitoring remain
 constraint. Controller regression tests cover zero allowance, bounded repair, slow-start continuation,
 concurrent reservations and duplicate fork delivery; these are engineering checks, not evidence of
 pruning accuracy. First milestone gates after integrating the dependency adapter: 179 Python tests passed, two optional hardware/runtime checks skipped; frontend build, six unit tests and 18 browser tests passed.
+
+## 2026-09-06 — Private monitor infrastructure; corpus runs deferred
+
+Implemented frozen subtree episodes, prefix-only verifier input construction, private checkpoint records,
+root/group-separated logistic history fitting and Algorithm 1 threshold calibration. Re-read the local
+paper's algorithm and density-ratio equations while implementing the numerical wrapper. Tests check
+116 versus 115 independent successful calibration units, strict threshold crossing, prior-corrected
+ratio direction, missing histories, related-root leakage and model/policy version mismatch. These are
+synthetic correctness checks; no PDAC trajectory performance or trained production judge is claimed.
+
+Added an authenticated operator service separate from the research API, with actual checkpoint dots,
+missing/uncalibrated states and a distinct experimental-evidence panel. Receipt association imports
+already computed private evidence, supports alias deduplication and requires explicit method/null/family
+provenance. Private human decisions remain in the operator store; disclosure requires an explicit frozen
+boundary export and never writes research feedback or graph changes automatically. Browser tests and
+visual inspection cover the single-point display and mobile layout.
+
+User explicitly deferred actual trajectory scoring/training until corpus ingestion. No real scoring,
+training, calibration collection or private-service deployment was run. Remaining research/deployment
+work: representative frozen-policy corpus rollouts, enforceable total subtree compute horizon and bounded
+adjudication, final assessor selection/validation, automatic private routing and actual account separation.
+The monitor remains observation-only; neither its scores nor alarms control branch pruning.
+
+Infrastructure milestone gates after integrating the other tools and extraction repair: 304 Python tests passed, six optional checks skipped (Rscript, PyDESeq2 twice, decoupler, CUDA, opt-in Docker); build, six frontend unit tests and 19 browser tests passed. A subsequent read-only database regression also passed in the focused monitor suite. No corpus experiment was run.

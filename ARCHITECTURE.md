@@ -376,6 +376,21 @@ These are in the package and tested, and deliberately not connected to the falsi
 - `skills/expression-experiment`, `docs/learned-evalue-process.md`, `plans/PLAN-learned-evalue.md` and
   `research/` hold the guide, the process record, the plan and the paper.
 
+### 7.1 Private branch-monitor infrastructure
+
+`branch_monitoring/` provides operator-only episode enrollment, historical-prefix scoring, private
+records, grouped fitting/calibration/evaluation, and private evidence review. Nothing in the explorer
+starts this worker or receives its predictions. Its target is qualifying new subtree outcomes under a
+frozen policy and budget. Learned values are monitor statistics, not automatically exact e-values.
+Algorithm 1 calibration uses independent complete successful episodes and returns no threshold when
+there are too few. No statistical stop is enforced.
+
+A separate authenticated operator console displays recorded child histories and distinct experimental
+evidence; it adds no routes to the research API. Private review never writes ordinary agent feedback or
+the master graph. Explicit boundary export is available. Actual separate-account deployment and real
+corpus trajectory collection/training remain pending; the user deferred those runs until ingestion.
+See [branch monitoring operations](docs/branch-monitoring.md) for commands, boundaries and limitations.
+
 ## 8. The model seam (`llm.py`)
 
 All in-loop model calls go through one module: the Claude Agent SDK over the installed `claude` CLI login.
