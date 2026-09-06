@@ -127,3 +127,12 @@ deterministic injected actions and isolated browser fixtures, without model budg
 remain required. Set `PLAYWRIGHT_BASE_URL` when checking an isolated Vite server; set `API_PROXY_TARGET`
 on that server for its isolated Python backend. Inspect actual dark/light/mobile and surface screenshots.
 Evaluation studies and KG-build animation/demo playback remain deferred in `plans/backlog.md`.
+
+### Exploratory binder bundles
+
+The collector accepts bounded `binder_bundle` JSON artifacts with schema `binder_bundle.v1`.
+It validates embedded member hashes, reconstructs mappings/metrics from the immutable source,
+and requires matching provenance. The explorer verifies project/run/experiment scope before
+publishing; a mismatch yields a rejected artifact event with no available blob reference.
+The existing exact-run and replay-cursor blob access rules apply. This capability does not add
+an audited structural result or bypass the human promotion gate. See [binder design](binder-design.md).

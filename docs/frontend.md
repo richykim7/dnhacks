@@ -78,3 +78,12 @@ frontend_test_data=$(mktemp -d)
 
 Install the browser once if needed: `cd frontend && npx playwright install chromium`.
 Browser fixtures are isolated under `frontend/e2e` and never imported by the application. The suite exercises live selection, evidence inspection, project edits, assistant proposals, hidden review controls, playback, accessibility and mobile layout. Screenshots are written under `/tmp/dn-*.png`. Inspect dark, light and mobile captures after visual changes. The 3D viewer is code-split; 3Dmol's upstream bundle contains an `eval` that Vite reports at build time.
+
+### Binder candidate artifacts
+
+Collected `binder_bundle.v1` artifacts open the lazy-loaded Interface Foundry inside their owning
+experiment. The stage offers partner/contact colors, exact residue picking, opposing contact-only
+cutaways, exploded presentation and camera/coordinate export. Accessible tables retain physical
+atom-pair distances. Artifact hash checks precede rendering and historical availability uses the
+existing event cursor. See [binder interface workbench](binder-design.md) for supported metrics,
+provenance, visual-review records and incomplete live-design acceptance.

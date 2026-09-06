@@ -902,7 +902,12 @@ class Explorer:
             from dnhacksbio.explorer.sandbox import run_many
             def progress(index, kind, payload):
                 self._event(kind, payload, experiment_id=identities[index])
-            run = lambda codes: run_many(codes, max_parallel=self.max_parallel, timeout=600,
+            def scoped_codes(codes):
+                return ["import os as _runtime_os\n_runtime_os.environ['DNHACKS_EXPERIMENT_SCOPE'] = "
+                        + repr(json.dumps({"project_id": self.manifest.get("project_id"),
+                                           "run_id": self.run_id, "experiment_id": expid})) + "\nexec(compile(" + repr(code) + ", '<experiment>', 'exec'))"
+                        for code, expid in zip(codes, identities)]
+            run = lambda codes: run_many(scoped_codes(codes), max_parallel=self.max_parallel, timeout=600,
                                          network=self.network, cache_dir=self.cache_dir,
                                          scratch_dir=self.scratch_dir, pool=self.sandbox_pool,
                                          progress=progress, journal=self.journal,
@@ -944,6 +949,11 @@ class Explorer:
                         "stderr": self.journal.blob(getattr(r, "stderr", "") or ""),
                         "exploratory": e["method_id"] == "exploratory"}, experiment_id=expid)
             for artifact in getattr(r, "artifacts", None) or []:
+                if artifact.get("kind") == "binder_bundle" and artifact.get("binder_scope") != {
+                        "project_id": self.manifest.get("project_id"), "run_id": self.run_id,
+                        "experiment_id": expid}:
+                    artifact = {"artifact_id": artifact["artifact_id"], "status": "rejected",
+                                "failure_reason": "Binder bundle belongs to a different experiment scope"}
                 self._event("artifact", {**artifact, "schema_version": 1, "run_id": self.run_id,
                             "investigation_id": LIN.root(self.run_id), "attempt_id": self.attempt_id,
                             "experiment_id": expid}, experiment_id=expid, producer="collector")

@@ -77,7 +77,7 @@ def collect(output: Path, journal: Journal) -> list[dict]:
     for entry in entries:
         a = {"artifact_id": uuid4().hex, "created_at": time.time(), "status": "rejected"}
         try:
-            if not isinstance(entry, dict) or entry.get("kind") != "molecular_structure":
+            if not isinstance(entry, dict) or entry.get("kind") not in {"molecular_structure", "binder_bundle"}:
                 raise ValueError("Unsupported artifact kind")
             fmt = entry.get("format")
             prov = entry.get("provenance", {})
@@ -89,6 +89,19 @@ def collect(output: Path, journal: Journal) -> list[dict]:
             total += len(raw)
             if total > 40 * 1024 * 1024:
                 raise ValueError("Experiment artifact quota exceeded")
+            if entry["kind"] == "binder_bundle":
+                from dnhacksbio.binder.bundle import validate_bundle
+                bundle = validate_bundle(raw)
+                if prov != bundle["manifest"]["provenance"]:
+                    raise ValueError("Binder provenance disagrees with bundle")
+                key = journal.store_bytes(raw)
+                a.update(status="available", kind="binder_bundle", format="json",
+                         media_type="application/json", storage_key=key, sha256=key,
+                         byte_length=len(raw), atom_count=len(bundle["structure"]["atoms"]),
+                         provenance=prov, name=Path(entry["path"]).name,
+                         binder_scope=bundle["manifest"]["scope"])
+                artifacts.append(a)
+                continue
             count = validate_structure(raw, fmt)
             key = journal.store_bytes(raw)
             a.update(status="available", kind="molecular_structure", format=fmt,
