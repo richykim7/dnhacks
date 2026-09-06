@@ -110,6 +110,7 @@ def start_build(project_id: str, *, mode: str = "build", dry: bool = False) -> d
     cheap rehearsal that tells you whether your queries find the right papers."""
     if mode not in BUILD_KINDS:
         raise ValueError(f"mode must be one of {BUILD_KINDS}")
+    projects.assert_writable(project_id)
     rec = projects.load(project_id)
     if rec.get("adopted"):
         raise ValueError("this corpus was built outside the console and cannot be rebuilt here")
@@ -136,6 +137,7 @@ def start_run(project_id: str, *, goal: str = "", steps: int = 30) -> dict:
 
     The question is required: the corpus card carries no goal, so an empty question would fall through
     to `run_explorer.DEFAULT_GOAL`, a generic brief."""
+    projects.assert_writable(project_id)
     rec = projects.load(project_id)
     db = projects.kg_path(project_id)
     if rec.get("adopted"):

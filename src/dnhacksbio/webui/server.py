@@ -331,6 +331,7 @@ class Handler(BaseHTTPRequestHandler):
         parts = [unquote(p) for p in rest.split("/")]
         pid = parts[0]
         self._project_or_404(pid)
+        projects.assert_writable(pid)
         if len(parts) == 1:
             return self._send_json(projects.update(pid, payload))
         tail = parts[1]
@@ -370,6 +371,7 @@ class Handler(BaseHTTPRequestHandler):
         pid = unquote(path[len("/api/projects/"):-len(suffix)])
         try:
             self._project_or_404(pid)
+            projects.assert_writable(pid)
             length = int(self.headers.get("Content-Length", 0))
             if length <= 0:
                 return self._error(400, "empty upload")

@@ -42,6 +42,7 @@ def project_lease(pid: str):
 
 
 def assert_idle(pid: str):
+    projects.assert_writable(pid)
     from . import jobs, data
     if jobs.active_job(pid):
         raise RuntimeError("This collection has an active job. Wait for it to finish before changing papers.")
@@ -50,6 +51,7 @@ def assert_idle(pid: str):
 
 
 def write_connection(pid: str):
+    projects.assert_writable(pid)
     import duckdb
     rec = projects.load(pid)
     if rec.get("adopted"):

@@ -131,6 +131,16 @@ claims, or send feedback into exploration. A failed runtime publication retains 
 for an idempotent retry. The review database must be inside its own project directory and may not be
 a symlink or hard link. This operator-only flag cannot be enabled or cleared by a browser project patch.
 
+Use `scripts/import_presentation.py --source <staged-data> --destination <app-data>
+--project <id> --root <run-root>` to validate a staged presentation without writing destination state.
+After the deployed app supports presentation-only review isolation, add `--apply
+--deployment-home <installation-home>` to register it under the shared deployment lease. The importer
+requires a private graph and terminal, internally consistent runtime history. It adds only the new
+project, referenced hash-verified blobs, and manifests/events in one SQLite transaction; it never
+replaces a shared journal or graph. A private `.presentation-import.json` receipt permits recovery
+and repeat import without resetting subsequent review decisions. Preserve the unchanged staging
+bundle for retries. Identifier collisions, altered imports and active source records are refused.
+
 The 3Dmol public API provides high-quality cartoons, ambient occlusion, orthographic framing, ligands,
 atomic/surface modes, chain/residue selection, reduced-motion-aware optional rotation and camera reset.
 Camera and selection are cached for recently inspected artifacts. There is no dependency fork or

@@ -293,8 +293,16 @@ def _spec_drifted(cur_spec: dict, built_spec: dict) -> bool:
     return any(cur.get(k) != was.get(k) for k in _DRIFT_KEYS)
 
 
+def assert_writable(pid: str) -> None:
+    """Presentation namespaces are operator-installed and cannot launch real work."""
+    if load(pid).get("presentation_only") is True:
+        raise ValueError("This presentation-only collection permits inspection and isolated candidate review only")
+
+
 def save(rec: dict) -> dict:
     pid = rec["id"]
+    if exists(pid):
+        assert_writable(pid)
     if rec.get("adopted"):
         raise ValueError(f"{pid} is an existing corpus adopted read-only; it cannot be edited here")
     rec["updated"] = _now()
@@ -338,6 +346,7 @@ def delete(pid: str, *, purge: bool = False) -> dict:
 
     A build can be running against this directory, so refuse while a job is alive — deleting the
     files out from under a live extraction loses the work AND leaves a half-written DuckDB."""
+    assert_writable(pid)
     rec = load(pid)
     if rec.get("adopted"):
         raise ValueError("adopted corpora are read-only; delete the folder on disk instead")
@@ -433,6 +442,7 @@ def summaries() -> list[dict]:
             n = claim_count(db)
         out.append({"id": r["id"], "name": r["name"], "status": r["status"],
                     "adopted": r.get("adopted", False), "has_kg": bool(db),
+                    "presentation_only": r.get("presentation_only") is True,
                     "updated": r.get("updated"), "n_attachments": r.get("n_attachments", 0),
                     "n_claims": n})
     return out
