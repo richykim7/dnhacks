@@ -12,6 +12,7 @@ import type {
   ForecastScenario,
 } from "../lib/forecasting";
 import "../reasoning.css";
+import { ForecastStudy, type Study } from "./ForecastStudy";
 
 type ConditionId = "flat_log" | "static_graph" | "evolving_graph";
 interface Hypothesis {
@@ -72,6 +73,7 @@ interface Evaluation {
   >;
 }
 interface ReasoningPacket {
+  study?: Study | null;
   status: string;
   comparison: ReasoningComparison | null;
   evaluation: Evaluation | null;
@@ -586,6 +588,9 @@ export function ForecastReasoning({
           <p>Outcome evaluation has not yet been recorded.</p>
         )}
       </div>
+      {packet?.study && (
+        <ForecastStudy study={packet.study} revealed={revealed} />
+      )}
       <details className="reasoning-protocol">
         <summary>Comparison conditions & actual model use</summary>
         <p>

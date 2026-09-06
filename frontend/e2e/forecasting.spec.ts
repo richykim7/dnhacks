@@ -120,6 +120,11 @@ test("forecast has accessible controls in dark/light themes and a usable narrow 
     viewport: window.innerWidth,
   }));
   expect(width.scroll).toBeLessThanOrEqual(width.viewport);
+  expect(
+    await page
+      .locator(".forecast-graph-scene")
+      .evaluate((el) => el.scrollWidth > el.clientWidth),
+  ).toBe(true);
   await page.screenshot({
     path: "/tmp/dnhacks-forecast-mobile.png",
     fullPage: true,
@@ -166,6 +171,21 @@ test("recorded model memory changes representation and keeps unavailable metrics
   const evaluation = await read(
     "demo/forecasting/reasoning/civic-model/evaluation.json",
   );
+  const suite = await read(
+    "demo/forecasting/reasoning/civic-all-queries/evaluation.json",
+  );
+  const audit = await read(
+    "demo/forecasting/reasoning/civic-all-queries/audit.json",
+  );
+  const study = {
+    status: "ready",
+    planned_queries: suite.coverage.planned_queries,
+    saved_queries: suite.coverage.planned_queries,
+    planned_candidates: suite.coverage.planned_candidates,
+    requested_output_tokens: 6000,
+    evaluation: suite,
+    audit,
+  };
   await page.route("**/api/projects", (r) =>
     r.fulfill({ json: { projects: [] } }),
   );
@@ -187,7 +207,7 @@ test("recorded model memory changes representation and keeps unavailable metrics
     }),
   );
   await page.route("**/api/forecasting/reasoning", (r) =>
-    r.fulfill({ json: { status: "ready", comparison, evaluation } }),
+    r.fulfill({ json: { status: "ready", comparison, evaluation, study } }),
   );
   await page.goto("/#forecast");
   const panel = page.locator("#forecast-model-memory");
@@ -195,6 +215,9 @@ test("recorded model memory changes representation and keeps unavailable metrics
     panel.getByText("Recorded model run", { exact: true }),
   ).toBeVisible();
   await expect(panel.getByText("Unmeasurable", { exact: true })).toHaveCount(0);
+  await expect(panel.locator(".study-progress")).toContainText("22");
+  await expect(panel.locator(".study-table")).toHaveCount(0);
+  await expect(panel.locator(".study-coverage")).toHaveCount(0);
   const before = await panel
     .locator(".reasoning-map-node")
     .evaluateAll((nodes) => nodes.map((n) => n.getAttribute("transform")));
@@ -225,6 +248,17 @@ test("recorded model memory changes representation and keeps unavailable metrics
   await panel
     .getByRole("tab", { name: "Evolving graph", exact: false })
     .click();
+  await expect(panel.locator(".study-coverage")).toContainText("64/683");
+  await expect(panel.locator(".study-table")).toContainText("8/22");
+  await expect(panel.locator(".study-table-heading")).toContainText("1 query");
+  await panel
+    .getByText("Paired differences and uncertainty", { exact: true })
+    .click();
+  await expect(
+    panel.getByText("Informative interval not estimated: 1 eligible query.", {
+      exact: true,
+    }),
+  ).toHaveCount(3);
   for (const theme of ["dark", "light"]) {
     if (theme === "light")
       await page.getByRole("button", { name: "Switch to light theme" }).click();

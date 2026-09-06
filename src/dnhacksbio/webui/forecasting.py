@@ -78,4 +78,36 @@ def reasoning_packet():
         return {'status': 'preparing'}
     evaluation_path = base / 'evaluation.json'
     return {'status': 'ready', 'comparison': comparison,
-            'evaluation': _read(evaluation_path) if evaluation_path.exists() else None}
+            'evaluation': _read(evaluation_path) if evaluation_path.exists() else None,
+            'study': study_packet(scenario)}
+
+
+def study_packet(scenario):
+    """Show saved progress independently of the sealed outcome evaluation."""
+    base = Path(os.environ.get('DNHACKS_FORECAST_STUDY', ROOT / 'demo/forecasting/reasoning/civic-all-queries'))
+    manifest_path = base / 'manifest.json'
+    if not manifest_path.exists():
+        return None
+    manifest = _read(manifest_path)
+    if manifest['historical_packet_sha256'] != _digest(scenario):
+        return None
+    saved = 0
+    for query in manifest['queries']:
+        try:
+            record = _read(base / query['file'])
+            saved += record.get('query_id') == query['query_id']
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass  # A worker may still be writing this immutable query artifact.
+    result = {'status': 'running', 'planned_queries': len(manifest['queries']),
+              'saved_queries': saved, 'planned_candidates': manifest['candidate_count'],
+              'requested_output_tokens': manifest['budget']['output_tokens']}
+    if (base / 'sealed.json').exists() and (base / 'evaluation.json').exists():
+        try:
+            evaluation = _read(base / 'evaluation.json')
+        except json.JSONDecodeError:
+            return result
+        result.update(status='ready', evaluation=evaluation)
+        audit_path = base / 'audit.json'
+        if audit_path.exists():
+            result['audit'] = _read(audit_path)
+    return result

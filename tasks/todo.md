@@ -25,11 +25,11 @@ Latest user decision: **greedy coverage is the provisional production policy**. 
 - [x] Add a clearly labeled illustrative provider and recorded replay in the existing frontend.
 - [x] Add structural graph scoring and provisional greedy selection through the current injection seam.
 - [x] Add an evaluator and save predictions before revealing outcomes; keep CIViC and Dyport scorecards separate.
-- [ ] Compare flat evidence, static graph plus append log, and evolving graph at matched information and compute budgets.
+- [x] Run flat evidence, static graph plus append log, and evolving graph with matched historical information and requested call/token limits; report actual usage, failures and eligible cohorts.
 - [x] Compare greedy, uniform and top-singleton at matched evidence budgets; verify exact small-instance coverage optima.
 - [ ] A current-judge baseline needs a separately frozen comparable candidate/action protocol; do not imply it was measured.
 - [x] Run the isolated policy lab: complementary evidence first, shared acquisition as the stronger long-term target; apply two-hour and six-hour gates. See the policy-lab review below.
-- [ ] Rehearse a measured replay, inspect misses and citations, and polish the graph transitions and evidence drawer.
+- [x] Rehearse measured replay, inspect misses and citations, and polish graph transitions and evidence inspection.
 
 ## Review — research artifacts
 
@@ -84,3 +84,11 @@ Integration status and the resulting main commit are recorded on the [Board](htt
 - Audited newly landed frozen graph-construction traces: 216 historical evidence records represent 166 source documents; each of three saved policies adds 32 records from 30 new sources. This shows potential document-stage reuse, not measured total compute savings or complementary experiment utility.
 - Recommendation: retain delivery coverage greedy for its declared objective; use the existing exact specialization as a small-packet comparator/certificate. Proposed action/context/visibility/prerequisite/cost/verifier records were posted to the Board; production interfaces were not edited.
 - Browser artifact checks passed: working theorem slider, no page errors, zero WCAG axe violations, and mobile layout without horizontal overflow. Final repository gate counts and integration commit are recorded on the Board; only tracked Python tests are present here, not the wider unversioned vocabulary suite. The clean dev-only environment initially lacked the already-declared optional LLM SDK; installed repository extras for full validation without changing dependency files.
+
+## Review — complete model comparison study
+
+- Website PR #20 landed at `1828800`: historical and model-memory replay, illustrative fallback, fixed positions/ranks, explicit curation dates, citation inspection, JSON export, dark/light/mobile presentation. Final gates: build, 2 unit tests, 14 browser tests and 81 Python tests passed; optional learned-evalue tests skipped without PyTorch.
+- Fixed all-query study attempted all 22 historical queries / 683 candidates before loading later outcomes. All 132 requested model steps and their original responses remain auditable. Only two queries / 64 candidates completed validation across all three conditions; five positives are included, 19 excluded.
+- Conditional macro AP (one eligible query): evolving 0.69167, static 0.59639, flat 0.42135, same-evidence popularity 0.17241. Macro P@5 (two queries): 0.30, 0.30, 0.10, 0.00. This small subset and substantial failure attrition cannot establish general superiority. Degenerate one-query intervals are not presented as meaningful uncertainty estimates.
+- Requested token limits are matched, but actual reported usage sometimes exceeds them. This experiment does not establish a hard compute-bound guarantee. Future work can improve output contracts; no repaired retries or outcome-guided cohort selection were used here.
+- Study progress and completion coverage are presented beside the recorded graph-memory view. Outcome metrics remain behind reveal. Final study artifacts and integration gates are recorded on the Board.

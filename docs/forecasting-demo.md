@@ -12,6 +12,9 @@ uv run python scripts/serve_ui.py --port 8765
 # Open http://127.0.0.1:8765/#forecast
 ```
 
+On narrow screens, the scientific graph scrolls horizontally to preserve readable entity
+labels; the playback controls remain within reach.
+
 The development page also works through Vite on 5174 with
 `API_PROXY_TARGET=http://127.0.0.1:8765 npm --prefix frontend run dev`.
 The temporary public preview is a read-only proxy to this local build; local build/serve
@@ -89,3 +92,27 @@ runner](forecasting-runner.md); a changed scenario does not silently reuse a mis
 > implementation time, and dependency; give a 100-second interaction script and an
 > independent prototype if useful. Coordinate on the Board before production edits;
 > e-values belong to the teammate, and exploration theory belongs to another session.
+
+## All-query study
+
+The model-memory panel also presents the separately frozen all-query study: all 22
+historical query IDs and all 683 eligible candidates, with 12 source records, two calls
+per condition and a requested 6,000-output-token limit per call. Saved query progress
+is available before the outcome reveal; comparison metrics and observed-label counts
+open only after reveal. `DNHACKS_FORECAST_STUDY` can select a local study directory for
+preview or fixtures. The default is `demo/forecasting/reasoning/civic-all-queries`.
+
+Only two queries completed every condition's response validation: 64 candidates, five
+later-observed associations, and one AP-eligible query. Conditional macro AP is 0.69167
+for evolving graph, 0.59639 for static graph, 0.42135 for flat log, and 0.17241 for the
+same-evidence popularity baseline. Macro precision@5 over both complete queries is
+0.30, 0.30, 0.10 and 0.00 respectively. The other 20 queries and 19 observed associations
+are excluded from that comparison and remain in the failure audit. Per-condition
+completion is 14/22 for flat log, 17/22 for static graph and 8/22 for evolving graph;
+its higher conditional score comes with lower completion in this run.
+
+This is exploratory evidence on a selected-by-completion subset, not a general advantage.
+A bootstrap interval from one AP-eligible query is uninformative; the interface suppresses
+that interval. Actual reported token use can exceed the requested limit, so the controls
+are matched requests rather than enforced compute budgets. All original outputs are saved,
+including failed schema/citation validation, without repair or retrospective retries.
