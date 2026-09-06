@@ -150,6 +150,9 @@ test("living tissue renders scoped artifact, synchronized views and exact-frame 
   });
   await page.evaluate(() => (document.documentElement.dataset.theme = "light"));
   await ready();
+  await page.getByRole('button',{name:'Watch agent actions'}).click();await ready();
+  await page.getByRole('button',{name:'Return to my view'}).click();await ready();
+  await expect(page.locator('html')).toHaveAttribute('data-theme','light');
   await page.screenshot({ path: `${dir}/light.png` });
   await page.evaluate(() => (document.documentElement.dataset.theme = "dark"));
   // Mobile intentionally disables paired comparison; leave it before resizing.

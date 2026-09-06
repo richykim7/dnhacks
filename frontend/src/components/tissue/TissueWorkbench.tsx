@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import TissueScene from "./TissueScene";
 import {
@@ -26,7 +26,7 @@ export default function TissueWorkbench({
   const [data, setData] = useState<Tissue | null>(null),
     [error, setError] = useState(""),
     [open, setOpen] = useState(false),
-    [view, setView] = useState<View>(initialView),
+    [view, setView] = useState<View>({...initialView,theme:document.documentElement.dataset.theme==='light'?'light':'dark'}),
     [light, setLight] = useState(
       document.documentElement.dataset.theme === "light",
     );
@@ -36,6 +36,17 @@ export default function TissueWorkbench({
   const readyCount = useRef(0);
   const [ready, setReady] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(0);
+  const listedCells =
+    data?.conditions[view.condition]?.frames[view.frame]?.cells;
+  const cellOptions = useMemo(
+    () =>
+      listedCells?.map((c) => (
+        <option key={c.id} value={c.id}>
+          {c.type} #{c.id}
+        </option>
+      )),
+    [listedCells],
+  );
   const [small, setSmall] = useState(matchMedia("(max-width:650px)").matches);
   useEffect(() => {
     const m = matchMedia("(max-width:650px)");
@@ -69,9 +80,12 @@ export default function TissueWorkbench({
     return () => abort.abort();
   }, [url]);
   useEffect(() => {
-    const m = new MutationObserver(() =>
-      setLight(document.documentElement.dataset.theme === "light"),
-    );
+    const m = new MutationObserver(() => {
+      const theme=document.documentElement.dataset.theme==='light'?'light':'dark';
+      setLight(theme==='light');readyCount.current=0;setReady(false);
+      if(host.current)host.current.dataset.ready='false';
+      setView(v=>({...v,theme}));
+    });
     m.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["data-theme"],
@@ -328,7 +342,7 @@ export default function TissueWorkbench({
                     <span>
                       {view.preset === "Exterior"
                         ? "Exterior · CAF shape is illustrative"
-                        : `Cutaway z ≤ ${view.section} µm · exact source radii`}
+                        : `Cutaway z ≤ ${Number.isInteger(view.section) ? view.section : view.section.toFixed(1)} µm · exact source radii`}
                     </span>
                     <span>{f.time.toLocaleString()} min</span>
                   </div>
@@ -376,7 +390,13 @@ export default function TissueWorkbench({
                 />
               </label>
               <label>
-                Section z <output>{view.section} µm</output>
+                Section z{" "}
+                <output>
+                  {Number.isInteger(view.section)
+                    ? view.section
+                    : view.section.toFixed(1)}{" "}
+                  µm
+                </output>
                 <input
                   aria-label="Section plane"
                   type="range"
@@ -461,11 +481,7 @@ export default function TissueWorkbench({
                   }
                 >
                   <option value="">Select in the scene</option>
-                  {(frame.cells || []).map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.type} #{c.id}
-                    </option>
-                  ))}
+                  {cellOptions}
                 </select>
               </label>
               {selected ? (
@@ -509,7 +525,14 @@ export default function TissueWorkbench({
             </details>
             <button
               onClick={() => {
-                if (host.current) saveFigure(host.current, data, view, owner);
+                if (host.current)
+                  saveFigure(
+                    host.current,
+                    data,
+                    view,
+                    owner,
+                    new URL(url, location.origin).pathname.split("/").pop()!,
+                  );
               }}
             >
               Save scene PNG
