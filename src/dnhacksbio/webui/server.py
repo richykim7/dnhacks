@@ -53,7 +53,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from . import architecture, assistant, attachments, data, jobs, projects, forecasting
+from . import architecture, assistant, attachments, data, jobs, projects, forecasting, evidence
 
 STATIC = Path(__file__).resolve().parent / "static"
 FRONTEND = Path(os.environ.get("DNHACKS_FRONTEND_DIST", Path(__file__).resolve().parents[3] / "frontend" / "dist"))
@@ -441,6 +441,15 @@ class Handler(BaseHTTPRequestHandler):
     # -- api: kg -----------------------------------------------------------
 
     def _kg(self, qs: dict):
+        claim_id = (qs.get("claim") or [""])[0]
+        if claim_id:
+            source = (qs.get("source") or [""])[0]
+            if not source:
+                return self._error(400, "claim inspection requires a collection source")
+            try:
+                return self._send_json(evidence.claim_detail(source, claim_id))
+            except KeyError as exc:
+                return self._error(404, exc.args[0])
         srcs = list(data.kg_sources().keys())
         if not srcs:
             return self._send_json({"nodes": [], "edges": [], "sources": []})

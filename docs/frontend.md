@@ -41,7 +41,7 @@ The development helper calls the official 21st HTTP MCP endpoint using an authen
 
 - Investigations: project-scoped live roster; spatial agent tree; selected agent SSE activity; experiment details including code, result and provenance; recorded activity playback; explicit errors and unresolved links. Streams close on navigation and reconnect using event IDs. Snapshot polling discovers newly forked agents every five seconds. UI activity means recorded engine steps, not token-by-token model output.
 - Library: create a project; edit all collection fields; preview/build; upload/remove documents; assistant conversation and proposed settings; build/run history, progress, logs, and cancellation. Imported collections remain read-only where the API requires it.
-- Evidence: scoped literature graph and claim status filters; entity detail; required rationale for accept/reject; saved decisions applied through the existing promotion gate.
+- Evidence: scoped literature graph with directed relationships, claim status filters, and a searchable relationship list. Selecting an edge or list result focuses its endpoints and opens stored quotations, paper metadata/links, attribution and per-source biological context. Search covers the loaded graph subset; it does not imply a full-corpus search. Missing quotations or source metadata remain explicit. Existing finding-review decisions still use the promotion gate.
 - Structures: real user-selected PDB/mmCIF geometry, remote PDB lookup or local files, ribbon/atomic/surface representations, residue selection, camera reset and optional rotation. This is a reference viewer. There are no invented docking, confidence, mutation or binding scores. Local files stay in the browser and are not persisted to a project. Future engine structure artifacts need an explicit association and provenance contract.
 
 PDB files with no `ATOM  ` or `HETATM` coordinate records show the existing “No atoms could be read” error before loading 3Dmol. Selecting such a file clears previous geometry and retains the selected filename. PDB files containing coordinate records and mmCIF files continue through the viewer's full parsing and validation.
@@ -56,6 +56,8 @@ Research IDs live behind disclosures. Job questions title investigations when av
 - Static containment uses path ancestry, preventing sibling directories with a shared string prefix from passing the check.
 - Investigation responses expose the question recorded by a launch job. Collection scope is never substituted for a research question.
 - Frontend preserves project scope for evidence and promotion writes, displays build/spec drift, and exposes required review rationale.
+- Graph edges preserve `claim_id`. `GET /api/kg?source=<collection>&claim=<claim_id>` reads the exact collection's claim and up to 100 evidence records, with `evidence_total`, source-paper metadata and context. Claim inspection requires an explicit source; unknown sources/claims return 404. It does not extract papers, run models or change the graph. Older graph responses without IDs retain relationship browsing but cannot open source details.
+- Lock-safe DuckDB snapshots include a hash of the resolved source path, preventing separate projects with the same `kg.duckdb` filename and modification time from sharing a cached snapshot.
 
 ## Validation
 

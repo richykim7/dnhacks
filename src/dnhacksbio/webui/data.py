@@ -10,6 +10,7 @@ copy. Stdlib + duckdb only.
 from __future__ import annotations
 
 import glob
+import hashlib
 import json
 import os
 import re
@@ -105,12 +106,14 @@ def _connect_ro(path: Path) -> duckdb.DuckDBPyConnection:
     else:
         key = str(int(path.stat().st_mtime))
     _CACHE.mkdir(parents=True, exist_ok=True)
-    dst = _CACHE / f"{path.stem}.{key}.duckdb"
+    identity = hashlib.sha256(str(path.resolve()).encode()).hexdigest()[:16]
+    prefix = f"{path.stem}.{identity}."
+    dst = _CACHE / f"{prefix}{key}.duckdb"
     if not dst.exists():
         shutil.copy2(path, dst)
         if wal.exists():
             shutil.copy2(wal, dst.with_name(dst.name + ".wal"))
-        for old_copy in _CACHE.glob(f"{path.stem}.*"):      # keep only the newest snapshot per database
+        for old_copy in _CACHE.glob(f"{prefix}*"):      # keep only the newest snapshot per database
             if not old_copy.name.startswith(dst.name):
                 try:
                     old_copy.unlink()
@@ -637,9 +640,11 @@ def kg_graph(source: str, limit: int = 220, status: str | None = None) -> dict:
         o = touch(c["object_id"], c["object_label"], c.get("object_function", ""))
         edges.append(
             {
+                "claim_id": c["claim_id"],
                 "source": s,
                 "target": o,
                 "predicate": c["predicate"],
+                "object_function": c.get("object_function", ""),
                 "polarity": c["polarity"],
                 "status": c["status"],
                 "dispute_kind": c.get("dispute_kind", ""),
