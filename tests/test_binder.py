@@ -168,6 +168,31 @@ def scene_renderer(request):
             'picked':request['bundle']['structure']['residues'][0]['id']}
 
 
+def test_orthographic_capture_preserves_scale_and_rejects_changed_zoom(scene_service, bundle):
+    from dnhacksbio.binder.scenes import validate_view
+    service,key=scene_service
+    camera={'projection':'OrthographicCamera','position':[0,0,60],'target':[0,0,0],
+            'height':80,'zoom':1.5,'near':.1,'far':2000}
+    for bad in [0, -1, float('nan'), 10001]:
+        with pytest.raises(ValueError,match='height'):
+            validate_view({'camera':{**camera,'height':bad}},bundle)
+    for bad in [0, float('nan'), 1001]:
+        with pytest.raises(ValueError,match='zoom'):
+            validate_view({'camera':{**camera,'zoom':bad}},bundle)
+    opened=service.open_scene(key)
+    scene=service.set_scene_view(opened['recipe_sha256'],{'camera':camera},note='Constant physical scale')
+    captured=service.capture_scene(scene['recipe_sha256'],scene_renderer)
+    assert captured['state']['camera']==camera
+    def changed(request):
+        result=scene_renderer(request)
+        result['state']['camera']={**result['state']['camera'],'zoom':2}
+        return result
+    with pytest.raises(ValueError,match='camera differs'):
+        service.capture_scene(scene['recipe_sha256'],changed)
+    with pytest.raises(ValueError,match='differs'):
+        service.pick(captured['capture_id'],recipe_sha256=scene['recipe_sha256'],x=0,y=0,renderer=changed)
+
+
 def test_scene_scope_cursor_and_stale_revision(scene_service):
     from dnhacksbio.binder.scenes import SceneService
     service,key=scene_service

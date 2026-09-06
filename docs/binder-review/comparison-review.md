@@ -41,6 +41,33 @@ sources and a pick that claims the opposite lane's candidate. Collected byte has
 even when a bundle is formatted differently from canonical JSON.
 
 These are correctness and visual checks. Demand-render frame intervals include idle time and
-do not establish the planned interactive performance budget. WebGPU comparison, orthographic
-projection and an eligible live design pilot remain separate acceptance work. No new model
+do not establish the planned interactive performance budget. WebGPU comparison and
+an eligible live design pilot remain separate acceptance work. No new model
 observation was requested for this comparison capture.
+
+## Orthographic follow-up
+
+The actual [orthographic desktop](orthographic-desktop.png) and
+[native orthographic PNG](orthographic-native.png) were opened and inspected. Both retain
+equal target size, distinct source labels, a readable coral contact seam and source-specific
+selection without clipping. The native image SHA256 is
+`23384fc4b74a64e4e603b27aad026479e5542cc4343b2173549a7b8eeda015d8`.
+[Capture metadata](orthographic-native-capture.json) records a90 Å vertical frustum and zoom1;
+the [saved-pixel pick](orthographic-native-pick.json) resolves the shifted source's residue36.
+The paired browser case also checks orthographic camera equality and source-specific picking.
+Python checks reject invalid height/zoom and changed scale in capture or pick replay.
+
+## Inline reference integration
+
+The existing inhibitor workbench now replaces the reference viewer inside the left scene when
+opened. The [desktop](inline-inhibitor-desktop.png) and [mobile](inline-inhibitor-mobile.png)
+captures were inspected after closing the optional controls overlay and returning the scene
+scroll position to its header. The deposited ligand remains distinct in gold; source and
+Return to reference controls stay visible. Desktop research findings remain alongside the
+scene; mobile requires vertical scrolling to reach the remaining scene timeline and findings.
+The existing inhibitor browser case passes with the embedded region, confirms the reference
+viewer is unmounted, and restores it on return. No inhibitor scientific behavior changed.
+
+This milestone ends with the existing evidence. Further renderer/performance investigation and
+live design work are deferred per the user's stop-expansion instruction; the full original plan's
+performance and pilot acceptance are not claimed.
