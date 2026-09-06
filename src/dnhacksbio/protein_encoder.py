@@ -6,6 +6,7 @@ import json
 import platform
 import resource
 import time
+import fcntl
 import numpy as np
 
 from .protein_design import digest, donor_keys, validate
@@ -52,6 +53,19 @@ class ProteinEncoder:
         hidden = np.maximum(0, x @ self.arrays["w1"].T + self.arrays["b1"])
         return hidden @ self.arrays["w2"].T + self.arrays["b2"]
 
+    def reconstruct_inputs(self, inputs):
+        """Reconstruct standardized abundance from value+mask inputs, including hidden-entry tests."""
+        p = len(self.metadata["feature_ids"])
+        x = np.asarray(inputs)
+        if x.ndim != 2 or x.shape[1] != 2*p or not np.isfinite(x).all():
+            raise ValueError("Invalid masked reconstruction inputs")
+        if self.metadata["kind"] == "pca":
+            z = (x - self.arrays["input_center"]) @ self.arrays["components"].T
+            return (z @ self.arrays["components"] + self.arrays["input_center"])[:, :p]
+        z = np.maximum(0, x @ self.arrays["w1"].T + self.arrays["b1"])
+        z = z @ self.arrays["w2"].T + self.arrays["b2"]
+        return z @ self.arrays["wd"].T + self.arrays["bd"]
+
     def save(self, path):
         with open(path, "xb") as stream:
             np.savez_compressed(stream, metadata=np.array(json.dumps(self.metadata, sort_keys=True)),
@@ -81,9 +95,22 @@ class ProteinEncoder:
         return obj
 
 
-def fit(train, validation, *, kind="pca", latent=32, min_coverage=0.8, feature_coverage=0.8,
-        max_features=8000, seed=0, epochs=50, corruption=0.2):
-    """CPU development training; feature selection/normalization use TRAIN only."""
+def fit(train, validation, **kwargs):
+    """GPU work holds the agreed host lease for the complete training call."""
+    device = kwargs.get("device", "cpu")
+    if device not in {"cpu", "cuda"}:
+        raise ValueError("Use cpu or cuda")
+    if device == "cpu":
+        return _fit(train, validation, **kwargs)
+    with open("/tmp/dnhacks-gpu.lock", "a") as lease:
+        # Blocking acquisition is deliberate: no heartbeat can expire a live worker.
+        fcntl.flock(lease, fcntl.LOCK_EX)
+        return _fit(train, validation, **kwargs)
+
+
+def _fit(train, validation, *, kind="pca", latent=32, min_coverage=0.8, feature_coverage=0.8,
+         max_features=8000, seed=0, epochs=50, corruption=0.2, device="cpu"):
+    """Development training; feature selection/normalization use TRAIN only."""
     started = time.monotonic()
     validate(train, discovery=True)
     validate(validation, discovery=True)
@@ -138,24 +165,41 @@ def fit(train, validation, *, kind="pca", latent=32, min_coverage=0.8, feature_c
             raise ValueError("Denoising requires 2000–8000 features and latent 32 or 64")
         import torch
         from torch import nn
-        # CPU only: a future GPU launcher must first supply the shared device lease.
+        if device == "cuda":
+            if not torch.cuda.is_available():
+                raise ValueError("CUDA unavailable")
+            torch.cuda.reset_peak_memory_stats()
+            torch.cuda.set_per_process_memory_fraction(16 * 1024**3 / torch.cuda.get_device_properties(0).total_memory)
         meta["software"]["torch"] = torch.__version__
+        meta["training_dtype"] = "float32"
         with torch.random.fork_rng(devices=[]):
-            torch.manual_seed(seed)
+            torch.random.default_generator.manual_seed(seed)
             network = nn.Sequential(nn.Linear(2*len(features), 256), nn.ReLU(),
-                                    nn.Linear(256, latent), nn.Linear(latent, len(features))).double()
+                                    nn.Linear(256, latent), nn.Linear(latent, len(features))).to(device)
             optimizer = torch.optim.AdamW(network.parameters(), lr=0.001)
-            at, bt = torch.tensor(a), torch.tensor(b)
+            at = torch.tensor(a, dtype=torch.float32, device=device)
+            bt = torch.tensor(b, dtype=torch.float32, device=device)
+            # Fixed blinded observed entries for checkpoint selection. No PDAC/model-choice feedback.
+            validation_rng = np.random.default_rng(seed + 1)
+            held = (validation_rng.random(b[:, len(features):].shape) < corruption) & b[:, len(features):].astype(bool)
+            if not held.any():
+                raise ValueError("No validation entries to hold out")
+            held_t = torch.tensor(held, device=device)
+            validation_input = bt.clone()
+            validation_input[:, :len(features)][held_t] = 0
+            validation_input[:, len(features):][held_t] = 0
+            epoch_times = []
             best, selected = float("inf"), None
             for epoch in range(epochs):
                 if time.monotonic() - started > 1800:
-                    raise ValueError("CPU pilot exceeded 30-minute cap")
+                    raise ValueError("Pilot exceeded 30-minute cap")
+                epoch_start = time.monotonic()
                 network.train()
                 for batch in torch.randperm(len(at)).split(32):
-                    original = at[batch]
+                    original = at[batch.to(device)]
                     observed = original[:, len(features):].bool()
-                    keep = observed & (torch.rand(observed.shape) >= corruption)
-                    corrupted = torch.cat((original[:, :len(features)] * keep, keep.double()), dim=1)
+                    keep = observed & (torch.rand(observed.shape).to(device) >= corruption)
+                    corrupted = torch.cat((original[:, :len(features)] * keep, keep.float()), dim=1)
                     error = network(corrupted) - original[:, :len(features)]
                     loss = error[observed].square().mean()
                     if not torch.isfinite(loss):
@@ -163,26 +207,30 @@ def fit(train, validation, *, kind="pca", latent=32, min_coverage=0.8, feature_c
                     optimizer.zero_grad(); loss.backward(); optimizer.step()
                 network.eval()
                 with torch.no_grad():
-                    error = network(bt) - bt[:, :len(features)]
-                    score = float(error[bt[:, len(features):].bool()].square().mean())
+                    error = network(validation_input) - bt[:, :len(features)]
+                    score = float(error[held_t].square().mean())
                 if score < best:
                     best, selected = score, {k: v.detach().clone() for k, v in network.state_dict().items()}
                     meta["selected_epoch"] = epoch + 1
+                epoch_times.append(time.monotonic() - epoch_start)
             if selected is None:
                 raise ValueError("No finite validation checkpoint")
             network.load_state_dict(selected)
             with torch.no_grad():
-                predicted = network(bt).numpy()
+                predicted = network(bt).cpu().numpy()
             for prefix, layer in (("1", network[0]), ("2", network[2]), ("d", network[3])):
-                encoder.arrays["w"+prefix] = layer.weight.detach().numpy().copy()
-                encoder.arrays["b"+prefix] = layer.bias.detach().numpy().copy()
-        meta.update(corruption=corruption, max_epochs=epochs)
+                encoder.arrays["w"+prefix] = layer.weight.detach().cpu().numpy().copy()
+                encoder.arrays["b"+prefix] = layer.bias.detach().cpu().numpy().copy()
+        meta.update(corruption=corruption, max_epochs=epochs, validation_hidden_mse=best,
+                    validation_hidden_entries=int(held.sum()), epoch_seconds=epoch_times,
+                    peak_cuda_allocated_bytes=torch.cuda.max_memory_allocated() if device == "cuda" else 0,
+                    peak_cuda_reserved_bytes=torch.cuda.max_memory_reserved() if device == "cuda" else 0)
     observed = b[:, len(features):].astype(bool)
     meta["validation_masked_mse"] = float(np.mean((predicted[:, :len(features)] - b[:, :len(features)])[observed]**2))
     meta["elapsed_seconds"] = time.monotonic() - started
     meta["process_peak_rss_kib"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     meta["weights_bytes"] = sum(a.nbytes for a in encoder.arrays.values())
-    meta["device"] = "cpu"
+    meta["device"] = device
     meta["training_donors_per_second"] = len(a) / meta["elapsed_seconds"]
     meta["preprocessing_sha256"] = digest({"transform": meta["transform"], "features": features,
                                              "center": center.tolist(), "scale": scale.tolist()})

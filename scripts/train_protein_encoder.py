@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CPU-only development pilot. GPU scheduling and private confirmation are unavailable."""
+"""Bounded development training; CUDA serializes on /tmp/dnhacks-gpu.lock."""
 import argparse
 from dnhacksbio.protein_design import load
 from dnhacksbio.protein_encoder import fit
@@ -15,9 +15,10 @@ def main():
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max-features", type=int, default=8000)
+    parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
     args = parser.parse_args()
     encoder = fit(load(args.train), load(args.validation), kind=args.kind, latent=args.latent,
-                  epochs=args.epochs, seed=args.seed, max_features=args.max_features)
+                  epochs=args.epochs, seed=args.seed, max_features=args.max_features, device=args.device)
     encoder.save(args.output)
 
 
