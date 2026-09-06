@@ -7,7 +7,15 @@ When the user explicitly says "deploy latest main", use `scripts/deploy.py`.
 Never substitute pulling into the running checkout, rebuilding its dependencies,
 or restarting its service by hand. Never bypass a failed validation/activity check.
 
-## First migration (not yet performed)
+## VM installation paths
+
+The selected deployment home is `/home/dev/.local/share/dnhacks-deployment`.
+Persistent research data remains at `/home/dev/projects/dnhacks/data`; release
+directories link to it rather than copying or migrating the corpus databases.
+`installation.json` in the deployment home records successful initialization;
+`current` identifies the active release. The web service uses localhost port 8765.
+
+## First migration
 
 The existing app may still run from the shared coding checkout. The deployment
 script deliberately refuses bootstrap if the target port is occupied. Coordinate
@@ -47,6 +55,9 @@ It runs frozen dependency installation, frontend build/unit/browser tests and Py
 tests against isolated test data. Missing datasets or failing tests block deployment;
 there is no skip-validation flag. Existing candidate directories are retained for
 audit and require inspection before a retry; there is no automatic deletion.
+Browser tests use the shared browser runner, which allocates OS-selected ports
+and owns its private API/Vite servers. Other agents may keep using ports 8766 or
+5174; deployment does not reserve or stop those servers.
 
 After validation, each release's `data` points at the same persistent research data.
 The deployer obtains the exclusive research lease, checks activity again, atomically
@@ -80,4 +91,5 @@ records, standalone ingestion detection, HTTP 503 admission and rollback orderin
 An isolated real user-systemd drill verified that a detached dummy job survives
 its parent service stopping with `KillMode=process` and continues blocking the
 exclusive deployment lock. No scientific process was used in that drill. First
-migration and authenticated production smoke checks remain pending.
+migration completion is recorded by `installation.json` and the release-health
+endpoint; verify both after bootstrap along with the existing corpus counts.

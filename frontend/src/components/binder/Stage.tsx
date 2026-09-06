@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type RefObject } from "react";
 import {
   Canvas,
   useFrame,
@@ -24,7 +24,11 @@ const radius: Record<string, number> = {
   S: 1.8,
   P: 1.8,
 };
+export function orthographicCamera() {
+  return Object.assign(new THREE.OrthographicCamera(-40, 40, 40, -40, .1, 2000), { manual: true });
+}
 export type SceneInspection = {
+  camera_transitioning: boolean;
   camera: unknown;
   renderer: unknown;
   visible_residue_ids: string[];
@@ -36,6 +40,7 @@ export type SceneInspection = {
   viewport: unknown;
 };
 export type StageHandle = {
+  cancelMotion: () => void;
   ready: () => Promise<void>;
   inspect: () => SceneInspection;
   pick: (x: number, y: number) => string | null;
@@ -102,21 +107,34 @@ function Molecule({
   );
 }
 
-function Scene({
+export function Scene({
   bundle,
   state,
   onPick,
   onHandle,
   meshes: surfaceMeshes,
+  sharedControls,
+  fitAtoms: sharedFitAtoms,
+  manageCamera = true,
 }: {
   bundle: Bundle;
+  sharedControls?: RefObject<OrbitImpl>;
+  fitAtoms?: Atom[];
+  manageCamera?: boolean;
   meshes: Record<string, SurfaceMesh>;
   state: SceneState;
   onPick: (id: string) => void;
   onHandle: (h: StageHandle | null) => void;
 }) {
   const { camera, gl, scene, size, invalidate } = useThree();
-  const controls = useRef<OrbitImpl>(null!);
+  const ownControls = useRef<OrbitImpl>(null!);
+  const controls = sharedControls ?? ownControls;
+  const initialized = useRef(false);
+  const transition = useRef<null | {
+    started: number; from: THREE.Vector3; to: THREE.Vector3;
+    fromTarget: THREE.Vector3; toTarget: THREE.Vector3;
+    fromUp: THREE.Vector3; toUp: THREE.Vector3; fromFov: number; toFov: number;
+  }>(null);
   const settled = useRef(0),
     frameTimes = useRef<number[]>([]);
   const parts = useMemo(() => {
@@ -167,13 +185,58 @@ function Scene({
     settled.current = 0;
     invalidate();
   }, [state.style, state.selected, representation, invalidate]);
+  useEffect(() => {
+    const media = matchMedia("(prefers-reduced-motion: reduce)");
+    const change = () => { if (media.matches) { transition.current = null; invalidate(); } };
+    media.addEventListener("change", change);
+    return () => media.removeEventListener("change", change);
+  }, [invalidate]);
   useFrame((_, delta) => {
+    const motion = transition.current;
+    if (motion) {
+      const fraction = Math.min(1, (performance.now() - motion.started) / 700);
+      const t = fraction * fraction * (3 - 2 * fraction);
+      const target = motion.fromTarget.clone().lerp(motion.toTarget, t);
+      const a = motion.from.clone().sub(motion.fromTarget);
+      const b = motion.to.clone().sub(motion.toTarget);
+      const distance = THREE.MathUtils.lerp(a.length(), b.length(), t);
+      const rotation = new THREE.Quaternion().setFromUnitVectors(a.normalize(), b.normalize());
+      const direction = a.applyQuaternion(new THREE.Quaternion().slerp(rotation, t));
+      camera.position.copy(target).addScaledVector(direction, distance);
+      camera.up.copy(motion.fromUp).lerp(motion.toUp, t).normalize();
+      (camera as THREE.PerspectiveCamera).fov = THREE.MathUtils.lerp(motion.fromFov, motion.toFov, t);
+      camera.updateProjectionMatrix();
+      controls.current.target.copy(target);
+      controls.current.update();
+      camera.updateMatrixWorld(true);
+      if (fraction === 1) transition.current = null;
+      settled.current = 0;
+      invalidate();
+    }
     settled.current++;
     if (settled.current < 5) invalidate();
     frameTimes.current.push(delta * 1000);
     if (frameTimes.current.length > 240) frameTimes.current.shift();
   });
   useEffect(() => {
+    if (!manageCamera) return;
+    const from = camera.position.clone(), fromTarget = controls.current.target.clone();
+    const fromUp = camera.up.clone(), fromFov = (camera as THREE.PerspectiveCamera).fov;
+    transition.current = null;
+    const finishPose = () => {
+      if (camera instanceof THREE.PerspectiveCamera && initialized.current && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        transition.current = { started: performance.now(), from, fromTarget, fromUp, fromFov,
+          to: camera.position.clone(), toTarget: controls.current.target.clone(),
+          toUp: camera.up.clone(), toFov: (camera as THREE.PerspectiveCamera).fov };
+        camera.position.copy(from); camera.up.copy(fromUp);
+        (camera as THREE.PerspectiveCamera).fov = fromFov;
+        controls.current.target.copy(fromTarget); controls.current.update();
+        camera.updateProjectionMatrix(); camera.updateMatrixWorld(true);
+      }
+      initialized.current = true;
+      settled.current = 0;
+      invalidate();
+    };
     if (state.camera) {
       const c = state.camera;
       camera.position.set(...c.position);
@@ -181,26 +244,31 @@ function Scene({
       camera.lookAt(...c.target);
       (camera as THREE.PerspectiveCamera).fov = c.fov || 38;
       (camera as THREE.PerspectiveCamera).aspect = size.width / size.height;
+      if (camera instanceof THREE.OrthographicCamera) {
+        const half = (c.height ?? 80) / 2;
+        camera.top = half; camera.bottom = -half;
+        camera.left = -half * size.width / size.height; camera.right = -camera.left;
+        camera.zoom = c.zoom ?? 1;
+      }
       camera.near = Math.max(0.01, c.near || 0.1);
       camera.far = Math.max(camera.near + 0.1, c.far || 2000);
       camera.updateProjectionMatrix();
       camera.updateMatrixWorld(true);
       controls.current.target.set(...c.target);
       controls.current.update();
-      settled.current = 0;
-      invalidate();
+      finishPose();
       return;
     }
     const close = ["interface-close", "epitope", "reverse"].includes(
       state.preset,
     );
-    const center = close ? parts.seam : parts.center;
-    const fitAtoms = close
+    const fitAtoms = sharedFitAtoms ?? (close
       ? parts.atoms.filter((a) => parts.contactIds.has(a.residue_id))
-      : parts.atoms;
+      : parts.atoms);
     const box = new THREE.Box3().setFromPoints(
       fitAtoms.map((a) => new THREE.Vector3(...a.xyz)),
     );
+    const center = sharedFitAtoms ? box.getCenter(new THREE.Vector3()) : close ? parts.seam : parts.center;
     const extent = box.getSize(new THREE.Vector3()).length();
     const aspect = size.width / size.height;
     (camera as THREE.PerspectiveCamera).aspect = aspect;
@@ -230,11 +298,12 @@ function Scene({
     }
     controls.current.target.copy(center);
     controls.current.update();
-    settled.current = 0;
-    invalidate();
+    finishPose();
   }, [
     state.preset,
     state.revision,
+    sharedFitAtoms,
+    manageCamera,
     representation,
     parts,
     camera,
@@ -285,19 +354,21 @@ function Scene({
     };
     let active = true;
     onHandle({
+      cancelMotion: () => { transition.current = null; settled.current = 0; invalidate(); },
       ready: async () => {
         await document.fonts.ready;
         if (!active) return;
         gl.compile(scene, camera);
         await new Promise<void>((resolve) => {
           const check = () => {
-            if (!active || settled.current >= 4) resolve();
+            if (!active || (!transition.current && settled.current >= 4)) resolve();
             else requestAnimationFrame(check);
           };
           check();
         });
       },
       inspect: () => ({
+        camera_transitioning: transition.current !== null,
         representation,
         representation_protocol:
           representation === "surface"
@@ -325,7 +396,9 @@ function Scene({
           up: camera.up.toArray(),
           target: controls.current.target.toArray(),
           projection: camera.type,
-          fov: (camera as THREE.PerspectiveCamera).fov,
+          ...(camera instanceof THREE.OrthographicCamera
+            ? { height: camera.top - camera.bottom, zoom: camera.zoom }
+            : { fov: (camera as THREE.PerspectiveCamera).fov }),
           near: camera.near,
           far: camera.far,
         },
@@ -342,7 +415,9 @@ function Scene({
           illustrative: state.preset === "exploded",
         },
         frame_times_ms: frameTimes.current.slice(),
-        triangles: gl.info.render.triangles,
+        triangles: meshes.reduce((sum, mesh) => sum +
+          (mesh.geometry.index?.count ?? mesh.geometry.attributes.position?.count ?? 0) / 3 *
+          (mesh instanceof THREE.InstancedMesh ? mesh.count : 1), 0),
         atoms: parts.atoms.length,
         viewport: { ...size, dpr: gl.getPixelRatio() },
       }),
@@ -492,13 +567,14 @@ function Scene({
               />
             );
           })}
-      <OrbitControls
+      {!sharedControls && <OrbitControls
         ref={controls}
         makeDefault
         enableDamping={false}
+        onStart={() => { transition.current = null; settled.current = 0; invalidate(); }}
         minDistance={4}
         maxDistance={400}
-      />
+      />}
     </>
   );
 }
@@ -509,10 +585,13 @@ export default function Stage(props: {
   onPick: (id: string) => void;
   onHandle: (h: StageHandle | null) => void;
 }) {
+  const orthographic = props.state.camera?.projection === "OrthographicCamera";
+  const camera = useMemo(orthographicCamera, []);
   return (
     <Canvas
+      key={orthographic ? "orthographic" : "perspective"}
       frameloop="demand"
-      camera={{ fov: 38, near: 0.1, far: 2000 }}
+      camera={orthographic ? camera : { fov: 38, near: 0.1, far: 2000 }}
       dpr={[1, 1.5]}
       gl={{ antialias: true, preserveDrawingBuffer: true }}
     >

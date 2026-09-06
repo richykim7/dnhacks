@@ -98,8 +98,8 @@ The browser review fixture is test-only (`frontend/e2e/binder-fixture.json`). Ru
 and owns isolated servers, ports and review artifacts; its output prints the run directory.
 The test saves PNGs and camera/visibility metadata for deterministic presets. Development review
 records distinguish measured raycast visibility from qualitative image inspection. Secondary-structure
-assignment, actual second-candidate synchronized rendering and WebGPU visual comparison remain
-separate acceptance work; the `candidate-compare` preset reports the missing second candidate.
+assignment and WebGPU visual comparison remain separate acceptance work. The `candidate-compare`
+preset requires a second available candidate with identical target coordinates and metric definitions.
 The frame intervals recorded by the demand renderer include idle gaps and are **not** an
 interactive p95 performance benchmark. No reference-hardware performance target is claimed.
 
@@ -198,3 +198,70 @@ names. Setup errors after claim record interruption; every exit terminates desce
 when the generator leader has already exited. Fast exits also receive final byte/trajectory checks.
 These are polled caps, so a short-lived output overshoot is detected and rejected, not prevented
 by a filesystem quota. No dependency deployment or live design run is implied by lifecycle tests.
+
+
+## Native scientist action
+
+After `get_skill binder-interface` is delivered, the explorer accepts
+`{"action":"binder","args":{"operation":"open_scene","experiment_id":"OWNED_EXPERIMENT",
+"args":{"bundle_sha256":"AVAILABLE_HASH"}}}`. The runtime supplies project/run scope and the
+operator's journal/store/server configuration. It rejects agent host paths, URLs, executables,
+store directories and scope overrides. The experiment must already exist in the current researcher.
+
+Native preparation uses a collected `molecular_structure` hash as `source_ref`; it records immutable
+`binder_target`, `binder_epitope` and `binder_protocol` artifacts. Subsequent operations use their
+`artifact_sha256` as `target_ref`, `epitope_ref` or `protocol_ref`. Native import inherits source
+provenance, so a software illustration cannot silently become a prediction. Evaluation reads the
+validated bundle's existing metrics. Comparison rebuilds sources and requires identical full target
+residue metadata/coordinates and one experiment scope; it saves a `binder_comparison` record.
+Follow-up proposals save `binder_followup` records with an explicit human-review status.
+
+Native `start_design` only queues a durable receipt and returns its actual state, including on retry.
+It never starts an executable. The operator must configure and invoke the pinned launch adapter.
+`collect_candidates` records real `binder.job` events and publishes each validated stored bundle
+once; failure/cancellation and rejection notes remain visible in the owning experiment. The UI
+shows these records and job events only at their available cursor, without simulated progress.
+
+Native scene operations use the same immutable service as the CLI. `BINDER_SCENE_BASE_URL`
+configures the trusted local workspace (default `http://127.0.0.1:8765`). Capture/pick run off the
+async event loop; image review passes actual PNG bytes and records model usage in the research
+cost ledger, including usage returned before a failure. These provisional actions do not register
+an audited structural method, create statistical results, or promote graph edges.
+
+Provider review failures return a bounded, redacted error and preserve the saved capture;
+no observation event is appended. `binder-interface` is explicitly rejected as an audited
+`run_experiments` method ID; custom analysis must use `exploratory`.
+See the [native capture and review status](binder-review/native-review.md) for actual
+browser evidence and the provider-quota limitation on the latest image observation.
+
+### Persistent node workspace
+
+Available binder sources are selected in the owning researcher's persistent left scene, alongside
+real activity and experiment findings. Only one source viewer is mounted. The selector and native
+capture driver resolve the exact experiment and artifact hash at the current cursor. This is source
+selection; a second candidate can share the same canvas through the comparison selector.
+
+Camera transitions use a700ms smooth orbit from the displayed pose, including when replacing a
+transition in progress. Pointer/orbit takeover cancels motion immediately; reduced motion is static.
+Scene readiness waits for settled motion before capture. Recipe export records the actual camera,
+including manual navigation. This presentation motion never moves scientific atom coordinates.
+
+### Paired source and capture contract
+
+A scene revision can bind `comparison_bundle_sha256` and `comparison_selected` to a second collected
+candidate in the exact same experiment. Target coordinates, complete residue/atom identity and metric
+protocol must match; no unrecorded target fitting is performed. Captures require two equal horizontal
+viewports with explicit source hashes, one shared camera and physical scale. A saved-pixel pick returns
+both candidate hash and residue ID and rejects an identity from the opposite viewport. Native comparison
+rows preserve collected byte hashes rather than replacing them with a canonical-JSON hash.
+
+Two scissored views use one actual camera and orbit controller. Both views fit the union
+of the displayed candidates, use the same material legend and preserve target alignment. Picking
+changes the inspector and contact table to the selected candidate. A separate accessible table shows
+contact/clash trade-offs and Pareto status among these two candidates, without an affinity score.
+Rewinding before the second artifact removes its view. The projection selector supports perspective
+and orthographic cameras. Orthographic recipes save vertical frustum height in Å and zoom, preserving
+constant scale through capture and saved-pixel picking. Changing projection remounts the camera;
+orthographic explicit-pose updates are immediate. Perspective pose transitions remain animated.
+See the [inspected paired comparison](binder-review/comparison-review.md) for source hashes,
+native capture/pick evidence, responsive views and remaining performance limits.

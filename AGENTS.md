@@ -32,26 +32,33 @@ Setup: `uv sync --extra dev` and `npm --prefix frontend ci` (Node 22.12+).
 Build/serve: `npm --prefix frontend run build`, then `uv run python scripts/serve_ui.py --port 8765`.
 Frontend development and environment/key handling: `docs/frontend.md`.
 
-Before every commit, run `git diff --check` and the checks relevant to the changed behavior:
+Before every commit, run `git diff --check` and review the diff. **Local tests are optional by
+default**, chosen using judgment about the changed behavior and risk; they are not a per-commit
+or per-merge checklist. Do not run full suites merely because you committed, merged or synced main.
+For low-risk changes, diff review or a manual smoke check can be sufficient. Say briefly what was
+checked, or that tests were not run; no permission request is needed to skip optional tests.
 
-| Change | Required checks |
+| Changed surface | Useful checks to select when warranted (not mandatory bundles) |
 | --- | --- |
-| Documentation/plans only | Review links, commands and consistency; no code suites. |
-| Python module or CLI/coordination script | Focused `uv run pytest tests/test_<area>.py` files covering the change and its callers. No frontend build/browser tests unless a UI/API contract changes. |
-| Frontend behavior or styles | `npm --prefix frontend run build`, relevant unit tests (`npm --prefix frontend run test -- <file>`), and the affected browser tests. Inspect captures for visual changes. |
-| 3D viewer/geometry integration | Frontend checks plus that viewer's browser tests; other viewers are required only when shared rendering/runtime behavior changes. |
-| Shared schema, runtime, API or dependency changes | Tests for affected producers and consumers. At the merge milestone, run the full suite for each broadly affected layer (Python and/or frontend). |
-| Browser harness/configuration | Runner tests and representative real browser tests, including concurrent invocation/cleanup checks when isolation changes. |
+| Documentation/plans only | Links, commands and consistency; no code suites. |
+| Python module or CLI/coordination script | Relevant `uv run pytest tests/test_<area>.py` cases and directly affected callers. No unrelated frontend checks. |
+| Frontend behavior or styles | Build/type checking, relevant unit cases (`npm --prefix frontend run test -- <file>`), or a targeted browser/manual visual check, according to the change. |
+| 3D viewer/geometry | That viewer's focused checks or visual inspection; other viewers only if shared rendering behavior is affected. |
+| Shared schema, runtime, API or dependencies | Focused checks for affected producers/consumers. Broaden only for a concrete integration risk, not automatically to every suite. |
+| Browser harness/configuration | Relevant runner tests and a representative browser case; exercise concurrency/cleanup if those behaviors changed. |
 
 Use `npm --prefix frontend run e2e -- e2e/<area>.spec.ts` (optionally `--grep "test title"`).
 The runner queues browser runs across this user's local worktrees and owns isolated servers, data,
 ports and artifacts. Do not bypass it with raw `playwright test` or reuse a development server.
-See `docs/frontend.md` for test selection and setup. Broader suites belong at relevant integration
-milestones or when failures/uncertain impact justify them, not every commit or unrelated PR.
-Full layer commands remain `uv run pytest tests`, `npm --prefix frontend run test`, and
-`npm --prefix frontend run e2e` (plus the frontend build). Report selected checks and any missing-data
-skips/failures. Required CI checks still apply. After syncing main, rerun checks affected by the new
-diff/conflict resolution; do not repeat unrelated suites just because main advanced.
+See `docs/frontend.md` for browser selection. Full layer commands remain available:
+`uv run pytest tests`, `npm --prefix frontend run test`, and `npm --prefix frontend run e2e`.
+Run them only when explicitly requested or when a concrete risk justifies their cost. Do not add
+new tests for trivial edits or tests that only mirror implementation. Reuse existing focused cases.
+Do not hide known failures: investigate failures relevant to your change and report unrelated ones
+without taking on unrelated repairs. Report missing-data skips when checks are run. Required CI
+checks and the deployment procedure still apply; this policy does not bypass branch protection or
+change deployment behavior. After syncing main, inspect the incoming diff/conflict resolution and
+repeat only checks justified by changed behavior; prior results do not expire just because main moved.
 
 ## Rules that must not be broken
 1. Never force-push, never rewrite history on `main`.

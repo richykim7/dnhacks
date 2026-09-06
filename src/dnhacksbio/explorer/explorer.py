@@ -161,9 +161,14 @@ Actions:
 - read_paper     {"paper_id": "<id>", "max_chars": 30000, "offset": 0}  -> a paper's text, local or just
                    fetched. Long papers come back truncated and say so; call again with the offset given to
                    read on. A truncated read never supports "the paper does not mention X".
+- binder         {"operation": "<operation>", "experiment_id": "<owned ID>", "args": {...}} -> scoped exploratory binder records, receipts and actual scene/vision tools; get_skill binder-interface first
 - spindle        {"operation": "<operation>", "experiment_id": "<owned ID>", "args": {...}} -> provisional native spindle jobs and scoped scene/vision workflow; get_skill spindle-interface first
 - search_skills  {"query": "<method or question>"}              -> which methods fit; then get_skill for the how
+- tissue         {"experiment_id":"<id>","operation":"<operation>","args":{...}} -> conditional spatial model; get_skill tissue-interface first
 - get_skill      {"name": "<skill>"}                            -> full method guidance, rigor invariants and an example
+- private_experiment {"method_id":"paired-pathway-v1|dependency-chronos-v1|biomarker_auc.v1", "spec":{...}, "input":{"cohort_id":"...","manifest_sha256":"..."}}
+                   -> submit an operator-registered experiment with runner-owned provenance; load the corresponding experiment skill first.
+                      Returns only a receipt. Never manufacture RESULT or submit that receipt to legacy verification.
 - run_experiments{"experiments": [ {"hypothesis","subject","object","method","expected_sign":-1|0|1,"code"}, ... ]}
                    -> runs each `code` in a parallel sandbox. Your code must print one line with json.dumps:
                       print("RESULT:", json.dumps({"effect":..,"p_null":..,"null_model":"..","n_units":..,"robust":true}))
@@ -898,6 +903,18 @@ class Explorer:
         self._pending_skills[name] = skill
         return f"Complete {name} guidance will accompany the next model request (version {skill['sha256']})."
 
+    async def _act_tissue(self, args) -> str:
+        if "tissue-interface" not in self._delivered:
+            return "(tissue blocked: get_skill tissue-interface and receive its guidance first)"
+        from dnhacksbio.tissue.tools import operate
+        scope = {"project_id": self.manifest["project_id"], "run_id": self.run_id,
+                 "experiment_id": str(args.get("experiment_id", ""))}
+        try:
+            result = await operate(self.journal, scope, str(args.get("operation", "")), args.get("args", {}))
+        except (ValueError, FileNotFoundError, KeyError, IndexError, TimeoutError, RuntimeError) as exc:
+            result = {"status": "failed", "operation": args.get("operation"), "error": str(exc)[:2000]}
+        return json.dumps(result, allow_nan=False)
+
     async def _act_run_experiments(self, args) -> str:
         exps = [e for e in (args.get("experiments") or []) if isinstance(e, dict) and e.get("code")]
         if not exps:
@@ -906,6 +923,9 @@ class Explorer:
             return "(at most 8 experiments per action)"
         for e in exps:
             method = e.get("method_id")
+            if method == "binder-interface":
+                self._event("policy.rejected", {"reason": "Binder guide is not an audited method", "method_id": method})
+                return "(binder-interface is an exploratory tool guide; use method_id exploratory)"
             required = "agent-runtime" if method == "exploratory" else method
             if not required or required not in self._skill_snapshots or required not in self._delivered:
                 self._event("policy.rejected", {"reason": "Method guidance not delivered", "method_id": method})
@@ -1446,6 +1466,9 @@ class Explorer:
         if state and state["status"] != "working":
             raise RuntimeError("Research paused; dispatch prohibited")
         name, args = action.get("action"), action.get("args", {})
+        if name == "private_experiment":
+            from .private_experiments import dispatch
+            return await dispatch(self, args)
         if name == 'inhibitor':
             if 'inhibitor-interface' not in self._delivered:
                 return self._act_get_skill({'name':'inhibitor-interface'})
@@ -1462,6 +1485,20 @@ class Explorer:
              "get_skill": self._act_get_skill, "log": self._act_log, "submit": self._act_submit,
              "recall": self._act_recall, "neighbors": self._act_neighbors,
              "subgraph": self._act_subgraph, "path": self._act_path}
+        if name == "tissue":
+            return await self._act_tissue(args)
+        if name == "binder":
+            if "binder-interface" not in self._delivered:
+                return "(binder blocked: get_skill binder-interface before dispatch)"
+            from dnhacksbio.binder.runtime import dispatch
+            usage={}
+            try:
+                result=await dispatch(self.journal,self.manifest.get("project_id"),self.run_id,args,usage_capture=usage)
+                return json.dumps(result,allow_nan=False)
+            except (ValueError,KeyError,TypeError,FileNotFoundError,RuntimeError,TimeoutError) as exc:
+                return json.dumps({"error":str(exc)})
+            finally:
+                if usage:self.control.cost(self.run_id,"research",0.,_capture_usage(usage))
         if name == "spindle":
             if "spindle-interface" not in self._delivered:
                 return "(spindle blocked: get_skill spindle-interface before dispatch)"

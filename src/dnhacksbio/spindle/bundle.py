@@ -11,8 +11,9 @@ def vector(value, *, positive=False, planar=False):
         or (positive and any(x <= 0 for x in value)) or (planar and value[2] != 0)):
         raise ValueError('Invalid spatial coordinates')
 
-def validate(raw: bytes) -> dict:
-    if len(raw) > 20 * 1024 * 1024:
+def validate(raw: bytes, *, scientific=False) -> dict:
+    # The worker validates the full archive before separately bounding its display.
+    if len(raw) > (200 if scientific else 20) * 1024 * 1024:
         raise ValueError('Trajectory exceeds artifact budget')
     b = json.loads(raw)
     if (not isinstance(b, dict) or b.get('schema_version') != 1
@@ -68,8 +69,40 @@ def validate(raw: bytes) -> dict:
                 if not isinstance(vertices, list) or len(vertices) < 2:
                     raise ValueError('Incomplete filament geometry')
                 points += len(vertices)
-                if points > MAX_POINTS:
+                if points > (20_000_000 if scientific else MAX_POINTS):
                     raise ValueError('Trajectory exceeds display budget')
                 for p in vertices:
                     vector(p, planar=b['dimensionality'] == 2)
+            motors=frame.get('cortical_motors',[])
+            if not isinstance(motors,list) or len(motors)>1000:raise ValueError('Invalid cortical motor count')
+            motor_ids=set()
+            for motor in motors:
+                if not isinstance(motor,dict) or set(motor)!={'id','position','force_pn','filament','abscissa_um'}:
+                    raise ValueError('Invalid cortical motor fields')
+                if not isinstance(motor['id'],str) or not motor['id'] or motor['id'] in motor_ids:
+                    raise ValueError('Invalid cortical motor identity')
+                motor_ids.add(motor['id']);vector(motor['position'],planar=b['dimensionality']==2)
+                if motor['filament'] is None:
+                    if motor['force_pn'] is not None or motor['abscissa_um'] is not None:raise ValueError('Unbound motor has invented bound measurements')
+                else:
+                    if motor['filament'] not in fiber_ids:raise ValueError('Unknown motor-bound filament')
+                    vector(motor['force_pn'],planar=b['dimensionality']==2)
+                    if type(motor['abscissa_um']) not in (int,float) or not math.isfinite(motor['abscissa_um']):raise ValueError('Invalid motor abscissa')
+    sampling=b.get('display_sampling')
+    if sampling is not None:
+        if (not isinstance(sampling,dict) or sampling.get('schema')!='spindle_display_sampling.v1'
+            or not isinstance(sampling.get('source_trajectory_sha256'),str)
+            or len(sampling['source_trajectory_sha256'])!=64
+            or any(c not in '0123456789abcdef' for c in sampling['source_trajectory_sha256'])
+            or not isinstance(sampling.get('method'),str)
+            or not isinstance(sampling.get('source_frame_counts'),list)
+            or not isinstance(sampling.get('source_frame_indices'),list)
+            or len(sampling['source_frame_counts'])!=len(runs)
+            or len(sampling['source_frame_indices'])!=len(runs)):
+            raise ValueError('Invalid display sampling manifest')
+        for run,count,indices in zip(runs,sampling['source_frame_counts'],sampling['source_frame_indices']):
+            if (type(count) is not int or not 1<=count<=2000 or not isinstance(indices,list)
+                or len(indices)!=len(run['frames']) or not indices or indices[0]!=0 or indices[-1]!=count-1
+                or any(type(n) is not int or not 0<=n<count or (i and n<=indices[i-1]) for i,n in enumerate(indices))):
+                raise ValueError('Invalid source frame mapping')
     return b

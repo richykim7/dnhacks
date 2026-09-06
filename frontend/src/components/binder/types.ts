@@ -34,6 +34,7 @@ export type Bundle = {
   target_chains: string[];
   binder_chains: string[];
   metrics: {
+    protocol: Record<string, unknown>;
     contacts: Contact[];
     counts: Record<string, number>;
     clash_count: number;
@@ -68,6 +69,8 @@ export type CameraRecipe = {
   near?: number;
   far?: number;
   projection?: string;
+  height?: number;
+  zoom?: number;
 };
 export type SceneAction = {
   sequence: number;
@@ -80,6 +83,8 @@ export type SceneState = {
   style: Style;
   selected: string | null;
   revision: number;
+  comparison_bundle_sha256?: string | null;
+  comparison_selected?: string | null;
   camera?: CameraRecipe | null;
   representation?: Representation;
 };

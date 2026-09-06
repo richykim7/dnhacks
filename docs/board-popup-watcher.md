@@ -6,6 +6,14 @@ waiting** (or the older **Keep waiting** label). It keeps the current model and
 request running. It does not handle approvals, trust prompts, model pickers,
 errors, or usage-limit dialogs, and does not disable server-side checks.
 
+It recognizes both the three-option menu (retry, wait, learn more) and the
+observed two-option menu (dismiss and keep waiting, learn more). The two-option
+variant requires its exact shorter thinking header and no-action-required footer.
+The waiting target comes from the recognized label: option 1 in the two-option
+menu, option 2 in the three-option menu. Headers and rows from different variants
+are not interchangeable. A change of variant during selection aborts before
+Enter; unrecognized wording such as “Dismiss and continue” is left alone.
+
 Run one watcher for the local tmux server:
 
 ```sh

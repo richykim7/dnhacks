@@ -1,5 +1,5 @@
 """Scientist-facing exploratory operations, independent of any statistical verdict."""
-from .geometry import digest, parse_structure, select_chains
+from .geometry import canonical, digest, parse_structure, select_chains
 
 
 def prepare_target(raw,fmt,*,structure_sha256,chains,source_evidence,construct_policy,assembly='context unavailable'):
@@ -16,15 +16,22 @@ def prepare_target(raw,fmt,*,structure_sha256,chains,source_evidence,construct_p
 
 def compare(bundles):
     if not 2<=len(bundles)<=8:raise ValueError('Compare 2–8 candidates')
+    from .bundle import validate_bundle
+    bundles=[validate_bundle(canonical(b)) for b in bundles]
+    if len({digest(b) for b in bundles})!=len(bundles):raise ValueError('Comparison requires distinct candidates')
     first=bundles[0]
     protocol=first['metrics']['protocol']
     # Exact target coordinate alignment only; never assume differing predictions share a pose.
     def target(b):
         ids={r['id'] for r in b['structure']['residues'] if r['chain'] in b['target_chains']}
-        return [{k:a[k] for k in ('residue_id','name','element','xyz')} for a in b['structure']['atoms'] if a['residue_id'] in ids]
+        return {'residues':[r for r in b['structure']['residues'] if r['id'] in ids],
+                'atoms':[{k:a[k] for k in ('residue_id','name','element','xyz','altloc','occupancy')}
+                         for a in b['structure']['atoms'] if a['residue_id'] in ids]}
     target_hash=digest(target(first))
     rows=[]
     for b in bundles:
+        if b['manifest']['scope']!=first['manifest']['scope']:
+            raise ValueError('Comparison requires one experiment scope')
         if b['metrics']['protocol']!=protocol or digest(target(b))!=target_hash:
             raise ValueError('Comparison requires identical metric protocol and target coordinates/mapping')
         m=b['metrics'];rows.append({'candidate_id':b['manifest']['candidate_id'],'bundle_sha256':digest(b),
