@@ -503,8 +503,9 @@ to the JSON and SSE API. A project selector in the header scopes every view. The
   full-viewport vertical search tree with collapsible navigation and a shared-layout researcher expansion.
   The clicked node expands into the available workspace while its origin and tree remain mounted for
   collapse. Collected visual artifacts float on the left; concise objective, experiments, candidate review
-  and bounded major research steps occupy the right. Mobile stacks these areas; missing visuals remain
-  explicit rather than being fabricated. Each researcher shows experiments above major research steps;
+  and bounded major research steps occupy the right. Mobile stacks these areas. Without a recorded visual
+  artifact, the visual pane is omitted and research information uses the full workspace width.
+  Each researcher shows experiments above major research steps;
   raw runtime diagnostics are opt-in. Activity requires fresh heartbeat evidence, and candidate counts
   deduplicate recorded submission/retry identities at the live or historical cursor. A discoverable candidate
   queue opens the owning experiment for human Accept/Reject review with required notes and source context.

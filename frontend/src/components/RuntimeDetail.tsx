@@ -200,9 +200,9 @@ export function RuntimeDetail({
     <div
       className={`node-workspace researcher-workspace ${activeScene ? "has-scene" : ""}`}
     >
-      <div className="workspace-render">
-        {activeScene ? (
-          ["binder_bundle", "molecular_structure"].includes(
+      {activeScene && (
+        <div className="workspace-render">
+          {["binder_bundle", "molecular_structure"].includes(
             activeScene.artifact.kind,
           ) ? (
             <NodeScene
@@ -291,13 +291,9 @@ export function RuntimeDetail({
                 </Suspense>
               </div>
             </section>
-          )
-        ) : (
-          <div className="workspace-empty-render">
-            <p>No visual artifact recorded</p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
       <section
         className="node-research"
         aria-label="Research activity and findings"
