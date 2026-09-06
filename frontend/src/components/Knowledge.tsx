@@ -9,13 +9,24 @@ import {
   useReactFlow,
   Handle,
   Position,
+  useInternalNode,
   type Edge,
   type EdgeProps,
   type Node,
   type NodeProps,
 } from "@xyflow/react";
 import { ArrowLeft, ArrowUpRight, ListFilter, Search, X } from "lucide-react";
-import dagre from "@dagrejs/dagre";
+import {
+  forceCenter,
+  forceCollide,
+  forceLink,
+  forceManyBody,
+  forceSimulation,
+  forceX,
+  forceY,
+  type SimulationLinkDatum,
+  type SimulationNodeDatum,
+} from "d3-force";
 import {
   asOf,
   attributionLabel,
@@ -196,38 +207,96 @@ function EdgeMarkers() {
 }
 
 // --- graph nodes ----------------------------------------------------------------------------
+// A knowledge-graph node: the entity's kind is the shape, its size is how many claims touch it in
+// this view, the label sits underneath. Colour is reserved for selection.
+export function nodeRadius(degree: number): number {
+  return Math.min(34, 13 + 5 * Math.sqrt(Math.max(1, degree)));
+}
 type EntityData = GraphNode & {
+  r: number;
   selected: boolean;
   dim: boolean;
   [key: string]: unknown;
 };
+function shapePath(shape: KindShape, r: number): React.ReactNode {
+  const c = r;
+  const k = r - 1.5;
+  switch (shape) {
+    case "diamond":
+      return (
+        <path
+          d={`M${c} ${c - k} L${c + k} ${c} L${c} ${c + k} L${c - k} ${c} Z`}
+        />
+      );
+    case "square":
+      return (
+        <rect
+          x={c - k * 0.85}
+          y={c - k * 0.85}
+          width={k * 1.7}
+          height={k * 1.7}
+          rx={2}
+        />
+      );
+    case "hexagon":
+      return (
+        <path
+          d={`M${c} ${c - k} L${c + k * 0.87} ${c - k / 2} L${c + k * 0.87} ${c + k / 2} L${c} ${c + k} L${c - k * 0.87} ${c + k / 2} L${c - k * 0.87} ${c - k / 2} Z`}
+        />
+      );
+    case "triangle":
+      return (
+        <path
+          d={`M${c} ${c - k} L${c + k * 0.95} ${c + k * 0.7} L${c - k * 0.95} ${c + k * 0.7} Z`}
+        />
+      );
+    case "bar":
+      return (
+        <rect
+          x={c - k}
+          y={c - k * 0.45}
+          width={k * 2}
+          height={k * 0.9}
+          rx={3}
+        />
+      );
+    case "ring":
+      return <circle cx={c} cy={c} r={k} strokeDasharray="3 2.5" />;
+    default:
+      return <circle cx={c} cy={c} r={k} />;
+  }
+}
 function EntityNode({ data }: NodeProps<Node<EntityData>>) {
+  const size = data.r * 2;
   const claims = data.degree === 1 ? "1 claim" : `${data.degree} claims`;
   return (
     <div
-      className={`entity-node ${data.selected ? "selected" : ""} ${data.dim ? "dim" : ""}`}
+      className={`kg-node ${data.selected ? "selected" : ""} ${data.dim ? "dim" : ""}`}
+      style={{ width: size, height: size }}
+      title={`${data.label} · ${kindLabel(data.kind)} · ${claims}`}
     >
-      <Handle type="target" position={Position.Left} id="in-l" />
-      <Handle type="source" position={Position.Left} id="out-l" />
-      <KindGlyph kind={data.kind} size={14} />
-      <div className="entity-text">
+      <Handle type="target" position={Position.Top} />
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        aria-hidden="true"
+      >
+        {shapePath(kindShape(data.kind), data.r)}
+      </svg>
+      <span className="kg-label">
         <strong>{data.label}</strong>
-        <small>
-          {data.kind ? kindLabel(data.kind) : claims}
-          {data.curie && <code>{data.curie}</code>}
-        </small>
-      </div>
-      {data.kind && <span className="entity-count">{claims}</span>}
-      <Handle type="source" position={Position.Right} id="out-r" />
-      <Handle type="target" position={Position.Right} id="in-r" />
+        {data.selected && data.curie && <code>{data.curie}</code>}
+      </span>
+      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }
 const nodeTypes = { entity: EntityNode };
 
-// One claim, drawn as a cubic curve with horizontal handles. Several claims between the same two
-// entities (a dispute is exactly that) are fanned apart by `bow` pixels so each keeps its own head,
-// weight and label instead of being painted over the other.
+// One claim, drawn between the borders of its two nodes. Several claims between the same two
+// entities (a dispute is exactly that) bow apart by `bow` pixels so each keeps its own head, weight
+// and label instead of being painted over the other.
 type ClaimEdgeData = {
   bow: number;
   dim: boolean;
@@ -236,21 +305,43 @@ type ClaimEdgeData = {
 };
 function ClaimEdgeView({
   id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
+  source,
+  target,
   style,
   markerEnd,
   label,
   data,
 }: EdgeProps<Edge<ClaimEdgeData>>) {
+  const a = useInternalNode(source);
+  const b = useInternalNode(target);
+  if (!a || !b) return null;
+  const centre = (n: typeof a) => {
+    const w = n.measured.width ?? Number((n.data as EntityData).r) * 2;
+    const h = n.measured.height ?? w;
+    return {
+      x: n.internals.positionAbsolute.x + w / 2,
+      y: n.internals.positionAbsolute.y + h / 2,
+      r: w / 2,
+    };
+  };
+  const p = centre(a);
+  const q = centre(b);
+  const dx = q.x - p.x;
+  const dy = q.y - p.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
   const bow = data?.bow ?? 0;
-  const dir = targetX >= sourceX ? 1 : -1;
-  const handle = Math.max(48, Math.abs(targetX - sourceX) * 0.42);
-  const path = `M ${sourceX} ${sourceY} C ${sourceX + dir * handle} ${sourceY + bow}, ${targetX - dir * handle} ${targetY + bow}, ${targetX} ${targetY}`;
-  const lx = (sourceX + targetX) / 2;
-  const ly = (sourceY + targetY) / 2 + bow * 0.75;
+  // The curve leaves and enters the shapes at their borders, corrected for the bow's pull.
+  const sx = p.x + ux * p.r - uy * bow * 0.35;
+  const sy = p.y + uy * p.r + ux * bow * 0.35;
+  const tx = q.x - ux * (q.r + 1) - uy * bow * 0.35;
+  const ty = q.y - uy * (q.r + 1) + ux * bow * 0.35;
+  const mx = (sx + tx) / 2 - uy * bow * 2;
+  const my = (sy + ty) / 2 + ux * bow * 2;
+  const path = `M ${sx} ${sy} Q ${mx} ${my} ${tx} ${ty}`;
+  const lx = (sx + tx) / 2 - uy * bow;
+  const ly = (sy + ty) / 2 + ux * bow;
   return (
     <>
       <BaseEdge
@@ -275,6 +366,57 @@ function ClaimEdgeView({
   );
 }
 const edgeTypes = { claim: ClaimEdgeView };
+
+// Force-directed layout, run to rest before the first paint. Deterministic: the same graph always
+// lands in the same place (seeded jitter, fixed tick count), so a reload never rearranges the scene.
+type SimNode = SimulationNodeDatum & { id: string; r: number };
+function seeded(seed: number) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+export function forceLayout(
+  nodes: GraphNode[],
+  edges: ClaimEdge[],
+): Map<string, { x: number; y: number }> {
+  const sim: SimNode[] = nodes.map((n) => ({
+    id: n.id,
+    r: nodeRadius(n.degree),
+  }));
+  const ids = new Set(sim.map((n) => n.id));
+  const links: (SimulationLinkDatum<SimNode> & { n: number })[] = edges
+    .filter(
+      (e) => ids.has(e.source) && ids.has(e.target) && e.source !== e.target,
+    )
+    .map((e) => ({ source: e.source, target: e.target, n: e.n_sources }));
+  const spread = 26 * Math.sqrt(Math.max(1, nodes.length));
+  forceSimulation(sim)
+    .randomSource(seeded(7))
+    .force(
+      "link",
+      forceLink<SimNode, SimulationLinkDatum<SimNode>>(links)
+        .id((d) => d.id)
+        .distance(132)
+        .strength(0.5),
+    )
+    .force(
+      "charge",
+      forceManyBody<SimNode>()
+        .strength(-820)
+        .distanceMax(spread * 4),
+    )
+    .force("collide", forceCollide<SimNode>((d) => d.r + 34).iterations(2))
+    .force("center", forceCenter(0, 0))
+    .force("x", forceX<SimNode>(0).strength(0.04))
+    .force("y", forceY<SimNode>(0).strength(0.06))
+    .stop()
+    .tick(360);
+  return new Map(
+    sim.map((n) => [n.id, { x: (n.x ?? 0) - n.r, y: (n.y ?? 0) - n.r }]),
+  );
+}
 
 function FocusEvidence({ ids }: { ids: string }) {
   const flow = useReactFlow();
@@ -365,35 +507,32 @@ function Relationships({ project }: { project: string }) {
         : [],
   );
   const focusIds = focused.size ? JSON.stringify([...focused].sort()) : "";
-  const positions = useMemo(() => {
-    const layout = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-    layout.setGraph({ rankdir: "LR", nodesep: 44, ranksep: 200 });
-    data?.nodes.forEach((n) =>
-      layout.setNode(n.id, { width: 224, height: 72 }),
-    );
-    data?.edges.forEach((e) => layout.setEdge(e.source, e.target));
-    dagre.layout(layout);
-    return new Map(
-      data?.nodes.map((n) => {
-        const point = layout.node(n.id);
-        return [n.id, { x: point.x - 112, y: point.y - 36 }];
-      }),
-    );
-  }, [data]);
+  const positions = useMemo(
+    () => (data ? forceLayout(data.nodes, data.edges) : new Map()),
+    [data],
+  );
   const anyFocus = Boolean(claimId || selected);
   const nodes: Node<EntityData>[] =
-    data?.nodes.map((n) => ({
-      id: n.id,
-      type: "entity",
-      position: positions.get(n.id)!,
-      data: {
-        ...n,
-        selected: focused.has(n.id),
-        dim: anyFocus && !focused.has(n.id),
-      },
-    })) || [];
-  const labelAll = (data?.edges.length || 0) <= 30;
-  // Fan out claims that share a pair of endpoints (in either direction).
+    data?.nodes.map((n) => {
+      const r = nodeRadius(n.degree);
+      return {
+        id: n.id,
+        type: "entity",
+        position: positions.get(n.id) || { x: 0, y: 0 },
+        style: { width: r * 2, height: r * 2 },
+        data: {
+          ...n,
+          r,
+          selected: focused.has(n.id),
+          dim: anyFocus && !focused.has(n.id),
+        },
+      };
+    }) || [];
+  // Every predicate is written out on small graphs; larger ones label the selection, and the
+  // list beside the graph always names every claim.
+  const labelAll = (data?.edges.length || 0) <= 18;
+  // Bow claims that share a pair of endpoints (in either direction) apart from one another. The
+  // sign is fixed by the canonical endpoint order so two opposite claims never land on one side.
   const bows = useMemo(() => {
     const groups = new Map<string, string[]>();
     data?.edges.forEach((e) => {
@@ -402,7 +541,7 @@ function Relationships({ project }: { project: string }) {
     });
     const out = new Map<string, number>();
     groups.forEach((keys) =>
-      keys.forEach((k, i) => out.set(k, (i - (keys.length - 1) / 2) * 38)),
+      keys.forEach((k, i) => out.set(k, (i - (keys.length - 1) / 2) * 22)),
     );
     return out;
   }, [data]);
@@ -418,16 +557,13 @@ function Relationships({ project }: { project: string }) {
       const tone =
         e.status === "disputed" ? "attention" : active ? "accent" : "edge";
       const width = edgeWidth(e.n_sources) + (active ? 0.6 : 0);
-      const backward =
-        (positions.get(e.target)?.x ?? 0) < (positions.get(e.source)?.x ?? 0);
+      const bow = (bows.get(key) || 0) * (e.source < e.target ? 1 : -1);
       return {
         id: key,
         source: e.source,
         target: e.target,
-        sourceHandle: backward ? "out-l" : "out-r",
-        targetHandle: backward ? "in-r" : "in-l",
         type: "claim",
-        data: { bow: bows.get(key) || 0, dim, active },
+        data: { bow, dim, active },
         label:
           active || labelAll ? humanize(e.predicate).toLowerCase() : undefined,
         ariaLabel: `${claimSentence(e, labels)}. ${polarityLabel(e.polarity)}, ${humanize(e.status).toLowerCase()}, ${e.n_sources} ${e.n_sources === 1 ? "source" : "sources"}. Inspect evidence`,
@@ -621,7 +757,7 @@ function Relationships({ project }: { project: string }) {
                   nodeTypes={nodeTypes}
                   edgeTypes={edgeTypes}
                   fitView
-                  fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
+                  fitViewOptions={{ padding: 0.12, maxZoom: 1.1 }}
                   minZoom={0.1}
                   maxZoom={2}
                   nodesConnectable={false}

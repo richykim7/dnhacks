@@ -267,12 +267,15 @@ test("a relationship opens its exact source/context; search and return retain gr
     "1,102 evidence records",
   );
   await expect(
-    page.locator(".entity-node").filter({ hasText: "SCN2A" }),
-  ).toContainText("HGNC:10588");
+    page.locator(".kg-node").filter({ hasText: "SCN2A" }),
+  ).toBeVisible();
   await expect(
     page.locator(".claim-result").filter({ hasText: "regulates" }),
   ).toContainText("tested: 1 accepted, 1 failed");
   await page.locator(".claim-result").filter({ hasText: "regulates" }).click();
+  await expect(
+    page.locator(".kg-node.selected").filter({ hasText: "SCN2A" }),
+  ).toContainText("HGNC:10588");
   await expect(
     page.getByRole("heading", {
       name: "Functional evidence in neuronal cells",
