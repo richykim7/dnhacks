@@ -1,6 +1,8 @@
 # Cellular power-gate work
 
-The active requirement is at least **80% power at an audited usable donor budget**
+**Historical report: this research route was cancelled on 2026-09-06 for insufficient independent eligible donors.** The [plan is deprecated](../plans/evalue-tool-council/PLAN-cellular-ecosystems.md); preserve artifacts and do not resume autonomously.
+
+The unmet requirement was at least **80% power at an audited usable donor budget**
 for a useful, predeclared assay-specific alternative, with at least 10,000
 independent null streams at alpha .05. It is not satisfied by reconstruction
 loss, donor-matching AUROC, replaying the same donors as independent observations,
@@ -27,8 +29,8 @@ They measure what the existing models imply, **not an audited biological power
 certificate**. Increasing the simulated budget does not create additional real
 donors. Results at 18 simulated donors are 0–0.24% rejection for the neural
 critics; some critics have negative expected log growth on Zhang or Steele,
-so adding donors alone cannot rescue them. The work must improve transferable
-kernel growth as well as the available donor inventory.
+so adding donors alone cannot rescue them. These results exposed limitations in both transferable
+kernel growth and the available donor inventory.
 
 ```sh
 PYTHONPATH=src python scripts/evaluate_ecosystem_power.py \
@@ -39,11 +41,11 @@ PYTHONPATH=src python scripts/evaluate_ecosystem_power.py \
 The local report preserves all four critics, four held-out studies and budgets
 18,24,40,60,100,200,400,800, each with 10,000 alternative and 10,000 null streams.
 It explicitly sets `biological_gate_passed: false`. The original frozen critic
-baseline remains available while more appropriate training is investigated.
+baseline is preserved alongside subsequent training results.
 
 ## Training directly for native growth
 
-The next real CUDA run compares 36 regularized CCA/RBF configurations and four
+The subsequent real CUDA run compared 36 regularized CCA/RBF configurations and four
 low-rank neural configurations. The neural loss is negative mean native-kernel
 log growth, rather than matched-pair classification error. Critic hyperparameters
 are selected using leave-one-training-study-out folds among 35 training donors.
@@ -108,5 +110,5 @@ No restricted files were requested. The public website's download page lists a
 prognostic gene list rather than original cell counts.
 
 Reserved Hwang data remain unopened. The current result is a measured failure
-diagnosis that determines the next training/data work; the requested gate remains
-an active objective.
+diagnosis preserved for audit. The requested gate was not demonstrated;
+the user cancelled further pursuit of this route.

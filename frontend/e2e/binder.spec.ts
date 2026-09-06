@@ -489,3 +489,68 @@ test("binder camera travels continuously and user takeover cancels the remaining
   for (const field of ["fov", "near", "far", "projection"])
     expect(afterFixed[field]).toEqual(fixed[field]);
 });
+
+
+test("comparison shares camera and scale, returns the picked candidate and respects source history", async ({ page }) => {
+  test.setTimeout(90000);
+  const raw = readFileSync(new URL("./binder-comparison-fixture.json", import.meta.url), "utf8");
+  const second = JSON.parse(raw), hash = createHash("sha256").update(raw).digest("hex");
+  await fixture(page, false, baseRaw, { blobs: { [hash]: raw }, payloads: [["artifact", {
+    artifact_id: "comparison", kind: "binder_bundle", name: "Comparison illustration", status: "available",
+    storage_key: hash, sha256: hash, provenance: { category: "illustration" },
+  }]] });
+  const errors: string[] = []; page.on("pageerror", e => errors.push(e.message));
+  await page.getByRole("button", { name: "Expand workbench" }).click();
+  await page.getByRole("combobox", { name: "Compare candidate", exact: true }).selectOption(hash);
+  await page.evaluate(async () => { await (window as any).sceneReview.ready(); });
+  const initial = await page.evaluate(() => (window as any).sceneReview.inspect());
+  expect(initial.views).toHaveLength(2);
+  expect(initial.views[0].camera).toEqual(initial.views[1].camera);
+  expect(initial.views[0].viewport.width).toEqual(initial.views[1].viewport.width);
+  expect(initial.views[0].physical_to_scene).toEqual(initial.views[1].physical_to_scene);
+  expect(initial.views[1].bundle_sha256).toBe(hash);
+  await expect(page.locator('[data-testid="binder-stage"] canvas')).toHaveCount(1);
+  await page.screenshot({ path: test.info().outputPath("comparison-desktop.png") });
+  const box = await page.locator('[data-testid="binder-stage"]').boundingBox();
+  await page.mouse.move(box!.x + box!.width * .7, box!.y + box!.height * .5);
+  await page.mouse.down(); await page.mouse.move(box!.x + box!.width * .75, box!.y + box!.height * .53); await page.mouse.up();
+  const rotated = await page.evaluate(() => (window as any).sceneReview.inspect());
+  expect(rotated.views[0].camera).toEqual(rotated.views[1].camera);
+  expect(rotated.views[0].camera.position).not.toEqual(initial.views[0].camera.position);
+  const picked = await page.evaluate(() => {
+    const bridge = (window as any).sceneReview, { width, height } = bridge.inspect().viewport;
+    for (let y = height * .3; y < height * .8; y += 15)
+      for (let x = width * .6; x < width * .9; x += 15) {
+        const pick = bridge.pick(x, y); if (pick) return pick;
+      }
+    return null;
+  });
+  expect(picked?.bundle_sha256).toBe(hash);
+  await expect(page.locator('.binder-inspected-candidate')).toHaveText('Inspecting shifted illustrative pair');
+  await expect(page.locator('.binder-inspector').getByText(String(second.metrics.counts["4.5"]), { exact: true })).toBeVisible();
+  await expect(page.getByRole('table', { name: 'Candidate geometry trade-offs' })).toContainText('171');
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await page.evaluate(async () => { await (window as any).sceneReview.ready(); });
+  const resized = await page.evaluate(() => (window as any).sceneReview.inspect());
+  expect(resized.views[0].camera).toEqual(resized.views[1].camera);
+  expect(resized.views[0].viewport.width).toEqual(resized.views[1].viewport.width);
+  const resizedPick = await page.evaluate(() => {
+    const bridge = (window as any).sceneReview, { width, height } = bridge.inspect().viewport;
+    for (let y = height * .3; y < height * .8; y += 10)
+      for (let x = width * .6; x < width * .9; x += 10) {
+        const pick = bridge.pick(x, y); if (pick) return pick;
+      }
+    return null;
+  });
+  expect(resizedPick?.bundle_sha256).toBe(hash);
+  await page.screenshot({ path: test.info().outputPath("comparison-resized.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(async () => { await (window as any).sceneReview.ready(); });
+  await page.screenshot({ path: test.info().outputPath("comparison-mobile.png") });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await page.getByRole("button", { name: "Compact view" }).click();
+  await page.getByLabel("Activity playback position").fill("4");
+  await expect(page.getByRole("combobox", { name: "Compare candidate", exact: true }).locator('option')).toHaveCount(1);
+  await expect(page.locator('.binder-compare-stage')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

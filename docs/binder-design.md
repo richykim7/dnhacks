@@ -98,8 +98,8 @@ The browser review fixture is test-only (`frontend/e2e/binder-fixture.json`). Ru
 and owns isolated servers, ports and review artifacts; its output prints the run directory.
 The test saves PNGs and camera/visibility metadata for deterministic presets. Development review
 records distinguish measured raycast visibility from qualitative image inspection. Secondary-structure
-assignment, actual second-candidate synchronized rendering and WebGPU visual comparison remain
-separate acceptance work; the `candidate-compare` preset reports the missing second candidate.
+assignment and WebGPU visual comparison remain separate acceptance work. The `candidate-compare`
+preset requires a second available candidate with identical target coordinates and metric definitions.
 The frame intervals recorded by the demand renderer include idle gaps and are **not** an
 interactive p95 performance benchmark. No reference-hardware performance target is claimed.
 
@@ -239,9 +239,26 @@ browser evidence and the provider-quota limitation on the latest image observati
 Available binder sources are selected in the owning researcher's persistent left scene, alongside
 real activity and experiment findings. Only one source viewer is mounted. The selector and native
 capture driver resolve the exact experiment and artifact hash at the current cursor. This is source
-selection; synchronized two-candidate comparison is still pending.
+selection; a second candidate can share the same canvas through the comparison selector.
 
 Camera transitions use a700ms smooth orbit from the displayed pose, including when replacing a
 transition in progress. Pointer/orbit takeover cancels motion immediately; reduced motion is static.
 Scene readiness waits for settled motion before capture. Recipe export records the actual camera,
 including manual navigation. This presentation motion never moves scientific atom coordinates.
+
+### Paired source and capture contract
+
+A scene revision can bind `comparison_bundle_sha256` and `comparison_selected` to a second collected
+candidate in the exact same experiment. Target coordinates, complete residue/atom identity and metric
+protocol must match; no unrecorded target fitting is performed. Captures require two equal horizontal
+viewports with explicit source hashes, one shared camera and physical scale. A saved-pixel pick returns
+both candidate hash and residue ID and rejects an identity from the opposite viewport. Native comparison
+rows preserve collected byte hashes rather than replacing them with a canonical-JSON hash.
+
+Two scissored views use one actual perspective camera and orbit controller. Both views fit the union
+of the displayed candidates, use the same material legend and preserve target alignment. Picking
+changes the inspector and contact table to the selected candidate. A separate accessible table shows
+contact/clash trade-offs and Pareto status among these two candidates, without an affinity score.
+Rewinding before the second artifact removes its view. Orthographic comparison remains pending.
+See the [inspected paired comparison](binder-review/comparison-review.md) for source hashes,
+native capture/pick evidence, responsive views and remaining performance limits.

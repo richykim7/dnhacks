@@ -179,3 +179,18 @@ def test_binder_guide_cannot_be_used_as_an_audited_method():
         {'method_id':'binder-interface','code':'raise AssertionError("must not run")'}]}))
     assert 'use method_id exploratory' in result
     assert events[0][0]=='policy.rejected'
+
+
+def test_native_comparison_preserves_collected_byte_hashes(native):
+    journal,source,call=native
+    first=call('import_candidate',source_ref=source,target_chains=['A'],binder_chains=['B'],
+               candidate_id='one',source_evidence=[])['bundle_sha256']
+    second=json.loads(journal.read_blob(first));second['manifest']['candidate_id']='two'
+    from dnhacksbio.binder.bundle import make_bundle
+    second=make_bundle(RAW,'pdb',target_chains=['A'],binder_chains=['B'],candidate_id='two',scope=SCOPE,
+        provenance=second['manifest']['provenance'],source_evidence=[])
+    pretty=json.dumps(second,indent=2).encode()
+    other=BinderRuntime(journal,'p','r','e').publish_bundle(pretty)['bundle_sha256']
+    assert other!=digest(second)
+    result=call('compare',bundle_sha256s=[first,other])
+    assert [row['bundle_sha256'] for row in result['data']['rows']]==[first,other]

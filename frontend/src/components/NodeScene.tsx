@@ -31,6 +31,10 @@ export default function NodeScene({ choices, active, onSelect, onClose, events, 
       <Suspense fallback={<Loading label="Opening research scene" />}>
         {artifact.kind === "binder_bundle" ? <BinderWorkbench
           key={active.key} sha256={artifact.sha256} url={url}
+          candidates={choices.filter(c => c.experiment.experiment_id === experiment.experiment_id && c.artifact.kind === "binder_bundle")
+            .map(c => ({ sha256: c.artifact.sha256, name: c.artifact.name,
+              url: runtimeUrl(runId, `blob/${c.artifact.storage_key}`, project, cursor) }))
+            .filter((c, index, all) => all.findIndex(other => other.sha256 === c.sha256) === index)}
           sceneActions={events.filter(e => e.kind === "scene.recipe" &&
             e.experiment_id === experiment.experiment_id && e.payload.bundle_sha256 === artifact.sha256)
             .map(e => ({ sequence: e.sequence, note: e.payload.note,
