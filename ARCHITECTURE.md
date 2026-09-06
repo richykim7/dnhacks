@@ -99,18 +99,20 @@ One fixed pipeline, run as a detached job so the console can watch it:
 
 ### 3.3 Claim extraction (`extract.py`)
 
-Three reads of each paper, all against closed menus, with deferral instead of guessing:
+Opus reads each paper against the category, predicate, aspect and context menus, returning
+claims and source quotes. A separate Sonnet session checks direction. Code then resolves
+names within each category's owner vocabulary.
 
-- **Pass 1** returns every claim as menu choices plus a verbatim quote. Menus cover the entity category,
-  the predicate, the object aspect, and the context slots.
-- **Pass 2**, in a separate session that sees only the claim and its quote, checks the direction.
-- **Pass 3** resolves the process and entity names that did not match deterministically by showing
-  retrieved candidate terms and letting the model pick one while the paper is still in context.
+Unresolved claims and upfront reader omissions go to grouped parallel Sonnet repair,
+which can correct the source name, category, species context, direction and representation.
+It receives the source, reviewed vocabulary definitions and concrete validation errors.
+Python checks source quote spans, owner identifiers and the existing claim models; a failed
+correction gets a second attempt with retrieved alternatives. There are no model tools in
+repair sessions. See [claim repair](docs/claim-repair.md) for the contract and replay controls.
 
-The model only ever picks a letter or a menu word. It never types an identifier. Grounding to identifiers is
-deterministic and happens in code. Anything that cannot be grounded becomes a **deferral** row rather than a
-guessed claim. Context (cell line, tissue, organism, condition and so on) is captured from the same sentence
-as the claim, not in a separate pass.
+Unresolved failures become **deferral** rows. Unsupported/nonclaim rejections and repair
+history are saved separately in extraction audits; warnings on retained claims do not inflate
+the failure queue. Lookup failure alone does not establish that an ontology lacks a concept.
 
 ### 3.4 Grounding (`grounding.py`)
 
@@ -130,11 +132,18 @@ permitted namespaces, then by last-resort gap fillers:
 | protein families and complexes | FamPlex |
 | repeat families | Dfam |
 | non-human genes | NCBI Gene, per species |
-| processes | OLS exact match over GO and related ontologies |
-| gap fillers | PRO, NCIt (consulted only when everything else failed) |
+| processes and cellular components | GO via OLS |
+| pathological processes | MeSH via OLS |
+| cellular outcomes absent from GO | reviewed LOCALPHENO registry |
+| populations absent from CL | reviewed LOCALCELL registry |
+| experimental reagents absent from ChEBI | reviewed LOCALREAGENT registry |
+| specific disease subtypes absent from MONDO | reviewed LOCALDISEASE registry |
 
-The lexicon files live under `data/processed/` and are not committed. Without them, extraction defers
-ungrounded entities instead of guessing. Only the entity string is ever sent over the network.
+Downloaded lexicons live under `data/processed/`. A small versioned supplement in
+`lexicon_supplement.py` stores verified aliases and explicitly local definitions with source
+provenance. Local entries do not impersonate external ontology identifiers. Missing vocabulary
+is recoverable when a reviewed entry exists; arbitrary IDs remain disallowed. Ontology lookup
+requests contain entity strings; the extraction and repair models receive the paper text.
 
 ### 3.5 The claim atom (`schema.py`, `vocab.py`)
 
