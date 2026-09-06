@@ -5,8 +5,9 @@ pruning changes or new biological tools were implemented in this review.
 
 The subsequent [consolidated branch plan](../plans/PLAN-branch-monitoring.md) records the agreed
 runtime direction: explicit checkpoints, mandatory agent reports after work pauses, parent-authorized
-forks, and private human-review routing. It supersedes the earlier per-action/child-fork recommendations
-below; this document remains the source-method assessment and statistical caveat record.
+forks, full-subtree outcomes under a fixed total budget, and private human-review routing and plots.
+It supersedes earlier per-action/child-fork and leaf-only endpoint recommendations; this document
+remains the source-method assessment and statistical caveat record.
 
 ## Plain-language purpose
 
@@ -23,6 +24,9 @@ answers a different question about experimental data and remains separate.
 **The intervention is to stop an individual child branch.** Whole investigations are useful units
 for grouping evaluation data, but that does not require stopping the entire investigation. Each child
 has a private monitor, while its parent remains responsible for allocation among surviving children.
+The predicted outcome concerns the subtree rooted at that child, including descendants' qualifying
+findings by a fixed terminal budget. The reporting round is not that deadline. A fork is an action,
+not success; verification plus a frozen relevance/evidence rubric defines the primary success label.
 
 ## Source and reading record
 
@@ -52,7 +56,7 @@ The conditional FAR target is 4.5% with 99.5% calibration confidence; the paper'
 
 | Existing component | Observed behavior | Proposed use |
 | --- | --- | --- |
-| `Explorer._act_fork` | Runs leaves for up to 18 steps, ranks siblings, keeps up to two, and resumes survivors in bounded rounds (96 total branch steps). | First study fixed initial leaves before recursive allocation. Later prevent a monitored stop from being silently resumed. |
+| `Explorer._act_fork` | Runs leaves for up to 18 steps, ranks siblings, keeps up to two, and resumes survivors in bounded rounds (96 total branch steps). | Collect complete fixed-budget subtree continuations; a leaf-only smoke test cannot validate this outcome target. Prevent monitored stops from being silently resumed. |
 | `Explorer._judge_promise` | Produces relative `rank`, `keep`, `reason`; fallback favors submissions/experiments. | Retain as the allocation baseline. Its rank is not a probability of eventual success. Add a separate fixed prefix verifier if needed. |
 | `Explorer.step` / `run` | Journals completed actions, then constructs the next agent message. | Add the agreed report/checkpoint lifecycle, with private monitoring at those checkpoints. Do not put monitor output in the observation. |
 | `runtime.py` and `lineage.py` | Preserve ordered events, run/attempt identity and root ancestry. | Identify prefixes, action counts, costs and root-grouped evaluation splits. Store monitor scores separately from agent-readable events. |
@@ -89,9 +93,11 @@ only that child's monitor history. A calibrated alarm on B makes B ineligible fo
 remain eligible under existing budget rules. A survivor resuming another round keeps its monitor history.
 The parent never fills a beam quota by reviving a monitored stop. Existing evidence and queued scoring
 jobs remain intact. Resource reallocation must be explicit in the controller and separately evaluated.
-For the first pilot, monitor leaves before they spawn descendants, avoiding ambiguous cancellation of
-already-running grandchildren. Handling an ancestor alarm while descendants are active is a later policy
-decision, not permission to cancel unrelated children or discard their results.
+The pilot may record proposed stops before expansion while observing complete subtree outcomes.
+An initial leaf-only plumbing test cannot validate this recursive target. Handling an ancestor alarm
+while descendants are active is a later policy decision, not permission to cancel unrelated children
+or discard their results. Human plots may show each episode's actual checkpoint history and latest
+statistic, but must not splice descendants' statistics into a single e-value.
 
 Use the following staged design:
 
@@ -101,12 +107,16 @@ Use the following staged design:
    analysis that passes independent checks. Score useful falsification explicitly. Merely submitting
    an experiment, sounding plausible or obtaining a large biological e-value is not the label.
    This benchmark measures its rubric, not future therapeutic success.
-2. **Collect complete runs with monitoring disabled.** Initially use a fixed leaf-generation policy
-   and full leaf budget, without recursive pruning. Log one fixed verifier score per completed action
-   and a separately assigned final label. A frozen sampling rule can choose one eligible leaf per
-   independent root investigation; do not choose it after seeing success or monitor scores.
-   Separate investigations must also have isolated mutable research memory and no duplicated tasks.
-   Label unresolved/incomplete traces as missing, rather than automatically unsuccessful.
+2. **Collect complete runs with monitoring disabled.** Use a fixed subtree sampling/allocation policy
+   and terminal total budget shared by all descendants. Log one fixed verifier score per declared
+   checkpoint and a separately assigned final label. Choose the horizon in a development pilot,
+   then freeze it; each checkpoint predicts that same endpoint rather than refreshing the deadline.
+   A frozen sampling rule can choose one eligible subtree per independent root; do not choose it
+   after seeing success or monitor scores. Isolate mutable research memory and related tasks.
+   Completed continuations without a qualifying outcome are unsuccessful within that budget;
+   incomplete/interrupted traces are missing, and pending verification needs explicit adjudication.
+   A rollout supplies multiple prefixes without rerunning from every checkpoint, but those prefixes
+   and overlapping ancestor/descendant outcomes are not independent calibration trajectories.
 3. **Separate fitting, threshold calibration and final testing.** Keep related tasks and all branches
    of one investigation together. Fit the classifier/score transformation on training roots, calibrate
    the alarm threshold on different roots, and reserve untouched test roots. Group splitting prevents
@@ -121,8 +131,9 @@ Use the following staged design:
    verifier calls and continued rejected branches used for evaluation. Reallocation can change results;
    replay alone cannot establish better final discoveries or realized wall-clock savings.
 
-Suggested export fields are `root_id`, `run_id`, `checkpoint`, `prefix_hash`, `verifier_score`,
-`final_label`, `label_provenance`, model/prompt/policy/corpus versions, cumulative tokens and time.
+Suggested export fields are `root_id`, `run_id`, `episode_id`, `parent_id`, `checkpoint`, `prefix_hash`,
+`verifier_score`, `monitor_statistic`, `final_label`, `label_provenance`, terminal/remaining budget,
+model/prompt/policy/corpus/rubric versions, cumulative tokens and time.
 The authors' package uses trajectory ID, step number, score and final `solved` label; our additional
 root and provenance fields are needed to construct defensible splits before passing data to it.
 
@@ -173,8 +184,8 @@ from test curves. Count subgroups such as falsification tasks, novel mechanisms 
 small subgroup samples do not establish subgroup guarantees. No synthetic illustrative plot should be
 presented as a measured PDAC result.
 
-Recommendation: collect complete traces and first assess proposed child-branch stops on fixed PDAC
-leaves, without changing live allocation. GPU availability is not
+Recommendation: collect complete bounded subtree traces and assess proposed child-branch stops
+against qualifying descendant-inclusive outcomes, without changing live allocation. GPU availability is not
 the limiting factor; reliable labels and representative independent runs are. Recursive branch stopping
 is a later, separately validated policy change. Use the paper's strict `score > threshold` comparison;
 at the 116-success minimum above, the threshold is the largest successful calibration maximum.

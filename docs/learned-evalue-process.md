@@ -400,3 +400,25 @@ review adapter and separates private human review from disclosure to discovery: 
 notes and graph changes must not feed ongoing agents indirectly. No runtime or review behavior changed
 in this documentation task. Reporting, allocation and statistical calibration remain separately
 testable stages, with observation-only monitoring before active pruning.
+
+## Fixed subtree outcomes and monitor histories
+
+The branch plan now distinguishes the 18-action reporting cadence from the full evaluation horizon.
+Each monitored episode has a fixed terminal budget shared with descendants; checkpoints predict
+whether that subtree will produce a qualifying new outcome by the same endpoint. The horizon's
+numerical size remains a development-pilot choice, to freeze before calibration and held-out testing.
+Collect the generated bounded tree, not every possible fork. The paper's action-sequence experiments
+do not establish this recursive adaptation's guarantees.
+
+The primary success condition is a relevant, nonduplicate new finding passing applicable verification
+and a frozen evidence rubric; useful refutations can qualify. Forks and activity counts earn no
+automatic credit. Completed runs without such an outcome are unsuccessful within the budget;
+incomplete runs and pending adjudication require separate handling. Judge artifacts rather than
+persuasive summaries, and keep private assessment feedback outside research-agent context.
+
+One rollout supplies many checkpoint observations, but shared prefixes and descendant outcomes are
+correlated. Report independent root, episode and checkpoint counts separately and split by related
+investigations. The planned human view shows per-child latest monitor statistics and actual histories,
+with experimental e-values separate. A short history remains short; no invented points, automatic
+descendant-score aggregation or claims that more rows supply independent calibration samples.
+This update changes planning and process documentation only; no trajectories, training or UI added.
