@@ -5,9 +5,11 @@ import {
   type Preset,
   type SceneState,
   type SceneAction,
+  type SurfaceMesh,
   label,
 } from "./types";
 import "./binder.css";
+import { hasBackboneTrace } from "./SourceMesh";
 
 const presets: Preset[] = [
   "hero",
@@ -26,13 +28,34 @@ const download = (text: string, name: string, type = "application/json") => {
   a.click();
   URL.revokeObjectURL(u);
 };
-async function sha(text: string) {
-  return Array.from(
-    new Uint8Array(
-      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)),
-    ),
-    (b) => b.toString(16).padStart(2, "0"),
-  ).join("");
+function parseBundle(
+  text: string,
+  sha256: string,
+  signal: AbortSignal,
+): Promise<{ bundle: Bundle; meshes: Record<string, SurfaceMesh> }> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL("./bundle.worker.ts", import.meta.url), {
+      type: "module",
+    });
+    const abort = () => {
+      worker.terminate();
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+    signal.addEventListener("abort", abort, { once: true });
+    const finish = () => {
+      signal.removeEventListener("abort", abort);
+      worker.terminate();
+    };
+    worker.onmessage = ({ data }) => {
+      finish();
+      data.error ? reject(Error(data.error)) : resolve(data);
+    };
+    worker.onerror = () => {
+      finish();
+      reject(Error("Candidate parsing worker failed"));
+    };
+    worker.postMessage({ text, sha256 });
+  });
 }
 export default function Workbench({
   url,
@@ -45,6 +68,11 @@ export default function Workbench({
 }) {
   const [bundle, setBundle] = useState<Bundle | null>(null),
     [error, setError] = useState("");
+  const traceSupported = useMemo(
+    () => (bundle ? hasBackboneTrace(bundle) : false),
+    [bundle],
+  );
+  const [meshes, setMeshes] = useState<Record<string, SurfaceMesh>>({});
   const [state, setState] = useState<SceneState>({
     preset: "hero",
     style: "pearl",
@@ -134,13 +162,15 @@ export default function Workbench({
       const r = await fetch(url, { signal: controller.signal });
       if (!r.ok)
         throw Error("This candidate is unavailable at the selected event.");
-      const text = await r.text();
-      if (text.length > 20 * 1024 * 1024 || (await sha(text)) !== sha256)
-        throw Error("Candidate artifact hash mismatch.");
-      const b = JSON.parse(text) as Bundle;
-      if (b.schema !== "binder_bundle.v1" || !b.structure.atoms.length)
-        throw Error("Unsupported binder bundle.");
-      if (!controller.signal.aborted) setBundle(b);
+      const parsed = await parseBundle(
+        await r.text(),
+        sha256,
+        controller.signal,
+      );
+      if (!controller.signal.aborted) {
+        setBundle(parsed.bundle);
+        setMeshes(parsed.meshes);
+      }
     })().catch((e) => {
       if (!controller.signal.aborted) setError(String(e.message));
     });
@@ -148,7 +178,9 @@ export default function Workbench({
   }, [url, sha256]);
   const onHandle = useCallback((h: StageHandle | null) => {
     handle.current = h;
-    h?.ready().then(() => {if(handle.current===h)setLoaded(true);});
+    h?.ready().then(() => {
+      if (handle.current === h) setLoaded(true);
+    });
   }, []);
   const onPick = useCallback(
     (id: string) => {
@@ -162,6 +194,18 @@ export default function Workbench({
     const w = window as unknown as { sceneReview?: unknown };
     const bridge = {
       apply: async (patch: Partial<SceneState>) => {
+        if (
+          patch.representation &&
+          !["atoms", "surface", "ribbon"].includes(patch.representation)
+        )
+          throw Error("Unknown molecular representation");
+        if (patch.representation === "ribbon" && !traceSupported)
+          throw Error("Connected C-alpha trace unavailable");
+        if (
+          patch.representation === "surface" &&
+          (!meshes.target || !meshes.binder)
+        )
+          throw Error("No precomputed surface in this bundle");
         if (patch.preset && !presets.includes(patch.preset))
           throw Error("Unknown preset");
         if (patch.style && !["pearl", "copper"].includes(patch.style))
@@ -204,7 +248,11 @@ export default function Workbench({
         await handle.current.ready();
       },
       inspect: () => {
-        const { camera: _camera, ...view } = stateRef.current;
+        const {
+          camera: _camera,
+          representation: _representation,
+          ...view
+        } = stateRef.current;
         return {
           ...handle.current?.inspect(),
           ...view,
@@ -231,7 +279,7 @@ export default function Workbench({
       if (w.sceneReview === bridge) delete w.sceneReview;
       if (element.binderController === bridge) delete element.binderController;
     };
-  }, [sha256, onPick, bundle]);
+  }, [sha256, onPick, bundle, meshes, traceSupported]);
   if (error) return <p role="alert">{error}</p>;
   if (!bundle) return <p role="status">Opening candidate coordinates…</p>;
   const residues = new Map(bundle.structure.residues.map((r) => [r.id, r]));
@@ -352,6 +400,7 @@ export default function Workbench({
             aria-label="Interactive target and binder; exact contacts in table below"
           >
             <Stage
+              meshes={meshes}
               bundle={bundle}
               state={state}
               onHandle={onHandle}
@@ -367,7 +416,12 @@ export default function Workbench({
                   ? "Illustrative separation · measurements use original pose"
                   : ["interface-close", "reverse"].includes(state.preset)
                     ? "Contact-only cutaway · reduced sphere radii · Å"
-                    : "Physical coordinates · Å"}
+                    : (state.representation ??
+                          (meshes.target ? "surface" : "atoms")) === "surface"
+                      ? "Atom-union envelope · approximate surface · Å"
+                      : state.representation === "ribbon"
+                        ? "Cα trace · interpolated backbone, sidechains omitted · Å"
+                        : "Physical coordinates · Å"}
               </small>
             </div>
             <div className="binder-legend">
@@ -459,6 +513,36 @@ export default function Workbench({
               ? "Illustrative complex; no binder design or biological efficacy is demonstrated."
               : "Exploratory candidate; prediction confidence is not affinity."}
           </p>
+          <label>
+            Molecular representation
+            <select
+              aria-label="Molecular representation"
+              value={
+                state.representation ??
+                (meshes.target && meshes.binder ? "surface" : "atoms")
+              }
+              onChange={(e) => {
+                explore();
+                setState((s) => ({
+                  ...s,
+                  representation: e.target.value as
+                    "atoms" | "surface" | "ribbon",
+                  revision: s.revision + 1,
+                }));
+              }}
+            >
+              <option value="atoms">Atomic envelope</option>
+              <option
+                value="surface"
+                disabled={!meshes.target || !meshes.binder}
+              >
+                Precomputed surface{!meshes.target ? " · unavailable" : ""}
+              </option>
+              <option value="ribbon" disabled={!traceSupported}>
+                Cα backbone trace{!traceSupported ? " · unavailable" : ""}
+              </option>
+            </select>
+          </label>
           <label>
             Material study
             <select

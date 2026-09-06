@@ -218,3 +218,50 @@ def test_scene_review_transports_exact_image_and_records_scope(scene_service,mon
     review=asyncio.run(service.inspect_scene_capture(capture['capture_id'],question='Is the interface visible?'))
     assert review['scope']==service.scope
     assert service.history()[-1]['kind']=='scene.review'
+
+
+def test_surface_preserves_source_mapping_and_faces_outward():
+    import numpy as np
+    from dnhacksbio.binder.surfaces import envelope
+    structure=pair();before=copy.deepcopy(structure)
+    mesh=envelope(structure,['A'],{'spacing':1.,'max_grid_axis':24})
+    vertices=np.array(mesh['positions']);triangles=vertices[np.array(mesh['triangles'])]
+    normals=np.cross(triangles[:,1]-triangles[:,0],triangles[:,2]-triangles[:,0])
+    assert np.all(np.einsum('ij,ij->i',normals,triangles.mean(axis=1))>0)
+    assert set(mesh['source_atom_ids'])=={structure['atoms'][0]['id']}
+    assert np.max(np.abs(np.linalg.norm(vertices,axis=1)-3.1))==pytest.approx(mesh['protocol']['max_vertex_field_residual_angstrom'])
+    assert max(mesh['protocol']['grid_shape'])<=24
+    assert mesh['protocol']['hausdorff_bound']=='not established'
+    assert structure==before
+    with pytest.raises(ValueError):envelope(structure,['A'],{'max_grid_axis':128})
+    structure['atoms'][0]['element']='XE'
+    with pytest.raises(ValueError,match='radius unavailable'):envelope(structure,['A'])
+
+
+@pytest.mark.parametrize('attack',['position','mapping'])
+def test_optional_surface_bundle_rebuild_rejects_rehashed_tampering(attack):
+    import base64
+    from dnhacksbio.binder.bundle import make_bundle
+    from dnhacksbio.binder.geometry import digest
+    raw=(pdb_atom(1,'CA','A',1,(0,0,0))+pdb_atom(2,'CA','B',1,(4.5,0,0))).encode()
+    b=make_bundle(raw,'pdb',target_chains=['A'],binder_chains=['B'],candidate_id='mesh-test',
+      provenance={'category':'illustration','tool':'test','tool_version':'1','source_ids':[]},
+      scope={'project_id':'p','run_id':'r','experiment_id':'e'},source_evidence=[],
+      surface_options={'spacing':1.5,'max_grid_axis':16})
+    assert len(validate_bundle(canonical(b))['files'])==10
+    ref=b['files']['surface-target.json'];mesh=json.loads(base64.b64decode(ref['base64']))
+    if attack=='position':mesh['positions'][0][0]+=1
+    else:mesh['source_atom_ids'][0]=999
+    raw=canonical(mesh);ref.update(base64=base64.b64encode(raw).decode(),sha256=digest(raw),byte_length=len(raw))
+    with pytest.raises(ValueError,match='source coordinates'):validate_bundle(canonical(b))
+
+
+def test_scene_representation_requires_available_source_geometry(bundle):
+    from dnhacksbio.binder.scenes import validate_view
+    from dnhacksbio.binder.surfaces import has_backbone_trace
+    with pytest.raises(ValueError,match='precomputed'):validate_view({'representation':'surface'},bundle)
+    assert has_backbone_trace(bundle)
+    assert validate_view({'representation':'ribbon'},bundle)['representation']=='ribbon'
+    assert validate_view({'representation':'ribbon','preset':'reverse'},bundle)['representation']=='atoms'
+    bundle['structure']['atoms']=[a for a in bundle['structure']['atoms'] if a['name']!='CA']
+    with pytest.raises(ValueError,match='trace unavailable'):validate_view({'representation':'ribbon'},bundle)

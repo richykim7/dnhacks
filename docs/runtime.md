@@ -141,3 +141,7 @@ Binder scene actions use `scene.recipe` and `scene.review` events plus collector
 `scene_capture` PNG artifacts. Recipes, images and review blobs remain subject to run/cursor
 reference checks; the scene service additionally enforces the exact experiment and bundle scope.
 Capture/pick are bounded local browser operations; see the binder guide for CLI request fields.
+
+Binder imports optionally embed two source-derived surface members and their bounded grid options.
+The collector rebuilds these members before accepting the bundle. Scene recipe representation
+changes are cosmetic; source coordinates, contacts and buried-area measurements remain immutable.

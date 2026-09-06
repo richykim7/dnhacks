@@ -82,7 +82,8 @@ translated copies of RCSB 1CRN and explicitly demonstrates clashes, not a succes
 
 ## Visual inspection and remaining acceptance
 
-The workbench renders instanced atomic envelopes with Three.js r180 / R3F 9.3 / Drei 10.7.
+The workbench renders atomic envelopes, optional precomputed atom-union surfaces and a Cα backbone
+trace with Three.js r180 / R3F 9.3 / Drei 10.7.
 It supports pearl/cyan and bronze/violet studies, physical/exploded/contact-only opposing views,
 exact picking, accessible contact tables, camera preservation during inspector selection and
 scene/bundle export. Exploded offsets and reduced cutaway sphere radii are presentation only.
@@ -92,10 +93,11 @@ The workbench element exposes a bounded controller for local browser capture; th
 and settled renders, and stops on scene removal. Runtime capture uses the actual owning experiment.
 
 The browser review fixture is test-only (`frontend/e2e/binder-fixture.json`). Run
-`BINDER_REVIEW_DIR=/tmp/binder-review PLAYWRIGHT_BASE_URL=http://127.0.0.1:5192 npm --prefix frontend run e2e -- binder.spec.ts`.
+`npm --prefix frontend run e2e -- e2e/binder.spec.ts`. The shared runner queues the browser
+and owns isolated servers, ports and review artifacts; its output prints the run directory.
 The test saves PNGs and camera/visibility metadata for deterministic presets. Development review
-records distinguish measured raycast visibility from qualitative image inspection. Full surfaces,
-ribbon meshes, actual second-candidate synchronized rendering and WebGPU visual comparison remain
+records distinguish measured raycast visibility from qualitative image inspection. Secondary-structure
+assignment, actual second-candidate synchronized rendering and WebGPU visual comparison remain
 separate acceptance work; the `candidate-compare` preset reports the missing second candidate.
 The frame intervals recorded by the demand renderer include idle gaps and are **not** an
 interactive p95 performance benchmark. No reference-hardware performance target is claimed.
@@ -137,3 +139,35 @@ The workbench follows recorded actions by default, with play/pause, a scene-acti
 0.25–4× playback. Manual rotation, selection and material changes enter local exploration.
 Follow latest restores the agent view. Neither local exploration nor replay rewrites the recorded
 history; the timeline describes inspection actions, not molecular dynamics or generation progress.
+
+
+## Optional source-derived surfaces and backbone traces
+
+Pass `surface_options` to candidate import (Python or JSON CLI), for example
+`{"spacing":0.8,"probe":1.4,"max_grid_axis":64}`. The portable bundle then includes
+`surface-target.json` and `surface-binder.json`; existing eight-member bundles remain valid.
+Collection reconstructs both meshes from the immutable source and rejects altered coordinates or
+source mappings even if the supplied mesh hash was recomputed.
+
+The mesh is a marching-tetrahedra envelope of heavy-atom spheres with the declared radii plus probe.
+It is a visualization approximation, not a solvent-excluded surface or the SASA calculation.
+Grid axes are bounded to 64 and each mesh to 120,000 triangles. Spacing can increase to meet the grid
+budget and is recorded. No decimation is performed. The mesh records its maximum vertex field
+residual and a conservative whole-triangle field-residual bound; these are explicitly **not** a
+Hausdorff distance or topology guarantee. Unknown element radii fail instead of being guessed.
+
+A browser worker checks bundle/member hashes, parses meshes, builds spatial buckets for smooth
+sphere-normal shading and transfers typed geometry buffers. Source positions and metrics are
+unchanged; GPU positions use float32. Surface picks return the source atom associated with the
+nearest vertex of the intersected triangle. The exact residue identity then selects the unchanged
+contact table. That association does not turn apparent image proximity into a contact measurement.
+
+Scene recipes accept `representation: "atoms" | "surface" | "ribbon"`. Surface is the default when
+precomputed meshes are supplied. The UI calls the last mode **Cα backbone trace**: it interpolates
+source Cα positions, breaks at missing atoms, author-number gaps, chain boundaries or distances
+outside 2.5–4.5 Å, and omits sidechains. It does not assign helices/sheets. Unsupported traces are
+unavailable, and interface-close/reverse always use the labeled atomic contact-only cutaway.
+
+The surface review fixture is `frontend/e2e/binder-surface-fixture.json`, the same explicitly
+illustrative translated-1CRN pair. `BINDER_SURFACE_REVIEW_DIR` controls its browser capture directory.
+The measured/visual review remains separate from reference-hardware performance acceptance.

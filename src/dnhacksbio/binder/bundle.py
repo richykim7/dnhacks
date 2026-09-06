@@ -15,7 +15,8 @@ SCHEMA = "binder_bundle.v1"
 
 def make_bundle(raw: bytes, fmt: str, *, target_chains: list[str], binder_chains: list[str],
                 candidate_id: str, provenance: dict, scope: dict, source_evidence: list[dict],
-                assembly: str = "context unavailable", protocol: dict | None = None) -> dict:
+                assembly: str = "context unavailable", protocol: dict | None = None,
+                surface_options: dict | None = None) -> dict:
     structure = parse_structure(raw, fmt)
     metrics = evaluate_interface(structure, target_chains, binder_chains, candidate_id=candidate_id)
     target = select_chains(structure, target_chains)
@@ -49,7 +50,12 @@ def make_bundle(raw: bytes, fmt: str, *, target_chains: list[str], binder_chains
              "binder.fasta": fasta.encode(), "residue_map.json": canonical(structure["residues"]),
              "interface_metrics.json": canonical(metrics), "contacts.parquet": sink.getvalue(),
              "protocol.json": canonical(resolved)}
-    return {"schema": SCHEMA, "manifest": {"producer": "dnhacksbio.binder", "version": "1",
+    if surface_options is not None:
+        from .surfaces import envelope, options
+        surface_options=options(surface_options)
+        blobs['surface-target.json']=canonical(envelope(structure,target_chains,surface_options))
+        blobs['surface-binder.json']=canonical(envelope(structure,binder_chains,surface_options))
+    result = {"schema": SCHEMA, "manifest": {"producer": "dnhacksbio.binder", "version": "1",
             "candidate_id": candidate_id, "scope": scope, "provenance": provenance,
             "source_evidence": source_evidence, "assembly": assembly,
             "parent_artifacts": [digest(raw)], "crop_transform": target["crop_transform"],
@@ -58,6 +64,8 @@ def make_bundle(raw: bytes, fmt: str, *, target_chains: list[str], binder_chains
             "metrics": metrics, "protocol": resolved,
             "files": {name: {"sha256": digest(value), "byte_length": len(value),
                              "base64": base64.b64encode(value).decode()} for name, value in blobs.items()}}
+    if surface_options is not None:result['surface_options']=surface_options
+    return result
 
 
 def validate_bundle(raw: bytes, expected_scope: dict | None = None) -> dict:
@@ -86,7 +94,7 @@ def validate_bundle(raw: bytes, expected_scope: dict | None = None) -> dict:
     if p["category"] != "illustration" and not m["source_evidence"]:
         raise ValueError("Nonillustrative candidates require source evidence")
     decoded = {}
-    if len(b["files"]) != 8:
+    if len(b["files"]) != 8+(2 if "surface_options" in b else 0):
         raise ValueError("Unexpected bundle members")
     for name, ref in b["files"].items():
         value = base64.b64decode(ref["base64"], validate=True)
@@ -97,9 +105,9 @@ def validate_bundle(raw: bytes, expected_scope: dict | None = None) -> dict:
     rebuilt = make_bundle(decoded["source." + fmt], fmt, target_chains=b["target_chains"],
                           binder_chains=b["binder_chains"], candidate_id=m["candidate_id"],
                           provenance=p, scope=m["scope"], source_evidence=m["source_evidence"],
-                          assembly=m["assembly"], protocol=b["protocol"])
+                          assembly=m["assembly"], protocol=b["protocol"], surface_options=b.get("surface_options"))
     # Geometry, mapping, metrics and all derived exports must agree with the immutable source.
-    for key in ("structure", "metrics", "files", "manifest"):
+    for key in ("structure", "metrics", "files", "manifest", *(["surface_options"] if "surface_options" in b else [])):
         if canonical(b[key]) != canonical(rebuilt[key]):
             raise ValueError(f"Binder {key} disagrees with source coordinates")
     return b

@@ -41,3 +41,12 @@ Supported view fields are preset, pearl/copper style, exact selected residue ID 
 camera. Unsupported camera modes fail explicitly. Scene tools do not mutate source coordinates.
 The UI records these agent actions with adjustable replay speed; a user's independent exploration
 does not replace your saved recipe. Do not interpret replay duration as physical simulation time.
+
+
+For a surface specimen, include `surface_options:{"spacing":0.8,"probe":1.4,"max_grid_axis":64}`
+in `binder.import_candidate` args. This adds optional validated meshes; it does not change the
+contact/SASA protocol. The scene accepts `representation:"surface"` only when these members exist.
+`representation:"ribbon"` means the labeled source Cα trace, not an assigned secondary structure;
+missing traces fail explicitly. Close/reverse presets select atomic cutaways for contact inspection.
+Surface picking reports a source-atom association. Check its residue and distances in the table,
+and inspect the recorded approximation protocol before treating a surface feature as informative.

@@ -135,3 +135,8 @@ Binder scene history supports following the agent, action replay at 0.25–4× a
 local exploration. Replay uses only recipes visible at the current runtime cursor. The production
 workbench element provides a bounded controller for the local capture worker; only its convenient
 window alias requires `?sceneReview=1`. Scene replay is not physical simulation time.
+
+Binder bundles may include precomputed source-mapped surfaces. A browser worker performs parsing,
+hash checks and normal preparation before the stage becomes ready. The representation selector
+retains atomic envelopes and a labeled Cα trace; analytical close/reverse remain atomic cutaways.
+See the binder guide for mesh approximation and exact source-picking semantics.
