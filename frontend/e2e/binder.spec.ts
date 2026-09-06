@@ -543,6 +543,22 @@ test("comparison shares camera and scale, returns the picked candidate and respe
     return null;
   });
   expect(resizedPick?.bundle_sha256).toBe(hash);
+  await page.getByRole('combobox', { name: 'Camera projection' }).selectOption('OrthographicCamera');
+  await page.evaluate(async () => { await (window as any).sceneReview.ready(); });
+  const ortho = await page.evaluate(() => (window as any).sceneReview.inspect());
+  expect(ortho.camera.projection).toBe('OrthographicCamera');
+  expect(ortho.camera.height).toBeGreaterThan(0);
+  expect(ortho.views[0].camera).toEqual(ortho.views[1].camera);
+  const orthoPick = await page.evaluate(() => {
+    const bridge = (window as any).sceneReview, { width, height } = bridge.inspect().viewport;
+    for (let y = height * .3; y < height * .8; y += 10)
+      for (let x = width * .6; x < width * .9; x += 10) {
+        const pick = bridge.pick(x, y); if (pick) return pick;
+      }
+    return null;
+  });
+  expect(orthoPick?.bundle_sha256).toBe(hash);
+  await page.screenshot({ path: test.info().outputPath('comparison-orthographic.png') });
   await page.screenshot({ path: test.info().outputPath("comparison-resized.png") });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(async () => { await (window as any).sceneReview.ready(); });

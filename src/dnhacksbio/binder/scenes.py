@@ -42,10 +42,15 @@ def validate_view(view: dict, bundle: dict, comparison: dict | None = None) -> d
         raise ValueError('Comparison selection requires a second source')
     if result['camera'] is not None:
         c=result['camera']
-        if set(c)-{'position','target','up','fov','near','far','projection','zoom','quaternion'}:
+        if set(c)-{'position','target','up','fov','near','far','projection','zoom','quaternion','height'}:
             raise ValueError('Unsupported camera field')
-        if c.get('projection','PerspectiveCamera')!='PerspectiveCamera':
-            raise ValueError('Only perspective camera replay currently supported')
+        orthographic=c.get('projection')=='OrthographicCamera'
+        if c.get('projection','PerspectiveCamera') not in {'PerspectiveCamera','OrthographicCamera'}:
+            raise ValueError('Unsupported camera projection')
+        if orthographic:
+            if type(c.get('height')) not in (int,float) or not math.isfinite(c['height']) or not .01<=c['height']<=10000:
+                raise ValueError('Orthographic camera requires a bounded height in angstroms')
+        elif 'height' in c:raise ValueError('Camera height requires orthographic projection')
         for key in ('position','target',*(['up'] if 'up' in c else [])):
             if not isinstance(c.get(key),list) or len(c[key])!=3 or any(type(v) not in (int,float) or not math.isfinite(v) or abs(v)>1e6 for v in c[key]):
                 raise ValueError('Finite camera position and target required')
@@ -54,13 +59,16 @@ def validate_view(view: dict, bundle: dict, comparison: dict | None = None) -> d
         if 'quaternion' in c:
             if not isinstance(c['quaternion'],list) or len(c['quaternion'])!=4 or any(type(v) not in (int,float) or not math.isfinite(v) for v in c['quaternion']):
                 raise ValueError('Invalid camera quaternion')
-        if 'zoom' in c and c['zoom']!=1:raise ValueError('Camera zoom must be one')
+        if 'zoom' in c and (type(c['zoom']) not in (int,float) or not math.isfinite(c['zoom']) or
+                           not .01<=c['zoom']<=1000 or (not orthographic and c['zoom']!=1)):
+            raise ValueError('Invalid camera zoom')
         if sum((a-b)**2 for a,b in zip(c['position'],c['target']))<1e-10:
             raise ValueError('Camera position equals target')
         for key in ('fov','near','far'):
             if key in c and (type(c[key]) not in (int,float) or not math.isfinite(c[key])):
                 raise ValueError('Invalid camera lens/clipping value')
         c={**c,'fov':max(15,min(80,c.get('fov',38))),'near':max(.01,min(100,c.get('near',.1)))}
+        if orthographic:c.pop('fov',None)
         c['far']=max(c['near']+.1,min(10000,c.get('far',2000)))
         result['camera']=c
     canonical(result)
@@ -225,7 +233,7 @@ class SceneService:
         if state.get('viewport',{}).get('dpr')!=1 or any(abs(state['viewport'].get(k,0)-v)>1 for k,v in zip(('width','height'),(width,height))):
             raise ValueError('Capture viewport differs from PNG dimensions')
         requested_camera=recipe['view'].get('camera')
-        if requested_camera and any(not same_state(state['camera'].get(k),v) for k,v in requested_camera.items() if k not in {'quaternion','zoom'}):
+        if requested_camera and any(not same_state(state['camera'].get(k),v) for k,v in requested_camera.items() if k != 'quaternion'):
             raise ValueError('Rendered camera differs from requested pose')
         self._comparison_state(state,recipe,width,height)
         canonical(state)

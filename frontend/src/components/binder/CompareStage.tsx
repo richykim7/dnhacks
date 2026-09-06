@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, View } from "@react-three/drei";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
-import { Scene, type StageHandle, type SceneInspection } from "./Stage";
+import { Scene, orthographicCamera, type StageHandle, type SceneInspection } from "./Stage";
 import type { Bundle, SceneState, SurfaceMesh } from "./types";
 
 export type CandidatePick = { bundle_sha256: string; residue_id: string };
@@ -21,6 +21,8 @@ export default function CompareStage({ bundle, other, sha256, otherSha256, meshe
 }) {
   const host = useRef<HTMLDivElement>(null!);
   const controls = useRef<OrbitImpl>(null!);
+  const orthographic = state.camera?.projection === "OrthographicCamera";
+  const camera = useMemo(orthographicCamera, []);
   const left = useRef<StageHandle | null>(null), right = useRef<StageHandle | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
@@ -91,7 +93,8 @@ export default function CompareStage({ bundle, other, sha256, otherSha256, meshe
           meshes={otherMeshes} onPick={onOtherPick} onHandle={rightHandle}
           sharedControls={controls} manageCamera={false} />
       </View>
-      <Canvas frameloop="demand" camera={{ fov: 38, near: .1, far: 2000 }} dpr={[1, 1.5]}
+      <Canvas key={orthographic ? "orthographic" : "perspective"} frameloop="demand"
+        camera={orthographic ? camera : { fov: 38, near: .1, far: 2000 }} dpr={[1, 1.5]}
         gl={{ antialias: true, preserveDrawingBuffer: true }} eventSource={host}
         style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
         <OrbitControls ref={controls} domElement={host.current} enableDamping={false} minDistance={4}

@@ -69,6 +69,8 @@ export type CameraRecipe = {
   near?: number;
   far?: number;
   projection?: string;
+  height?: number;
+  zoom?: number;
 };
 export type SceneAction = {
   sequence: number;
