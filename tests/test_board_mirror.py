@@ -32,6 +32,7 @@ def test_unavailable_helpers_do_not_raise_or_report_success(monkeypatch, failure
     def fail(*args, **kwargs):
         raise failure
     monkeypatch.setattr(mirror.board, 'run_command', fail)
+    monkeypatch.setattr(mirror, 'send_board_message', lambda *args: False)
     monkeypatch.setattr(mirror, 'FLEETCTL', Path(sys.executable))
     assert mirror.live_sessions() == {}
     assert not mirror.session_idle('session')
@@ -93,7 +94,8 @@ def test_failed_nudge_does_not_stop_next_poll(monkeypatch, tmp_path, capsys):
         return False
     cursor = run_mirror(monkeypatch, tmp_path, [comment(1)], send, nudge)
     assert cursor['id'] == 1
-    assert len(attempts) == len(nudges) == 1
+    assert len(attempts) == 1
+    assert len(nudges) == 2  # A deferred menu is retried, not silently lost.
     output = capsys.readouterr().out
-    assert 'dropped failed nudge' in output
+    assert 'dropped' not in output
     assert 'nudged worker' not in output

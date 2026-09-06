@@ -34,6 +34,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import board  # noqa: E402
+from tmux_input import send_board_message  # noqa: E402
 
 HARNESS = Path(os.environ.get("HARNESS_ROOT", "/home/dev/projects/dashboard"))
 TGX = HARNESS / "telegram" / "tgx"
@@ -102,8 +103,7 @@ def nudge(session: str, text: str, dry: bool):
     if dry:
         log("DRY nudge ->", session, "|", text[:120])
         return True
-    p = run_helper([str(FLEETCTL), "send-keys", session, text])
-    return p is not None and p.returncode == 0
+    return send_board_message(session, text)
 
 
 def format_tg(p: dict) -> str:
@@ -187,7 +187,10 @@ def main():
                 if nudge(sess, text, a.dry_run):
                     log("nudged", sess)
                 else:
-                    log("dropped failed nudge", sess)
+                    if tries < 20:
+                        still.append((sess, text, tries + 1))
+                    else:
+                        log("dropped deferred nudge", sess)
             elif tries < 20:
                 still.append((sess, text, tries + 1))
             else:
