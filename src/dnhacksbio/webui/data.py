@@ -298,7 +298,10 @@ def list_runs(include_all: bool = False, project: str | None = None) -> list[dic
     out = list(by_run.values())
     out.sort(key=lambda r: r["updated_at"], reverse=True)
     if project:
-        out = [r for r in out if r.get("project") == project or (not r.get("runtime") and project_of_run(r["run_id"]) == project)]
+        out = [r for r in out if (
+            projects_mod.matches_run_scope(r.get("project"), project) if r.get("runtime")
+            else project_of_run(r["run_id"]) == project
+        )]
     for r in out:
         if not r.get("runtime"):
             r["project"] = project_of_run(r["run_id"])

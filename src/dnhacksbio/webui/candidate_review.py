@@ -4,7 +4,7 @@ import fcntl
 import json
 
 from dnhacksbio.explorer.runtime import Journal
-from . import data
+from . import data, projects
 
 
 @contextmanager
@@ -23,8 +23,10 @@ def decision_lock(project):
 
 
 def candidate(run, experiment, project=None):
-    manifest = Journal(data.PROCESSED, create=False).manifest(run, project)
+    manifest = Journal(data.PROCESSED, create=False).manifest(run)
     scope = manifest.get("project_id") or manifest.get("project") or None
+    if not projects.matches_run_scope(scope, project):
+        raise FileNotFoundError("Run not in this project")
     if scope and scope not in data.kg_sources():
         raise FileNotFoundError("Review collection not found")
     db = data.working_kg(scope)
