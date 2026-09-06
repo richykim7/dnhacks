@@ -490,6 +490,8 @@ export function RuntimeDetail({
                         cursor={cursor}
                       />
                     </RecordedDisclosure>
+                  ) : artifact.kind === "scene_movie" && artifact.status === "available" ? (
+                    <video controls preload="metadata" aria-label="Saved spindle trajectory movie" style={{ width:"100%",maxHeight:640 }} src={runtimeUrl(runId,`blob/${artifact.storage_key}`,project,cursor)} />
                   ) : artifact.kind === "scene_capture" &&
                     artifact.status === "available" ? (
                     <figure className="binder-recorded-capture">
