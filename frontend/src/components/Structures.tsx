@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { Button } from "./ui/button";
 import { AnimatedTabs } from "./ui/animated-tabs";
 import { ErrorNotice, Loading } from "./common";
 import type { JsonRecord } from "@/lib/types";
+
+const Workbench = lazy(() => import("./InhibitorWorkbench"));
 
 const views = new Map<
   string,
@@ -12,10 +14,13 @@ const views = new Map<
 export default function Structures({
   artifact,
   url,
+  owner,
 }: {
   artifact: JsonRecord;
   url: string;
+  owner: string;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const host = useRef<HTMLDivElement>(null),
     viewer = useRef<any>(null);
   const saved = views.get(artifact.artifact_id);
@@ -175,6 +180,8 @@ export default function Structures({
       className="artifact-viewer"
       aria-label={`Experiment structure ${artifact.name}`}
     >
+      <Button className="pocket-open" onClick={() => setExpanded(true)}>Open inhibitor workbench</Button>
+      {expanded && <Suspense fallback={<Loading label="Opening pocket observatory" />}><Workbench artifact={artifact} owner={owner} url={url.replace('/blob/', '/geometry/')} onClose={() => setExpanded(false)} /></Suspense>}
       <div className="structure-toolbar">
         <AnimatedTabs
           label="Molecular representation"

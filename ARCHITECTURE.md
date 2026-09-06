@@ -275,8 +275,12 @@ never repeated speculatively. Pending reports/decisions survive restart. Reserve
 ambiguous launch failure. A revised decision/operator recovery is needed for blocked work.
 
 Operational limits remain depth 6, 72 total descendant slots, six continuation rounds and 96 research
-actions per node. These are not a calibrated subtree outcome budget. Research, report and judge duration
-and reported SDK tokens are accounted separately. Submissions during research remain available and
+actions per node. In addition, `explorer/budget.py` enforces a frozen shared action/operation-time
+contract across descendants and continuations. Research grants reserve reporting first; fork grants,
+consumption and refunds share the controller transaction. Restart never refreshes the endpoint or
+refunds ambiguous operations. Async operation deadlines mark backend overrun/cancellation uncertainty
+as operational violations; summed operation wall time is not an OS CPU/GPU quota or calibrated horizon.
+Reported SDK tokens are retained separately. Submissions during research remain available and
 pruning preserves all findings and pending verification. Statistical stopping is not enabled.
 
 ### 4.5 Experiment execution
@@ -389,6 +393,13 @@ starts this worker or receives its predictions. Its target is qualifying new sub
 frozen policy and budget. Learned values are monitor statistics, not automatically exact e-values.
 Algorithm 1 calibration uses independent complete successful episodes and returns no threshold when
 there are too few. No statistical stop is enforced.
+
+`outcomes.py` prospectively binds the runtime budget and frozen final assessor, gathers pre-endpoint
+submitted code/results, requires matching automated verification and privately applies the evidence
+rubric. Pending verification has a fixed adjudication deadline; incomplete/unavailable continuations
+are censored. Only workflow-qualified labels enter the operator training CLI. `--prepare-only` creates
+the runtime identity/budget without research, allowing enrollment before the first action. The initial
+verification adapter covers legacy submissions; private receipt methods need a validated adapter.
 
 A separate authenticated operator console displays recorded child histories and distinct experimental
 evidence; it adds no routes to the research API. Private review never writes ordinary agent feedback or
@@ -551,3 +562,17 @@ identical replay does not add wealth, and consumed canonical donors cannot be
 reused across processes in one shared store. This infrastructure does not itself
 satisfy biological access, sampling or power gates and does not alter discovery
 promotion. Adaptive critics are not implemented. See [native evidence](docs/native-evidence.md).
+
+## Cellular ecosystem development tool
+
+The `ecosystem` CLI validates sparse UMI count provenance and a canonical donor
+crosswalk, trains separate compartment PCA or masked NB encoders, and exposes
+donor-level development profiles, coupling/comparison and segmented-cell spatial
+summaries. Counts are not passed to the TPM encoder. Fixed per-compartment
+subsamples, frozen gene/assay/state references and explicit missing coverage
+preserve measurement boundaries. The private receipt adapter uses the shared
+native frozen process ledger and requires operator-reviewed identity, access,
+sampling, transfer, selection, privacy, novelty and power artifacts. No biological
+cohort or confirmatory capability is approved; real-data audits and adequate
+power remain release gates. No graph promotion or branch-success behavior changes.
+See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limits.

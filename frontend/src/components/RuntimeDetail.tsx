@@ -372,6 +372,7 @@ export function RuntimeDetail({
                       >
                         <Structures
                           artifact={artifact}
+                          owner={`${exp.title || "Experiment"} · ${runId}`}
                           url={runtimeUrl(
                             runId,
                             `blob/${artifact.storage_key}`,

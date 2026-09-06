@@ -1,0 +1,33 @@
+{
+  "accession": "3VQU",
+  "url": "https://files.rcsb.org/download/3VQU.cif",
+  "retrieved_at": "2026-09-06T06:34:22.568863+00:00",
+  "sha256": "5698e5146ea88601291a798e74810bfae667ae87758a630acb668a93fbedcee9",
+  "revision": [
+    {
+      "data_content_type": "Structure model",
+      "major_revision": 1,
+      "minor_revision": 0,
+      "ordinal": 1,
+      "revision_date": "2012-06-27T00:00:00.000+00:00"
+    },
+    {
+      "data_content_type": "Structure model",
+      "major_revision": 1,
+      "minor_revision": 1,
+      "ordinal": 2,
+      "revision_date": "2019-12-25T00:00:00.000+00:00"
+    },
+    {
+      "data_content_type": "Structure model",
+      "major_revision": 1,
+      "minor_revision": 2,
+      "ordinal": 3,
+      "revision_date": "2024-03-20T00:00:00.000+00:00"
+    }
+  ],
+  "title": {
+    "title": "CRYSTAL STRUCTURE OF HUMAN MPS1 CATALYTIC DOMAIN IN COMPLEX WITH 4-[(4-amino-5-cyano-6-ethoxypyridin-2- yl)amino]benzamide"
+  },
+  "scope": "Experimental reference geometry; development experiment is illustrative. No PDAC efficacy or docking result."
+}

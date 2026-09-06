@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from .lineage import root, depth, child
+from . import budget
 
 REPORT_FIELDS = {"findings", "completed_work", "unresolved", "blockers", "ruled_out", "request", "next_steps"}
 REPORT_PROMPT = """Research is PAUSED. Produce your own checkpoint report from your existing context.
@@ -82,6 +83,7 @@ class ControlStore:
         self.path = Path(directory) / "runtime" / "control.sqlite3"
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as c:
+            budget.schema(c)
             c.executescript("""
               CREATE TABLE IF NOT EXISTS nodes(id TEXT PRIMARY KEY, body TEXT NOT NULL);
               CREATE TABLE IF NOT EXISTS trees(id TEXT PRIMARY KEY, remaining INTEGER NOT NULL);
@@ -121,6 +123,7 @@ class ControlStore:
                 s = dict(run_id=run_id, status="working", allowance=allowance, used=0,
                          total_actions=0, version=0, report=None, rounds=0, report_attempts=0,
                          session_id=None, costs={"research_seconds": 0., "report_seconds": 0., "judge_seconds": 0., "input_tokens": 0, "output_tokens": 0})
+                budget.hold_reports(c, [run_id], allowance, partial=True)
                 self._put(c, s)
             c.execute("INSERT OR IGNORE INTO trees VALUES (?,?)", (root(run_id), total_nodes))
             return s
@@ -156,6 +159,7 @@ class ControlStore:
             s = self._get(c, run_id)
             if s["status"] != "reporting":
                 raise ValueError("Not reporting")
+            budget.release_report(c, run_id)
             s.update(status="awaiting_parent", report=report, version=s["version"] + 1)
             self._put(c, s)
             return s
@@ -179,6 +183,9 @@ class ControlStore:
             if action == "continue":
                 if s["rounds"] >= rounds_cap or s["total_actions"] + decision["allowance"] > branch_cap:
                     raise ValueError("Continuation exceeds operational cap; revise allocation")
+                budget.hold_reports(c, [run_id], decision["allowance"])
+                if not budget.available(c, run_id):
+                    raise budget.BudgetUnavailable("No research allowance remains")
                 s.update(status="working", allowance=decision["allowance"], used=0,
                          rounds=s["rounds"] + 1, report_attempts=0, report_reason="allowance_exhausted", objective=decision["objective"])
             elif action == "fork":
@@ -186,6 +193,10 @@ class ControlStore:
                 left = c.execute("SELECT remaining FROM trees WHERE id=?", (root(run_id),)).fetchone()[0]
                 if depth(run_id) >= depth_cap or left < n:
                     raise ValueError("Fork exceeds depth or tree capacity; revise allocation")
+                budget.hold_launches(c, run_id, n)
+                budget.hold_reports(c, [child(run_id, i + 1) for i in range(n)], decision["allowance"])
+                if not all(budget.available(c, child(run_id, i + 1)) for i in range(n)):
+                    raise budget.BudgetUnavailable("No research allowance remains for children")
                 c.execute("UPDATE trees SET remaining=remaining-? WHERE id=?", (n, root(run_id)))
                 s["status"] = "forking"
                 record["status"] = "reserved"
@@ -209,6 +220,8 @@ class ControlStore:
             r = json.loads(c.execute("SELECT body FROM decisions WHERE id=?", (did,)).fetchone()[0])
             item = next(x for x in r["children"] if x["run_id"] == run_id)
             item.update(status=status, session_id=session_id or item["session_id"])
+            if status == "failed":
+                budget.release_report(c, run_id)
             r["status"] = "executed" if all(x["status"] == "launched" for x in r["children"]) else "partial"
             c.execute("UPDATE decisions SET body=? WHERE id=?", (encoded(r), did))
             return r
@@ -228,3 +241,61 @@ class ControlStore:
         with self.connect() as c:
             r = c.execute("SELECT remaining FROM trees WHERE id=?", (root(run_id),)).fetchone()
             return r[0] if r else 72
+
+
+    def freeze_budget(self, run_id, contract):
+        with self.connect() as c:
+            return budget.freeze(c, run_id, contract)
+
+    def budgets(self, run_id):
+        with self.connect() as c:
+            return budget.scopes(c, run_id)
+
+    def research_available(self, run_id):
+        with self.connect() as c:
+            return budget.available(c, run_id)
+
+    def reserve_operation(self, run_id, phase):
+        with self.connect() as c:
+            return budget.reserve(c, run_id, phase)
+
+    def settle_operation(self, op, elapsed, interrupted=False):
+        with self.connect() as c:
+            return budget.settle(c, op["operation_id"] if op else None, elapsed, interrupted=interrupted)
+
+    def release_reporting(self, run_id):
+        with self.connect() as c:
+            budget.release_report(c, run_id)
+
+    def finalize_budgets(self, run_id):
+        """Trusted, durable endpoint after all owned work settles; no label is public."""
+        import time
+        with self.connect() as c:
+            nodes = [json.loads(r[0]) for r in c.execute("SELECT body FROM nodes")]
+            result = []
+            for b in budget.scopes(c, run_id):
+                if b["terminal"]:
+                    result.append(b)
+                    continue
+                owned = [n for n in nodes if n["run_id"] == b["run_id"] or n["run_id"].startswith(b["run_id"] + "~")]
+                if not owned or b["active"]:
+                    continue
+                statuses = {n["status"] for n in owned}
+                if statuses - {"completed", "pruned", "failed", "cancelled", "reporting_blocked", "fork_blocked"}:
+                    continue
+                if b["violation"] or statuses & {"failed", "reporting_blocked", "fork_blocked"}:
+                    reason = "infrastructure_failure"
+                elif "cancelled" in statuses:
+                    reason = "cancelled"
+                elif "pruned" in statuses:
+                    reason = "external_cutoff"
+                elif any(n.get("terminal_reason") == "budget_endpoint" for n in owned):
+                    reason = "budget_endpoint"
+                else:
+                    reason = "natural_finish"
+                b["holds"] = {}
+                b["action_holds"] = {}
+                b["terminal"] = dict(reason=reason, at=time.time(), spent=b["spent"], actions=b["actions"])
+                budget.put(c, b)
+                result.append(b)
+            return result

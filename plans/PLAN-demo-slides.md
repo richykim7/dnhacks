@@ -52,6 +52,19 @@ reveal. Describe a later published discovery recovered from frozen evidence as s
 verification gate alone does not establish novelty or truth, and a frozen corpus alone does not rule
 out model prior knowledge. Keep the existing distinction between candidates and confirmed findings.
 
+## Technical toolkit coverage (Rich, 2026-09-06)
+
+Also explain the computational toolkit, leading with the tools that have 3D renderings. The internal
+e-value tools are part of that toolkit; cover them explicitly, along with the e-value branch-monitoring
+tool. For each learned component, explain how we trained it: data, model, objective, training/validation
+split, and what it learns or measures. Distinguish trained components from statistical logic and
+rendering code. Have real training/validation loss curves ready, plus useful technical figures such as
+null calibration, power, evidence trajectories, or baseline comparisons, so the academic and technical
+substance is clear. This plot emphasis is mainly for the e-value components; the 3D tools should lead
+with renderings and experiment outputs. Label each figure's run, dataset, and measured versus planned
+status; do not imply an untrained component was trained. This is a deck-content and asset-preparation
+note, not authorization to start new training runs.
+
 ## Candidate outline
 
 1. The gap: how much of the literature is claims nobody has cross-checked against public data.
