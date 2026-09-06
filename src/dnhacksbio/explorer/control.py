@@ -63,7 +63,7 @@ def validate_decision(value, max_actions=18):
     if value["action"] in {"continue", "fork"}:
         if type(value.get("allowance")) is not int or not 1 <= value["allowance"] <= max_actions:
             raise ValueError("Invalid action allowance")
-    if value["action"] == "continue" and not str(value.get("objective", "")).strip():
+    if value["action"] == "continue" and (not isinstance(value.get("objective"), str) or not value["objective"].strip()):
         raise ValueError("Continuation needs a concrete objective")
     if value["action"] == "fork":
         bs = value.get("branches")

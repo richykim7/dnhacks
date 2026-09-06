@@ -5,8 +5,7 @@
 The first implemented stage is the research controller. Each `Explorer.run` completes at most one
 bounded round, ending in an actual child-authored report or durable reporting failure. The CLI uses
 `run_investigation` to apply explicit parent allocations. The report schema and validation live in
-`explorer/control.py`. Reports reference existing work; the parent receives the supporting ordinary
-research digest, not a private monitor value. Report references are assertions for inspection, not
+`explorer/control.py`. Reports reference existing work; the parent receives bounded ordinary research records (including code/results, with coverage declared), not a private monitor value. Report references are assertions for inspection, not
 independent verification of a finding.
 
 New state is in `<trace_dir>/runtime/control.sqlite3`, beside the ordinary event journal. It contains

@@ -174,3 +174,19 @@ def test_checkpoint_trigger_survives_restart_before_reporting(tmp_path,monkeypat
         ex._inject_complete=complete
         assert asyncio.run(ex.run(5))["steps"] == 1
     finally: ex.close()
+
+
+def test_restart_preserves_parent_granted_objective(tmp_path,monkeypatch):
+    ex,prompts=make_explorer(tmp_path,monkeypatch,iter([report()]))
+    try:
+        asyncio.run(ex.run(0))
+        ex.control.decide("study",1,{"action":"continue","objective":"Inspect the approved donor manifest",
+                                    "reason":"Feasible unresolved data preparation","allowance":1})
+        replies=iter([action("done"),report()])
+        async def complete(prompt):
+            prompts.append(prompt);return json.dumps(next(replies))
+        ex._inject_complete=complete;ex._branch_brief=None
+        asyncio.run(ex.run(18))
+        assert "Inspect the approved donor manifest" in prompts[1]
+        assert ex.control.get("study")["total_actions"] == 1
+    finally: ex.close()
