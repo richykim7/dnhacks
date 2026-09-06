@@ -576,3 +576,13 @@ sampling, transfer, selection, privacy, novelty and power artifacts. No biologic
 cohort or confirmatory capability is approved; real-data audits and adequate
 power remain release gates. No graph promotion or branch-success behavior changes.
 See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limits.
+
+### Exploratory binder interfaces
+
+`binder/` adds bounded coordinate inspection, exact residue maps, contact/SASA diagnostics and
+portable `binder_bundle.v1` artifacts. The existing collector and explorer enforce source/hash,
+provenance and experiment-scope checks before publication. RuntimeDetail opens those collected
+artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
+Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
+verification. No live design pilot, biological efficacy, runtime vision or performance acceptance
+is implied. See [supported behavior and remaining acceptance](docs/binder-design.md).

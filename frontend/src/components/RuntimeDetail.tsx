@@ -8,6 +8,8 @@ import { runtimeUrl, type RuntimeEvent } from "@/lib/runtime";
 import type { JsonRecord } from "@/lib/types";
 import { actionLabel, date, human, number } from "@/lib/utils";
 import "@/runtime.css";
+const BinderWorkbench = lazy(() => import("./binder/Workbench"));
+const SpindleObservatory = lazy(() => import("./spindle/SpindleObservatory"));
 const Structures = lazy(() => import("./Structures"));
 
 function RecordedDisclosure({
@@ -361,7 +363,21 @@ export function RuntimeDetail({
               {exp.artifacts.map((artifact: JsonRecord) => (
                 <div className="experiment-artifact" key={artifact.artifact_id}>
                   {artifact.status === "available" &&
-                  artifact.kind === "molecular_structure" ? (
+                  artifact.kind === "filament_trajectory" ? (
+                    <Suspense
+                      fallback={<Loading label="Opening spindle observatory" />}
+                    >
+                      <SpindleObservatory
+                        url={runtimeUrl(
+                          runId,
+                          `blob/${artifact.storage_key}`,
+                          project,
+                          cursor,
+                        )}
+                      />
+                    </Suspense>
+                  ) : artifact.status === "available" &&
+                    ["molecular_structure", "binder_bundle"].includes(artifact.kind) ? (
                     <>
                       <h4>{artifact.name}</h4>
                       <Status label={human(artifact.provenance.category)} />
@@ -370,16 +386,28 @@ export function RuntimeDetail({
                           <Loading label="Opening experiment structure" />
                         }
                       >
-                        <Structures
-                          artifact={artifact}
-                          owner={`${exp.title || "Experiment"} · ${runId}`}
-                          url={runtimeUrl(
-                            runId,
-                            `blob/${artifact.storage_key}`,
-                            project,
-                            historic ? artifact.available_sequence : null,
-                          )}
-                        />
+                        {artifact.kind === "binder_bundle" ? (
+                          <BinderWorkbench
+                            sha256={artifact.sha256}
+                            url={runtimeUrl(
+                              runId,
+                              `blob/${artifact.storage_key}`,
+                              project,
+                              historic ? artifact.available_sequence : null,
+                            )}
+                          />
+                        ) : (
+                          <Structures
+                            owner={`${exp.title || "Experiment"} · ${runId}`}
+                            artifact={artifact}
+                            url={runtimeUrl(
+                              runId,
+                              `blob/${artifact.storage_key}`,
+                              project,
+                              historic ? artifact.available_sequence : null,
+                            )}
+                          />
+                        )}
                       </Suspense>
                       <Disclosure title="Structure provenance">
                         <pre>

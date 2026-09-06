@@ -263,10 +263,10 @@ ENTITY STATE. Which form of the gene/protein is this claim about? Mutant and wil
 actors and must not be conflated.
   functional, choose one:
     wild-type      the normal form
-    mutant         a mutated form (give `variant` if the paper names one)
+    mutant         a mutated form or mutations as a class (give `variant` only if the paper names one)
     null_loss      knocked out, deleted, lost
     overexpressed  present at forced/elevated levels
-    general        the paper means the gene as a whole, or "EGFR mutations" as a class
+    general        the paper means the gene as a whole, without a mutation-specific qualifier
     unknown        the paper is about some particular form and you cannot tell which
 
   State is the actor the claim is about, not the experiment that revealed it. When you invert a
@@ -280,7 +280,7 @@ actors and must not be conflated.
   paper must land on one claim with two pieces of evidence.
 
   `general` and `unknown` are not interchangeable:
-    "EGFR mutations shorten survival"        -> general   (a claim about the class)
+    "EGFR mutations shorten survival"      -> mutant    (a mutation class; no named variant)
     "EGFR activated MYC in these cells"    -> unknown   (some specific EGFR, unstated)
   `general` says the paper is generalising; `unknown` says you cannot tell. Never use `general` to mean
   "not stated", and do not reach for `general` because you cannot name the variant: "exon 19 mutations
