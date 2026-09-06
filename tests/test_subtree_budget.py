@@ -114,3 +114,64 @@ def test_total_limit_across_rounds_preserves_final_report(tmp_path, monkeypatch)
         assert ex.control.get("study")["version"] == 2
     finally:
         ex.close()
+
+
+def test_direct_step_cannot_bypass_shared_allowance(tmp_path, monkeypatch):
+    monkeypatch.setitem(budget.DEFAULT_CONTRACT, "actions", 0)
+    ex, prompts = make_explorer(tmp_path, monkeypatch, iter([]))
+    try:
+        with pytest.raises(budget.BudgetUnavailable):
+            asyncio.run(ex.step("Research"))
+        assert not prompts
+    finally:
+        ex.close()
+
+
+def test_cannot_attach_budget_while_operation_is_inflight(tmp_path):
+    s = ControlStore(tmp_path); s.freeze_budget("r", None); s.start("r~1", 1)
+    s.reserve_operation("r~1", "research")
+    with pytest.raises(ValueError, match="operation was admitted"):
+        s.freeze_budget("r~1", None)
+
+
+def test_one_parent_controller_at_a_time(tmp_path, monkeypatch):
+    ex, _ = make_explorer(tmp_path, monkeypatch, iter([report()]))
+    calls = []
+    async def decide(_):
+        calls.append(1); await asyncio.sleep(.03)
+        return {"action": "finish", "reason": "Completed objective"}
+    ex._allocation_fn = decide
+    async def run():
+        await ex.run(0)
+        await asyncio.gather(ex._allocate(ex), ex._allocate(ex))
+    try:
+        asyncio.run(run())
+        assert len(calls) == 1 and ex.control.get("study")["status"] == "completed"
+    finally:
+        ex.close()
+
+
+def test_insufficient_time_admits_no_research_but_still_reports(tmp_path, monkeypatch):
+    monkeypatch.setitem(budget.DEFAULT_CONTRACT, "seconds", 270.)
+    ex, prompts = make_explorer(tmp_path, monkeypatch, iter([report()]))
+    try:
+        result = asyncio.run(ex.run_investigation(18))
+        assert result["steps"] == 0 and len(prompts) == 1
+        assert ex.control.budgets("study")[0]["terminal"]["reason"] == "budget_endpoint"
+    finally:
+        ex.close()
+
+
+def test_standalone_child_resume_inherits_existing_ancestor_budget(tmp_path, monkeypatch):
+    from dnhacksbio.explorer.explorer import Explorer
+    ex, _ = make_explorer(tmp_path, monkeypatch, iter([]))
+    ex.control.start("study~1", 1)
+    op = ex.control.reserve_operation("study~1", "research")
+    ex.control.consume("study~1"); ex.control.settle_operation(op, .1)
+    resumed = Explorer("study~1", "Original research question", db_path=tmp_path / "kg.duckdb",
+                       trace_dir=str(tmp_path), complete_fn=ex._inject_complete)
+    try:
+        assert [b["run_id"] for b in resumed.control.budgets("study~1")] == ["study"]
+        assert resumed.control.budgets("study~1")[0]["actions"] == 1
+    finally:
+        resumed.close(); ex.close()

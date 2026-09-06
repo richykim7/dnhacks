@@ -78,6 +78,12 @@ def _blob(journal, ref):
 def measured_cost(journal, episode, through):
     unit = episode["protocol"]["budget_unit"]
     state = journal.snapshot(episode["root_id"], through)
+    if episode.get("outcome_workflow"):
+        checkpoint = state["runs"].get(episode["run_id"], {}).get("checkpoint", {})
+        own = next((b for b in checkpoint.get("budget_scopes", []) if b["run_id"] == episode["run_id"]), None)
+        if own is None:
+            raise ValueError("Bound checkpoint has no authoritative budget snapshot")
+        return own["actions"] if unit == "research_actions" else own["spent"]
     if unit == "research_actions":
         return sum(e["kind"] == "tool.started" for run in state["runs"].values()
                    if belongs(run["run_id"], episode["run_id"]) for e in run["history"]
@@ -97,8 +103,15 @@ async def score_pending(store: MonitorStore, journal: Journal, *, model=None, ca
     """Explicit worker invocation only. No automatic startup in Explorer or UI."""
     recorded = 0
     for episode in store.episodes():
-        if episode["status"] != "open":
-            continue
+        historical = episode["status"] != "open"
+        endpoint = None
+        if historical:
+            if not episode.get("outcome_workflow"):
+                continue
+            from .outcomes import workflow
+            endpoint = workflow(store, episode["episode_id"])["endpoint"]
+            if endpoint is None:
+                continue
         protocol = episode["protocol"]
         if protocol["verifier_prompt_version"] != PROMPT_VERSION:
             raise ValueError("Verifier prompt version mismatch")
@@ -113,6 +126,8 @@ async def score_pending(store: MonitorStore, journal: Journal, *, model=None, ca
         run = snapshot["runs"].get(episode["run_id"], {})
         for e in run.get("history", []):
             if e["kind"] != "checkpoint.report" or e["sequence"] <= episode["start_sequence"]:
+                continue
+            if endpoint and e["sequence"] > endpoint["through_sequence"]:
                 continue
             history = store.checkpoints(episode["episode_id"])
             if any(r["scoring_version"] != scoring_version for r in history):
@@ -148,7 +163,7 @@ async def score_pending(store: MonitorStore, journal: Journal, *, model=None, ca
             statistic = history_values(model, scores)[-1] if model else None
             threshold = calibration["threshold"] if calibration else None
             store.append_checkpoint(episode["episode_id"], prefix, cost=cost,
-                verifier_score=score, monitor_statistic=statistic, threshold=threshold, error=error, scoring_version=scoring_version,
+                verifier_score=score, monitor_statistic=statistic, threshold=threshold, error=error, scoring_version=scoring_version, _historical=bool(episode.get("outcome_workflow")),
                 verifier_cost={"seconds": time.monotonic() - start, "usage": [m.get("usage", {}) for m in capture.get("messages", []) if m.get("type") == "ResultMessage"]})
             recorded += 1
     return {"recorded": recorded, "mode": "observation_only"}

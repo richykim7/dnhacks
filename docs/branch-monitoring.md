@@ -39,19 +39,24 @@ A minimal enrollment file has this shape (values shown are examples, not a valid
 
 ```json
 {
-  "episode_id": "study-child-1", "run_id": "study~1", "root_id": "study", "group_id": "related-task-1",
+  "episode_id": "study-episode", "run_id": "study", "root_id": "study", "group_id": "related-task-1",
   "objective": "Resolve the declared research question", "initial_evidence": [], "start_sequence": 0,
   "calibration_unit": true, "subgroup": "data-preparation",
   "protocol": {
-    "policy_id": "frozen-allocation-v1", "rubric": "A new, relevant, verified, nonduplicate finding supported by artifacts; useful refutation counts",
+    "policy_id": "parent-allocation-v1", "rubric": "A new, relevant, verified, nonduplicate finding supported by artifacts; useful refutation counts",
     "verifier_model": "<pinned model>", "verifier_prompt_version": "subtree-prefix-v1",
-    "corpus_hash": "<frozen snapshot hash>", "budget_unit": "research_actions", "terminal_budget": 80,
-    "disclosure_boundary": "after-frozen-study", "sampling_policy": "preselected-child-v1"
+    "corpus_hash": "<frozen snapshot hash>", "budget_unit": "research_actions", "terminal_budget": 288,
+    "disclosure_boundary": "after-frozen-study", "sampling_policy": "preselected-root-v1"
+  },
+  "outcome_policy": {
+    "assessor_model": "<pinned final assessor>", "prompt_version": "subtree-outcome-v1",
+    "verification_policy": "legacy-submission-v1", "adjudication_seconds": 600,
+    "assessment_timeout": 90, "max_candidates": 100, "initial_snapshot": []
   }
 }
 ```
 
-The example's 80-action horizon is not a recommended success deadline. The runtime now enforces
+The example's 288-action horizon is not a recommended success deadline. The runtime now enforces
 prospective subtree contracts in `explorer/budget.py`, in the same SQLite transactions as parent grants.
 Pass `--budget-spec contract.json` to the explorer CLI; Python callers use `subtree_budget`.
 The default engineering contract is 3600 summed operation seconds and 288 research actions, with
@@ -62,7 +67,8 @@ a changed contract or retrospective enrollment is rejected. Nested explicit budg
 Before research, the controller reserves up to three mandatory report attempts. A fork reserves each
 child's action and report grants atomically, with a share of remaining research time. Unused grants return
 at a valid checkpoint or a failed launch. Research, report, judge and launch operations reserve time
-before dispatch, then settle measured duration. Concurrent descendants cannot overdraw the shared ledger;
+before dispatch, then settle measured duration. New research must fit its full operation ceiling;
+small residual grants force reporting rather than launching an underfunded action. Concurrent descendants cannot overdraw the shared ledger;
 new IDs and continuations do not reset it. A spent research allowance forces a real report before ending
 allocation. Report/parent failures remain operational states, not negative scientific labels.
 
@@ -70,19 +76,23 @@ Seconds are summed operation wall time, including waiting inside an operation, n
 money. Async deadlines request cancellation; a backend that overruns or cannot confirm cancellation is
 recorded as a budget violation, charged conservatively and blocked from further dispatch. Unsettled
 operations survive a crash without an automatic refund or retry. This is not process isolation or a
-hard operating-system compute quota. Session setup and external verification overhead require separate
-accounting; the private assessor has its own frozen adjudication allowance.
+hard operating-system compute quota. Session connection setup is inside the corresponding funded research/report call. Session teardown
+and runner bookkeeping are not model/tool compute. External legacy verification is not timed by this
+ledger; the private assessor has its own frozen adjudication allowance and measured cost record.
 
-The collector supports `research_actions` and `accounted_seconds`. Legacy checkpoint counters remain
-available, but an operator must bind outcome collection to the runtime's actual frozen contract before
-using labels for training. Pilot horizon selection, real rollouts and calibration remain deferred.
+The collector supports `research_actions` and `accounted_seconds`. Bound episodes read authoritative budget snapshots saved with each checkpoint. Legacy checkpoint
+counters remain available for old records. Outcome collection must bind the runtime contract before
+research; legacy runs that already spent work cannot be enrolled retrospectively. Pilot horizon selection, real rollouts and calibration remain deferred.
 
 Run these commands only under the operator account after corpus readiness and frozen enrollment:
 
 ```sh
-python -m dnhacksbio.branch_monitoring enroll --state /operator/monitor --spec enrollment.json
+python scripts/run_explorer.py --run-id study --trace-dir /research-traces --prepare-only
+python -m dnhacksbio.branch_monitoring prepare --state /operator/monitor --trace-dir /research-traces --spec enrollment.json
+# Start the same run with the same goal/database/card/trace arguments when the corpus is ready.
+python scripts/run_explorer.py --run-id study --trace-dir /research-traces
 python -m dnhacksbio.branch_monitoring score --state /operator/monitor --trace-dir /research-traces --watch
-python -m dnhacksbio.branch_monitoring label --state /operator/monitor --spec final-assessment.json
+python -m dnhacksbio.branch_monitoring label --state /operator/monitor --trace-dir /research-traces --episode-id study-episode --watch
 python -m dnhacksbio.branch_monitoring export --state /operator/monitor --output /operator/episodes.json
 python -m dnhacksbio.branch_monitoring fit --data /operator/episodes.json --output /operator/model.json
 python -m dnhacksbio.branch_monitoring calibrate --data /operator/episodes.json --model /operator/model.json --output /operator/calibration.json
@@ -95,17 +105,48 @@ private experimental results, or private human feedback. Prior score predictions
 enter verifier inputs. Oversized inputs and verifier failures are unavailable observations, not zero.
 Each checkpoint stores a prefix hash, private score/statistic, budget, frozen scoring identity and
 verifier time/token overhead. Repeated worker polling cannot rescore a saved checkpoint or mix model
-versions in one episode. The worker writes only its separate private SQLite store.
+versions in one episode. The worker writes only its separate private SQLite store. A bound, closed episode may still replay
+historical checkpoints through its frozen terminal cursor, so final-label timing cannot erase training
+histories. This never authorizes post-endpoint observations or places labels in verifier prompts.
+Exported cost summaries include later prefix-replay overhead without rewriting the immutable label.
 
-Final assessment is an explicit operator-supplied artifact, not automatically inferred from a parent
-keep, fork, submission or persuasive report. It supplies termination, assessor/artifact provenance and
-verified/relevant/nonduplicate/evidence-supported finding records. Descendant findings count; starting
-snapshot findings do not. A completed allowed continuation without a qualifying finding is unsuccessful
-within that policy/budget. Infrastructure failure, external cutoff and cancellation are censored.
-Pending verification remains pending until adjudication of existing artifacts; the real pilot must
-supply the frozen bounded adjudication policy. Closed labels cannot be overwritten. This implementation
-validates the supplied evidence contract; it does not independently rerun verification or provide an
-expert scientific label. A frozen final LLM assessor remains a future pilot choice.
+`outcomes.py` binds an executable final-assessment workflow before any admitted operation. `prepare`
+checks the exact subtree's controller contract, current cursor and initial evidence artifacts. It freezes
+assessor model, prompt/collector/verification versions, rubric, initial snapshot and adjudication limits.
+Nonempty initial snapshots contain `{finding_id, claim, artifact_refs}` with verified content-addressed
+blob references; their IDs must match `initial_evidence`. The runtime contract and outcome policy are
+part of the fitting/calibration protocol identity, without unique run timestamps leaking into that hash.
+Use an explicit contract for a sampled child before its work; root enrollment does not automatically
+enroll every future descendant as an independent calibration unit.
+
+The `label` worker reads the controller and journal without writing either. It waits for a durable subtree
+endpoint and reconciles cost/action totals against admitted operations. It freezes only experiments
+completed and submitted before that endpoint, gathering their actual code, stdout, parsed results and
+source-event references. Exact baseline replays, repeated submissions and duplicate artifact bundles
+cannot earn another finding. The initial adapter requires the matching legacy `CANDIDATE` soundness event
+from the verifier producer. Private receipt methods need their own validated adapter; a receipt or large
+e-value is never treated as a legacy RESULT or universal success gate.
+
+The frozen assessor sees these artifacts, the initial snapshot, objective and rubric. It receives no
+trajectory values, parent survival decisions, raw reasoning, human review notes or future research.
+It checks relevance, nonduplication and substantive support, including useful falsification. This is an
+LLM rubric proxy after the existing automated soundness gate, not expert scientific certification or an
+independent rerun of the experiment. No human experts are required to exercise this initial workflow.
+
+Verification may finish after research ends, within a deadline fixed at endpoint time. Polling never
+extends it or funds new research. Assessor calls have fixed input/output/time caps and one durable claim
+per artifact, preventing duplicate calls across workers/restarts. Failures stay unavailable; at expiry,
+missing verification/artifacts/assessments are censored, never negative examples. A qualifying descendant
+finding closes the private target successfully. A completed continuation with no qualifying finding is
+unsuccessful under the frozen policy; cancellation, pruning without an evaluation continuation, or
+infrastructure/budget violations are censored. More discovery requires a new declared episode.
+
+Assessment records include endpoint, artifact/audit hashes, verification provenance, measured runtime
+cost, assessor cost and prefix-verifier overhead. Labels never update research memory or human-review
+status. The low-level legacy manual-record API remains available for old fixtures, but cannot close a
+bound episode. The fitting/calibration/evaluation CLI accepts only workflow-qualified labels; manual
+assertions and censored/incomplete outcomes are excluded. Real assessor selection, rollout collection
+and empirical validation still await corpus readiness.
 
 Training uses one logistic classifier per prefix length and the paper's class-prior-corrected odds ratio.
 Related roots stay in one deterministic group partition. Training weights roots equally and episodes

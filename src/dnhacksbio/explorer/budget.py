@@ -73,6 +73,10 @@ def freeze(c, rid, value):
         n = json.loads(row[0])
         if (n["run_id"] == rid or n["run_id"].startswith(rid + "~")) and (n["total_actions"] or n["report_attempts"] or n["version"]):
             raise ValueError("Cannot enroll a budget after work started")
+    for row in c.execute("SELECT body FROM budget_operations"):
+        op = json.loads(row[0])
+        if op["run_id"] == rid or op["run_id"].startswith(rid + "~"):
+            raise ValueError("Cannot enroll a budget after an operation was admitted")
     b = dict(run_id=rid, contract=v, created_at=time.time(), spent=0., actions=0,
              holds={}, action_holds={}, active={}, violation=False, terminal=None)
     put(c, b)
@@ -102,12 +106,24 @@ def hold_reports(c, rids, allowance=0, *, partial=False):
         grant = min(allowance, left // len(owned)) if partial else allowance
         if left < grant * len(owned):
             raise BudgetUnavailable("Insufficient shared action grants for children")
-        per_node = min(b["contract"]["research_seconds"] * grant, free(b) / (len(owned) + 1))
-        if grant and per_node < .001:
-            raise BudgetUnavailable("Insufficient shared research time")
+        per_node = min(b["contract"]["research_seconds"] * grant, max(b["contract"]["research_seconds"], free(b) / (len(owned) + 1)))
+        if grant and free(b) < b["contract"]["research_seconds"] * len(owned):
+            if partial:
+                grant, per_node = 0, 0.
+            else:
+                raise BudgetUnavailable("Insufficient shared research time")
         for rid in owned:
             b["action_holds"][rid] = grant
             b["holds"][rid + ":research"] = per_node
+        put(c, b)
+
+
+def hold_launches(c, rid, count):
+    for b in scopes(c, rid):
+        amount = count * b["contract"]["fork_seconds"]
+        if free(b) < amount:
+            raise BudgetUnavailable("Insufficient fork launch allowance")
+        b["holds"][rid + ":fork"] = amount
         put(c, b)
 
 
@@ -124,7 +140,8 @@ def available(c, rid):
     return all(not b["terminal"] and not b["violation"]
                and (b["action_holds"].get(rid, 0) if rid in b["action_holds"] else
                     b["contract"]["actions"] - b["actions"] - sum(b["action_holds"].values())) > 0
-               and (b["holds"].get(rid + ":research", 0.) if rid in b["action_holds"] else free(b)) >= .001 for b in bs)
+               and (b["holds"].get(rid + ":research", 0.) >= b["contract"]["research_seconds"] if rid in b["action_holds"] else
+                    free(b) >= b["contract"]["research_seconds"] + 3 * b["contract"]["report_seconds"] + b["contract"]["judge_seconds"]) for b in bs)
 
 
 def reserve(c, rid, phase):
@@ -137,9 +154,9 @@ def reserve(c, rid, phase):
         raise BudgetUnavailable("Budget closed or blocked")
     key = rid + ":" + phase
     limits = [b["contract"][phase + "_seconds"] for b in bs]
-    limits += [b["holds"].get(key, 0.) if phase in {"report", "research"} else free(b) for b in bs]
+    limits += [b["holds"].get(key, 0.) if phase in {"report", "research", "fork"} else free(b) for b in bs]
     seconds = min(limits)
-    if seconds < .001 or phase == "research" and any(b["action_holds"].get(rid, 0) <= 0 for b in bs):
+    if seconds < .001 or phase == "research" and (seconds < min(b["contract"]["research_seconds"] for b in bs) or any(b["action_holds"].get(rid, 0) <= 0 for b in bs)):
         raise BudgetUnavailable("Shared subtree allowance exhausted")
     # One in-flight operation per node, including allocation/fork controllers.
     for row in c.execute("SELECT body FROM budget_operations"):
@@ -150,7 +167,7 @@ def reserve(c, rid, phase):
     op = dict(operation_id=oid, run_id=rid, phase=phase, seconds=seconds,
               scopes=[b["run_id"] for b in bs], status="active", started_at=time.time())
     for b in bs:
-        if phase in {"report", "research"}:
+        if phase in {"report", "research", "fork"}:
             b["holds"][key] -= seconds
         if phase == "research":
             b["actions"] += 1

@@ -42,8 +42,8 @@ def _resolve_card(card_arg: str | None, db: str | None) -> str | None:
 
 async def _run(goal: str, steps: int, interval: float, run_id: str, db: str | None,
                freeze_year: int | None = None, corpus_card: str | None = None, network: str = "none",
-               resume: bool = False, subtree_budget=None) -> dict:
-    sid = load_session_id("data/processed", run_id) if resume else None
+               resume: bool = False, subtree_budget=None, trace_dir="data/processed") -> dict:
+    sid = load_session_id(trace_dir, run_id) if resume else None
     if resume:
         if sid is None:
             raise SystemExit(f"--resume: no recorded session for run-id {run_id!r}. A run without a "
@@ -51,7 +51,7 @@ async def _run(goal: str, steps: int, interval: float, run_id: str, db: str | No
                              f"still inherits its findings via the exploration log.")
         print(f"resuming {run_id} on session {sid}")
     ex = Explorer(run_id, goal, db_path=db, freeze_year=freeze_year, corpus_card=corpus_card, network=network,
-                  resume_sid=sid, subtree_budget=subtree_budget)
+                  resume_sid=sid, subtree_budget=subtree_budget, trace_dir=trace_dir)
     stop = asyncio.Event()
 
     async def worker():
@@ -87,6 +87,8 @@ async def main() -> dict:
     ap.add_argument("--goal", default=None, help="the run's goal; if omitted, taken from the corpus card, "
                     "else a generic fallback")
     ap.add_argument("--steps", type=int, default=30)
+    ap.add_argument("--trace-dir", default="data/processed", help="Runtime journal/control directory")
+    ap.add_argument("--prepare-only", action="store_true", help="Create runtime identity/budget for private enrollment, then exit without research or Docker startup.")
     ap.add_argument("--budget-spec", help="JSON frozen subtree contract; all descendants share it. Resume must match.")
     ap.add_argument("--interval", type=float, default=5.0, help="seconds between verification-worker drains")
     ap.add_argument("--run-id", default="explorer")
@@ -121,6 +123,15 @@ async def main() -> dict:
         # The run id is emitted FIRST, before anything that can fail.
         prog.start("run", f"{goal[:160]}", run_id=args.run_id, steps=args.steps, goal=goal)
 
+    if args.prepare_only:
+        import json
+        ex = Explorer(args.run_id, goal, db_path=args.db, freeze_year=args.freeze_year,
+                      corpus_card=card_path, network=args.network, trace_dir=args.trace_dir,
+                      subtree_budget=json.loads(Path(args.budget_spec).read_text()) if args.budget_spec else None)
+        ex.close()
+        if prog: prog.close()
+        return {"run_id": args.run_id, "status": "prepared"}
+
     if not docker_ok():
         raise SystemExit("Docker is not reachable (native or via sg). Install/enable Docker first.")
     print("ensuring sandbox image…")
@@ -132,7 +143,7 @@ async def main() -> dict:
 
     summary = await _run(goal, args.steps, args.interval, args.run_id, args.db,
                          freeze_year=args.freeze_year, corpus_card=card_path, network=args.network,
-                         resume=args.resume, subtree_budget=__import__("json").loads(Path(args.budget_spec).read_text()) if args.budget_spec else None)
+                         resume=args.resume, trace_dir=args.trace_dir, subtree_budget=__import__("json").loads(Path(args.budget_spec).read_text()) if args.budget_spec else None)
     usage = llm.LEDGER.summary()
     summary["usage"] = usage
     print(summary)
