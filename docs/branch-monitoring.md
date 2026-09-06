@@ -22,5 +22,131 @@ decision leaves `awaiting_parent` and can be retried by the controller. Failed/c
 operational failure, distinct from a parent prune. The UI renders these actual lifecycle names.
 
 Operational caps are not the fixed statistical success horizon. No trajectory model, calibrated
-threshold or scientific-performance result is established by these controller tests. The remaining
-private collection, comparison and operator-view work follows `plans/PLAN-branch-monitoring.md`.
+threshold or scientific-performance result is established by these controller tests. The private collection/comparison and separate operator service are described below.
+
+## Private monitoring pipeline (inactive until a corpus is ready)
+
+The private package is `dnhacksbio.branch_monitoring`. Nothing in `Explorer`, the ordinary research
+API or the UI starts its worker. Corpus ingestion and actual trajectory collection/scoring/training
+are explicitly deferred by the user. All current monitor tests use deterministic synthetic fixtures.
+
+The operator enrolls episodes before their first observed action. An episode fixes its objective,
+starting evidence IDs, group/root IDs, terminal budget, allocation and sampling policies, corpus hash,
+verifier model/prompt, rubric and disclosure boundary. Re-enrollment cannot refresh those values.
+A preselected calibration unit is unique within a related investigation group. Select that unit
+before knowing its outcome; filtering for the most successful child would invalidate calibration.
+
+A minimal enrollment file has this shape (values shown are examples, not a validated PDAC policy):
+
+```json
+{
+  "episode_id": "study-child-1", "run_id": "study~1", "root_id": "study", "group_id": "related-task-1",
+  "objective": "Resolve the declared research question", "initial_evidence": [], "start_sequence": 0,
+  "calibration_unit": true, "subgroup": "data-preparation",
+  "protocol": {
+    "policy_id": "frozen-allocation-v1", "rubric": "A new, relevant, verified, nonduplicate finding supported by artifacts; useful refutation counts",
+    "verifier_model": "<pinned model>", "verifier_prompt_version": "subtree-prefix-v1",
+    "corpus_hash": "<frozen snapshot hash>", "budget_unit": "research_actions", "terminal_budget": 80,
+    "disclosure_boundary": "after-frozen-study", "sampling_policy": "preselected-child-v1"
+  }
+}
+```
+
+The example's 80-action horizon is not a recommended success deadline. The development pilot must
+select the horizon and cost conversion, then freeze them before calibration. The collector supports
+`research_actions` and `accounted_seconds`, measured cumulatively across the enrolled subtree's
+recorded work. Research actions remain a coarse proxy. Accounted seconds sum branch research/report/judge
+durations at recorded checkpoints; they are not instantaneous CPU time or a hard pre-reserved compute
+cap. The collector rejects observations beyond the declared endpoint; it does not yet enforce a total
+subtree compute allowance. A real evaluation runner must enforce the declared horizon and count all
+continuation, tool, report and verifier overhead before its labels can qualify for deployment.
+
+Run these commands only under the operator account after corpus readiness and frozen enrollment:
+
+```sh
+python -m dnhacksbio.branch_monitoring enroll --state /operator/monitor --spec enrollment.json
+python -m dnhacksbio.branch_monitoring score --state /operator/monitor --trace-dir /research-traces --watch
+python -m dnhacksbio.branch_monitoring label --state /operator/monitor --spec final-assessment.json
+python -m dnhacksbio.branch_monitoring export --state /operator/monitor --output /operator/episodes.json
+python -m dnhacksbio.branch_monitoring fit --data /operator/episodes.json --output /operator/model.json
+python -m dnhacksbio.branch_monitoring calibrate --data /operator/episodes.json --model /operator/model.json --output /operator/calibration.json
+python -m dnhacksbio.branch_monitoring evaluate --data /operator/episodes.json --model /operator/model.json --calibration /operator/calibration.json --output /operator/evaluation.json
+```
+
+The worker reads the journal through each checkpoint's fixed cursor and resolves only ordinary research
+inputs/observations and reports. It never reads raw reasoning transcripts, current KG state, final labels,
+private experimental results, or private human feedback. Prior score predictions and outcomes never
+enter verifier inputs. Oversized inputs and verifier failures are unavailable observations, not zero.
+Each checkpoint stores a prefix hash, private score/statistic, budget, frozen scoring identity and
+verifier time/token overhead. Repeated worker polling cannot rescore a saved checkpoint or mix model
+versions in one episode. The worker writes only its separate private SQLite store.
+
+Final assessment is an explicit operator-supplied artifact, not automatically inferred from a parent
+keep, fork, submission or persuasive report. It supplies termination, assessor/artifact provenance and
+verified/relevant/nonduplicate/evidence-supported finding records. Descendant findings count; starting
+snapshot findings do not. A completed allowed continuation without a qualifying finding is unsuccessful
+within that policy/budget. Infrastructure failure, external cutoff and cancellation are censored.
+Pending verification remains pending until adjudication of existing artifacts; the real pilot must
+supply the frozen bounded adjudication policy. Closed labels cannot be overwritten. This implementation
+validates the supplied evidence contract; it does not independently rerun verification or provide an
+expert scientific label. A frozen final LLM assessor remains a future pilot choice.
+
+Training uses one logistic classifier per prefix length and the paper's class-prior-corrected odds ratio.
+Related roots stay in one deterministic group partition. Training weights roots equally and episodes
+within roots equally, avoiding dominance by large trees. Unsupported lengths and missing-prefix scores
+remain unavailable. Calibration uses one preselected episode per independent root/group and the maximum
+statistic over each complete successful history. Fitting, calibration and test overlap is rejected,
+including related groups. Protocol and fitted-model hashes must match. Incomplete successful calibration
+histories are rejected. These checks prevent obvious leakage; they do not establish independence or
+transport validity for adaptive branching by themselves.
+
+Algorithm 1's binomial-tail order statistic and strict `statistic > threshold` comparison are implemented.
+At alpha=.045/delta=.005, 115 independent successful calibration episodes yield no threshold; at 116,
+the threshold is their largest path maximum. Multiple checkpoints are not independent successes.
+The comparison exports direct raw-verifier thresholding, PAC-calibrated raw scores and history ratios,
+with false stops, unsuccessful detection, Wilson intervals, subgroup counts and potential saved costs
+when endpoint costs were supplied. Replayed savings are not realized outcome improvements. Learned
+ratios are labeled monitor statistics; no exact e-process or investigation-wide guarantee is claimed.
+
+## Protected human view and experimental review
+
+A separate HTTP service serves the operator console. It is intentionally absent from the ordinary
+research API. Start it under an account that can read private monitor/scoring stores but is inaccessible
+to research processes. Set `DNHACKS_MONITOR_OPERATOR_TOKEN` to a distinct operator-only secret of at least
+32 characters, then run:
+
+```sh
+python -m dnhacksbio.branch_monitoring serve --state /operator/monitor --port 8804
+```
+
+Open that service's root page and enter the operator token. The page shell contains no private data;
+every record read and review write requires authorization. No CORS access is granted. The browser keeps
+the token in memory only. Keep the service local or behind an authenticated HTTPS operator gateway;
+never inherit its secret into research processes. The console is a separate operator page, not an added
+panel in the shared research console. Same-user unrestricted code can bypass filesystem confidentiality;
+file modes and a second process alone do not solve that. Actual separate account/filesystem/network
+permissions must be provisioned before private deployment. No such deployment was performed here.
+
+The console lists enrolled children by lineage with latest statistic, count and status. Selecting a child
+shows recorded points on a logarithmic statistic axis, a calibrated threshold only when available, and
+checkpoint/cost rows. One reading is one dot. Missing data is unavailable, never a fabricated zero or
+smoothed path. Experimental evidence is a separate panel, with method, stated null, validity policy and
+provenance. There is no multiplication or splicing of sibling trajectories.
+
+The `associate` command reads an already completed private scoring queue receipt (including canonical
+aliases), joins an operator-declared run/experiment/finding and method/null/family policy, and stores an
+immutable private review record. It never reruns scoring or asks the agent to fabricate `RESULT`.
+Incomplete scoring remains unavailable. A human decision requires a written note; an e-value alone
+never automatically promotes a finding. Existing legacy `submit` and verification paths are unchanged.
+
+```sh
+python -m dnhacksbio.branch_monitoring associate --state /operator/monitor --spec association.json
+python -m dnhacksbio.branch_monitoring review --state /operator/monitor --spec review.json
+python -m dnhacksbio.branch_monitoring disclose --state /operator/monitor --boundary after-frozen-study --authorize-boundary --output /operator/disclosure.json
+```
+
+Disclosure produces only an explicitly authorized boundary-specific export. Neither a private decision
+nor its note updates ordinary recall, feedback or the master graph automatically. A future discovery
+snapshot refresh must consume this export under the declared boundary; the shared discovery graph is
+not silently changed. Automatic receipt discovery/routing and human-review-based success assessment
+are not yet wired into a running investigation.

@@ -136,3 +136,41 @@ def test_report_rejects_unreferenced_findings():
     r["findings"] = [{"claim": "A result", "references": []}]
     with pytest.raises(ValueError, match="references"):
         validate_report(r)
+
+
+def test_concurrent_external_fork_claims_only_launch_once(tmp_path):
+    s = ControlStore(tmp_path); ready(s, "r")
+    d={"action":"fork","reason":"Independent questions","allowance":1,
+       "branches":[{"objective":x,"information_gain":x,"feasibility":"Available"} for x in ["A","B"]]}
+    record=s.decide("r",1,d)
+    with ThreadPoolExecutor(2) as p:
+        granted=list(p.map(lambda _:s.claim_launch(record["decision_id"],"r~1"),[0,1]))
+    assert sum(granted) == 1
+
+
+def test_no_duplicate_concurrent_child_run(tmp_path,monkeypatch):
+    ex,_=make_explorer(tmp_path,monkeypatch,iter([]))
+    async def scenario():
+        entered=asyncio.Event();release=asyncio.Event()
+        async def complete(_):
+            entered.set();await release.wait();return json.dumps(report())
+        ex._inject_complete=complete
+        first=asyncio.create_task(ex.run(0));await entered.wait()
+        second=await ex.run(0)
+        assert second["status"] == "already_running"
+        release.set();await first
+    try: asyncio.run(scenario())
+    finally: ex.close()
+
+
+def test_checkpoint_trigger_survives_restart_before_reporting(tmp_path,monkeypatch):
+    ex,_=make_explorer(tmp_path,monkeypatch,iter([action("checkpoint")]))
+    try:
+        ex.control.start("study",5)
+        asyncio.run(ex.step("Begin"))
+        state=ControlStore(tmp_path).get("study")
+        assert state["status"] == "reporting" and state["report_reason"] == "voluntary_checkpoint"
+        async def complete(_): return json.dumps(report())
+        ex._inject_complete=complete
+        assert asyncio.run(ex.run(5))["steps"] == 1
+    finally: ex.close()

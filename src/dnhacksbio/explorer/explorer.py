@@ -495,7 +495,7 @@ class Explorer:
                          "rejects what fails). Follow it whenever you write run_experiments code:\n" + rigor)
         d = LIN.depth(self.run_id)
         parts.append(f"FORK POSITION: you are at fork-depth {d} (tree-wide branch budget remaining: "
-                     f"{self.fork_budget.remaining}). {_depth_nudge(d)}")
+                     f"{self.control.remaining(self.run_id)}). {_depth_nudge(d)}")
         parts.append(_PROTOCOL)
         return "\n\n".join(parts)
 
@@ -537,6 +537,8 @@ class Explorer:
             text = await asyncio.wait_for(llm.acomplete(prompt, model=self.model, system=_SYS, effort="high",
                                        max_turns=24, thinking=True, capture=cap), timeout=self.model_timeout_s)
         self._last_capture = cap
+        if self.control.get(self.run_id):
+            self.control.cost(self.run_id, "research", 0., _capture_usage(cap))
         self._event("model.ended")
         return text
 
@@ -1170,6 +1172,8 @@ class Explorer:
 
     async def _act_fork(self, args) -> str:
         self._report_reason = "fork_proposal"
+        if self.control.get(self.run_id):
+            self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
         return "Research paused. Include proposed subquestions and evidence in your checkpoint report."
 
     async def _report(self):
@@ -1205,6 +1209,7 @@ class Explorer:
                 self.control.patch(self.run_id, report_attempts=attempt + 1)
                 started = time.monotonic()
                 cap = {}
+                report_cost_saved = False
                 try:
                     prompt = REPORT_PROMPT + "\nObjective: " + self.manifest["branch_objective"] + "\nTrigger: " + self._report_reason + "\n" + error
                     self._event("model.started", {"phase": "report", "label": "Writing mandatory report"})
@@ -1214,6 +1219,8 @@ class Explorer:
                     report = validate_report(json.loads(raw))
                     if report_session and report_session.truncated:
                         raise ValueError("Report output limit reached")
+                    self.control.cost(self.run_id, "report", time.monotonic() - started, _capture_usage(cap))
+                    report_cost_saved = True
                     saved = self.control.save_report(self.run_id, report)
                     self._event("checkpoint.report", {"version": saved["version"], "report": report,
                                                       "total_actions": saved["total_actions"], "costs": saved["costs"]})
@@ -1225,7 +1232,8 @@ class Explorer:
                     error = "Report generation unavailable; progress remains paused"
                     break
                 finally:
-                    self.control.cost(self.run_id, "report", time.monotonic() - started, _capture_usage(cap))
+                    if not report_cost_saved:
+                        self.control.cost(self.run_id, "report", time.monotonic() - started, _capture_usage(cap))
                     self._event("model.ended", {"phase": "report"})
         except Exception:
             error = "Report session unavailable; progress remains paused"
@@ -1310,7 +1318,8 @@ class Explorer:
             if item["status"] in {"launching", "failed"}:
                 continue  # Never repeat a possibly completed SDK fork after a crash.
             if item["status"] == "reserved":
-                self.control.launch_state(record["decision_id"], rid, "launching")
+                if not self.control.claim_launch(record["decision_id"], rid):
+                    continue
                 try:
                     fork_fn = self._fork_fn
                     if fork_fn is None:
@@ -1367,6 +1376,8 @@ class Explorer:
             return "noted"
         if name in {"done", "checkpoint"}:
             self._report_reason = "completion_request" if name == "done" else "voluntary_checkpoint"
+            if state:
+                self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
             return "Research paused for mandatory report"
         fn = h.get(name)
         return fn(args) if fn else f"(unknown action {name!r})"
@@ -1432,13 +1443,22 @@ class Explorer:
                                         "messages": cap["messages"]}, default=str) + "\n")
             except Exception:
                 pass
-        if state:
-            self.control.cost(self.run_id, "research", time.monotonic() - _t0, _capture_usage(cap))
         return action, obs
 
     async def run(self, max_steps: int = 18) -> dict:
+        import fcntl
+        lock_path = self.control.path.parent / ("worker-" + self.run_id + ".lock")
+        with lock_path.open("a") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return {"status": "already_running", "steps": self.steps}
+            return await self._run_round(max_steps)
+
+    async def _run_round(self, max_steps: int) -> dict:
         state = self.control.start(self.run_id, min(max_steps, CHILD_MAX_STEPS))
         self.steps = state["total_actions"]
+        self._report_reason = state.get("report_reason", "allowance_exhausted")
         self._resume_sid = state["session_id"] or self._resume_sid
         if state["status"] not in {"working", "reporting"}:
             return self._run_summary()
@@ -1458,7 +1478,11 @@ class Explorer:
                 for _ in range(max(0, state["allowance"] - state["used"])):
                     if heartbeat.done():
                         heartbeat.result()
-                    action, obs = await self.step(message)
+                    started = time.monotonic()
+                    try:
+                        action, obs = await self.step(message)
+                    finally:
+                        self.control.cost(self.run_id, "research", time.monotonic() - started)
                     if self._session and self._session.session_id:
                         self.session_id = self._session.session_id
                         self.control.patch(self.run_id, session_id=self.session_id)

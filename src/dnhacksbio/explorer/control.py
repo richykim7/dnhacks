@@ -180,7 +180,7 @@ class ControlStore:
                 if s["rounds"] >= rounds_cap or s["total_actions"] + decision["allowance"] > branch_cap:
                     raise ValueError("Continuation exceeds operational cap; revise allocation")
                 s.update(status="working", allowance=decision["allowance"], used=0,
-                         rounds=s["rounds"] + 1, report_attempts=0, objective=decision["objective"])
+                         rounds=s["rounds"] + 1, report_attempts=0, report_reason="allowance_exhausted", objective=decision["objective"])
             elif action == "fork":
                 n = len(decision["branches"])
                 left = c.execute("SELECT remaining FROM trees WHERE id=?", (root(run_id),)).fetchone()[0]
@@ -212,3 +212,19 @@ class ControlStore:
             r["status"] = "executed" if all(x["status"] == "launched" for x in r["children"]) else "partial"
             c.execute("UPDATE decisions SET body=? WHERE id=?", (encoded(r), did))
             return r
+
+    def claim_launch(self, did, run_id):
+        """Only one concurrent controller can perform the external SDK fork."""
+        with self.connect() as c:
+            r = json.loads(c.execute("SELECT body FROM decisions WHERE id=?", (did,)).fetchone()[0])
+            item = next(x for x in r["children"] if x["run_id"] == run_id)
+            if item["status"] != "reserved":
+                return False
+            item["status"] = "launching"
+            c.execute("UPDATE decisions SET body=? WHERE id=?", (encoded(r), did))
+            return True
+
+    def remaining(self, run_id):
+        with self.connect() as c:
+            r = c.execute("SELECT remaining FROM trees WHERE id=?", (root(run_id),)).fetchone()
+            return r[0] if r else 72

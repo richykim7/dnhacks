@@ -2,8 +2,11 @@
 
 Consolidated planning document, 2026-09-06. Baseline: `3ed1107`.
 Records the user's agreed design, including full-subtree outcomes and checkpoint visualization.
-Implementation in progress: checkpoint reporting and explicit parent allocation are implemented.
-Private trajectory collection, calibration and operator routing remain in progress; no active statistical stopping.
+Implementation status: checkpoint reporting, explicit parent allocation, a private observation-only
+monitor pipeline and separate authenticated operator console are implemented. User deferred actual
+trajectory scoring/training until corpus ingestion. Controlled statistical deployment remains blocked
+on representative rollouts, a frozen/enforced total compute horizon, calibration and account separation.
+See [implementation and limitations](../docs/branch-monitoring.md).
 The paper analysis remains in [the research review](../docs/evaluator-tree-search-review.md).
 
 ## Intended behavior
@@ -274,7 +277,7 @@ without smoothing or invented intermediate scores; do not add judge calls merely
 If later monitoring continues at subtree events after a fork, specify and calibrate that observation
 schedule first. Show lineage together without multiplying or splicing descendant statistics into one
 cumulative e-value. Parent/descendant histories can overlap in evidence and are not independent.
-These displays and their protected backend route are planned, not implemented by this document.
+Recorded checkpoint displays and a separate authenticated operator service are implemented; shared-console integration and additional post-fork observation schedules remain pending.
 
 ## Candidate submission and human review
 
@@ -309,8 +312,7 @@ information even if the number itself were removed. During the frozen discovery/
 keep score-derived notes, acceptance/rejection, and resulting master-graph updates outside all relevant
 agent views, recall and parent/judge context. Record review privately now; disclose or refresh the
 discovery snapshot only at the predefined boundary. Ordinary feedback that uses no private confirmation
-information can retain its existing path. This separation is future implementation work, not present
-behavior. Same-user filesystem access also needs an actual service/account boundary.
+information can retain its existing path. A separate private review store and explicit disclosure export now implement this separation for associated receipts; automatic receipt routing and discovery-snapshot refresh remain pending. Same-user filesystem access also needs an actual service/account boundary.
 
 ## Implementation stages and acceptance criteria
 
