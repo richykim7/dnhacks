@@ -120,9 +120,13 @@ expanded researcher's left scene pane. Its immutable JSON blob uses `schema: "il
 not a scientific trajectory or an additional experiment collector format. The frontend fetches the
 descriptor through the normal run/cursor-scoped blob route and rejects unknown scenes or missing
 illustrative provenance. Availability follows the recorded artifact event; nodes without a visual
-artifact remain full-width. A persistent label distinguishes the animation from measured output.
+artifact remain full-width. The runtime panel is titled Simulation; provenance stays in the immutable
+descriptor rather than overlaying the scene. Interactive scenes render with transparent backgrounds
+over the workspace, preserving their standalone cinematic appearance when interactive mode is off.
 Its local 18-second play/pause/reset/scrub controls are independent of investigation playback, and
-reduced motion holds a static pose. No arbitrary HTML, remote asset URLs or executable code is accepted.
+reduced motion holds a static pose. Drag/scroll/right-drag rotate, zoom and pan the camera. Manual
+input suspends camera choreography until Reset camera restores the view at the current time;
+geometry playback and scrubbing remain independent. No arbitrary HTML, remote asset URLs or executable code is accepted.
 Experiment details render optional `summary`, `plan` and `result.summary` strings as readable text
 alongside the existing result disclosure, preserving the event projection's historical visibility.
 

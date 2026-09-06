@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
+import SceneInteraction from "../../SceneInteraction";
 import * as THREE from "three";
 
 export const spindleMetadata = {
@@ -259,29 +260,32 @@ function Spindle({
 export default function SpindleDemo({
   time,
   reducedMotion = false,
+  interactive = false,
 }: {
   time: number;
   reducedMotion?: boolean;
+  interactive?: boolean;
 }) {
   return (
     <div
       style={{
         width: "100%",
         height: "100%",
-        background: "#061019",
+        background: interactive ? "transparent" : "#061019",
         position: "relative",
       }}
       role="img"
-      aria-label="Illustrative spindle: cyan microtubules connect two luminous poles around coral chromosomes inside a translucent cell. No experimental result."
+      aria-label={interactive ? "Spindle assembly simulation" : "Illustrative spindle: cyan microtubules connect two luminous poles around coral chromosomes inside a translucent cell. No experimental result."}
     >
       <Canvas
         frameloop="demand"
         dpr={[1, 1.5]}
         camera={{ position: [0, 0, 11.5], fov: 42 }}
-        gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true }}
+        gl={{ antialias: true, alpha: interactive, preserveDrawingBuffer: true }}
       >
-        <color attach="background" args={["#061019"]} />
+        {!interactive && <color attach="background" args={["#061019"]} />}
         <Spindle time={time} reducedMotion={reducedMotion} />
+        {interactive && <SceneInteraction />}
       </Canvas>
     </div>
   );

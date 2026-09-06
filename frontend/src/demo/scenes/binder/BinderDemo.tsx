@@ -1,4 +1,5 @@
-import { useLayoutEffect, useMemo } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
+import SceneInteraction from '../../SceneInteraction';
 import { Canvas, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -8,7 +9,7 @@ export const binderDemoMetadata = {
   seed: 1207,
   durationSeconds: 18,
 } as const;
-export interface BinderDemoProps { time: number; reducedMotion?: boolean }
+export interface BinderDemoProps { time: number; reducedMotion?: boolean; interactive?: boolean }
 const cyan = '#67e8f9';
 const coral = '#fb8c82';
 const smooth = (a: number, b: number, t: number) => {
@@ -145,17 +146,19 @@ function Assembly({ t }: { t: number }) {
 }
 
 /** Parent owns time, selection and reset. No internal animation clock or controls. */
-export default function BinderDemo({ time, reducedMotion = false }: BinderDemoProps) {
+export default function BinderDemo({ time, reducedMotion = false, interactive = false }: BinderDemoProps) {
+  const [manualCamera, setManualCamera] = useState(false);
   const t = reducedMotion ? 15 : THREE.MathUtils.clamp(Number.isFinite(time) ? time : 0, 0, 18);
-  return <div role="img" aria-label="Illustrative ribbon protein with an open cleft; a smaller coral binder approaches, turns, seats, and orbits with the bound complex" data-provenance="illustrative" style={{ width: '100%', height: '100%', background: '#061019', overflow: 'hidden' }}>
-    <Canvas frameloop="demand" dpr={[1, 1.5]} camera={{ position: [3, 2.5, 11], fov: 36 }} gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true }}>
-      <color attach="background" args={['#061019']} />
+  return <div role="img" aria-label={interactive ? "Binder docking simulation" : "Illustrative ribbon protein with an open cleft; a smaller coral binder approaches, turns, seats, and orbits with the bound complex"} data-provenance="illustrative" style={{ width: '100%', height: '100%', background: interactive ? 'transparent' : '#061019', overflow: 'hidden' }}>
+    <Canvas frameloop="demand" dpr={[1, 1.5]} camera={{ position: [3, 2.5, 11], fov: 36 }} gl={{ antialias: true, alpha: interactive, preserveDrawingBuffer: true }}>
+      {!interactive && <color attach="background" args={['#061019']} />}
       <ambientLight intensity={.26} />
       <directionalLight position={[-3, 6, 6]} intensity={3.2} color="#e1fcff" />
       <directionalLight position={[3, 1, -5]} intensity={3.5} color={cyan} />
       <directionalLight position={[4, -2, 3]} intensity={.7} color="#ffd6bf" />
-      <Camera t={t} />
+      {!manualCamera && <Camera t={t} />}
       <Assembly t={t} />
+      {interactive && <SceneInteraction onStart={() => setManualCamera(true)} />}
     </Canvas>
   </div>;
 }

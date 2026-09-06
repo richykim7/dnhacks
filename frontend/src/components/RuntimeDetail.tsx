@@ -209,7 +209,14 @@ export function RuntimeDetail({
       className={`node-workspace researcher-workspace ${activeScene ? "has-scene" : ""}`}
     >
       {activeScene && (
-        <div className="workspace-render">
+        <div
+          className="workspace-render"
+          style={
+            activeScene.artifact.kind === "illustrative_scene"
+              ? { background: "transparent" }
+              : undefined
+          }
+        >
           {["binder_bundle", "molecular_structure"].includes(
             activeScene.artifact.kind,
           ) ? (
@@ -574,9 +581,12 @@ export function RuntimeDetail({
                     ].includes(artifact.kind) ? (
                       <>
                         <h4>{artifact.name}</h4>
-                        {artifact.provenance?.category && (
-                          <Status label={human(artifact.provenance.category)} />
-                        )}
+                        {artifact.kind !== "illustrative_scene" &&
+                          artifact.provenance?.category && (
+                            <Status
+                              label={human(artifact.provenance.category)}
+                            />
+                          )}
                         <Button
                           size="sm"
                           variant="ghost"
@@ -593,12 +603,14 @@ export function RuntimeDetail({
                             ? "Viewing in research scene"
                             : "View in research scene"}
                         </Button>
-                        <Disclosure title="Artifact provenance">
-                          <pre>
-                            {JSON.stringify(artifact.provenance, null, 2)}
-                          </pre>
-                          <small>SHA-256: {artifact.sha256}</small>
-                        </Disclosure>
+                        {artifact.kind !== "illustrative_scene" && (
+                          <Disclosure title="Artifact provenance">
+                            <pre>
+                              {JSON.stringify(artifact.provenance, null, 2)}
+                            </pre>
+                            <small>SHA-256: {artifact.sha256}</small>
+                          </Disclosure>
+                        )}
                       </>
                     ) : artifact.kind === "spindle_metrics" &&
                       artifact.status === "available" ? (

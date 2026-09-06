@@ -38,7 +38,7 @@ function parseIllustration(value: unknown): Illustration {
     typeof data.provenance.description !== "string" ||
     !data.provenance.description.trim()
   )
-    throw new Error("Recorded illustration descriptor is invalid.");
+    throw new Error("Recorded scene descriptor is invalid.");
   return data as Illustration;
 }
 class SceneBoundary extends Component<
@@ -51,7 +51,7 @@ class SceneBoundary extends Component<
   }
   render() {
     return this.state.failed ? (
-      <ErrorNotice message="This illustration could not render. Its recorded provenance remains available below." />
+      <ErrorNotice message="This simulation could not render. Close the scene and try again." />
     ) : (
       this.props.children
     );
@@ -70,6 +70,7 @@ export default function IllustrativeScene({ url }: { url: string }) {
   const [error, setError] = useState("");
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [cameraReset, setCameraReset] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
@@ -127,15 +128,12 @@ export default function IllustrativeScene({ url }: { url: string }) {
   // RuntimeDetail removes unavailable artifacts on rewind. An immutable descriptor
   // can retain its local animation time while the investigation cursor advances.
   if (error) return <ErrorNotice message={error} />;
-  if (!data) return <Loading label="Opening recorded illustration" />;
+  if (!data) return <Loading label="Opening simulation" />;
   const Scene = scenes[data.scene];
   return (
-    <section
-      aria-label="Recorded illustrative artifact"
-      data-illustrative-scene={data.scene}
-    >
+    <section aria-label="Simulation" data-illustrative-scene={data.scene}>
       <p>
-        <strong>Illustrative animation · not measured experiment output</strong>
+        <strong>Simulation</strong>
       </p>
       <h3>{data.title}</h3>
       <p>{data.purpose}</p>
@@ -149,7 +147,12 @@ export default function IllustrativeScene({ url }: { url: string }) {
           }}
         >
           <Suspense fallback={<Loading label="Opening animation" />}>
-            <Scene time={time} reducedMotion={reducedMotion} />
+            <Scene
+              key={`${source}:${cameraReset}`}
+              time={time}
+              reducedMotion={reducedMotion}
+              interactive
+            />
           </Suspense>
         </div>
       </SceneBoundary>
@@ -159,6 +162,7 @@ export default function IllustrativeScene({ url }: { url: string }) {
           alignItems: "center",
           gap: 10,
           marginTop: 12,
+          flexWrap: "wrap",
         }}
       >
         <Button
@@ -171,12 +175,12 @@ export default function IllustrativeScene({ url }: { url: string }) {
           }}
         >
           {playing ? <Pause size={14} /> : <Play size={14} />}
-          {playing ? "Pause illustration" : "Play illustration"}
+          {playing ? "Pause simulation" : "Play simulation"}
         </Button>
         <Button
           size="icon"
           variant="ghost"
-          aria-label="Reset illustration"
+          aria-label="Reset simulation time"
           onClick={() => {
             setTime(0);
             setPlaying(false);
@@ -185,7 +189,7 @@ export default function IllustrativeScene({ url }: { url: string }) {
           <RotateCcw size={14} />
         </Button>
         <input
-          aria-label="Illustration time"
+          aria-label="Simulation time"
           type="range"
           min={0}
           max={DEMO_DURATION}
@@ -199,13 +203,16 @@ export default function IllustrativeScene({ url }: { url: string }) {
           }}
         />
         <small>{time.toFixed(1)} s</small>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setCameraReset((value) => value + 1)}
+        >
+          Reset camera
+        </Button>
       </div>
-      <p className="muted">{data.provenance.description}</p>
       <small className="muted">
-        {reducedMotion ? "Reduced motion: static illustration. " : ""}Animation
-        time is independent of the investigation replay clock. Geometry is
-        illustrative and does not establish efficacy, forces, affinity or
-        statistical evidence.
+        Drag to rotate · Scroll to zoom · Right-drag to pan
       </small>
     </section>
   );
