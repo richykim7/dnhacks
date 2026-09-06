@@ -2,7 +2,8 @@
 
 Consolidated planning document, 2026-09-06. Baseline: `3ed1107`.
 Records the user's agreed design, including full-subtree outcomes and checkpoint visualization.
-Planning only: runtime changes, trajectory collection and monitor training are not implemented here.
+Implementation in progress: checkpoint reporting and explicit parent allocation are implemented.
+Private trajectory collection, calibration and operator routing remain in progress; no active statistical stopping.
 The paper analysis remains in [the research review](../docs/evaluator-tree-search-review.md).
 
 ## Intended behavior

@@ -230,8 +230,8 @@ The actions:
 | `run_experiments` | run several pieces of Python in parallel |
 | `log` | record an idea, observation, dead end, open question or note with a promise score |
 | `submit` | send a self-judged experiment to verification |
-| `fork` | one generation of beam search over forked sessions |
-| `reflect`, `done` | record a synthesis; stop |
+| `fork`, `checkpoint` | request parent allocation through a mandatory checkpoint report |
+| `reflect`, `done` | record a synthesis; request completion through reporting |
 
 The system prompt makes the agent a curious, rigorous computational biologist looking for something new,
 and carries the **absence rule**: a capped or truncated retrieval is evidence of presence only, so nothing
@@ -257,17 +257,27 @@ A run id is a path: `root`, `root~1`, `root~1~0`. Depth, parent, ancestors and t
 operations on the id, with no lineage table. A branch may read its own lineage's entries and the shared
 graph. The map from run id to model session id is written to disk so a stopped run can be resumed.
 
-### 4.4 Fork and beam search
+### 4.4 Checkpoints and parent allocation
 
-`fork` takes up to 3 branches, each with a distinct angle, and the engine adds one adversarial branch whose
-only job is to falsify the current leading hypothesis. Each branch forks the parent's session, so it
-inherits the full context, runs to completion as a leaf with forking disabled, and its findings are
-digested. A judge call ranks the digests by how much more compute they deserve (a search heuristic, never a
-soundness verdict). The top 2 are resumed with forking enabled and may fork again; the rest are pruned.
-Pruning only stops further exploration: every branch's submissions were already verified.
+Each worker has at most 18 research actions per round, with a warning at three remaining. `checkpoint`,
+`fork` and `done` pause research for the same child's mandatory report; `done` requests completion.
+At the action ceiling a separate tool-disabled turn resumes that child's transcript, with a 4096-token,
+90-second output allowance and at most two format repairs. Failure leaves `reporting_blocked` durable.
+A valid report leaves `awaiting_parent`; neither state is completion or scientific failure.
 
-Budgets, all disclosed to the agent: maximum depth 6, a tree-wide budget of 72 branches, 18 steps per
-leaf generation, up to 6 continuation rounds per survivor, 96 steps per branch in total. A node forks once.
+The parent controller inspects the report and supporting work and explicitly continues, forks, finishes
+or prunes. There is no top-two quota or experiment-count renewal. `run()` produces one checkpoint;
+`run_investigation()` runs parent allocation, including the root controller. Concurrent children report
+and receive decisions individually. Accepted splits transfer work to two or three specified descendants;
+code executes the approved questions from the child's saved context. SQLite stores report versions,
+idempotent decisions and atomic tree-wide slot reservations. An ambiguous interrupted launch is blocked,
+never repeated speculatively. Pending reports/decisions survive restart. Reserved slots are retained on
+ambiguous launch failure. A revised decision/operator recovery is needed for blocked work.
+
+Operational limits remain depth 6, 72 total descendant slots, six continuation rounds and 96 research
+actions per node. These are not a calibrated subtree outcome budget. Research, report and judge duration
+and reported SDK tokens are accounted separately. Submissions during research remain available and
+pruning preserves all findings and pending verification. Statistical stopping is not enabled.
 
 ### 4.5 Experiment execution
 

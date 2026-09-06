@@ -60,8 +60,8 @@ def dispatch_actions(rel: str = "explorer/explorer.py", fn: str = "_dispatch") -
             for k in sub.keys:
                 if isinstance(k, ast.Constant) and isinstance(k.value, str):
                     found.append(k.value)
-        elif isinstance(sub, ast.Compare) and isinstance(sub.ops[0], ast.Eq):
-            for c in sub.comparators:
+        elif isinstance(sub, ast.Compare) and isinstance(sub.ops[0], (ast.Eq, ast.In)) and isinstance(sub.left, ast.Name) and sub.left.id == "name":
+            for c in [x for v in sub.comparators for x in (v.elts if isinstance(v, (ast.Set, ast.Tuple, ast.List)) else [v])]:
                 if isinstance(c, ast.Constant) and isinstance(c.value, str):
                     found.append(c.value)
     out = sorted(set(found))
@@ -170,13 +170,13 @@ def build() -> dict:
                     "a live search tree and not as stages: 'roam -> write -> execute' is a sequence inside "
                     "one agent's step, never across the engine",
                     "working memory = one resumable llm.Session; turn N sends only what is new",
-                    "the model has allowed_tools=[]; it returns text and the engine dispatches it",
-                    "fork = expand -> judge -> continue top-K -> prune, plus one adversarial branch",
+                    "SDK tools are disabled; the model emits research actions for engine dispatch",
+                    "checkpoint -> mandatory report -> parent continue / fork / finish / prune",
                     f"MAX_DEPTH={const('explorer/explorer.py', 'MAX_DEPTH')} · "
                     f"tree-wide budget {const('explorer/explorer.py', 'MAX_LIVE_BRANCHES')} · "
                     f"<={const('explorer/explorer.py', 'MAX_BRANCHES_PER_FORK')}/fork · "
                     f"child steps {const('explorer/explorer.py', 'CHILD_MAX_STEPS')} · "
-                    f"BEAM_K={const('explorer/explorer.py', 'BEAM_K')}",
+                    "no forced survival quota",
                     "promise judging is a search heuristic, never a soundness verdict"]},
 
         {"id": "sandbox", "label": "Experiment sandbox", "lane": "input",

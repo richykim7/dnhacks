@@ -17,7 +17,7 @@ def journal():
 def reconcile(j: Journal, root: str):
     """Only kernel process-identity evidence ends an abandoned attempt, never elapsed time."""
     for run in j.snapshot(root)["runs"].values():
-        if run.get("lifecycle") not in {"queued", "running", "waiting"}:
+        if run.get("lifecycle") not in {"queued", "running", "reporting"}:
             continue
         owner = run.get("process_identity")
         pid = run.get("pid")

@@ -422,3 +422,14 @@ investigations. The planned human view shows per-child latest monitor statistics
 with experimental e-values separate. A short history remains short; no invented points, automatic
 descendant-score aggregation or claims that more rows supply independent calibration samples.
 This update changes planning and process documentation only; no trajectories, training or UI added.
+
+## 2026-09-06 — Branch controller implementation
+
+Started the agreed branch plan separately from the three biological adapters. Replaced ambiguous
+end-of-round continuation with durable child-authored reports and explicit parent decisions. Added
+atomic fork reservations and stable decision/report identities; fork proposals no longer execute
+without parent authorization. Tool-disabled report turns preserve the same transcript and cannot
+resume research on a failed format or outage. Observation-only monitoring remains the deployment
+constraint. Controller regression tests cover zero allowance, bounded repair, slow-start continuation,
+concurrent reservations and duplicate fork delivery; these are engineering checks, not evidence of
+pruning accuracy. First milestone gates after integrating the dependency adapter: 179 Python tests passed, two optional hardware/runtime checks skipped; frontend build, six unit tests and 18 browser tests passed.

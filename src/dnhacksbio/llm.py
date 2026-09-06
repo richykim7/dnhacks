@@ -159,7 +159,8 @@ class Session:
     Use as: `async with Session(system=..., model=OPUS, thinking=True) as s: r = await s.ask("...")`."""
 
     def __init__(self, system: str | None = None, model: str = OPUS, effort: str = "high",
-                 max_turns: int = 6, thinking: bool = False, resume: str | None = None):
+                 max_turns: int = 6, thinking: bool = False, resume: str | None = None,
+                 tools_disabled: bool = False, max_output_tokens: int | None = None):
         self.model = model
         # Did the last `ask` hit the output ceiling? A response cut off mid-token is an unknown answer,
         # not a shorter one, so truncation is surfaced rather than salvaged silently.
@@ -169,7 +170,9 @@ class Session:
         # (claude_agent_sdk.fork_session(session_id)), distinct from the path-encoded run_id.
         self.session_id: str | None = None
         tconf = {"type": "enabled", "budget_tokens": 8000, "display": "summarized"} if thinking else None
-        self._client = ClaudeSDKClient(_opts(model, system, effort, max_turns, tconf, resume=resume))
+        self._output_limit = max_output_tokens or MAX_OUTPUT_TOKENS
+        self._client = ClaudeSDKClient(_opts(model, system, effort, max_turns, tconf, resume=resume,
+                                            tools_disabled=tools_disabled, max_output_tokens=max_output_tokens))
 
     async def __aenter__(self):
         await self._client.connect()
@@ -198,7 +201,7 @@ class Session:
                         think += b.thinking
             elif isinstance(msg, ResultMessage):
                 LEDGER.add(self.model, msg.usage or {})
-                if (msg.usage or {}).get("output_tokens", 0) >= MAX_OUTPUT_TOKENS:
+                if (msg.usage or {}).get("output_tokens", 0) >= self._output_limit:
                     self.truncated = True
             if capture is not None:
                 msgs.append(_msg_to_dict(msg))
