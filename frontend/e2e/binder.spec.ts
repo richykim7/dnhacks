@@ -225,9 +225,9 @@ test("recorded camera actions replay at adjustable speed while exploration stays
   await page
     .getByRole("button", { name: "Follow latest agent view", exact: true })
     .click();
-  expect(
-    await page.evaluate(() => (window as any).sceneReview.inspect().preset),
-  ).toBe("reverse");
+  await expect
+    .poll(() => page.evaluate(() => (window as any).sceneReview?.inspect().preset))
+    .toBe("reverse");
   await page.getByLabel("Activity playback position").fill("5");
   await expect
     .poll(() =>

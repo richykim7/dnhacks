@@ -15,10 +15,12 @@ export default function Structures({
   artifact,
   url,
   owner,
+  experimentId,
 }: {
   artifact: JsonRecord;
   url: string;
   owner: string;
+  experimentId: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const host = useRef<HTMLDivElement>(null),
@@ -181,7 +183,7 @@ export default function Structures({
       aria-label={`Experiment structure ${artifact.name}`}
     >
       <Button className="pocket-open" onClick={() => setExpanded(true)}>Open inhibitor workbench</Button>
-      {expanded && <Suspense fallback={<Loading label="Opening pocket observatory" />}><Workbench artifact={artifact} owner={owner} url={url.replace('/blob/', '/geometry/')} onClose={() => setExpanded(false)} /></Suspense>}
+      {expanded && <Suspense fallback={<Loading label="Opening pocket observatory" />}><Workbench artifact={artifact} owner={owner} experimentId={experimentId} url={url.replace('/blob/', '/geometry/')} onClose={() => setExpanded(false)} /></Suspense>}
       <div className="structure-toolbar">
         <AnimatedTabs
           label="Molecular representation"

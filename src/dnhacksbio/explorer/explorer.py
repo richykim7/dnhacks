@@ -1445,6 +1445,17 @@ class Explorer:
         if state and state["status"] != "working":
             raise RuntimeError("Research paused; dispatch prohibited")
         name, args = action.get("action"), action.get("args", {})
+        if name == 'inhibitor':
+            if 'inhibitor-interface' not in self._delivered:
+                return self._act_get_skill({'name':'inhibitor-interface'})
+            from dnhacksbio.inhibitor.service import Workbench
+            wb=Workbench(self.journal,self.run_id,args['experiment_id'],self.manifest.get('project_id'))
+            if args.get('operation')=='inspect_scene_capture':
+                from dnhacksbio.inhibitor.review import inspect
+                observation,cap=await inspect(wb,args['capture_id'],args.get('question','Describe geometry and occlusion; propose a grounded numerical countercheck.'),self.model)
+                self.control.cost(self.run_id,'research',0.,_capture_usage(cap))
+                return observation
+            return json.dumps(await asyncio.to_thread(wb.dispatch,args,'agent'),allow_nan=False)
         h = {"search_kg": self._act_search_kg, "search_papers": self._act_search_papers,
              "read_paper": self._act_read_paper, "search_skills": self._act_search_skills,
              "get_skill": self._act_get_skill, "log": self._act_log, "submit": self._act_submit,

@@ -17,6 +17,10 @@ as a registered one. Instruction delivery is checked by the runner, not by a cla
 
 Mandatory common guidance: [experimental rigor](../experimental-rigor/SKILL.md),
 [progress and feedback](references/progress.md), and [artifact contract](references/artifacts.md).
+For structural preparation, docking, molecular scene controls and image-based
+counterchecks, load `inhibitor-interface` and use the `inhibitor` action. Every 3D
+workflow must expose recorded agent scene actions for user playback (pause, seek,
+speed) and independent user exploration that preserves that history.
 For method-specific analysis, search the skill menu and load the applicable skill completely before
 writing or executing that analysis. The runtime pins the delivered version for this attempt.
 

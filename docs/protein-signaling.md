@@ -3,6 +3,8 @@
 `protein_design.py`, `protein_encoder.py` and `protein_tools.py` implement a local,
 exploratory measured-protein workspace. Four public CPTAC development cohorts have
 been acquired and real PCA/denoising models trained; see [measured results](protein-training.md).
+The [Fudan external benchmark](protein-external.md) adds 224 graded tumors and
+65 grade pairs (60 after coverage filtering), with frozen CUDA transfer comparisons.
 Private native evidence remains **unavailable for these data**. The conditional
 operator adapter now supports reviewed independent-group finite replay through the
 shared donor ledger; see [native operations and failed release gates](protein-native.md).

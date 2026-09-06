@@ -81,6 +81,22 @@ def handle(handler, rest: str, qs: dict):
     through = int(qs["through"][0]) if "through" in qs else None
     if through is not None and through < 0:
         raise ValueError("Invalid playback cursor")
+    if action == 'inhibitor' and len(parts) == 3:
+        from dnhacksbio.inhibitor.service import Workbench
+        wb=Workbench(j,run_id,parts[2],project,through)
+        if 'bundle' in qs:
+            return handler._send_json(wb.bundle(qs['bundle'][0]))
+        if 'file' in qs:
+            key=qs['file'][0]
+            permitted=set()
+            for artifact in wb.bundles():
+                permitted.update(wb.bundle(artifact['storage_key']).get('files',{}).values())
+            for e in wb.history():
+                if e['kind']=='scene.capture': permitted.add(e['payload']['image_hash'])
+            if key not in permitted: raise FileNotFoundError('File outside experiment/cursor')
+            raw=j.read_blob(key)
+            return handler._send_bytes(raw,'image/png' if raw.startswith(b'\x89PNG') else 'application/octet-stream')
+        return handler._send_json(wb.describe(qs.get('source_hash',[None])[0]))
     if action in {"blob", "geometry"} and len(parts) == 3:
         # A digest is not authority: it must be referenced by this exact run at this cursor.
         key = parts[2]

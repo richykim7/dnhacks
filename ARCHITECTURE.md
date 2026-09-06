@@ -228,6 +228,7 @@ The actions:
 | `find_datasets` | search GEO and ArrayExpress for real datasets |
 | `search_skills`, `get_skill` | find and read a method guide |
 | `run_experiments` | run several pieces of Python in parallel |
+| `inhibitor` | skill-gated, experiment-scoped bounded preparation/docking, scene vision and canonical measurements; exploratory artifacts only |
 | `log` | record an idea, observation, dead end, open question or note with a promise score |
 | `submit` | send a self-judged experiment to verification |
 | `fork`, `checkpoint` | request parent allocation through a mandatory checkpoint report |
@@ -426,8 +427,9 @@ confirmation data and cross-assay transforms are rejected by discovery operation
 The operator-only audit preserves grade eligibility and the 48-pair policy.
 `protein_experiment.py` conditionally registers operator-reviewed independent-group
 finite replay through `native_group_replay.py` and the shared canonical donor ledger.
-Real CPTAC development models are trained; the audited grade budget and simulated
-declared-effect power fail release gates, so biological confirmation stays unavailable. No native wealth
+Real CPTAC development models are trained. A subsequent Fudan external benchmark
+provides 60 grade pairs after coverage filtering and CUDA-fitted transfer comparisons;
+independent confirmation review and model-specific power remain release gates. No native wealth
 or verification verdict is exposed. See [protein signaling](docs/protein-signaling.md).
 
 ## 9. The console
