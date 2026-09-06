@@ -587,7 +587,13 @@ donor partitions have been audited and separate count/PCA/set models actually
 trained: held-out reconstruction favored cell PCA; learned set pooling did not
 improve on donor-summary PCA. All-gene library offsets and a residual NB decoder
 bin preserve selected-panel measurement semantics. The [training report](docs/ecosystem-training.md)
-records coverage, source checksums and negative pilot results. Reserved-cohort
+records coverage, source checksums and negative pilot results. The subsequent
+[CUDA expansion](docs/ecosystem-expansion.md) acquired three more original cohorts
+for 72 donor records and trained separate 64-dimensional denoising/NB encoders
+across three seeds, a lineage classifier and donor-matching scorers. All fitting,
+including exact PCA, runs on CUDA under the shared GPU lease. Fifty-five donors
+meet the two-compartment 32-cell coverage rule; external reconstruction still
+favors PCA. These separate development checkpoints are not private registrations. Reserved-cohort
 audit, adequate power and deployment privacy remain confirmation gates.
 No graph promotion or branch-success behavior changes.
 See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limits.
