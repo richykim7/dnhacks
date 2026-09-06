@@ -1,8 +1,11 @@
 # Drug-response and combination background evidence
 
-Proposed plan, 2026-09-05. Planning only; no ingestion, experiments or implementation performed.
-Prepared concurrently with dependency/expression reviewers; parent aligned shared interfaces.
-Implementation requires a subsequent request.
+Plan dated 2026-09-05; first-endpoint implementation authorized and added 2026-09-06.
+Registered biomarker/AUC submission, private scoring, fixed Python preparation, optional pinned
+PharmacoGx raw export and synthetic validation are implemented. See
+[actual behavior and setup](../docs/drug-response-scoring.md). R adapter execution remains unverified
+on this host. Cohort selection, biological confirmation and synergy evidence remain pending.
+The design rationale and later statistical extension below are preserved.
 
 ## First endpoint and evidence
 
@@ -27,18 +30,20 @@ seed and conservative ties. Monte Carlo `p=(1+b)/(B+1)` enters existing `p_to_e(
 Freeze direction/strata/statistic. No residualization-based conditional-independence claim, or repeated
 reuse as fresh wealth. Preserve signed effect privately. [Calibration](https://arxiv.org/abs/1912.06116)
 
-## Proposed interface and implementation
+## Interface and implementation status
 
-Neither PharmacoGx nor SynergyFinder integration exists. The strict TPM expression worker cannot
-accept drug responses. Use the shared transport prerequisite in [the dependency plan](evalue-dependency-integration.md).
+The optional PharmacoGx preparation adapter is implemented; SynergyFinder integration remains pending.
+The strict TPM expression worker cannot accept drug responses. The implementation uses the shared
+transport prerequisite in [the dependency plan](evalue-dependency-integration.md).
 
-1. Preserve expression v1; register `biomarker_auc` and later `bliss` with method-specific validators
-   and operator-frozen protocols. No agent-supplied p/e or arbitrary executable/plugin paths.
-2. Add proposed `drug_response.py`, `drug_response_experiment.py`, `drug_response_scoring.py` and
-   version-pinned R adapters under `scripts/r/`. Use `Rscript --vanilla` and fixed arguments, never submitted R.
-3. Proposed command: `python -m dnhacksbio.drug_response_experiment --spec FILE --request-id ID`.
+1. Expression v1 is preserved; `biomarker_auc` uses a method-specific validator and operator-frozen
+   protocol. `bliss` registration remains a later extension. No agent-supplied p/e or arbitrary executable/plugin paths.
+2. Implemented `drug_response.py`, `drug_response_experiment.py`, `drug_response_scoring.py` and
+   the pinned PharmacoGx raw-export adapter under `scripts/r/`. Use `Rscript --vanilla` and fixed
+   arguments, never submitted R. R execution remains unverified on this host.
+3. Command: `python -m dnhacksbio.drug_response_experiment --spec FILE --request-id ID`.
    Strict `{request_id,spec,input}` envelope; spec identifies schema/method/protocol/hypothesis/family.
-   Preferred input is registered cohort ID plus manifest hash; bounded uploads are a development route.
+   Input is registered cohort ID plus manifest hash; bounded uploads remain deferred.
 4. Private AUC rows: `unit_id,plate_id,replicate_id,dose_molar,viability,biomarker`, for fixed drug/time.
    Check biomarker consistency per unit. Synergy rows add `arm,dose_a_molar,dose_b_molar`; protocol
    specifies controls. Preserve raw data, source provenance, units and assay metadata.
@@ -86,7 +91,7 @@ coverage/orientation; null/power across unit counts, noise, strata and effects; 
 biomarker selection; aliases, repeated donors and altered resources. Test lost acknowledgements,
 concurrent/conflicting/renamed retries, crash recovery, one durable result, and output containment
 across HTTP/stdout/journal/artifacts/recall. Before synergy evidence, simulate shared-control noise,
-nonlinear normalization, biased references and heterogeneous nulls. No measured results exist yet.
+nonlinear normalization, biased references and heterogeneous nulls. No biological measured results exist yet; software validation uses synthetic fixtures.
 
 Defaults: one biomarker/drug, two-sided Spearman, fixed-p calibration, observed AUC, descriptive
 synergy and no automatic family verdict. Open decisions: dataset, drug, pairing, power and measurement

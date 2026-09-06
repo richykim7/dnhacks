@@ -340,6 +340,10 @@ These are in the package and tested, and deliberately not connected to the falsi
   insufficient units yield private unavailable results. No confirmation cohort is bundled.
   Both adapters use `experiment_transport.py` for durable acceptance, canonical receipt aliases,
   worker ownership/restart recovery and output-suppressed subprocesses. See `docs/dependency-scoring.md`.
+- `drug_response_experiment.py`: receipt-only submission of an operator-registered biomarker/AUC
+  association. `drug_response_scoring.py` uses the shared private transport and frozen donor registry;
+  `drug_response.py` computes observed log-dose inhibition area and stratified Spearman permutations.
+  No synergy evidence or biological confirmation cohort is enabled. See `docs/drug-response-scoring.md`.
 - `expr_encoder.py`: frozen PCA or masked-gene autoencoder encoders with recorded training provenance,
   trained by `scripts/train_expr_encoder.py`.
 - `evalues.py`: p-to-e calibration, merging and e-BH helpers. Inputs must already be valid.
