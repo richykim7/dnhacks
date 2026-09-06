@@ -1,6 +1,6 @@
 """Ingest: load a local full-text corpus into clean text with provenance.
 
-.txt is read directly, .pdf is parsed with PyMuPDF, .xml is JATS/PMC stripped to text. The filename
+.txt is read directly, .pdf uses structured PyMuPDF4LLM parsing, .xml preserves JATS structure. The filename
 convention `<ref#>_<shortname>.<ext>` supplies provenance: the numeric prefix is the reference number
 every extracted claim traces back to.
 """
@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import html
 import re
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -54,29 +53,16 @@ def _parse_txt(path: Path) -> str:
 
 
 def _parse_pdf(path: Path) -> str:
-    import fitz  # PyMuPDF
-    parts = []
-    with fitz.open(path) as doc:
-        for page in doc:
-            parts.append(page.get_text("text"))
-    return _clean("\n".join(parts))
+    from dnhacksbio.litmap.document_parse import parse_document_bytes
+    parsed = parse_document_bytes(path.read_bytes(), "pdf", path.parent / f"{path.stem}_assets")
+    if parsed["needs_ocr"]:
+        raise ValueError("PDF contains unreadable pages; OCR or source inspection required")
+    return _clean(parsed["text"])
 
 
 def _parse_xml(path: Path) -> str:
-    raw = path.read_text(encoding="utf-8", errors="ignore")
-    # Prefer the JATS <body>; fall back to <abstract>+title; last resort strip all tags.
-    try:
-        root = ET.fromstring(raw)
-        chunks: list[str] = []
-        for tag in (".//article-title", ".//abstract", ".//body"):
-            for el in root.findall(tag):
-                chunks.append("".join(el.itertext()))
-        text = "\n\n".join(c for c in chunks if c.strip())
-        if len(text.strip()) < 200:   # parse found little — fall back
-            raise ValueError("thin JATS parse")
-    except Exception:
-        text = _TAG.sub(" ", raw)
-    return _clean(text)
+    from dnhacksbio.litmap.document_parse import parse_document_bytes
+    return _clean(parse_document_bytes(path.read_bytes(), "xml")["text"])
 
 
 _PARSERS = {"txt": _parse_txt, "pdf": _parse_pdf, "xml": _parse_xml}

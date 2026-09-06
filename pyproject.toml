@@ -31,6 +31,7 @@ llm = [
 litmap = [
     "matplotlib>=3.11.0",
     "pymupdf>=1.28.0",
+    "pymupdf4llm==1.28.2",  # structured PDF text and rendered picture regions
 ]
 
 [tool.pytest.ini_options]
