@@ -1,0 +1,960 @@
+{
+  "source_snapshot": "af015051ca1329ebafd4c439643e35c8248e9130",
+  "sources_sha256": {
+    "research/learned-evalue-validation/real-expression/training.json": "b0b8684b1b99b63a5e2fb02d60264066e4160ab39924e4bf7d2ffa03c009eea0",
+    "research/learned-evalue-validation/real-expression/evaluation.json": "b887aecbaad7720e14a69f3499e5a7ce26cf085da1bd47d70aed05fcbbb2be55",
+    "docs/ecosystem-training/metrics.json": "920f8418500417df3c7e61270ebaaaed00a112624ecb2073b285199819369c73",
+    "docs/ecosystem-training/set-metrics.json": "5c652311504838f2f414d274c636dccee581aa0bf5ec860b26a41a50f98d0fef",
+    "docs/pharmacotype-cuda-training.json": "e7dafc82b3dfa4ae98b254a6e5d46786f91bc4833668f03903213766425246eb",
+    "docs/pharmacotype-pdo-auc.json": "d62fbcc15fd5aa04c89d82ea7968c886bbb5428967d6c0ff351344b409f5ac57",
+    "research/learned-evalue-validation/expanded-null.json": "941a546e0beeceebd4edd20c372192ccc3e090680ddfd3a89d3d04dbfdb7eabb",
+    "docs/protein-training.md": "3671d3152fd6ff4e4cfc78f3aa0974ad62eb29ec99accd26e71057bd4056a318",
+    "docs/protein-external-results.json": "6b5aff75f7ff1b0798320b4c179a10fc1322e9b5db8077472b610f0a442769f9",
+    "docs/protein-external-training.json": "24de6760995963ae042b81300276cf1be78670909a4225980827b0a6c3a066d1"
+  },
+  "figures": [
+    {
+      "name": "expression_training",
+      "png": "expression_training.png",
+      "pdf": "expression_training.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "Training loss only. A per-epoch held-out validation series was not recorded.",
+      "source": "Source: real-expression/training.json \u00b7 autoencoder.training_loss",
+      "data": {
+        "epochs": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          96,
+          97,
+          98,
+          99,
+          100
+        ],
+        "training_loss": [
+          1.1001360509372966,
+          1.1602975553771668,
+          1.054892571451451,
+          0.9929533654676965,
+          0.9449468999049044,
+          0.9041367974730282,
+          0.8556913429483554,
+          0.806939184933771,
+          0.7659540563239088,
+          0.7679017269059022,
+          0.7273314258877079,
+          0.72858657025242,
+          0.7103470936681671,
+          0.6842794894898305,
+          0.6923686307699928,
+          0.6607602518888588,
+          0.6409405665880917,
+          0.6262247296303242,
+          0.6095253063062828,
+          0.593693175812098,
+          0.5778013175246146,
+          0.5624647242562392,
+          0.545789988102613,
+          0.5484173308286451,
+          0.537730453186216,
+          0.6260111135787487,
+          0.5638772496249822,
+          0.549093674919556,
+          0.513068469298165,
+          0.5022625961797534,
+          0.49088313213750007,
+          0.4797344312849769,
+          0.4665139100147085,
+          0.4612834035969855,
+          0.4518094641890228,
+          0.4488609829417933,
+          0.4330924859082762,
+          0.44365154054692374,
+          0.4298424215908876,
+          0.42116527623671185,
+          0.4113113312755465,
+          0.4040963199574749,
+          0.39058480231777143,
+          0.3811942932565612,
+          0.3727073248069764,
+          0.36505388655200666,
+          0.35941867100914016,
+          0.3507734804793595,
+          0.3425961936198846,
+          0.32999419761300275,
+          0.3225360073888148,
+          0.31523632553839664,
+          0.3090848025251048,
+          0.305966667303937,
+          0.2960768434756597,
+          0.29097387292738547,
+          0.2833492124894107,
+          0.27836627661346725,
+          0.27075795893118354,
+          0.2677870492266812,
+          0.2592041637599127,
+          0.25468846058381633,
+          0.24838141792888252,
+          0.24530784688922946,
+          0.23965768626766315,
+          0.24060624126631264,
+          0.2366681849106702,
+          0.22391819020415935,
+          0.2291030599206063,
+          0.21597251121805583,
+          0.2162383855229097,
+          0.20381122982279737,
+          0.211071398521164,
+          0.1984401585143168,
+          0.195875250151048,
+          0.19023318514489462,
+          0.18791449421933035,
+          0.18222203381833058,
+          0.17644280056423547,
+          0.17559466563345622,
+          0.17232472868277005,
+          0.17230778304279226,
+          0.18953700271834747,
+          0.16582347349102472,
+          0.16974814993956297,
+          0.160099048650917,
+          0.16335857111231208,
+          0.16188990426989588,
+          0.15345605634140155,
+          0.15004213478057454,
+          0.14515117831834157,
+          0.14087389827348898,
+          0.1352769229754031,
+          0.13341690046498558,
+          0.13017510036034563,
+          0.12731509654254777,
+          0.12556761979136669,
+          0.12057857693354396,
+          0.11699688679079633,
+          0.11610424079251475
+        ]
+      },
+      "note": "No validation points invented; fixed 100-epoch run.",
+      "aliases": []
+    },
+    {
+      "name": "expression_evidence",
+      "png": "expression_evidence.png",
+      "pdf": "expression_evidence.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "Same 30 selected pairs. The single-gene baseline is strongest in this primary run.",
+      "source": "Source: real-expression/evaluation.json \u00b7 primary.methods.*.log_wealth_path",
+      "data": {
+        "series": {
+          "autoencoder": {
+            "pairs_observed": [
+              8,
+              12,
+              16,
+              20,
+              24,
+              28,
+              30
+            ],
+            "e_value": [
+              1.0,
+              3.933476905357768,
+              1.1555433678103273,
+              17.939902759523605,
+              59.80135808881465,
+              924.560816311522,
+              3652.806359631861
+            ]
+          },
+          "pca": {
+            "pairs_observed": [
+              8,
+              12,
+              16,
+              20,
+              24,
+              28,
+              30
+            ],
+            "e_value": [
+              1.0,
+              4.5499367991957484,
+              3.3649745433959937,
+              22.154324363339402,
+              11.165982470779175,
+              140.415217743479,
+              85.75579611817608
+            ]
+          },
+          "scalar": {
+            "pairs_observed": [
+              8,
+              12,
+              16,
+              20,
+              24,
+              28,
+              30
+            ],
+            "e_value": [
+              1.0,
+              11.712072652783329,
+              9.196714350803305,
+              144.13724160230248,
+              469.8826005325347,
+              1790.041086039092,
+              5964.414045287497
+            ]
+          }
+        },
+        "calibrated_permutation_final": 99.0
+      },
+      "note": "Standalone observational diagnostic, not PDAC, causal evidence or universal model superiority.",
+      "aliases": []
+    },
+    {
+      "name": "ecosystem_nb_training",
+      "png": "ecosystem_nb_training.png",
+      "pdf": "ecosystem_nb_training.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "Peng training: 16 malignant-enriched donors / 13 fibroblast donors; 32 cells per donor.",
+      "source": "Source: docs/ecosystem-training/metrics.json \u00b7 models.*-nb.manifest.training_loss",
+      "data": {
+        "epochs": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "training_loss": {
+          "malignant": [
+            2.472936455625162,
+            2.4465560394431374,
+            2.415371540301339,
+            2.3972810986343096,
+            2.3669609889647285,
+            2.3480617653876807,
+            2.3264286930824514,
+            2.3074737061457493,
+            2.2862202692377807,
+            2.279013407977795,
+            2.2509773429538145,
+            2.236616863419607,
+            2.2253659902531275,
+            2.2051297121304856,
+            2.1963660253613284,
+            2.177482203465927,
+            2.1639544822246144,
+            2.1511311404059157,
+            2.1420856748374546,
+            2.125877991976886
+          ],
+          "fibroblast": [
+            2.0542315029386438,
+            2.002435022678891,
+            1.9836853378651094,
+            1.9693204093430532,
+            1.9594524947654792,
+            1.9357979685218125,
+            1.9175702603158409,
+            1.902668428025827,
+            1.8909587061942266,
+            1.8784609810978672,
+            1.8630614159826127,
+            1.838312051143395,
+            1.8283331237242595,
+            1.8140291200857361,
+            1.7953479710564804,
+            1.7884629750977188,
+            1.766515410331681,
+            1.756576355429443,
+            1.746342455192087,
+            1.7345248794510342
+          ]
+        }
+      },
+      "note": "No per-epoch validation series retained. Compartment labels are expression-based proxies.",
+      "aliases": []
+    },
+    {
+      "name": "ecosystem_heldout",
+      "png": "ecosystem_heldout.png",
+      "pdf": "ecosystem_heldout.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "Final donor-level errors. No neural advantage observed; cells are not independent donors.",
+      "source": "Source: docs/ecosystem-training/metrics.json \u00b7 models.*.held_out.{peng,lin}",
+      "data": {
+        "malignant": {
+          "peng": [
+            0.2709393235720737,
+            0.34067205484803753,
+            0.8886151804633537
+          ],
+          "lin": [
+            0.39862635412260694,
+            0.5396131126052227,
+            1.213791438471117
+          ]
+        },
+        "fibroblast": {
+          "peng": [
+            0.30256419901762194,
+            0.3759219742733494,
+            0.9528448624358861
+          ],
+          "lin": [
+            0.40464438332481845,
+            0.5267109179212377,
+            1.163212248559787
+          ]
+        }
+      },
+      "note": "Donor PCA is the pseudobulk baseline projected back to cell expression for common error measurement.",
+      "aliases": []
+    },
+    {
+      "name": "ecosystem_set_training",
+      "png": "ecosystem_set_training.png",
+      "pdf": "ecosystem_set_training.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "Training only. Learned pooling did not beat donor-summary PCA on final held-out error.",
+      "source": "Source: docs/ecosystem-training/set-metrics.json \u00b7 models.*.manifest.losses",
+      "data": {
+        "malignant": [
+          1.0781292571772594,
+          1.0521959637074307,
+          1.0282916582283221,
+          1.0060842968383148,
+          0.9852597646661044,
+          0.9654968610922582,
+          0.9464877708052295,
+          0.9279547222339295,
+          0.9096564204208498,
+          0.8914005519007133,
+          0.8730542635768112,
+          0.8545425294114442,
+          0.8358399809923943,
+          0.8169628145307889,
+          0.7979609296836716,
+          0.7789097191698995,
+          0.7599034208276045,
+          0.7410495211613718,
+          0.722461483695012,
+          0.704249707263308
+        ],
+        "fibroblast": [
+          1.0656087620430046,
+          1.0436738101520118,
+          1.0236654178085414,
+          1.0051730302916095,
+          0.987708398811043,
+          0.9707678503848528,
+          0.9539245015698733,
+          0.9368558398714966,
+          0.9193342428802721,
+          0.9012112665339254,
+          0.8824118789545751,
+          0.8629310515622262,
+          0.8428257898677879,
+          0.8221995938353309,
+          0.8011818492847936,
+          0.7799103134006651,
+          0.7585239069596116,
+          0.737161993376224,
+          0.7159566569253528,
+          0.6950155862075644
+        ]
+      },
+      "note": "The recorded objective is calculated from the two logged loss terms; no validation curve exists.",
+      "aliases": []
+    },
+    {
+      "name": "pharmacotype_cuda",
+      "png": "pharmacotype_cuda.png",
+      "pdf": "pharmacotype_cuda.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "PCA wins model selection; the mean baseline is better on pancreatic test groups.",
+      "source": "Source: docs/pharmacotype-cuda-training.json \u00b7 trials / heldout.pancreatic_development",
+      "data": {
+        "validation_mean_rmse": {
+          "identity": 1.1386661032190875,
+          "pca": 0.9935774765876108,
+          "mlp": 0.996904923699122
+        },
+        "pancreatic_test": {
+          "training_mean": 0.8993502661263638,
+          "selected_pca": 0.9691902755094586
+        }
+      },
+      "note": "Validation mean-baseline RMSE was not recorded, so none is invented. Three-seed means; seeds are not independent data replicates.",
+      "aliases": [
+        "pharmacotype"
+      ]
+    },
+    {
+      "name": "pharmacotype_pdo_auc",
+      "png": "pharmacotype_pdo_auc.png",
+      "pdf": "pharmacotype_pdo_auc.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "No learned model improves validation error. Five validation patients limit the conclusion.",
+      "source": "Source: docs/pharmacotype-pdo-auc.json \u00b7 mean_baseline / trials",
+      "data": {
+        "training_mean": 0.15622625952906774,
+        "identity": 0.23326165213776281,
+        "pca": 0.205254073078709,
+        "mlp": 0.1892330199473143
+      },
+      "note": "AUC is normalized area under the drug-response curve. Not a full-curve prediction or confirmation result.",
+      "aliases": [
+        "pdo"
+      ]
+    },
+    {
+      "name": "synthetic_null",
+      "png": "synthetic_null.png",
+      "pdf": "synthetic_null.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "* Fixed-horizon comparators. Invalid label-memorization control: 100% (10,000 / 10,000).",
+      "source": "Source: research/learned-evalue-validation/expanded-null.json \u00b7 scenarios.null",
+      "data": {
+        "methods": [
+          "identity",
+          "pca",
+          "autoencoder",
+          "scalar",
+          "fixed_projection",
+          "permutation_p",
+          "permutation_calibrated_e"
+        ],
+        "rates_percent": [
+          1.66,
+          1.71,
+          1.1199999999999999,
+          1.41,
+          1.6500000000000001,
+          5.13,
+          0.24
+        ],
+        "wilson95_percent": [
+          [
+            1.4275044215554755,
+            1.9296205409215375
+          ],
+          [
+            1.4738184787739423,
+            1.9832680838660028
+          ],
+          [
+            0.9316987490236137,
+            1.3458409316937303
+          ],
+          [
+            1.1968644299765752,
+            1.6604525316857763
+          ],
+          [
+            1.4182485154608222,
+            1.918884126983605
+          ],
+          [
+            4.714584204216048,
+            5.579875809568468
+          ],
+          [
+            0.16133788093978357,
+            0.35687763690995117
+          ]
+        ],
+        "invalid_control_percent": 100.0
+      },
+      "note": "Synthetic standalone component audit. Lower null crossing does not establish greater power; not a product error rate.",
+      "aliases": []
+    },
+    {
+      "name": "expression",
+      "png": "expression.png",
+      "pdf": "expression.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "Same 30 selected evaluation pairs. IFIT3 is strongest in this primary run; no PDAC result.",
+      "source": "Source: real-expression/{training,evaluation}.json \u00b7 measured loss / primary evidence paths",
+      "data": {
+        "training_loss": [
+          1.1001360509372966,
+          1.1602975553771668,
+          1.054892571451451,
+          0.9929533654676965,
+          0.9449468999049044,
+          0.9041367974730282,
+          0.8556913429483554,
+          0.806939184933771,
+          0.7659540563239088,
+          0.7679017269059022,
+          0.7273314258877079,
+          0.72858657025242,
+          0.7103470936681671,
+          0.6842794894898305,
+          0.6923686307699928,
+          0.6607602518888588,
+          0.6409405665880917,
+          0.6262247296303242,
+          0.6095253063062828,
+          0.593693175812098,
+          0.5778013175246146,
+          0.5624647242562392,
+          0.545789988102613,
+          0.5484173308286451,
+          0.537730453186216,
+          0.6260111135787487,
+          0.5638772496249822,
+          0.549093674919556,
+          0.513068469298165,
+          0.5022625961797534,
+          0.49088313213750007,
+          0.4797344312849769,
+          0.4665139100147085,
+          0.4612834035969855,
+          0.4518094641890228,
+          0.4488609829417933,
+          0.4330924859082762,
+          0.44365154054692374,
+          0.4298424215908876,
+          0.42116527623671185,
+          0.4113113312755465,
+          0.4040963199574749,
+          0.39058480231777143,
+          0.3811942932565612,
+          0.3727073248069764,
+          0.36505388655200666,
+          0.35941867100914016,
+          0.3507734804793595,
+          0.3425961936198846,
+          0.32999419761300275,
+          0.3225360073888148,
+          0.31523632553839664,
+          0.3090848025251048,
+          0.305966667303937,
+          0.2960768434756597,
+          0.29097387292738547,
+          0.2833492124894107,
+          0.27836627661346725,
+          0.27075795893118354,
+          0.2677870492266812,
+          0.2592041637599127,
+          0.25468846058381633,
+          0.24838141792888252,
+          0.24530784688922946,
+          0.23965768626766315,
+          0.24060624126631264,
+          0.2366681849106702,
+          0.22391819020415935,
+          0.2291030599206063,
+          0.21597251121805583,
+          0.2162383855229097,
+          0.20381122982279737,
+          0.211071398521164,
+          0.1984401585143168,
+          0.195875250151048,
+          0.19023318514489462,
+          0.18791449421933035,
+          0.18222203381833058,
+          0.17644280056423547,
+          0.17559466563345622,
+          0.17232472868277005,
+          0.17230778304279226,
+          0.18953700271834747,
+          0.16582347349102472,
+          0.16974814993956297,
+          0.160099048650917,
+          0.16335857111231208,
+          0.16188990426989588,
+          0.15345605634140155,
+          0.15004213478057454,
+          0.14515117831834157,
+          0.14087389827348898,
+          0.1352769229754031,
+          0.13341690046498558,
+          0.13017510036034563,
+          0.12731509654254777,
+          0.12556761979136669,
+          0.12057857693354396,
+          0.11699688679079633,
+          0.11610424079251475
+        ],
+        "pairs_observed": [
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          30
+        ],
+        "evidence": {
+          "autoencoder": [
+            1.0,
+            3.933476905357768,
+            1.1555433678103273,
+            17.939902759523605,
+            59.80135808881465,
+            924.560816311522,
+            3652.806359631861
+          ],
+          "pca": [
+            1.0,
+            4.5499367991957484,
+            3.3649745433959937,
+            22.154324363339402,
+            11.165982470779175,
+            140.415217743479,
+            85.75579611817608
+          ],
+          "scalar": [
+            1.0,
+            11.712072652783329,
+            9.196714350803305,
+            144.13724160230248,
+            469.8826005325347,
+            1790.041086039092,
+            5964.414045287497
+          ]
+        },
+        "calibrated_permutation_final": 99.0
+      },
+      "note": "Training and downstream evidence are different metrics on different data. No validation or permutation trajectory is invented.",
+      "aliases": []
+    },
+    {
+      "name": "ecosystem",
+      "png": "ecosystem.png",
+      "pdf": "ecosystem.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "Cell PCA wins every shown held-out comparison. No per-epoch validation history recorded.",
+      "source": "Source: docs/ecosystem-training/metrics.json \u00b7 models.*.manifest.training_loss / held_out",
+      "data": {
+        "training_loss": {
+          "malignant": [
+            2.472936455625162,
+            2.4465560394431374,
+            2.415371540301339,
+            2.3972810986343096,
+            2.3669609889647285,
+            2.3480617653876807,
+            2.3264286930824514,
+            2.3074737061457493,
+            2.2862202692377807,
+            2.279013407977795,
+            2.2509773429538145,
+            2.236616863419607,
+            2.2253659902531275,
+            2.2051297121304856,
+            2.1963660253613284,
+            2.177482203465927,
+            2.1639544822246144,
+            2.1511311404059157,
+            2.1420856748374546,
+            2.125877991976886
+          ],
+          "fibroblast": [
+            2.0542315029386438,
+            2.002435022678891,
+            1.9836853378651094,
+            1.9693204093430532,
+            1.9594524947654792,
+            1.9357979685218125,
+            1.9175702603158409,
+            1.902668428025827,
+            1.8909587061942266,
+            1.8784609810978672,
+            1.8630614159826127,
+            1.838312051143395,
+            1.8283331237242595,
+            1.8140291200857361,
+            1.7953479710564804,
+            1.7884629750977188,
+            1.766515410331681,
+            1.756576355429443,
+            1.746342455192087,
+            1.7345248794510342
+          ]
+        },
+        "final_heldout_mse": {
+          "cell-pca": [
+            0.2709393235720737,
+            0.39862635412260694,
+            0.30256419901762194,
+            0.40464438332481845
+          ],
+          "pseudobulk-pca": [
+            0.34067205484803753,
+            0.5396131126052227,
+            0.3759219742733494,
+            0.5267109179212377
+          ],
+          "nb": [
+            0.8886151804633537,
+            1.213791438471117,
+            0.9528448624358861,
+            1.163212248559787
+          ]
+        },
+        "condition_order": [
+          [
+            "malignant",
+            "peng"
+          ],
+          [
+            "malignant",
+            "lin"
+          ],
+          [
+            "fibroblast",
+            "peng"
+          ],
+          [
+            "fibroblast",
+            "lin"
+          ]
+        ]
+      },
+      "note": "Malignant is an enriched proxy. Held-out donor counts: Peng 8/5, Lin 7/9 (malignant/fibroblast); not independent cells.",
+      "aliases": []
+    },
+    {
+      "name": "protein",
+      "png": "protein.png",
+      "pdf": "protein.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "Final held-out error, not an epoch curve. No reconstruction history was retained.",
+      "source": "Source: docs/protein-training.md \u00b7 protein-s10-20260906-v2 \u00b7 frozen reconstruction table",
+      "data": {
+        "Training feature mean": 2.9318,
+        "PCA, 32 components": 1.8243,
+        "Masked denoiser": 2.1067
+      },
+      "note": "Documentation-sourced measured values. Evaluation mask differs from the mask used for checkpoint selection. No training was performed for this figure.",
+      "aliases": []
+    },
+    {
+      "name": "external_protein",
+      "png": "external_protein.png",
+      "pdf": "external_protein.pdf",
+      "size_px": [
+        1600,
+        900
+      ],
+      "scope": "Cross-assay exploratory benchmark. Primary transfer is weak; secondary result needs a new cohort.",
+      "source": "Source: docs/protein-external-{results,training}.json \u00b7 all_graded / bootstrap_ci95",
+      "data": {
+        "primary_view": "rank_pca",
+        "all_graded": {
+          "rank_pca": {
+            "n": 224,
+            "G1_G2": 65,
+            "G3": 159,
+            "pairs": 65,
+            "auroc": 0.5524915336236091,
+            "bootstrap_ci95": [
+              0.47140541848089024,
+              0.6337687469762942
+            ],
+            "balanced_accuracy": 0.5
+          },
+          "rank_linear": {
+            "n": 224,
+            "G1_G2": 65,
+            "G3": 159,
+            "pairs": 65,
+            "auroc": 0.5876149008224479,
+            "bootstrap_ci95": [
+              0.5061417513304306,
+              0.6741170778906628
+            ],
+            "balanced_accuracy": 0.5
+          },
+          "fixed_modules": {
+            "n": 224,
+            "G1_G2": 65,
+            "G3": 159,
+            "pairs": 65,
+            "auroc": 0.49134010643444603,
+            "bootstrap_ci95": [
+              0.4096686018384132,
+              0.5763014029995162
+            ],
+            "balanced_accuracy": 0.5198838896952105
+          },
+          "missingness": {
+            "n": 224,
+            "G1_G2": 65,
+            "G3": 159,
+            "pairs": 65,
+            "auroc": 0.4802128688921142,
+            "bootstrap_ci95": [
+              0.40076681180454765,
+              0.5649153362360908
+            ],
+            "balanced_accuracy": 0.45423318819545233
+          },
+          "rank_kernel": {
+            "n": 224,
+            "G1_G2": 65,
+            "G3": 159,
+            "pairs": 65,
+            "auroc": 0.6937590711175617,
+            "bootstrap_ci95": [
+              0.6248451862602805,
+              0.764392839864538
+            ],
+            "balanced_accuracy": 0.5534591194968553
+          }
+        },
+        "training_source_grade_donors": 104,
+        "interval_replicates": 2000
+      },
+      "note": "95% stratified bootstrap intervals condition on the frozen model and observed cases; not adjusted for multiple views. 224 graded tumors comprise 159 G3 and 65 G2; 65 is the possible pair count, not a native sequential-confirmation sample. The primary rank-PCA head and secondary RBF rank kernel were prespecified. Kernel balanced accuracy at the source-fixed threshold is 0.553; published cohort preprocessing and prior exposure preclude untouched confirmation. No model is refit for this plot.",
+      "aliases": []
+    }
+  ],
+  "generation": "matplotlib; no training or data acquisition"
+}

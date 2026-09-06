@@ -75,14 +75,15 @@ p.wait()
     # On Linux an orphan may briefly be a zombie pending init's reap, but cannot run.
     status = Path(f"/proc/{child}/stat")
     deadline = time.monotonic() + 5
-    while status.exists() and time.monotonic() < deadline:
+    while True:
         try:
-            if status.read_text().split()[2] == "Z":
-                break
-        except FileNotFoundError:
+            state = status.read_text().split()[2]
+        except (FileNotFoundError, ProcessLookupError):
+            break  # The process was reaped, including during the read.
+        if state == "Z":
             break
+        assert time.monotonic() < deadline, f"Owned child remained live: {state}"
         time.sleep(0.02)
-    assert not status.exists() or status.read_text().split()[2] == "Z"
 
 
 def test_private_backend_does_not_inherit_source_root_state(tmp_path,monkeypatch):

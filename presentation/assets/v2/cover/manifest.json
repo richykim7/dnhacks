@@ -1,0 +1,55 @@
+{
+  "ok": true,
+  "operation_id": "rsimg_6549d841435cd1eddcb7a7fc12ed03a9",
+  "request": {
+    "subcommand": "generate",
+    "role": null,
+    "provider": "laozhang",
+    "model": "gemini-3-pro-image-preview",
+    "aspect": "16:9",
+    "resolution": "4K",
+    "n": 1,
+    "seed": 1493397365
+  },
+  "outputs": [
+    {
+      "path": "/home/ubuntu/dnhacks-worktrees/presentation-v2/presentation/assets/v2/cover/out_0.png",
+      "width": 5504,
+      "height": 3072,
+      "bytes": 18692332
+    }
+  ],
+  "cost_estimate_usd": 0.09,
+  "provider_request_ids": [],
+  "warnings": [],
+  "manifest_path": "/home/ubuntu/dnhacks-worktrees/presentation-v2/presentation/assets/v2/cover/manifest.json",
+  "prompt": "Use case: stylized-concept\nAsset type: premium scientific editorial PowerPoint cover background, widescreen 16:9, 4K.\nGenerate an exquisite conceptual illustration with photographic tactile material quality: a macro iridescent translucent cellular membrane arc and organic biomolecular architecture, concentrated in the rightmost 55 percent of the frame. Fine faint mint filaments follow the organic structure around a single warm pale amber core. Near-black charcoal background, deep atmospheric depth, extraordinarily restrained lighting and delicate translucent surfaces. Material feels intricate, real and touchable, with subtle pearlescence rather than glossy plastic.\nComposition: LEFT 45 percent must remain nearly empty, pure near-black charcoal for large native PowerPoint typography. Place the living architecture entirely toward the right edge, artfully cropped, with a graceful arc and depth extending off frame. Respect the empty typography area. An elegant scientific journal editorial image with museum-quality craft, not generic science fiction.\nColor palette: almost-black charcoal, faint cool mint, one restrained warm pale amber core.\nNo text, no letters, no labels, no logos, no watermark, no frame. No DNA double helix. No military imagery or weapons. This is conceptual art, not a claimed microscopy image, no microscopy annotations or simulated scientific measurement data. Return image data.",
+  "refs": [],
+  "mask": null,
+  "subject": null,
+  "transparent": false,
+  "sent_params": {
+    "model": "gemini-3-pro-image-preview",
+    "imageConfig": {
+      "imageSize": "4K",
+      "aspectRatio": "16:9"
+    },
+    "ref_count": 0
+  },
+  "provider_meta": {
+    "transport": "google-native"
+  },
+  "attempts": [
+    {
+      "provider": "laozhang",
+      "model": "gemini-3-pro-image-preview",
+      "outcome": "ok",
+      "message": ""
+    }
+  ],
+  "tenant_id": null,
+  "started_at": "2026-09-06T08:21:17Z",
+  "finished_at": "2026-09-06T08:22:09Z",
+  "rsimg_version": "0.1.0",
+  "rsimg_config_hash": "3a7a42452932aa59fc27392c70548f2e8c45af839b6d667f432968cbf9a39146"
+}

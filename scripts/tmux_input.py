@@ -198,14 +198,14 @@ def dismiss_waiting(client: Tmux, pane: str, *, dry: bool = False) -> str:
         return "dismissed" if waiting_popup(client.screen(pane)) is None else "still-open"
 
 
-def send_board_message(session: str, text: str) -> bool:
+def send_board_message(session: str, text: str, *, socket: str | None = None) -> bool:
     """Defer on uncertain/menu states; keep the per-pane lock through submission."""
     # Control characters in a Board post must not become terminal input.
     text = " ".join(text.splitlines())
     if any(ord(c) < 32 or ord(c) == 127 for c in text):
         return False
     try:
-        client = Tmux()
+        client = Tmux(socket) if socket is not None else Tmux()
         first = client.screen("=" + session + ":")
         with input_lock(client.socket, first.pane) as acquired:
             if not acquired:
