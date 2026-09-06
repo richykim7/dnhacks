@@ -563,7 +563,10 @@ and private atomic frozen-critic donor ledger. Receipt aliases share one process
 identical replay does not add wealth, and consumed canonical donors cannot be
 reused across processes in one shared store. This infrastructure does not itself
 satisfy biological access, sampling or power gates and does not alter discovery
-promotion. Adaptive critics are not implemented. See [native evidence](docs/native-evidence.md).
+promotion. The opt-in `past-block-bilinear-sgd-v1` schedule scores each block
+with the prior critic before a deterministic consumed-block update; scored and
+next critic states commit atomically. The fully frozen baseline remains available.
+See [native evidence](docs/native-evidence.md).
 
 ## Cellular ecosystem development tool
 
@@ -575,8 +578,14 @@ subsamples, frozen gene/assay/state references and explicit missing coverage
 preserve measurement boundaries. The private receipt adapter uses the shared
 native frozen process ledger and requires operator-reviewed identity, access,
 sampling, transfer, selection, privacy, novelty and power artifacts. No biological
-cohort or confirmatory capability is approved; real-data audits and adequate
-power remain release gates. No graph promotion or branch-success behavior changes.
+confirmatory capability is approved. Original Peng/Lin development counts and
+donor partitions have been audited and separate count/PCA/set models actually
+trained: held-out reconstruction favored cell PCA; learned set pooling did not
+improve on donor-summary PCA. All-gene library offsets and a residual NB decoder
+bin preserve selected-panel measurement semantics. The [training report](docs/ecosystem-training.md)
+records coverage, source checksums and negative pilot results. Reserved-cohort
+audit, adequate power and deployment privacy remain confirmation gates.
+No graph promotion or branch-success behavior changes.
 See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limits.
 
 ### Exploratory binder interfaces

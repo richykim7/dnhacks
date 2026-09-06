@@ -733,6 +733,10 @@ dev = [
     { name = "claude-agent-sdk" },
     { name = "pytest" },
 ]
+ecosystem = [
+    { name = "matplotlib" },
+    { name = "scipy" },
+]
 evalue = [
     { name = "torch" },
 ]
@@ -758,6 +762,7 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.1" },
     { name = "gemmi", specifier = ">=0.7,<0.8" },
     { name = "gilda", specifier = ">=1.6.1" },
+    { name = "matplotlib", marker = "extra == 'ecosystem'", specifier = ">=3.9" },
     { name = "matplotlib", marker = "extra == 'litmap'", specifier = ">=3.11.0" },
     { name = "numpy", specifier = ">=2.0" },
     { name = "pandas", specifier = ">=2.2" },
@@ -768,10 +773,11 @@ requires-dist = [
     { name = "pymupdf4llm", marker = "extra == 'litmap'", specifier = "==1.28.2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "requests", specifier = ">=2.32" },
+    { name = "scipy", marker = "extra == 'ecosystem'", specifier = ">=1.14" },
     { name = "sentence-transformers", marker = "extra == 'llm'", specifier = ">=3.0" },
     { name = "torch", marker = "extra == 'evalue'", specifier = ">=2.6" },
 ]
-provides-extras = ["expression", "evalue", "dev", "llm", "litmap"]
+provides-extras = ["ecosystem", "expression", "evalue", "dev", "llm", "litmap"]
 
 [[package]]
 name = "docrep"

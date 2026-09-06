@@ -19,6 +19,7 @@ ecosystem = "dnhacksbio.ecosystem_experiments:main"
 protein-tool = "dnhacksbio.protein_tools:main"
 
 [project.optional-dependencies]
+ecosystem = ["scipy>=1.14", "matplotlib>=3.9"]
 expression = ["decoupler==2.2.0", "pydeseq2==0.5.4"]
 evalue = [
     "torch>=2.6",        # standalone learned betting diagnostics
