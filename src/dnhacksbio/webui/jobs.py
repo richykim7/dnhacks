@@ -180,6 +180,13 @@ def start_run(project_id: str, *, goal: str = "", steps: int = 30) -> dict:
 
 
 def _spawn(project_id: str, kind: str, argv: list[str], *, extra: dict | None = None) -> dict:
+    from .deployment import lease
+    with lease() as fd:
+        return _spawn_leased(project_id, kind, argv, extra=extra, lease_fd=fd)
+
+
+def _spawn_leased(project_id: str, kind: str, argv: list[str], *, extra: dict | None = None,
+                  lease_fd: int | None = None) -> dict:
     """Start one detached child, with its record + progress + log files. Refuses to overlap.
 
     One job at a time per project, whatever the kind: a build rewrites the very graph a run reads,
@@ -202,6 +209,7 @@ def _spawn(project_id: str, kind: str, argv: list[str], *, extra: dict | None = 
             # Own process group: a Ctrl-C in the server's terminal must not take the child with it,
             # and cancelling the child must not signal the server.
             start_new_session=True,
+            pass_fds=() if lease_fd is None else (lease_fd,),
             env={**os.environ, "PYTHONUNBUFFERED": "1"},
         )
     finally:

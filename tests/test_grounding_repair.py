@@ -110,3 +110,22 @@ def test_exact_search_same_owner_homonyms_require_disambiguation(monkeypatch):
             ]}}
     monkeypatch.setattr(G.requests, "get", lambda *a, **k: Response())
     assert G._ols_exact("ambiguous process", "go") is None
+
+
+def test_mouse_mhc_symbol_collision_overrides_only_documented_human_match(monkeypatch):
+    import pytest
+    def histone_match(_):
+        return [{"db": "HGNC", "id": "22516", "organism": "9606", "score": 1., "entry_name": "H2AB1"}]
+    monkeypatch.setattr(G, "_raw", histone_match)
+    hit = G.nonhuman_gene_lookup("H2-Ab1", "mouse")
+    assert (hit["curie"], hit["organism"]) == ("NCBIGene:14961", "10090")
+    assert G.species_gene_collision("H2-Ab1", "NCBITaxon:10090") == hit
+    for surface, organism in (("H2AB1", "mouse"), ("H2-Ab1", "human"), ("H2-Ab1", "rat"), ("H2-Ab1", "")):
+        assert G.species_gene_collision(surface, organism) is None
+        with pytest.raises(LookupError, match="resolves in HGNC"):
+            G.nonhuman_gene_lookup(surface, organism)
+    # The genuine human histone remains an ordinary HGNC entity.
+    assert G.ground_curie("H2AB1", namespaces=("HGNC",))["curie"] == "HGNC:22516"
+    assert G.species_gene_collision("TRP53", "mouse") is None
+    with pytest.raises(LookupError, match="tracked ortholog"):
+        G.nonhuman_gene_lookup("TRP53", "mouse")

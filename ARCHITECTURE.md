@@ -228,10 +228,13 @@ The actions:
 | `find_datasets` | search GEO and ArrayExpress for real datasets |
 | `search_skills`, `get_skill` | find and read a method guide |
 | `run_experiments` | run several pieces of Python in parallel |
+| `inhibitor` | skill-gated, experiment-scoped bounded preparation/docking, scene vision and canonical measurements; exploratory artifacts only |
+| `spindle` | bounded provisional 3D filament jobs, collected numerical ensembles and separate scoped scene/capture/vision operations; requires spindle-interface guidance |
+| `tissue` | skill-gated conditional PhysiCell/BioFVM jobs, exact source-cell/field queries, immutable scene actions and actual PNG review; simulation sensitivity only |
 | `log` | record an idea, observation, dead end, open question or note with a promise score |
 | `submit` | send a self-judged experiment to verification |
-| `fork` | one generation of beam search over forked sessions |
-| `reflect`, `done` | record a synthesis; stop |
+| `fork`, `checkpoint` | request parent allocation through a mandatory checkpoint report |
+| `reflect`, `done` | record a synthesis; request completion through reporting |
 
 The system prompt makes the agent a curious, rigorous computational biologist looking for something new,
 and carries the **absence rule**: a capped or truncated retrieval is evidence of presence only, so nothing
@@ -257,17 +260,34 @@ A run id is a path: `root`, `root~1`, `root~1~0`. Depth, parent, ancestors and t
 operations on the id, with no lineage table. A branch may read its own lineage's entries and the shared
 graph. The map from run id to model session id is written to disk so a stopped run can be resumed.
 
-### 4.4 Fork and beam search
+### 4.4 Checkpoints and parent allocation
 
-`fork` takes up to 3 branches, each with a distinct angle, and the engine adds one adversarial branch whose
-only job is to falsify the current leading hypothesis. Each branch forks the parent's session, so it
-inherits the full context, runs to completion as a leaf with forking disabled, and its findings are
-digested. A judge call ranks the digests by how much more compute they deserve (a search heuristic, never a
-soundness verdict). The top 2 are resumed with forking enabled and may fork again; the rest are pruned.
-Pruning only stops further exploration: every branch's submissions were already verified.
+Each worker has at most 18 research actions per round, with a warning at three remaining. `checkpoint`,
+`fork` and `done` pause research for the same child's mandatory report; `done` requests completion.
+At the action ceiling a separate tool-disabled turn resumes that child's transcript, with a 4096-token,
+90-second output allowance and at most two format repairs. Failure leaves `reporting_blocked` durable.
+A valid report leaves `awaiting_parent`; neither state is completion or scientific failure.
 
-Budgets, all disclosed to the agent: maximum depth 6, a tree-wide budget of 72 branches, 18 steps per
-leaf generation, up to 6 continuation rounds per survivor, 96 steps per branch in total. A node forks once.
+The parent controller inspects the report and supporting work and explicitly continues, forks, finishes
+or prunes. There is no top-two quota or experiment-count renewal. `run()` produces one checkpoint;
+`run_investigation()` runs parent allocation, including the root controller. Concurrent children report
+and receive decisions individually. Accepted splits transfer work to two or three specified descendants;
+code executes the approved questions from the child's saved context. SQLite stores report versions,
+idempotent decisions and atomic tree-wide slot reservations. An ambiguous interrupted launch is blocked,
+never repeated speculatively. Pending reports/decisions survive restart. Reserved slots are retained on
+ambiguous launch failure. A revised decision/operator recovery is needed for blocked work.
+
+Operational limits remain depth 6, 72 total descendant slots, six continuation rounds and 96 research
+actions per node. In addition, `explorer/budget.py` enforces a frozen shared action/operation-time
+contract across descendants and continuations. New investigations default to 2,880 research actions
+and 43,200 summed operation seconds (12 aggregate hours); existing frozen contracts retain their
+original allowances. The CLI `--budget-spec` can set an explicit contract before a run starts.
+Research grants reserve reporting first; fork grants,
+consumption and refunds share the controller transaction. Restart never refreshes the endpoint or
+refunds ambiguous operations. Async operation deadlines mark backend overrun/cancellation uncertainty
+as operational violations; summed operation wall time is not an OS CPU/GPU quota or calibrated horizon.
+Reported SDK tokens are retained separately. Submissions during research remain available and
+pruning preserves all findings and pending verification. Statistical stopping is not enabled.
 
 ### 4.5 Experiment execution
 
@@ -360,11 +380,51 @@ These are in the package and tested, and deliberately not connected to the falsi
   evidence. Optional `count_expression.py` records approximate paired PyDESeq2 effects privately.
   The `expression_experiment --dataset-id` route accepts identifiers only; legacy TPM uploads remain
   available. No confirmation cohort is bundled, and no statistical result enters discovery feedback.
+- `pharmacotype_data.py`, `pharmacotype_encoder.py`, `pharmacotype.py`: declared donor/curve
+  preparation, CPU separate-view encoders and development prediction/neighborhood/program tools.
+  `pharmacotype_scoring.py` provides receipt-only operator-frozen association replay through the
+  shared native ledger, with opt-in atomic past-block critic updates. Public PRISM/CCLE
+  acquisition and real CPU/GPU training are reproducible via scripts; PCA remains selected
+  after validation. No PDO confirmation is enabled. See [pharmacotype operations](docs/pharmacotype.md)
+  and [real-development model card](docs/pharmacotype-training.md).
 - `expr_encoder.py`: frozen PCA or masked-gene autoencoder encoders with recorded training provenance,
   trained by `scripts/train_expr_encoder.py`.
 - `evalues.py`: p-to-e calibration, merging and e-BH helpers. Inputs must already be valid.
 - `skills/expression-experiment`, `docs/learned-evalue-process.md`, `plans/PLAN-learned-evalue.md` and
   `research/` hold the guide, the process record, the plan and the paper.
+
+### 7.1 Private branch-monitor infrastructure
+
+`branch_monitoring/` provides operator-only episode enrollment, historical-prefix scoring, private
+records, grouped fitting/calibration/evaluation, and private evidence review. Nothing in the explorer
+starts this worker or receives its predictions. Its target is qualifying new subtree outcomes under a
+frozen policy and budget. Learned values are monitor statistics, not automatically exact e-values.
+Algorithm 1 calibration uses independent complete successful episodes and returns no threshold when
+there are too few. No statistical stop is enforced.
+
+`outcomes.py` prospectively binds the runtime budget and frozen final assessor, gathers pre-endpoint
+submitted code/results, requires matching automated verification and privately applies the evidence
+rubric. Pending verification has a fixed adjudication deadline; incomplete/unavailable continuations
+are censored. Only workflow-qualified labels enter the operator training CLI. `--prepare-only` creates
+the runtime identity/budget without research, allowing enrollment before the first action. Legacy
+submission verification remains supported. `receipt_outcomes.py` also supports registered pathway,
+Chronos dependency and biomarker/AUC receipts under `registered-receipts-v1`. The runner's
+`private_experiment` action records exact public requests with owned run/experiment identities;
+operator adapters reconcile these against frozen queue settings, scientific identities and immutable
+completion snapshots. They never infer ownership from printed receipts or rescore an experiment.
+Method-specific evidence and a prospective validity/family review feed the frozen rubric, without a
+universal e-value success threshold. Completed evidence routes to private human review automatically through labeling or the separate
+operator `route` worker, which permits inspection before the subtree endpoint without calling a model;
+review decisions are not training labels. Unsupported/unbound receipt workflows are censored.
+`experiment_transport.py` provides an opt-in immutable completion contract for these three registered
+queues; it records terminal status/result/config/time atomically and prevents terminal result rewrites.
+Other queue types retain their existing replay contracts. Existing completed jobs acquire no invented historical completion timestamp.
+
+A separate authenticated operator console displays recorded child histories and distinct experimental
+evidence; it adds no routes to the research API. Private review never writes ordinary agent feedback or
+the master graph. Explicit boundary export is available. Actual separate-account deployment and real
+corpus trajectory collection/training remain pending; the user deferred those runs until ingestion.
+See [branch monitoring operations](docs/branch-monitoring.md) for commands, boundaries and limitations.
 
 ## 8. The model seam (`llm.py`)
 
@@ -372,6 +432,23 @@ All in-loop model calls go through one module: the Claude Agent SDK over the ins
 There is no API key anywhere. Two pinned models: one for scientific judgment (the explorer, the fork judge,
 the assistant), one for bulk extraction. A resumable `Session` is what makes the explorer's working memory
 and forking possible; a `UsageLedger` records tokens and cache hits per run.
+
+### Measured protein discovery
+
+`protein_design.py`, `protein_encoder.py` and `protein_tools.py` provide exploratory
+protein profiles, coverage, module means, nearest development profiles, context
+comparisons and localization-aware site tables. Frozen mask-aware PCA and optional
+CPU/CUDA denoising artifacts use donor-disjoint non-PDAC training/validation cohorts;
+confirmation data and cross-assay transforms are rejected by discovery operations.
+The operator-only audit preserves grade eligibility and the 48-pair policy.
+`protein_experiment.py` conditionally registers operator-reviewed independent-group
+finite replay through `native_group_replay.py` and the shared canonical donor ledger.
+The explicitly versioned frozen-linear route binds source-fitted witness coefficients
+and feature order, preserves16 unscored pairs, and requires matching final-power review.
+Real CPTAC development models are trained. A subsequent Fudan external benchmark
+provides 60 grade pairs after coverage filtering and CUDA-fitted transfer comparisons;
+independent confirmation review and model-specific power remain release gates. No native wealth
+or verification verdict is exposed. See [protein signaling](docs/protein-signaling.md).
 
 ## 9. The console
 
@@ -500,3 +577,101 @@ is implemented. These commands do not yet provide a Docker-free experiment runti
   database is not held by an active run. Builds and runs are subprocesses.
 - `docs/CAPABILITIES.md` and `webui/architecture.py` are generated from or checked against source. Rename
   a constant and the test tells you.
+
+## Native association core
+
+`native_evidence.py` implements the shared bounded two-view association kernel
+and private atomic frozen-critic donor ledger. Receipt aliases share one process;
+identical replay does not add wealth, and consumed canonical donors cannot be
+reused across processes in one shared store. This infrastructure does not itself
+satisfy biological access, sampling or power gates and does not alter discovery
+promotion. The opt-in `past-block-bilinear-sgd-v1` schedule scores each block
+with the prior critic before a deterministic consumed-block update; scored and
+next critic states commit atomically. The fully frozen baseline remains available.
+See [native evidence](docs/native-evidence.md).
+
+## Cellular ecosystem development tool
+
+The `ecosystem` CLI validates sparse UMI count provenance and a canonical donor
+crosswalk, trains separate compartment PCA or masked NB encoders, and exposes
+donor-level development profiles, coupling/comparison and segmented-cell spatial
+summaries. Counts are not passed to the TPM encoder. Fixed per-compartment
+subsamples, frozen gene/assay/state references and explicit missing coverage
+preserve measurement boundaries. The private receipt adapter uses the shared
+native frozen process ledger and requires operator-reviewed identity, access,
+sampling, transfer, selection, privacy, novelty and power artifacts. No biological
+confirmatory capability is approved. Original Peng/Lin development counts and
+donor partitions have been audited and separate count/PCA/set models actually
+trained: held-out reconstruction favored cell PCA; learned set pooling did not
+improve on donor-summary PCA. All-gene library offsets and a residual NB decoder
+bin preserve selected-panel measurement semantics. The [training report](docs/ecosystem-training.md)
+records coverage, source checksums and negative pilot results. The subsequent
+[CUDA expansion](docs/ecosystem-expansion.md) acquired three more original cohorts
+for 72 donor records and trained separate 64-dimensional denoising/NB encoders
+across three seeds, a lineage classifier and donor-matching scorers. All fitting,
+including exact PCA, runs on CUDA under the shared GPU lease. Fifty-five donors
+meet the two-compartment 32-cell coverage rule; external reconstruction still
+favors PCA. These separate development checkpoints are not private registrations. Reserved-cohort
+audit, adequate power and deployment privacy remain confirmation gates.
+No graph promotion or branch-success behavior changes.
+See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limits.
+
+### Exploratory binder interfaces
+
+`binder/` adds bounded coordinate inspection, exact residue maps, contact/SASA diagnostics and
+portable `binder_bundle.v1` artifacts with optional rebuilt source-derived surface meshes.
+Worker-parsed surfaces and labeled Cα traces remain visual representations of immutable coordinates. The existing collector and explorer enforce source/hash,
+provenance and experiment-scope checks before publication. RuntimeDetail opens those collected
+artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
+A persistent node workspace keeps one selected molecular/binder source beside the researcher activity
+and findings; source availability follows the exact event cursor. Binder cameras transition smoothly
+and yield immediately to manual orbit; reduced motion and saved captures remain deterministic.
+Paired candidates use two scissored views with one actual camera, matching target coordinates and
+metric protocol. Captures retain both source hashes; saved-pixel picks resolve the exact candidate
+and residue, and the inspector follows that source. Availability remains bounded by the event cursor.
+Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
+verification. No live design pilot, biological efficacy or performance acceptance
+is implied. Immutable scoped scene recipes and PNG captures support actual image observations,
+recorded action replay and independent user exploration inside the owning experiment.
+See [supported behavior and remaining acceptance](docs/binder-design.md).
+
+The provisional native `binder` action is instruction-gated by `binder-interface` and restricted to
+an existing experiment owned by the current researcher. It records target/epitope/protocol and
+comparison/follow-up artifacts, real receipt milestones, collected candidates and scoped scene/image
+reviews. Queuing requires a separate operator launch; no agent-provided executables or host paths
+are accepted. Image-review usage is recorded in the research ledger. This adds no audited structural
+method, statistical verdict or master-graph promotion path.
+
+
+## Tumor–stroma instrument
+
+`tissue/` and `native/tissue/` provide a conditional fixed-position PhysiCell 1.14.2/BioFVM
+alanine exchange model, bounded CPU runs and simulation-sensitivity summaries. The model's
+volume/damage law and parameters are assumed; computational seeds and cells are not biological
+replicates. No result is an audited statistical test. The collector validates tissue arrays and
+stores immutable cell JSON and float32 field chunks, served through the exact-run/cursor guard.
+The selected experiment opens a Three.js tissue theater with cutaways, shared field scale,
+cell inspection and paired conditions. Numerical sampling uses source coordinates and voxels;
+CAF shape and membrane shading are illustrative. The skill-gated `tissue` research action shares
+the CLI's scoped model/job/scene operations. Immutable agent revisions support separate scene-action
+playback; rendered PNG bytes reach the model seam and unavailable vision cannot complete a review.
+The sourced sensitivity study and actual-image reviews are recorded. Large scenes retain all source
+cells through adaptive drawing and mobile aggregation; software-rendered motion measurements miss
+the60/30fps targets, so hardware-accelerated throughput is not claimed.
+See [tumor–stroma](docs/tumor-stroma.md).
+
+### Spindle experiment adapter
+
+`spindle/` validates source-linked numerical protocols and executes an operator-pinned
+3D Cytosim CPU build with durable scoped receipts, cancellation, budgets and raw
+archives. The registered `spindle` action archives complete scientific trajectories
+and publishes separately bounded display frames with full-ensemble metrics into
+their owning experiment. Temporal display sampling retains all entities in each
+selected frame and records the source hash and exact frame mapping. New scientific hypotheses use new
+experiment identities; scene revisions do not rerun mechanics. The inline spindle
+observatory preserves source coordinates and physical samples, displays pole IDs
+and comparison, and replays recorded scene actions separately from human exploration.
+Immutable scene recipes, captures and actual image-bearing model observations use
+the runtime journal and its playback visibility boundary. This is provisional,
+uncalibrated mechanics; no p-values, biological sample counts or verification verdicts
+are generated. See [spindle operations](docs/spindle-simulator.md).

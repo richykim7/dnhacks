@@ -18,7 +18,7 @@ test("retired forecast route opens investigations without forecast requests", as
     page.getByRole("heading", { name: investigation.goal, level: 1 }),
   ).toBeVisible();
   expect(requests.some((url) => url.includes("/api/forecasting/"))).toBe(false);
-  await page.screenshot({ path: "/tmp/dn-no-forecast.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-no-forecast.png") });
 });
 
 test("tree, live detail, recorded experiments and theme screenshots", async ({
@@ -33,14 +33,14 @@ test("tree, live detail, recorded experiments and theme screenshots", async ({
   ).toBeVisible();
   await expect(page.locator(".agent-node")).toHaveCount(6);
   await page.waitForTimeout(500); // let the deliberate camera movement settle before inspecting geometry
-  await page.screenshot({ path: "/tmp/dn-tree-dark.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-tree-dark.png") });
   await page
     .getByRole("button", { name: "Inspect Variant-specific effects" })
     .click();
   await expect(
     page.getByText("Live update: robustness check has completed."),
   ).toBeVisible();
-  await page.screenshot({ path: "/tmp/dn-detail-dark.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-detail-dark.png") });
   await page.getByRole("button", { name: "Close researcher detail" }).click();
   await expect(
     page.getByRole("tablist", { name: "Researcher detail" }),
@@ -59,7 +59,7 @@ test("tree, live detail, recorded experiments and theme screenshots", async ({
   ).toBeVisible();
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await page.waitForTimeout(400);
-  await page.screenshot({ path: "/tmp/dn-detail-light.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-detail-light.png") });
   expect(errors).toEqual([]);
 });
 test("library edits, assistant proposals, uploads, build and launch requests", async ({
@@ -132,7 +132,7 @@ test("review controls are hidden and old knowledge links still work", async ({
     ).toHaveAttribute("href", "#knowledge");
   }
   expect(requests.some((url) => url.includes("/api/review"))).toBe(false);
-  await page.screenshot({ path: "/tmp/dn-knowledge.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-knowledge.png") });
 });
 test("playback conceals later evidence and mobile layout fits", async ({
   page,
@@ -144,7 +144,7 @@ test("playback conceals later evidence and mobile layout fits", async ({
   await page.getByRole("button", { name: "Pause playback" }).click();
   await expect(page.locator(".agent-node")).toHaveCount(1);
   await page.waitForTimeout(500);
-  await page.screenshot({ path: "/tmp/dn-mobile.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-mobile.png") });
   const width = await page.evaluate(() => ({
     scroll: document.documentElement.scrollWidth,
     width: innerWidth,
@@ -203,7 +203,7 @@ test("library provenance, documents, history and accessible light theme", async 
   ).toBeVisible();
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await page.waitForTimeout(300);
-  await page.screenshot({ path: "/tmp/dn-library-light.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-library-light.png") });
   const axe = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();

@@ -115,6 +115,7 @@ register_method("dependency-chronos-v1", validate_payload)
 
 
 class Store(QueueStore):
+    immutable_completions = True
     worker_module = "dnhacksbio.dependency_scoring"
     method = "dependency-chronos-v1"
 

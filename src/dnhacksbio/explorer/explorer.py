@@ -30,6 +30,8 @@ from dnhacksbio.explorer import embed as EMB
 from dnhacksbio.explorer import lineage as LIN
 from dnhacksbio.explorer import skills as SK
 from dnhacksbio.explorer.runtime import Journal, process_identity, safe_id
+from dnhacksbio.explorer.budget import BudgetUnavailable
+from dnhacksbio.explorer.control import ControlStore, REPORT_PROMPT, validate_report, validate_decision
 from dnhacksbio.explorer.exploration import ExplorationLog
 from dnhacksbio.explorer.fulltext import FullTextStore
 from dnhacksbio.explorer.sandbox import SandboxPool
@@ -90,97 +92,27 @@ def _shown(n: int, total: int, unit: str = "rows") -> str:
 
 
 def _depth_nudge(depth: int) -> str:
-    """Depth-scaled fork guidance. A promoted survivor is exactly the branch whose line most deserves
-    splitting, so forking is discouraged only at MAX_DEPTH, where the hard cap takes over anyway."""
-    if depth >= MAX_DEPTH:
-        return ("You are at the maximum fork depth, so do not fork further; drive this line to a concrete "
-                "conclusion (submit what survives, then `done`).")
-    if depth >= 1:
-        return ("You may fork because the judge kept this line. If it has split into distinct sub-angles "
-                "that should be pursued at once, fork them and you will judge that batch yourself. If it "
-                "has not split, deepen it instead.")
-    return ("Fork when an idea deserves several different attacks at once; each branch takes a distinct "
-            "angle, not a linear continuation.")
+    return ("Propose distinct concurrent subquestions in a checkpoint report. "
+            "The parent decides and orchestration executes approved forks. "
+            + ("Maximum fork depth reached; propose sequential work or completion." if depth >= MAX_DEPTH else ""))
 
 
 def _leaf_brief(run_id: str, angle: str, hypothesis: str) -> str:
-    """The turn-1 message a freshly forked leaf child receives instead of the full standing context. It
-    already inherited the system prompt, protocol, rigor, corpus card and history from the parent session,
-    so this sends only what is new: its identity, the angle to pursue, and the instruction to conclude
-    with a self-summary. A leaf cannot fork; the orchestrator reads its summary and decides whether to
-    deepen the line."""
-    lines = [
-        f"You are now an independent leaf branch (branch run_id: {run_id}), forked from the line you were "
-        "just on, and you keep all the context, memory and reasoning above. Pursue this angle, distinct "
-        "from the parent line and from any sibling branches forked alongside you:"]
-    if angle:
-        lines.append(f"  Angle: {angle}")
-    if hypothesis:
-        lines.append(f"  Hypothesis to test: {hypothesis}")
-    lines += [
-        "Approach it from a different direction (a different experiment, dataset or framing), not as a "
-        "linear continuation of the parent's work.",
-        "As a leaf you cannot fork this generation. Drive this single angle to a concrete result or a "
-        "clean dead-end: search and recall as needed, log ideas, run experiments, and submit what clears "
-        "your own rigor bar.",
-        "Before you `done`, `reflect` a one-paragraph summary of what you found and why it matters, with "
-        "the key numbers, or why it is a dead-end. An orchestrator reads that summary to decide whether "
-        "this line continues, so keep it calibrated and do not oversell a fragile number.",
-        "Your writes land in the shared verification pipeline under your own run_id; you do not see "
-        "sibling branches. Respond with your next action as one JSON object, per the protocol."]
-    return "\n".join(lines)
+    return (f"You are child {run_id}, with your inherited context intact. Objective: {angle}. {hypothesis}\n"
+            "Do useful research and submit eligible findings at any point. You have a bounded research "
+            "round, followed by a mandatory report. Useful unfinished work and falsifications are valid "
+            "progress. checkpoint pauses for parent allocation; done requests completion. "
+            "fork proposes subquestions for parent approval. Neither action launches research itself.")
 
 
 def _adversarial_brief(run_id: str) -> str:
-    """The turn-1 message for the adversarial leaf the engine adds to every fork. Where a normal leaf
-    explores a new angle, this branch tries to break the investigation's current leading hypothesis. It
-    inherited the parent's context by forking, so it already knows that hypothesis; the brief only
-    redirects its intent from confirming to falsifying, through a real experiment rather than an invented
-    objection."""
-    return "\n".join([
-        f"You are now the adversarial leaf branch (branch run_id: {run_id}), forked from the line you were "
-        "just on, and you keep all the context, memory and reasoning above.",
-        "Your job is the opposite of the other branches: do not extend or confirm the leading hypothesis "
-        "this investigation has been building; try to falsify it. Identify that hypothesis from the "
-        "context above, then design the single experiment most likely to break it if it is wrong: the "
-        "confound it has not ruled out, the population where it should reverse, the negative control that "
-        "must stay null, or the alternative mechanism that would explain the same data.",
-        "Run a real, decisive experiment under the full rigor contract, and let the data decide rather "
-        "than asserting a reason the hypothesis is wrong. If the line survives your strongest attack, "
-        "report the attack and that it held; if it breaks, say which assumption failed and with what "
-        "numbers.",
-        "As a leaf you cannot fork this generation. Before you `done`, `reflect` a one-paragraph, "
-        "calibrated summary: did the leading line survive or break, and on what evidence. Your writes land "
-        "in the shared verification pipeline under your own run_id; you do not see sibling branches. "
-        "Respond with your next action as one JSON object, per the protocol."])
+    return _leaf_brief(run_id, "Try to falsify the leading hypothesis with a decisive experiment", "")
 
 
 def _continue_brief(run_id: str, depth: int, budget_remaining: int, rounds_left: int = 0) -> str:
-    """The turn-1 message a promoted branch receives when it is resumed: it was judged the most promising
-    of its sibling batch, so it continues its own conversation with full context to deepen the line, and
-    may now fork sub-branches. `rounds_left` states how many more times it can be resumed if it keeps
-    producing, so the agent can choose between splitting the line and keeping it."""
-    keep_going = (f"Deepening does not end your line: `done` closes this round, and you will be resumed up "
-                  f"to {rounds_left} more time(s) for as long as each round produces a new experiment or a "
-                  f"new submission. A round that adds nothing ends it. Do not rush work to fit one round, "
-                  f"and do not fork merely to stay alive."
-                  if rounds_left > 0 else
-                  "This is your last round on this line; the continuation budget is used up, so finish and "
-                  "`reflect` a summary that stands on its own.")
-    return "\n".join([
-        f"You (branch {run_id}) were judged the most promising of your sibling batch and have been resumed "
-        "to continue, with your full context and memory above intact. You now own this line: the parent "
-        "will not fork it again, and no other agent can. Whether it branches from here is your call.",
-        "First, decide whether this line has split into distinct sub-angles that should be pursued at "
-        "once. If it has, `fork` them now and you will judge that batch yourself. If it has not, deepen it "
-        "instead: sharpen or falsify your best finding with a decisive next experiment, or resolve the "
-        "open question you surfaced.",
-        keep_going,
-        f"You are now {depth} fork-level(s) deep and may fork again if this line splits into sub-angles "
-        f"that need separate attention. {_depth_nudge(depth)} Tree-wide fork budget remaining: "
-        f"{budget_remaining}.",
-        "Submit what clears your rigor bar; `reflect` a fresh summary before you `done`. Respond with your "
-        "next action as one JSON object, per the protocol."])
+    return (f"Parent authorized another bounded round for {run_id}. Preserve your context and findings. "
+            "Report unfinished work candidly. Every further grant requires a fresh parent decision. "
+            + _depth_nudge(depth))
 
 _SYS = (
     "You are a curious, rigorous computational biologist exploring a knowledge graph and its full-text "
@@ -229,8 +161,14 @@ Actions:
 - read_paper     {"paper_id": "<id>", "max_chars": 30000, "offset": 0}  -> a paper's text, local or just
                    fetched. Long papers come back truncated and say so; call again with the offset given to
                    read on. A truncated read never supports "the paper does not mention X".
+- binder         {"operation": "<operation>", "experiment_id": "<owned ID>", "args": {...}} -> scoped exploratory binder records, receipts and actual scene/vision tools; get_skill binder-interface first
+- spindle        {"operation": "<operation>", "experiment_id": "<owned ID>", "args": {...}} -> provisional native spindle jobs and scoped scene/vision workflow; get_skill spindle-interface first
 - search_skills  {"query": "<method or question>"}              -> which methods fit; then get_skill for the how
+- tissue         {"experiment_id":"<id>","operation":"<operation>","args":{...}} -> conditional spatial model; get_skill tissue-interface first
 - get_skill      {"name": "<skill>"}                            -> full method guidance, rigor invariants and an example
+- private_experiment {"method_id":"paired-pathway-v1|dependency-chronos-v1|biomarker_auc.v1", "spec":{...}, "input":{"cohort_id":"...","manifest_sha256":"..."}}
+                   -> submit an operator-registered experiment with runner-owned provenance; load the corresponding experiment skill first.
+                      Returns only a receipt. Never manufacture RESULT or submit that receipt to legacy verification.
 - run_experiments{"experiments": [ {"hypothesis","subject","object","method","expected_sign":-1|0|1,"code"}, ... ]}
                    -> runs each `code` in a parallel sandbox. Your code must print one line with json.dumps:
                       print("RESULT:", json.dumps({"effect":..,"p_null":..,"null_model":"..","n_units":..,"robust":true}))
@@ -247,21 +185,11 @@ Actions:
                    -> Propose several divergent experiments here; this is where divergence happens.
 - log            {"kind":"idea|observation|dead-end|open-question|note","title":"..","body":"..","score":0..1}
 - submit         {"entry_id":<experiment entry id>}             -> send a self-judged experiment to verification
-- fork           {"branches":[{"hypothesis":"..","angle":".."}, ...]}  -> run one generation of beam search
-                   on an idea. Propose up to 3 branches. Each must approach the idea along a different axis
-                   (a different mechanism, kind of evidence, dataset or population, or framing of the
-                   question) so that they could not collapse into the same experiment; do not propose
-                   paraphrases or the same move on different data, and state in each `angle` what makes it
-                   orthogonal to the others. The engine adds one adversarial branch whose job is to falsify
-                   your current leading hypothesis; you do not request it. Each branch inherits your full
-                   context and runs to completion; their findings are judged for promise, the most promising
-                   are resumed to deepen (and may fork again), and the rest are pruned. You get back the
-                   ranked findings with reasons to synthesize across. Use it when you pivot to, or press on,
-                   an idea that deserves several different attacks. This blocks until the whole sub-search
-                   resolves and is bounded by a maximum depth and a tree-wide branch budget. Every branch's
-                   submissions are verified regardless of ranking; pruning only stops further exploration.
-- reflect        {"note":".."}                                  -> record a synthesis; no side effect but the note
-- done           {}                                             -> stop (out of ideas or budget)
+- fork           {"branches":[{"hypothesis":"..","angle":".."}, ...]} -> propose a split, pause and report.
+                   The parent chooses concrete subquestions; code executes approved forks.
+- reflect        {"note":".."} -> save an ordinary research synthesis.
+- checkpoint     {} -> pause research and produce your mandatory report for parent allocation.
+- done           {} -> request completion through the same validated reporting phase.
 
 Rigor contract. Every experiment you run must satisfy all of these. Independent verification re-derives
 soundness from your reported numbers and rejects anything that fails before a human sees it, so build them
@@ -328,7 +256,8 @@ class Explorer:
                  share_from: "Explorer | None" = None, fork_budget: "ForkBudget | None" = None,
                  resume_sid: str | None = None, branch_brief: str | None = None, fork_fn=None,
                  fork_enabled: bool = True, judge_fn=None, trace_dir: str | None = None,
-                 project_id: str | None = None, branch_objective: str | None = None):
+                 project_id: str | None = None, branch_objective: str | None = None,
+                 allocation_fn=None, subtree_budget=None):
         self.run_id = safe_id(run_id)
         self.goal = goal
         self.model = model
@@ -388,6 +317,7 @@ class Explorer:
         self._transcript_path = str(td / f"transcript_{run_id}.jsonl")  # raw SDK message stream per step
         self._trace_dir = str(td)
         self._last_capture: dict = {}
+        self._session_connected = False
         self._session = None                    # persistent resumable session (opened in run(); None in tests)
         self._seen_fb: set = set()              # feedback ids already surfaced (per-turn delta dedup)
         self._seen_corr: set = set()            # correction ids already surfaced
@@ -406,6 +336,15 @@ class Explorer:
         self._fork_meta: dict | None = None
         self._has_forked = False       # a node splits once; the tree grows through survivors
         self.journal = share_from.journal if share_from else Journal(td)
+        self.control = share_from.control if share_from else ControlStore(td)
+        if share_from is None:
+            existing_budget = self.control.budgets(self.run_id)
+            if subtree_budget is not None or not existing_budget:
+                self.control.freeze_budget(self.run_id, subtree_budget)
+        elif subtree_budget is not None:
+            self.control.freeze_budget(self.run_id, subtree_budget)
+        self._allocation_fn = allocation_fn if allocation_fn is not None else (share_from._allocation_fn if share_from else None)
+        self._report_reason = "allowance_exhausted"
         self.vq.runtime_journal = self.journal
         if share_from:
             project_id = share_from.manifest.get("project_id")
@@ -570,7 +509,7 @@ class Explorer:
                          "rejects what fails). Follow it whenever you write run_experiments code:\n" + rigor)
         d = LIN.depth(self.run_id)
         parts.append(f"FORK POSITION: you are at fork-depth {d} (tree-wide branch budget remaining: "
-                     f"{self.fork_budget.remaining}). {_depth_nudge(d)}")
+                     f"{self.control.remaining(self.run_id)}). {_depth_nudge(d)}")
         parts.append(_PROTOCOL)
         return "\n\n".join(parts)
 
@@ -607,11 +546,16 @@ class Explorer:
             return text
         cap: dict = {}
         if self._session is not None:
+            if not self._session_connected:
+                await self._session.__aenter__()
+                self._session_connected = True
             text = await asyncio.wait_for(self._session.ask(prompt, capture=cap), timeout=self.model_timeout_s)
         else:
             text = await asyncio.wait_for(llm.acomplete(prompt, model=self.model, system=_SYS, effort="high",
-                                       max_turns=24, thinking=True, capture=cap), timeout=self.model_timeout_s)
+                                       max_turns=1, tools_disabled=True, thinking=True, capture=cap), timeout=self.model_timeout_s)
         self._last_capture = cap
+        if self.control.get(self.run_id):
+            self.control.cost(self.run_id, "research", 0., _capture_usage(cap))
         self._event("model.ended")
         return text
 
@@ -641,20 +585,17 @@ class Explorer:
                 "bottom line contradicts any of them, say so and say why.")
 
     def _budget_line(self) -> str:
-        """How many steps this round has left. Every budget the agent is held to is disclosed to it so it
-        can prioritise; the last two steps say so explicitly, while a choice remains."""
-        if self._round_max_steps <= 0:
-            return ""
-        used = self.steps - self._steps_at_round_start
-        left = self._round_max_steps - used
-        if left <= 0:
-            return ""
-        if left <= 2:
-            return (f"STEP BUDGET: {left} step(s) left this round; close out. Submit what already clears "
-                    f"your rigor bar and `reflect` your summary now; do not start an experiment you cannot "
-                    f"finish and read.")
-        return (f"STEP BUDGET: step {used + 1} of {self._round_max_steps} this round ({left} left). Spend "
-                f"them on what would change your conclusion, not on confirming it.")
+        state = self.control.get(self.run_id)
+        left = max(0, state["allowance"] - state["used"]) if state else self._round_max_steps
+        limits = self.control.budgets(self.run_id)
+        if limits:
+            left = min(left, *(b["action_holds"].get(self.run_id, 0) for b in limits))
+        shared = " ".join(f"Subtree {b['run_id']}: {b['contract']['actions'] - b['actions']} total actions and "
+                          f"{max(0., b['contract']['seconds'] - b['spent']):.1f} accounted seconds remain, shared with descendants."
+                          for b in limits)
+        return (shared + f" RESEARCH ALLOWANCE: {left} actions remain before mandatory reporting. "
+                "checkpoint reports early; done requests completion; neither means automatic pruning. "
+                + ("Wrap up current work and prepare to report unfinished progress." if left <= 3 else ""))
 
     def _turn_message(self, obs: str) -> str:
         """The per-turn message on the resumable session: only what is new since the last turn (the result
@@ -962,6 +903,18 @@ class Explorer:
         self._pending_skills[name] = skill
         return f"Complete {name} guidance will accompany the next model request (version {skill['sha256']})."
 
+    async def _act_tissue(self, args) -> str:
+        if "tissue-interface" not in self._delivered:
+            return "(tissue blocked: get_skill tissue-interface and receive its guidance first)"
+        from dnhacksbio.tissue.tools import operate
+        scope = {"project_id": self.manifest["project_id"], "run_id": self.run_id,
+                 "experiment_id": str(args.get("experiment_id", ""))}
+        try:
+            result = await operate(self.journal, scope, str(args.get("operation", "")), args.get("args", {}))
+        except (ValueError, FileNotFoundError, KeyError, IndexError, TimeoutError, RuntimeError) as exc:
+            result = {"status": "failed", "operation": args.get("operation"), "error": str(exc)[:2000]}
+        return json.dumps(result, allow_nan=False)
+
     async def _act_run_experiments(self, args) -> str:
         exps = [e for e in (args.get("experiments") or []) if isinstance(e, dict) and e.get("code")]
         if not exps:
@@ -970,6 +923,9 @@ class Explorer:
             return "(at most 8 experiments per action)"
         for e in exps:
             method = e.get("method_id")
+            if method == "binder-interface":
+                self._event("policy.rejected", {"reason": "Binder guide is not an audited method", "method_id": method})
+                return "(binder-interface is an exploratory tool guide; use method_id exploratory)"
             required = "agent-runtime" if method == "exploratory" else method
             if not required or required not in self._skill_snapshots or required not in self._delivered:
                 self._event("policy.rejected", {"reason": "Method guidance not delivered", "method_id": method})
@@ -984,7 +940,12 @@ class Explorer:
             from dnhacksbio.explorer.sandbox import run_many
             def progress(index, kind, payload):
                 self._event(kind, payload, experiment_id=identities[index])
-            run = lambda codes: run_many(codes, max_parallel=self.max_parallel, timeout=600,
+            def scoped_codes(codes):
+                return ["import os as _runtime_os\n_runtime_os.environ['DNHACKS_EXPERIMENT_SCOPE'] = "
+                        + repr(json.dumps({"project_id": self.manifest.get("project_id"),
+                                           "run_id": self.run_id, "experiment_id": expid})) + "\nexec(compile(" + repr(code) + ", '<experiment>', 'exec'))"
+                        for code, expid in zip(codes, identities)]
+            run = lambda codes: run_many(scoped_codes(codes), max_parallel=self.max_parallel, timeout=600,
                                          network=self.network, cache_dir=self.cache_dir,
                                          scratch_dir=self.scratch_dir, pool=self.sandbox_pool,
                                          progress=progress, journal=self.journal,
@@ -1026,6 +987,11 @@ class Explorer:
                         "stderr": self.journal.blob(getattr(r, "stderr", "") or ""),
                         "exploratory": e["method_id"] == "exploratory"}, experiment_id=expid)
             for artifact in getattr(r, "artifacts", None) or []:
+                if artifact.get("kind") == "binder_bundle" and artifact.get("binder_scope") != {
+                        "project_id": self.manifest.get("project_id"), "run_id": self.run_id,
+                        "experiment_id": expid}:
+                    artifact = {"artifact_id": artifact["artifact_id"], "status": "rejected",
+                                "failure_reason": "Binder bundle belongs to a different experiment scope"}
                 self._event("artifact", {**artifact, "schema_version": 1, "run_id": self.run_id,
                             "investigation_id": LIN.root(self.run_id), "attempt_id": self.attempt_id,
                             "experiment_id": expid}, experiment_id=expid, producer="collector")
@@ -1253,174 +1219,295 @@ class Explorer:
             print(f"[fork] could not persist judge verdicts: {type(e).__name__}: {e}", flush=True)
 
     async def _act_fork(self, args) -> str:
-        """One generation of recursive beam search. The orchestrator for this fork:
-          1. Expand: fork one leaf branch per requested angle (each inherits the cached context via
-             fork_session) with fork disabled, and run them concurrently to completion.
-          2. Judge: build each leaf's findings digest and rank the batch by how much more compute it
-             deserves (assess-promise; a search heuristic, not a soundness verdict).
-          3. Continue: resume the top k survivors in their own sessions with fork enabled, so they deepen
-             and may spawn their own generation; prune the rest.
-          4. Return: hand the controller the ranked findings, reasons and what deepening yielded. Every
-             branch's submissions already flowed to the shared verification pipeline regardless of
-             ranking; pruning only stops further exploration compute and never discards a finding.
-        The orchestrator blocks until the whole subtree resolves, then reports up."""
-        branches = [b for b in (args.get("branches") or [])
-                    if isinstance(b, dict) and (b.get("angle") or b.get("hypothesis"))]
-        if not branches:
-            return "(fork needs a non-empty 'branches' list, each with an 'angle' and/or 'hypothesis')"
-        if not self._fork_enabled:
-            return ("(fork is disabled on this branch: you are a leaf in the current generation; conclude "
-                    "this single angle and the orchestrator decides whether to deepen it)")
-        # One fork per node. A node splits once; the tree then grows through the survivors of that
-        # split, which hold the full context of the line they are carrying.
-        if self._has_forked:
-            return ("(you have already forked; a node splits once. The branches you deepened are carrying "
-                    "those lines forward and will split them themselves if needed; they hold the full "
-                    "context you only see as a digest. Synthesize across what came back, `submit` what it "
-                    "supports, then `done`.)")
-        # Hard cap 1: depth.
-        my_depth = LIN.depth(self.run_id)
-        if my_depth >= MAX_DEPTH:
-            return (f"(fork refused: you are at the maximum fork depth {MAX_DEPTH}; conclude this line, "
-                    f"submit what survives, then `done`)")
-        # need a live session id to fork from (skipped in the injected/test path, where forking is faked)
-        if self._inject_complete is None and (self._session is None or not self._session.session_id):
-            return "(fork unavailable: no live session id yet to fork from — take a step first)"
-        branches = branches[:MAX_BRANCHES_PER_FORK]
-        # The engine appends one adversarial branch whose job is to falsify the leading hypothesis, and
-        # reserves its budget slot alongside the normal branches. It only makes sense as a contrast to at
-        # least one normal branch, so if the budget cannot cover one normal branch plus the adversary, the
-        # adversary is dropped rather than run alone.
-        # Hard cap 2: tree-wide budget. take() grants up to what is left; 0 = exhausted.
-        grant = self.fork_budget.take(len(branches) + 1)     # +1 reserves the mandated adversary
-        if grant <= 0:
-            return (f"(fork refused: the tree-wide fork budget is exhausted; {MAX_LIVE_BRANCHES} branches "
-                    f"already spent across this investigation, so conclude this line instead)")
-        if grant == 1:                                       # too tight for a contrast: one normal, no adversary
-            branches, want_adv = branches[:1], False
-        else:
-            branches, want_adv = branches[:grant - 1], True
-        used = len(branches) + (1 if want_adv else 0)
-        if used < grant:                                     # refund slots reserved but not spent
-            self.fork_budget.refund(grant - used)
-        fork_fn = self._fork_fn
-        if fork_fn is None:                                  # real path: the SDK primitive, in this project dir
-            from claude_agent_sdk import fork_session as _fs
-            fork_fn = lambda sid: _fs(sid, directory=os.getcwd())
-        parent_sid = self._session.session_id if self._session is not None else None
-        # 1. Expand: normal divergent leaves, then the adversary (marked adversarial:true) -----------------
-        leaves, notes = [], []
-        specs = [dict(b) for b in branches]
-        if want_adv:
-            specs.append({"angle": "Adversarial: falsify the leading hypothesis", "adversarial": True})
-        for b in specs:
-            is_adv = bool(b.get("adversarial"))
-            self._forks_spawned += 1
-            crid = LIN.child(self.run_id, self._forks_spawned)
-            try:
-                child_sid = getattr(fork_fn(parent_sid), "session_id", None)
-            except Exception as e:                           # this branch failed to fork; refund its grant
-                self.fork_budget.refund(1)
-                notes.append(f"  {crid}: fork failed ({type(e).__name__}: {e})")
-                continue
-            brief = (_adversarial_brief(crid) if is_adv
-                     else _leaf_brief(crid, b.get("angle", ""), b.get("hypothesis", "")))
-            leaves.append((self._spawn_child(crid, child_sid, brief, b.get("angle") or b.get("hypothesis", "")), b))
-        if not leaves:
-            return "(fork produced no live branches)\n" + "\n".join(notes)
-        self._has_forked = True
-        await asyncio.gather(*[c.run(max_steps=CHILD_MAX_STEPS) for c, _ in leaves],
-                             return_exceptions=True)
-        # 2. Judge -----------------------------------------------------------------------------------
-        digests = [self._branch_digest(c.run_id, b.get("angle", ""), b.get("hypothesis", ""),
-                                       adversarial=bool(b.get("adversarial")))
-                   for c, b in leaves]
-        k = min(BEAM_K, len(leaves))
-        verdicts = await self._judge_promise(digests, k)
-        keep = {v["run_id"] for v in verdicts if v.get("keep")}
-        for child, spec in leaves:
-            verdict = next((v for v in verdicts if v["run_id"] == child.run_id), {})
-            child._event("branch.decision", {"kept": child.run_id in keep, "reason": verdict.get("reason", ""),
-                         "rank": verdict.get("rank"), "angle": spec.get("angle", ""),
-                         "adversarial": bool(spec.get("adversarial"))})
-        vby = {v["run_id"]: v for v in verdicts}
-        self._persist_judge(verdicts, digests)
-        # 3. Continue the survivors (resume with fork enabled) concurrently; prune the rest ------------
-        survivors = [c for c, _ in leaves if c.run_id in keep]
+        self._report_reason = "fork_proposal"
+        if self.control.get(self.run_id):
+            self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
+        return "Research paused. Include proposed subquestions and evidence in your checkpoint report."
 
-        async def _continue(child: "Explorer") -> dict:
-            """Resume a survivor until its line is spent, not once. Three things end the loop:
-              * it forked: the line now lives through its children, which get the same treatment;
-              * a round added no new experiment and no new submission: the line is exhausted;
-              * a hard cap: MAX_CONTINUATIONS rounds, or BRANCH_TOTAL_STEPS cumulative steps."""
-            child._fork_enabled = True                        # promotion grants the right to fork
-            prev = digest = self._branch_digest(child.run_id)
-            for rnd in range(1, MAX_CONTINUATIONS + 1):
-                budget = min(CHILD_MAX_STEPS, BRANCH_TOTAL_STEPS - child.steps)
-                if budget <= 0:
+    async def _report(self):
+        state = self.control.get(self.run_id)
+        if state["status"] == "reporting_blocked":
+            return
+        self.control.patch(self.run_id, status="reporting")
+        self._event("lifecycle", {"lifecycle": "reporting", "reason": self._report_reason})
+        # Disconnect the research client, then reopen the SAME transcript with tools disabled
+        # and a smaller output/time ceiling. No research dispatch exists in this loop.
+        if self._session is not None:
+            sid = self._session.session_id or self._resume_sid
+            if sid:
+                self.session_id = sid
+                self._persist_session(sid)
+                self.control.patch(self.run_id, session_id=sid)
+            if self._session_connected:
+                await self._session.__aexit__()
+            self._session_connected = False
+            self._session = None
+        report_session = None
+        if self._inject_complete is None:
+            sid = self.session_id or self._resume_sid
+            if not sid and state["total_actions"] > 0:
+                self.control.patch(self.run_id, status="reporting_blocked")
+                self._event("lifecycle", {"lifecycle": "reporting_blocked", "reason": "No saved child session"})
+                return
+            report_session = llm.Session(system=_SYS, model=self.model, resume=sid,
+                                         max_turns=1, tools_disabled=True, max_output_tokens=4096)
+        error = ""
+        report_connected = False
+        try:
+            for attempt in range(state["report_attempts"], 3):
+                self.control.patch(self.run_id, report_attempts=attempt + 1)
+                started = time.monotonic()
+                cap = {}
+                report_cost_saved = False
+                try:
+                    prompt = REPORT_PROMPT + "\nObjective: " + self.manifest["branch_objective"] + "\nTrigger: " + self._report_reason + "\n" + error
+                    self._event("model.started", {"phase": "report", "label": "Writing mandatory report"})
+                    async def ask_report():
+                        nonlocal report_connected
+                        if report_session and not report_connected:
+                            await report_session.__aenter__()
+                            report_connected = True
+                        return await asyncio.wait_for(self._inject_complete(prompt) if self._inject_complete
+                            else report_session.ask(prompt, capture=cap), timeout=min(90, self.model_timeout_s))
+                    raw = await self._funded("report", ask_report)
+                    report = validate_report(json.loads(raw))
+                    if report_session and report_session.truncated:
+                        raise ValueError("Report output limit reached")
+                    self.control.cost(self.run_id, "report", time.monotonic() - started, _capture_usage(cap))
+                    report_cost_saved = True
+                    saved = self.control.save_report(self.run_id, report)
+                    self._event("checkpoint.report", {"version": saved["version"], "report": report,
+                                                      "total_actions": saved["total_actions"], "costs": saved["costs"],
+                                                      "budget_scopes": self.control.budgets(self.run_id)})
+                    self._event("lifecycle", {"lifecycle": "awaiting_parent", "reason": "Valid child report saved"})
+                    return
+                except (ValueError, TypeError) as exc:
+                    error = "Repair the report format: " + str(exc)
+                except Exception:
+                    error = "Report generation unavailable; progress remains paused"
                     break
-                child._resume_sid = child.session_id          # resume the conversation it just wrote
-                child._branch_brief = _continue_brief(child.run_id, LIN.depth(child.run_id),
-                                                      self.fork_budget.remaining,
-                                                      rounds_left=MAX_CONTINUATIONS - rnd)
-                await child.run(max_steps=budget)
-                digest = self._branch_digest(child.run_id)    # refreshed: includes what deepening added
-                if child._has_forked:
-                    break
-                if (digest["n_experiments"] <= prev["n_experiments"]
-                        and digest["n_submitted"] <= prev["n_submitted"]):
-                    break
-                prev = digest
-            return digest
-        deepened = {}
-        if survivors:
-            for c, d in zip(survivors, await asyncio.gather(*[_continue(c) for c in survivors],
-                                                            return_exceptions=True)):
-                deepened[c.run_id] = None if isinstance(d, Exception) else d
-        # 4. Return the audit trail and findings to the controller -----------------------------------
-        children = []                                        # structured beam record for the UI (see step())
-        for d in sorted(digests, key=lambda x: vby.get(x["run_id"], {}).get("rank") or 99):
-            v = vby.get(d["run_id"], {})
-            kept = d["run_id"] in keep
-            tag = "deepened" if kept else "pruned"
-            role = "adversarial " if d.get("adversarial") else ""
-            fin = deepened.get(d["run_id"]) or d              # show the post-continuation digest for survivors
-            top = fin["key_results"][0] if fin["key_results"] else None
-            res = (f"top: {top['title']} eff={top['effect']} p_null={top['p_null']}"
-                   if top else ("dead-end" if fin["dead"] else "no scored result"))
-            notes.append(f"  {d['run_id']} [{tag}] {role}{d.get('angle') or d.get('hypothesis') or ''} :: {res}"
-                         f"  ({fin['n_submitted']} submitted) — {v.get('reason', '')}")
-            children.append({
-                "run_id": d["run_id"], "angle": d.get("angle") or d.get("hypothesis") or "",
-                "adversarial": bool(d.get("adversarial")), "kept": kept, "rank": v.get("rank"),
-                "reason": str(v.get("reason", "")), "n_submitted": fin.get("n_submitted", 0),
-                "n_experiments": fin.get("n_experiments", 0), "dead": bool(fin.get("dead")),
-                "top": ({"label": top.get("title"), "effect": top.get("effect"),
-                         "p_null": top.get("p_null")} if top else None)})
-        # stash the structured beam for the reasoning trace (consumed + cleared by step())
-        self._fork_meta = {"parent": self.run_id, "depth": LIN.depth(self.run_id),
-                           "n_leaves": len(leaves), "n_deepened": len(keep),
-                           "budget_remaining": self.fork_budget.remaining, "children": children}
-        return (f"forked {len(leaves)} divergent branch(es); judged for promise; deepened the top {len(keep)} "
-                f"(resumed with full context) and pruned the rest. Every branch's submissions already flowed "
-                f"to the shared verification pipeline; pruning only stops further exploration. "
-                f"Branch outcomes (most promising first):\n" + "\n".join(notes)
-                + self._tree_evidence_block()
-                + f"\nTree-wide fork budget remaining: {self.fork_budget.remaining}. "
-                "The deepened branches above are carrying the strongest lines forward and may split them "
-                "further themselves; do not re-fork their work from here, since you see only their digests "
-                "while they hold the full context. Synthesize across the batch, `submit` what that synthesis "
-                "supports, or fork only if a new angle emerged that no branch is pursuing. Then `done`.")
+                finally:
+                    if not report_cost_saved:
+                        self.control.cost(self.run_id, "report", time.monotonic() - started, _capture_usage(cap))
+                    self._event("model.ended", {"phase": "report"})
+        except Exception:
+            error = "Report session unavailable; progress remains paused"
+        finally:
+            if report_session:
+                if report_session.session_id:
+                    self.session_id = report_session.session_id
+                    self._persist_session(self.session_id)
+                    self.control.patch(self.run_id, session_id=self.session_id)
+                try:
+                    if report_connected:
+                        await report_session.__aexit__()
+                except Exception:
+                    pass
+        self.control.patch(self.run_id, status="reporting_blocked")
+        self._event("lifecycle", {"lifecycle": "reporting_blocked", "reason": error or "Report repair allowance exhausted"})
+
+    def _allocation_records(self):
+        """Ordinary branch evidence for allocation, with explicit bounded coverage."""
+        rows = self.log._rows("WHERE run_id=? ORDER BY entry_id DESC", [self.run_id])
+        items, size = [], 0
+        for row in rows:
+            item = {k: row.get(k) for k in ("entry_id", "kind", "title", "body", "code", "result", "status")}
+            length = len(json.dumps(item, default=str))
+            if size + length > 100000:
+                break
+            items.append(item)
+            size += length
+        return {"records": items, "shown": len(items), "total": len(rows), "truncated": len(items) < len(rows)}
+
+    async def _funded(self, phase, call):
+        op = self.control.reserve_operation(self.run_id, phase)
+        started, interrupted = time.monotonic(), False
+        try:
+            return await asyncio.wait_for(call(), timeout=op["seconds"]) if op else await call()
+        except (asyncio.CancelledError, TimeoutError):
+            interrupted = True
+            raise
+        finally:
+            saved = self.control.settle_operation(op, time.monotonic() - started, interrupted)
+            if saved:
+                self._event("budget.operation", saved)
+
+    async def _parent_decision(self, child):
+        return await child._funded("judge", lambda: self._parent_decision_inner(child))
+
+    async def _parent_decision_inner(self, child):
+        state = self.control.get(child.run_id)
+        context = {"objective": child.manifest["branch_objective"], "report": state["report"],
+                   "report_version": state["version"], "current_round_objective": state.get("objective"),
+                   "supporting_records": child._allocation_records(),
+                   "subtree_budgets": child.control.budgets(child.run_id),
+                   "actions_used": state["total_actions"], "rounds": state["rounds"],
+                   "max_branch_actions": BRANCH_TOTAL_STEPS, "max_rounds": MAX_CONTINUATIONS,
+                   "depth": LIN.depth(child.run_id), "max_depth": MAX_DEPTH}
+        prompt = ("You are the parent allocation controller. Inspect the objective, report and evidence. "
+                  "Choose continue, fork, finish or prune. Do not demand a positive result each round: "
+                  "credible unfinished work, preparation and useful falsification deserve fair consideration. "
+                  "Do not rank by experiment counts or enforce a survival quota. Fork only for distinct "
+                  "useful concurrent subquestions with feasible inputs. Return one JSON object: "
+                  "action, reason; for continue also objective and allowance (1..18); for fork also allowance "
+                  "and branches (2..3 objects with objective, information_gain, feasibility). Respect caps.\n"
+                  + json.dumps(context, default=str))
+        started = time.monotonic()
+        cap = {}
+        try:
+            if self._allocation_fn:
+                import inspect
+                result = self._allocation_fn(context)
+                if inspect.isawaitable(result):
+                    result = await result
+            else:
+                raw = await asyncio.wait_for(llm.acomplete(prompt, model=self.model, tools_disabled=True,
+                    max_output_tokens=4096, max_turns=1, max_attempts=1, capture=cap), timeout=90)
+                result = json.loads(raw)
+            return validate_decision(result)
+        finally:
+            self.control.cost(child.run_id, "judge", time.monotonic() - started, _capture_usage(cap))
+
+    async def _allocate(self, child):
+        """Serialize a node's controller, including restart/partial-fork execution."""
+        import fcntl
+        lock_path = self.control.path.parent / ("allocation-" + child.run_id + ".lock")
+        with lock_path.open("a") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return
+            return await self._allocate_unlocked(child)
+
+    async def _allocate_unlocked(self, child):
+        """One child can report/receive allocation without waiting for siblings."""
+        while True:
+            state = self.control.get(child.run_id)
+            if state["status"] in {"forking", "fork_blocked", "waiting"}:
+                await child._execute_fork(self.control.decision(state["decision_id"]))
+                return
+            if state["status"] != "awaiting_parent":
+                return
+            if not self.control.research_available(child.run_id):
+                self.control.patch(child.run_id, status="completed", terminal_reason="budget_endpoint")
+                child._event("lifecycle", {"lifecycle": "completed", "reason": "Fixed shared budget reached after mandatory report"})
+                self.control.finalize_budgets(child.run_id)
+                return
+            try:
+                decision = await self._parent_decision(child)
+                record = self.control.decide(child.run_id, state["version"], decision)
+            except Exception:
+                child._event("lifecycle", {"lifecycle": "awaiting_parent", "reason": "Parent allocation unavailable or exceeds caps; revised decision required"})
+                return
+            child._event("branch.decision", record)
+            action = decision["action"]
+            if action == "continue":
+                child._resume_sid = child.session_id or state["session_id"]
+                child._branch_brief = "Parent authorized objective: " + decision["objective"]
+                await child.run(max_steps=decision["allowance"])
+            elif action == "fork":
+                await child._execute_fork(record)
+                return
+            else:
+                child._event("lifecycle", {"lifecycle": "completed" if action == "finish" else "pruned", "reason": decision["reason"]})
+                return
+
+    async def _execute_fork(self, record):
+        """Execute the persisted exact approval. Ambiguous interrupted SDK forks stay blocked."""
+        tasks = []
+        for item in record["children"]:
+            rid, spec = item["run_id"], item["spec"]
+            sid = item["session_id"]
+            if item["status"] in {"launching", "failed"}:
+                continue  # Never repeat a possibly completed SDK fork after a crash.
+            if item["status"] == "reserved":
+                if not self.control.claim_launch(record["decision_id"], rid):
+                    continue
+                try:
+                    fork_fn = self._fork_fn
+                    if fork_fn is None:
+                        from claude_agent_sdk import fork_session
+                        fork_fn = lambda parent_sid: fork_session(parent_sid, directory=os.getcwd())
+                    async def launch():
+                        return fork_fn(self.session_id or self._resume_sid)
+                    sid = getattr(await self._funded("fork", launch), "session_id", None)
+                    if self._inject_complete is None and not sid:
+                        raise RuntimeError("No fork session")
+                    self.control.launch_state(record["decision_id"], rid, "launched", sid)
+                except Exception:
+                    self.control.launch_state(record["decision_id"], rid, "failed")
+                    continue
+            c = self._spawn_child(rid, sid, _leaf_brief(rid, spec["objective"], ""), spec["objective"])
+            cstate = self.control.start(rid, record["decision"]["allowance"])
+            c._resume_sid = cstate["session_id"] or sid
+            async def work(c=c):
+                state = c.control.get(c.run_id)
+                if state["status"] in {"working", "reporting"}:
+                    await c.run(max_steps=record["decision"]["allowance"])
+                try:
+                    await self._allocate(c)
+                finally:
+                    self.control.finalize_budgets(c.run_id)
+            tasks.append(work())
+        self._event("lifecycle", {"lifecycle": "waiting", "reason": "Authorized descendants executing"})
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        latest = self.control.decision(record["decision_id"])
+        blocked = latest["status"] != "executed" or any(isinstance(x, BaseException) for x in results)
+        statuses = [self.control.get(i["run_id"]) for i in latest["children"]]
+        settled = all(s and s["status"] in {"completed", "pruned"} for s in statuses)
+        status = "fork_blocked" if blocked else ("completed" if settled else "waiting")
+        self.control.patch(self.run_id, status=status)
+        self._event("lifecycle", {"lifecycle": status, "reason": "Descendant allocation settled" if settled else "Descendant work paused; operator/controller resumption required"})
 
     async def _dispatch(self, action: dict) -> str:
         if self._degraded or getattr(self.journal, "degraded", False) or "agent-runtime" not in self._delivered:
             raise RuntimeError("Mandatory runtime instructions not delivered; dispatch blocked")
+        state = self.control.get(self.run_id)
+        if state and state["status"] != "working":
+            raise RuntimeError("Research paused; dispatch prohibited")
         name, args = action.get("action"), action.get("args", {})
+        if name == "private_experiment":
+            from .private_experiments import dispatch
+            return await dispatch(self, args)
+        if name == 'inhibitor':
+            if 'inhibitor-interface' not in self._delivered:
+                return self._act_get_skill({'name':'inhibitor-interface'})
+            from dnhacksbio.inhibitor.service import Workbench
+            wb=Workbench(self.journal,self.run_id,args['experiment_id'],self.manifest.get('project_id'))
+            if args.get('operation')=='inspect_scene_capture':
+                from dnhacksbio.inhibitor.review import inspect
+                observation,cap=await inspect(wb,args['capture_id'],args.get('question','Describe geometry and occlusion; propose a grounded numerical countercheck.'),self.model)
+                self.control.cost(self.run_id,'research',0.,_capture_usage(cap))
+                return observation
+            return json.dumps(await asyncio.to_thread(wb.dispatch,args,'agent'),allow_nan=False)
         h = {"search_kg": self._act_search_kg, "search_papers": self._act_search_papers,
              "read_paper": self._act_read_paper, "search_skills": self._act_search_skills,
              "get_skill": self._act_get_skill, "log": self._act_log, "submit": self._act_submit,
              "recall": self._act_recall, "neighbors": self._act_neighbors,
              "subgraph": self._act_subgraph, "path": self._act_path}
+        if name == "tissue":
+            return await self._act_tissue(args)
+        if name == "binder":
+            if "binder-interface" not in self._delivered:
+                return "(binder blocked: get_skill binder-interface before dispatch)"
+            from dnhacksbio.binder.runtime import dispatch
+            usage={}
+            try:
+                result=await dispatch(self.journal,self.manifest.get("project_id"),self.run_id,args,usage_capture=usage)
+                return json.dumps(result,allow_nan=False)
+            except (ValueError,KeyError,TypeError,FileNotFoundError,RuntimeError,TimeoutError) as exc:
+                return json.dumps({"error":str(exc)})
+            finally:
+                if usage:self.control.cost(self.run_id,"research",0.,_capture_usage(usage))
+        if name == "spindle":
+            if "spindle-interface" not in self._delivered:
+                return "(spindle blocked: get_skill spindle-interface before dispatch)"
+            from dnhacksbio.spindle.runtime import dispatch
+            try:
+                result=await dispatch(self.journal,self.manifest.get("project_id"),self.run_id,args)
+                return json.dumps(result,allow_nan=False)
+            except (ValueError,KeyError,FileNotFoundError,RuntimeError,TimeoutError) as exc:
+                return json.dumps({"error":str(exc)})
         if name == "run_experiments":
             return await self._act_run_experiments(args)
         if name == "fetch_papers":
@@ -1432,15 +1519,27 @@ class Explorer:
         if name == "reflect":
             self.log.log("note", "reflection", str(args.get("note", "")), run_id=self.run_id)
             return "noted"
-        if name == "done":
-            return "DONE"
+        if name in {"done", "checkpoint"}:
+            self._report_reason = "completion_request" if name == "done" else "voluntary_checkpoint"
+            if state:
+                self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
+            return "Research paused for mandatory report"
         fn = h.get(name)
         return fn(args) if fn else f"(unknown action {name!r})"
 
     async def step(self, message: str) -> tuple[dict, str]:
+        self.control.start(self.run_id, CHILD_MAX_STEPS)
+        return await self._funded("research", lambda: self._step(message))
+
+    async def _step(self, message: str) -> tuple[dict, str]:
         """One think→act→observe cycle on the persistent session. `message` is turn 1's full standing
         context or a turn-2+ delta (last observation + any new feedback). Returns (action, observation)."""
-        self.steps += 1
+        state = self.control.get(self.run_id)
+        if state:
+            state = self.control.consume(self.run_id)
+            self.steps = state["total_actions"]
+        else:
+            self.steps += 1
         if not self.attempt_id:
             self._begin_attempt()
         self._operation_id = uuid4().hex
@@ -1495,66 +1594,93 @@ class Explorer:
                 pass
         return action, obs
 
-    async def run(self, max_steps: int = 40) -> dict:
-        """Autonomous loop on one persistent resumable session (the agent's working memory). Turn 1 sends
-        the full standing context; each later turn sends only what is new (the last observation and any
-        verification or human feedback), and the session caches the rest, so the agent sees its full
-        reasoning thread while only new tokens are paid for. The harness runs this, optionally with a
-        verification worker draining the queue concurrently."""
-        sess = None
+    async def run(self, max_steps: int = 18) -> dict:
+        import fcntl
+        lock_path = self.control.path.parent / ("worker-" + self.run_id + ".lock")
+        with lock_path.open("a") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return {"status": "already_running", "steps": self.steps}
+            return await self._run_round(max_steps)
+
+    async def _run_round(self, max_steps: int) -> dict:
+        state = self.control.start(self.run_id, min(max_steps, CHILD_MAX_STEPS))
+        self.steps = state["total_actions"]
+        self._report_reason = state.get("report_reason", "allowance_exhausted")
+        self._resume_sid = state["session_id"] or self._resume_sid
+        if state["status"] not in {"working", "reporting"}:
+            return self._run_summary()
         heartbeat = None
         try:
             self._begin_attempt()
             heartbeat = asyncio.create_task(self._heartbeat())
-            if self._inject_complete is None:      # real path: open the persistent session (tests inject a fake)
-                # A forked child resumes its parent's session (resume_sid) so it inherits the cached ancestor
-                # context; a root run opens fresh (resume_sid is None).
-                sess = llm.Session(system=_SYS, model=self.model, effort="high", max_turns=24, thinking=True,
-                                   resume=self._resume_sid)
-                await sess.__aenter__()
-            self._session = sess
-            # Turn 1: a root sends the full standing context; a forked child sends only its brief, since it
-            # inherited the goal, corpus, protocol, rigor and history from the session it forked from. Every
-            # budget the agent is held to is disclosed to it; disclosure changes no cap.
-            self._steps_at_round_start = self.steps
-            self._round_max_steps = int(max_steps)
-            message = self._branch_brief or self._state()
-            if bl := self._budget_line():          # turn 1 too; a leaf brief never went through _state()
-                message = f"{message}\n\n{bl}"
-            self._snapshot_seen()                  # per-turn deltas only surface feedback that arrives later
-            for _ in range(max_steps):
-                if heartbeat.done():
-                    heartbeat.result()  # persistence failure must stop protected dispatch
-                action, obs = await self.step(message)
-                print(f"[step {self.steps}] {action.get('action')} :: "
-                      f"{str(obs)[:200].replace(chr(10), ' ')}", flush=True)
-                if action.get("action") == "done":
-                    self._event("lifecycle", {"lifecycle": "completed", "reason": "Agent concluded this branch"})
-                    break
-                message = self._turn_message(obs)   # turn 2 onward: only what is new
-            else:
-                self._event("lifecycle", {"lifecycle": "budget_exhausted", "reason": "Step allowance exhausted"})
+            if self._inject_complete is None:
+                self._session = llm.Session(system=_SYS, model=self.model, effort="high", max_turns=1,
+                                            thinking=True, resume=self._resume_sid, tools_disabled=True)
+                self._session_connected = False
+            self._round_max_steps = state["allowance"]
+            self._steps_at_round_start = self.steps - state["used"]
+            message = (self._branch_brief or self._state()) + "\n" + self._budget_line()
+            if state.get("objective"):
+                message += "\nCurrent parent-authorized objective: " + state["objective"]
+            self._snapshot_seen()
+            if state["status"] == "working":
+                for _ in range(max(0, state["allowance"] - state["used"])):
+                    if heartbeat.done():
+                        heartbeat.result()
+                    if not self.control.research_available(self.run_id):
+                        self._report_reason = "subtree_budget_exhausted"
+                        self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
+                        break
+                    started = time.monotonic()
+                    try:
+                        action, obs = await self.step(message)
+                    except BudgetUnavailable:
+                        self._report_reason = "subtree_budget_exhausted"
+                        self.control.patch(self.run_id, status="reporting", report_reason=self._report_reason)
+                        break
+                    finally:
+                        self.control.cost(self.run_id, "research", time.monotonic() - started)
+                    if self._session and self._session.session_id:
+                        self.session_id = self._session.session_id
+                        self.control.patch(self.run_id, session_id=self.session_id)
+                        self._persist_session(self.session_id)
+                    if action["action"] in {"done", "checkpoint", "fork"}:
+                        break
+                    message = self._turn_message(obs)
+            await self._report()
         except BaseException as exc:
             self._cancel_sandbox.set()
+            status = "cancelled" if isinstance(exc, asyncio.CancelledError) else "failed"
+            self.control.patch(self.run_id, status=status)
             if not self._degraded:
-                self._event("lifecycle", {"lifecycle": "cancelled" if isinstance(exc, asyncio.CancelledError) else "failed",
-                                         "reason": f"{type(exc).__name__}: {exc}"})
+                self._event("lifecycle", {"lifecycle": status, "reason": type(exc).__name__})
             raise
         finally:
             if heartbeat:
                 heartbeat.cancel()
                 await asyncio.gather(heartbeat, return_exceptions=True)
-            # stash the live session id so a promoted branch can resume this exact conversation
-            if sess is not None and sess.session_id:
-                self.session_id = sess.session_id
-                self._persist_session(sess.session_id)
-            if sess is not None:
-                try:
-                    await sess.__aexit__()
-                except Exception:
-                    pass
-            self._session = None
-        return {"steps": self.steps, "log": self.log.counts(), "queue": self.vq.counts()}
+            if self._session:
+                if self._session_connected:
+                    await self._session.__aexit__()
+                self._session_connected = False
+                self._session = None
+        return self._run_summary()
+
+    def _run_summary(self):
+        state = self.control.get(self.run_id)
+        return {"steps": state["total_actions"], "status": state["status"],
+                "report_version": state["version"], "log": self.log.counts(), "queue": self.vq.counts()}
+
+    async def run_investigation(self, max_steps: int = 18):
+        """Root uses the same allocation controller as every child."""
+        try:
+            await self.run(max_steps)
+            await self._allocate(self)
+        finally:
+            self.control.finalize_budgets(self.run_id)
+        return self._run_summary()
 
     def _persist_session(self, sid: str) -> None:
         """Record run_id -> sdk_session_id on disk, so a stopped run can be resumed. The SDK's own
@@ -1666,3 +1792,13 @@ def _diagnostics(parsed: dict, stdout: str) -> str:
     s = s.strip()
     tail = f"\n  printed: {s[-DIAG_CAP:]}" if s else ""
     return ((" " + " ".join(out)) if out else "") + tail
+
+
+def _capture_usage(capture):
+    result = {"input_tokens": 0, "output_tokens": 0}
+    for message in capture.get("messages", []):
+        if message.get("type") == "ResultMessage":
+            u = message.get("usage") or {}
+            result["input_tokens"] += sum(u.get(k, 0) or 0 for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
+            result["output_tokens"] += u.get("output_tokens", 0) or 0
+    return result

@@ -1,0 +1,1081 @@
+{
+  "schema": "ecosystem-cna-direct-power-v1",
+  "representation": "dae",
+  "training_donors": 9,
+  "development_donors": 8,
+  "results": {
+    "cca-rbf": {
+      "selection": {
+        "config": {
+          "method": "cca-rbf",
+          "rank": 2,
+          "ridge": 0.1,
+          "bandwidth": 0.5
+        },
+        "fold_growth": [
+          0.21073174476623535,
+          0.09527096152305603,
+          0.04688764363527298
+        ],
+        "mean_growth": 0.11763011664152145
+      },
+      "curves": [],
+      "observed_donors": 8,
+      "distinct_pair_log_growth": 0.12475988268852234,
+      "projections": [
+        {
+          "simulated_donors": 18,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": 0.9792671799659729,
+          "mean_block_h": 0.1427650898694992,
+          "mean_block_log_growth": 0.10880745202302933
+        },
+        {
+          "simulated_donors": 18,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -0.19080641865730286,
+          "mean_block_h": -0.0009418941335752606,
+          "mean_block_log_growth": -0.021200714632868767
+        },
+        {
+          "simulated_donors": 24,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.0009,
+          "anytime_rejection": 0.001,
+          "final_interval": [
+            0.00047357706058500574,
+            0.0017097301130243718
+          ],
+          "anytime_interval": [
+            0.0005432859864972464,
+            0.0018399443874379962
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 2,
+            "12": 8
+          },
+          "noncrossers": 9990,
+          "mean_final_log_wealth": 1.311413049697876,
+          "mean_block_h": 0.14339850842952728,
+          "mean_block_log_growth": 0.1092844232916832
+        },
+        {
+          "simulated_donors": 24,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -0.2556895911693573,
+          "mean_block_h": -0.0010243620490655303,
+          "mean_block_log_growth": -0.02130746655166149
+        },
+        {
+          "simulated_donors": 40,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.1168,
+          "anytime_rejection": 0.121,
+          "final_interval": [
+            0.11065158907829199,
+            0.12324270727299454
+          ],
+          "anytime_interval": [
+            0.11475312869530298,
+            0.12753794206966984
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 1,
+            "11": 7,
+            "12": 10,
+            "13": 14,
+            "14": 41,
+            "15": 56,
+            "16": 100,
+            "17": 170,
+            "18": 193,
+            "19": 280,
+            "20": 338
+          },
+          "noncrossers": 8790,
+          "mean_final_log_wealth": 2.1837854385375977,
+          "mean_block_h": 0.1432599425315857,
+          "mean_block_log_growth": 0.10918927192687988
+        },
+        {
+          "simulated_donors": 40,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -0.41219159960746765,
+          "mean_block_h": -0.0002536684041842818,
+          "mean_block_log_growth": -0.020609581843018532
+        },
+        {
+          "simulated_donors": 60,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.6206,
+          "anytime_rejection": 0.632,
+          "final_interval": [
+            0.6110449187527934,
+            0.6300624608401993
+          ],
+          "anytime_interval": [
+            0.6224988426865223,
+            0.641399781743619
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 1,
+            "11": 5,
+            "12": 13,
+            "13": 14,
+            "14": 56,
+            "15": 54,
+            "16": 109,
+            "17": 158,
+            "18": 210,
+            "19": 322,
+            "20": 308,
+            "21": 371,
+            "22": 449,
+            "23": 473,
+            "24": 547,
+            "25": 541,
+            "26": 567,
+            "27": 590,
+            "28": 559,
+            "29": 490,
+            "30": 483
+          },
+          "noncrossers": 3680,
+          "mean_final_log_wealth": 3.274238348007202,
+          "mean_block_h": 0.14320313930511475,
+          "mean_block_log_growth": 0.1091412752866745
+        },
+        {
+          "simulated_donors": 60,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0004,
+          "anytime_rejection": 0.0006,
+          "final_interval": [
+            0.00015556283662307484,
+            0.0010281283353569795
+          ],
+          "anytime_interval": [
+            0.0002750134763309977,
+            0.001308524096300786
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0,
+            "21": 0,
+            "22": 0,
+            "23": 0,
+            "24": 0,
+            "25": 1,
+            "26": 1,
+            "27": 2,
+            "28": 2,
+            "29": 0,
+            "30": 0
+          },
+          "noncrossers": 9994,
+          "mean_final_log_wealth": -0.6073805093765259,
+          "mean_block_h": 0.00011918210657313466,
+          "mean_block_log_growth": -0.02024601772427559
+        },
+        {
+          "simulated_donors": 100,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.9906,
+          "anytime_rejection": 0.9916,
+          "final_interval": [
+            0.9885113090469386,
+            0.9923119117517536
+          ],
+          "anytime_interval": [
+            0.9896128585686516,
+            0.9932095942332991
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 1,
+            "11": 7,
+            "12": 11,
+            "13": 18,
+            "14": 46,
+            "15": 67,
+            "16": 107,
+            "17": 153,
+            "18": 183,
+            "19": 286,
+            "20": 329,
+            "21": 380,
+            "22": 473,
+            "23": 509,
+            "24": 524,
+            "25": 543,
+            "26": 571,
+            "27": 567,
+            "28": 566,
+            "29": 479,
+            "30": 484,
+            "31": 468,
+            "32": 421,
+            "33": 394,
+            "34": 369,
+            "35": 296,
+            "36": 277,
+            "37": 228,
+            "38": 204,
+            "39": 184,
+            "40": 166,
+            "41": 130,
+            "42": 97,
+            "43": 82,
+            "44": 81,
+            "45": 61,
+            "46": 58,
+            "47": 29,
+            "48": 34,
+            "49": 25,
+            "50": 8
+          },
+          "noncrossers": 84,
+          "mean_final_log_wealth": 5.45358419418335,
+          "mean_block_h": 0.14312782883644104,
+          "mean_block_log_growth": 0.10907168686389923
+        },
+        {
+          "simulated_donors": 100,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0012,
+          "anytime_rejection": 0.0027,
+          "final_interval": [
+            0.0006866043187699607,
+            0.002096472455817011
+          ],
+          "anytime_interval": [
+            0.0018563306257756151,
+            0.003925594153699328
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0,
+            "21": 1,
+            "22": 0,
+            "23": 1,
+            "24": 0,
+            "25": 0,
+            "26": 1,
+            "27": 1,
+            "28": 0,
+            "29": 1,
+            "30": 0,
+            "31": 0,
+            "32": 0,
+            "33": 0,
+            "34": 1,
+            "35": 2,
+            "36": 2,
+            "37": 1,
+            "38": 3,
+            "39": 0,
+            "40": 3,
+            "41": 2,
+            "42": 1,
+            "43": 2,
+            "44": 1,
+            "45": 0,
+            "46": 0,
+            "47": 0,
+            "48": 0,
+            "49": 2,
+            "50": 2
+          },
+          "noncrossers": 9973,
+          "mean_final_log_wealth": -1.0323511362075806,
+          "mean_block_h": -0.0002124658494722098,
+          "mean_block_log_growth": -0.020647022873163223
+        }
+      ]
+    },
+    "native-growth": {
+      "selection": {
+        "config": {
+          "method": "native-growth",
+          "rank": 8,
+          "decay": 1.0,
+          "seed": 9201
+        },
+        "fold_growth": [
+          0.22708724439144135,
+          0.1587895005941391,
+          -0.03173404186964035
+        ],
+        "mean_growth": 0.11804756770531337
+      },
+      "curves": [
+        {
+          "epoch": 1,
+          "training_negative_log_growth": -0.06542829424142838
+        },
+        {
+          "epoch": 11,
+          "training_negative_log_growth": -0.42892196774482727
+        },
+        {
+          "epoch": 21,
+          "training_negative_log_growth": -0.4743571877479553
+        },
+        {
+          "epoch": 31,
+          "training_negative_log_growth": -0.5056420564651489
+        },
+        {
+          "epoch": 41,
+          "training_negative_log_growth": -0.5212008357048035
+        },
+        {
+          "epoch": 51,
+          "training_negative_log_growth": -0.5309846997261047
+        },
+        {
+          "epoch": 61,
+          "training_negative_log_growth": -0.5351722836494446
+        },
+        {
+          "epoch": 71,
+          "training_negative_log_growth": -0.5383093953132629
+        },
+        {
+          "epoch": 81,
+          "training_negative_log_growth": -0.5404377579689026
+        },
+        {
+          "epoch": 91,
+          "training_negative_log_growth": -0.5421067476272583
+        },
+        {
+          "epoch": 101,
+          "training_negative_log_growth": -0.5433588027954102
+        },
+        {
+          "epoch": 111,
+          "training_negative_log_growth": -0.5444250702857971
+        },
+        {
+          "epoch": 121,
+          "training_negative_log_growth": -0.545426070690155
+        },
+        {
+          "epoch": 131,
+          "training_negative_log_growth": -0.5466522574424744
+        },
+        {
+          "epoch": 141,
+          "training_negative_log_growth": -0.5496275424957275
+        },
+        {
+          "epoch": 151,
+          "training_negative_log_growth": -0.5530964732170105
+        },
+        {
+          "epoch": 161,
+          "training_negative_log_growth": -0.5545003414154053
+        },
+        {
+          "epoch": 171,
+          "training_negative_log_growth": -0.5555322766304016
+        },
+        {
+          "epoch": 181,
+          "training_negative_log_growth": -0.5563677549362183
+        },
+        {
+          "epoch": 191,
+          "training_negative_log_growth": -0.5570424199104309
+        },
+        {
+          "epoch": 201,
+          "training_negative_log_growth": -0.5575950741767883
+        },
+        {
+          "epoch": 211,
+          "training_negative_log_growth": -0.5580363869667053
+        },
+        {
+          "epoch": 221,
+          "training_negative_log_growth": -0.5583944320678711
+        },
+        {
+          "epoch": 231,
+          "training_negative_log_growth": -0.5586998462677002
+        },
+        {
+          "epoch": 241,
+          "training_negative_log_growth": -0.5589720606803894
+        },
+        {
+          "epoch": 251,
+          "training_negative_log_growth": -0.5592266917228699
+        },
+        {
+          "epoch": 261,
+          "training_negative_log_growth": -0.5594828724861145
+        },
+        {
+          "epoch": 271,
+          "training_negative_log_growth": -0.559788167476654
+        },
+        {
+          "epoch": 281,
+          "training_negative_log_growth": -0.5606025457382202
+        },
+        {
+          "epoch": 291,
+          "training_negative_log_growth": -0.5637069344520569
+        },
+        {
+          "epoch": 300,
+          "training_negative_log_growth": -0.5649784803390503
+        }
+      ],
+      "observed_donors": 8,
+      "distinct_pair_log_growth": 0.14950235188007355,
+      "projections": [
+        {
+          "simulated_donors": 18,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": 1.1771173477172852,
+          "mean_block_h": 0.17157208919525146,
+          "mean_block_log_growth": 0.1307908147573471
+        },
+        {
+          "simulated_donors": 18,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -0.15259569883346558,
+          "mean_block_h": -0.00029016879852861166,
+          "mean_block_log_growth": -0.01695507951080799
+        },
+        {
+          "simulated_donors": 24,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.0049,
+          "anytime_rejection": 0.0051,
+          "final_interval": [
+            0.0037086267628327185,
+            0.006471608423811247
+          ],
+          "anytime_interval": [
+            0.0038813110835616135,
+            0.006698770503734081
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 5,
+            "11": 13,
+            "12": 33
+          },
+          "noncrossers": 9949,
+          "mean_final_log_wealth": 1.5731170177459717,
+          "mean_block_h": 0.17196618020534515,
+          "mean_block_log_growth": 0.1310930848121643
+        },
+        {
+          "simulated_donors": 24,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -0.2078574150800705,
+          "mean_block_h": -0.0006501523894257843,
+          "mean_block_log_growth": -0.017321452498435974
+        },
+        {
+          "simulated_donors": 40,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.3066,
+          "anytime_rejection": 0.3171,
+          "final_interval": [
+            0.297638657839665,
+            0.3157098727301126
+          ],
+          "anytime_interval": [
+            0.3080510856197485,
+            0.32628938098424487
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 1,
+            "10": 3,
+            "11": 11,
+            "12": 22,
+            "13": 85,
+            "14": 134,
+            "15": 217,
+            "16": 362,
+            "17": 426,
+            "18": 546,
+            "19": 663,
+            "20": 701
+          },
+          "noncrossers": 6829,
+          "mean_final_log_wealth": 2.62359619140625,
+          "mean_block_h": 0.17205730080604553,
+          "mean_block_log_growth": 0.1311798095703125
+        },
+        {
+          "simulated_donors": 40,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -0.3391151428222656,
+          "mean_block_h": -0.0001771220559021458,
+          "mean_block_log_growth": -0.016955755650997162
+        },
+        {
+          "simulated_donors": 60,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.8586,
+          "anytime_rejection": 0.8695,
+          "final_interval": [
+            0.8516330461505346,
+            0.8652915502180161
+          ],
+          "anytime_interval": [
+            0.8627556637264449,
+            0.8759605614776251
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 4,
+            "11": 5,
+            "12": 38,
+            "13": 83,
+            "14": 137,
+            "15": 213,
+            "16": 355,
+            "17": 413,
+            "18": 535,
+            "19": 647,
+            "20": 701,
+            "21": 669,
+            "22": 738,
+            "23": 705,
+            "24": 634,
+            "25": 624,
+            "26": 565,
+            "27": 504,
+            "28": 426,
+            "29": 400,
+            "30": 299
+          },
+          "noncrossers": 1305,
+          "mean_final_log_wealth": 3.9336061477661133,
+          "mean_block_h": 0.17196768522262573,
+          "mean_block_log_growth": 0.1311202049255371
+        },
+        {
+          "simulated_donors": 60,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0,
+            "21": 0,
+            "22": 0,
+            "23": 0,
+            "24": 0,
+            "25": 0,
+            "26": 0,
+            "27": 0,
+            "28": 0,
+            "29": 0,
+            "30": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -0.5032269954681396,
+          "mean_block_h": -4.3837801058543846e-05,
+          "mean_block_log_growth": -0.016774233430624008
+        },
+        {
+          "simulated_donors": 100,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.9986,
+          "anytime_rejection": 0.999,
+          "final_interval": [
+            0.9976512388536363,
+            0.999165837971125
+          ],
+          "anytime_interval": [
+            0.9981600556125619,
+            0.9994567140135028
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 5,
+            "11": 17,
+            "12": 33,
+            "13": 79,
+            "14": 139,
+            "15": 218,
+            "16": 334,
+            "17": 456,
+            "18": 529,
+            "19": 600,
+            "20": 645,
+            "21": 699,
+            "22": 764,
+            "23": 731,
+            "24": 684,
+            "25": 625,
+            "26": 556,
+            "27": 485,
+            "28": 446,
+            "29": 363,
+            "30": 293,
+            "31": 280,
+            "32": 193,
+            "33": 180,
+            "34": 138,
+            "35": 100,
+            "36": 83,
+            "37": 80,
+            "38": 54,
+            "39": 51,
+            "40": 34,
+            "41": 18,
+            "42": 20,
+            "43": 20,
+            "44": 9,
+            "45": 13,
+            "46": 7,
+            "47": 4,
+            "48": 1,
+            "49": 4,
+            "50": 0
+          },
+          "noncrossers": 10,
+          "mean_final_log_wealth": 6.545445919036865,
+          "mean_block_h": 0.17168846726417542,
+          "mean_block_log_growth": 0.13090890645980835
+        },
+        {
+          "simulated_donors": 100,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.001,
+          "anytime_rejection": 0.002,
+          "final_interval": [
+            0.0005432859864972464,
+            0.0018399443874379962
+          ],
+          "anytime_interval": [
+            0.0012951117125432855,
+            0.0030873506646506045
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0,
+            "21": 0,
+            "22": 0,
+            "23": 0,
+            "24": 0,
+            "25": 1,
+            "26": 0,
+            "27": 0,
+            "28": 0,
+            "29": 0,
+            "30": 1,
+            "31": 0,
+            "32": 0,
+            "33": 0,
+            "34": 0,
+            "35": 2,
+            "36": 3,
+            "37": 0,
+            "38": 1,
+            "39": 1,
+            "40": 0,
+            "41": 0,
+            "42": 0,
+            "43": 0,
+            "44": 0,
+            "45": 4,
+            "46": 1,
+            "47": 3,
+            "48": 1,
+            "49": 0,
+            "50": 2
+          },
+          "noncrossers": 9980,
+          "mean_final_log_wealth": -0.8394734263420105,
+          "mean_block_h": -4.8178277211263776e-05,
+          "mean_block_log_growth": -0.01678946614265442
+        }
+      ]
+    }
+  },
+  "biological_gate_passed": false,
+  "normalization": "Each fitter uses only its TRAIN donors; no extra load_views normalization"
+}

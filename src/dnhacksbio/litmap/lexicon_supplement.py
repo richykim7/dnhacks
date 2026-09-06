@@ -11,7 +11,7 @@ from dataclasses import dataclass
 import re
 import unicodedata
 
-VERSION = "2026-09-06.3"
+VERSION = "2026-09-06.4"
 
 
 @dataclass(frozen=True)
@@ -207,3 +207,36 @@ def supplement_lookup(text: str, namespaces: tuple[str, ...] | None = None) -> d
             "match": "label" if key == normalize(term.label) else "synonym",
             "provenance": {"version": VERSION, "definition": term.definition,
                            "sources": list(term.sources), "coverage_note": term.coverage_note}}
+
+
+# OBO RELATED synonyms are retrieval hints, not assertions of identical meaning.
+# These records are deliberately excluded from SUPPLEMENT and supplement_lookup.
+CANDIDATE_TERMS = (
+    SupplementTerm("CHEBI:16336", "hyaluronic acid", "entity", ("hyaluronan",),
+                   "A glycosaminoglycan polymer of alternating glucuronic acid and N-acetylglucosamine "
+                   "subunits. This record denotes the acid; check the source's intended chemical form.",
+                   ("https://www.ebi.ac.uk/ols4/api/ontologies/chebi/terms?obo_id=CHEBI%3A16336",),
+                   "Live ChEBI record lists hyaluronan as hasRelatedSynonym, not hasExactSynonym; "
+                   "the local lexicon contains canonical hyaluronic acid but lacks this retrieval alias."),
+)
+_CANDIDATE_CATEGORIES = {"CHEBI": "chemical"}
+
+
+def supplement_candidates(text: str, namespaces: tuple[str, ...] | None = None) -> list[dict]:
+    """Offer reviewed related names for source-aware selection, never automatic grounding."""
+    allowed = {ns.upper() for ns in namespaces} if namespaces is not None else None
+    key = normalize(text)
+    out = []
+    for term in CANDIDATE_TERMS:
+        namespace = term.curie.partition(":")[0]
+        if allowed is not None and namespace.upper() not in allowed:
+            continue
+        if key not in {normalize(alias) for alias in term.aliases}:
+            continue
+        out.append({"curie": term.curie, "label": term.label, "kind": term.kind,
+                    "category": _CANDIDATE_CATEGORIES[namespace], "db": namespace,
+                    "matched": text, "match": "related_synonym", "definition": term.definition,
+                    "sources": list(term.sources),
+                    "provenance": {"version": VERSION, "definition": term.definition,
+                                   "sources": list(term.sources), "coverage_note": term.coverage_note}})
+    return out

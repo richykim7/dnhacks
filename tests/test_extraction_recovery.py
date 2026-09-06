@@ -1,6 +1,8 @@
 """Integration checks for replay, source-backed repair, and extraction accounting."""
 import asyncio
 import copy
+import json
+import re
 
 import pytest
 
@@ -44,6 +46,59 @@ def test_replay_avoids_reader_and_preserves_input(monkeypatch):
     assert result['stats']['kept'] == 1 and result['stats']['repair_attempted'] == 0
     assert result['claims'][0].evidence[0].source_ref == 17
     assert raw == original
+
+
+def test_reader_prompt_keeps_mutation_class_distinct_from_general_gene(monkeypatch):
+    class Reader:
+        truncated = False
+
+        def __init__(self, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            pass
+
+        async def ask(self, prompt):
+            example = re.search(r'"EGFR mutations shorten survival"\s*->\s*(\w+)', prompt)
+            assert example is not None and example.group(1) == 'mutant'
+            assert 'mutations as a class' in prompt
+            assert 'without a mutation-specific qualifier' in prompt
+            return json.dumps({'claims': [claim(subject_state={'functional': 'mutant'},
+                quote='EGFR mutations increase KRAS activity.')]})
+
+    monkeypatch.setattr(extract.llm, 'Session', Reader)
+    result = asyncio.run(extract.extract_paper('EGFR mutations increase KRAS activity.',
+        source_ref=17, source_label='Test2020', field='Cancer biology', direction_pass=False))
+    observed = result['claims'][0]
+    assert observed.spine.subject.state.functional == 'mutant'
+    assert observed.spine.subject.state.variant == ''
+    general = observed.model_dump()
+    general['spine']['subject']['state']['functional'] = 'general'
+    from dnhacksbio.litmap.schema import Claim
+    assert Claim.model_validate(general).claim_id != observed.claim_id
+
+
+def test_plural_experiments_routes_to_repair_with_actionable_feedback(monkeypatch):
+    async def fix(text, failures, *, validate, instructions, **kwargs):
+        assert len(failures) == 1
+        assert "singular `experiment`" in failures[0]['reason']
+        assert "singular `experiment`" in await validate(claim(experiments=[]))
+        corrected = claim(experiment={'quote': 'EGFR increases KRAS activity.',
+                                      'readout': 'KRAS activity'})
+        assert await validate(corrected) is None
+        assert "preserving the actual organism" in instructions
+        assert "mutant state" in instructions
+        assert "does not establish no_effect_on" in instructions
+        return {'accepted': [{'raw': corrected}], 'unresolved': [], 'rejected': [], 'audit': []}
+
+    monkeypatch.setattr(repair, 'repair_claims', fix)
+    result = replay({'claims': [claim(experiments=[{'quote': 'EGFR increases KRAS activity.'}])]})
+    assert result['stats']['repair_attempted'] == 1
+    assert len(result['experiments']) == 1
+    assert result['claims'][0].evidence[0].experiment_id == result['experiments'][0].experiment_id
 
 
 def test_failed_raw_and_reader_deferred_repaired_once_each(monkeypatch):
@@ -229,3 +284,72 @@ def test_repair_validation_suggests_supplement_category(monkeypatch):
         return {'accepted': [], 'rejected': [], 'unresolved': [], 'audit': []}
     monkeypatch.setattr(repair, 'repair_claims', fix)
     replay({'claims': [claim(subject='unknown')]})
+
+
+def test_mouse_h2_ab1_collision_requires_species_correct_repair(monkeypatch):
+    source = 'H2-Ab1 is expressed in mouse cells and increases KRAS activity.'
+    raw = claim(subject='H2-Ab1', quote=source,
+                context={'organism': {'value': 'mouse', 'provenance': 'stated', 'quote': source}})
+
+    def misleading_ground(surface, namespaces=None):
+        curie = {'H2-Ab1': 'HGNC:22516', 'KRAS': 'HGNC:6407'}.get(surface)
+        return {'curie': curie, 'label': surface, 'kind': 'entity'} if curie else None
+
+    monkeypatch.setattr(extract.G, 'ground_curie', misleading_ground)
+    monkeypatch.setattr(extract.G, 'resolve_context_value',
+                        lambda slot, value: {'value': 'NCBITaxon:10090', 'label': 'mouse'}
+                        if slot == 'organism' else None)
+    no_repair = asyncio.run(extract.extract_paper(source, source_ref=1, field='Cancer biology',
+        raw_extraction={'claims': [raw]}, direction_pass=False, repair=False))
+    assert no_repair['stats']['kept'] == 0
+    assert 'non_human_gene' in no_repair['deferrals'][0].reason
+
+    async def fix(text, failures, *, validate, **kwargs):
+        assert len(failures) == 1 and 'collides' in failures[0]['reason']
+        assert 'non_human_gene' in await validate(raw)
+        corrected = {**raw, 'subject_category': 'non_human_gene'}
+        assert await validate(corrected) is None
+        return {'accepted': [{'id': failures[0]['id'], 'raw': corrected, 'original': failures[0]}],
+                'unresolved': [], 'rejected': [], 'audit': []}
+
+    monkeypatch.setattr(repair, 'repair_claims', fix)
+    result = asyncio.run(extract.extract_paper(source, source_ref=1, field='Cancer biology',
+        raw_extraction={'claims': [raw]}, direction_pass=False))
+    assert result['claims'][0].spine.subject.curie == 'NCBIGene:14961'
+    assert result['claims'][0].evidence[0].context.slots['organism'].value == 'NCBITaxon:10090'
+
+
+def test_synonym_candidate_reaches_first_repair_without_automatic_acceptance(monkeypatch):
+    source = 'EGFR increases cell proliferation.'
+    raw = claim(object='cell proliferation', object_category='process', object_aspect='', quote=source)
+
+    def resolve(surface, namespaces=None):
+        if surface == 'cell proliferation':
+            return {'curie': 'GO:0008283', 'label': 'cell population proliferation',
+                    'kind': 'process', 'match': 'synonym'}
+        if surface == 'cell population proliferation':
+            return {'curie': 'GO:0008283', 'label': surface, 'kind': 'process', 'match': 'label'}
+
+    monkeypatch.setattr(extract.G, 'resolve_process', resolve)
+    monkeypatch.setattr(extract.G, 'process_candidates', lambda *args: [
+        {'curie': 'GO:0070667', 'label': 'hepatic stellate cell proliferation', 'kind': 'process'}])
+    calls = []
+
+    async def fix(text, failures, *, validate, **kwargs):
+        calls.append(failures)
+        assert len(failures) == 1
+        reason = failures[0]['reason']
+        assert 'cell population proliferation' in reason
+        assert reason.index('cell population proliferation') < reason.index('hepatic stellate cell proliferation')
+        assert 'synonym' in reason
+        corrected = {**raw, 'object': 'cell population proliferation'}
+        assert await validate(corrected) is None
+        return {'accepted': [{'id': failures[0]['id'], 'raw': corrected, 'original': failures[0]}],
+                'unresolved': [], 'rejected': [], 'audit': []}
+
+    monkeypatch.setattr(repair, 'repair_claims', fix)
+    result = asyncio.run(extract.extract_paper(source, source_ref=1, field='Cancer biology',
+        raw_extraction={'claims': [raw]}, direction_pass=False))
+    assert len(calls) == 1, 'A synonym match must be reviewed rather than silently accepted'
+    assert result['stats']['repaired'] == 1
+    assert result['claims'][0].spine.object.curie == 'GO:0008283'

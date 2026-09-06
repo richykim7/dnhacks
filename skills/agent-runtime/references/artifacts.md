@@ -18,3 +18,6 @@ artifact. Failed experiments may retain diagnostics, explicitly associated with 
 Statistics still use the established `RESULT:` JSON contract. Artifact availability does not validate
 the science or imply a prediction service exists. Geometry colours are decorative unless explicitly
 backed by recorded measurements and provenance.
+
+Binder candidate artifacts use the [exploratory binder interface guide](binder-interface.md).
+They carry structural measurements only and cannot substitute for audited statistical results.

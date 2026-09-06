@@ -1,0 +1,20 @@
+{
+  "image_sha256": "cac39c992b08b32d371fe32426e41964050c216f3a3af72ef498783564407ef4",
+  "response": "Three colors are visible: pale off-white (labeled Target), cyan (Binder), and coral (Contact patch). The coral spheres sit in the middle of the image, along the seam where the pale-white body on the left meets the cyan body on the right \u2014 forming a narrow band that runs diagonally from upper-center down toward the lower-center, partly overlapped by both neighbors.\n\nVisual limitation: this is a single flat 2D projection, so depth is ambiguous \u2014 coral spheres that look adjacent may be separated along the viewing axis.",
+  "usage": {
+    "calls": 1,
+    "input_tokens": 2,
+    "output_tokens": 175,
+    "cache_read": 0,
+    "cache_creation": 1561,
+    "cache_hit_rate": 0.0,
+    "by_model": {
+      "claude-opus-5": {
+        "calls": 1,
+        "in": 2,
+        "out": 175,
+        "cache_read": 0
+      }
+    }
+  }
+}

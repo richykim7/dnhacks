@@ -1,0 +1,8 @@
+[retry]
+max_attempts = 1
+
+[providers.fashn]
+enabled = false
+
+[providers.fal]
+enabled = false
