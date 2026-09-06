@@ -564,8 +564,8 @@ export default function Workbench({
               download(
                 JSON.stringify(
                   {
-                    ...handle.current?.inspect(),
                     ...state,
+                    ...handle.current?.inspect(),
                     bundle_sha256: sha256,
                     scientific_inputs_read_only: true,
                   },

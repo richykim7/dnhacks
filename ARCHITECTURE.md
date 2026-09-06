@@ -606,6 +606,9 @@ portable `binder_bundle.v1` artifacts with optional rebuilt source-derived surfa
 Worker-parsed surfaces and labeled Cα traces remain visual representations of immutable coordinates. The existing collector and explorer enforce source/hash,
 provenance and experiment-scope checks before publication. RuntimeDetail opens those collected
 artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
+A persistent node workspace keeps one selected molecular/binder source beside the researcher activity
+and findings; source availability follows the exact event cursor. Binder cameras transition smoothly
+and yield immediately to manual orbit; reduced motion and saved captures remain deterministic.
 Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
 verification. No live design pilot, biological efficacy or performance acceptance
 is implied. Immutable scoped scene recipes and PNG captures support actual image observations,

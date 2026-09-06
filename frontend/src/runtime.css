@@ -118,3 +118,58 @@
     height: 280px;
   }
 }
+
+/* The scene persists independently of the activity/experiment tab. */
+.node-workspace { display: flex; flex: 1; min-height: 0; min-width: 0; }
+.node-research { display: flex; flex-direction: column; min-width: 0; flex: 1; overflow: auto; }
+.node-research > [dir] { padding: 0 20px 12px; }
+.node-workspace.has-scene { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr); }
+.detail-panel:has(.node-workspace.has-scene) { position: absolute; inset: 0; width: 100%; z-index: 9; overflow: hidden; }
+.canvas-and-detail:has(.node-workspace.has-scene) { position: relative; }
+.node-scene { min-width: 0; overflow: auto; background: #07121f; color: #dbe9f5; border-right: 1px solid #29374b; }
+.node-scene-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 22px; border-bottom: 1px solid #29374b; }
+.node-scene-header label { min-width: 0; flex: 1; font-size: 11px; color: #abc2d7; }
+.node-scene-header select { display: block; width: 100%; margin-top: 6px; background: #101e30; color: #e8f2fb; border: 1px solid #41536c; border-radius: 8px; padding: 9px; }
+.node-scene-header > span { font-size: 10px; max-width: 100px; }
+.node-scene-object { min-width: 0; }
+.node-scene .binder-workbench { margin: 0; border: 0; border-radius: 0; }
+.node-scene .binder-layout { grid-template-columns: minmax(0, 1fr); }
+.node-scene .binder-stage { height: clamp(360px, 53vh, 700px); }
+.node-scene .binder-inspector { border-left: 0; border-top: 1px solid #29374b; }
+.node-scene .artifact-viewer { margin: 18px; }
+.node-scene .artifact-canvas { height: clamp(340px, 65vh, 720px); }
+.node-workspace.has-scene .detail-scroll { flex: 1; overflow: auto; }
+@media (max-width: 900px) {
+  .node-workspace.has-scene { display: flex; flex-direction: column; overflow: auto; }
+  .node-workspace.has-scene .node-scene, .node-workspace.has-scene .node-research { flex: 0 0 auto; overflow: visible; }
+  .node-workspace.has-scene .detail-scroll { overflow: visible; }
+  .node-scene .binder-stage { height: 380px; }
+  .node-scene-header { padding: 12px; }
+}
+
+.node-scene-close { background: transparent; color: #dbe9f5; border: 1px solid #41536c; border-radius: 8px; width: 32px; height: 32px; font-size: 22px; cursor: pointer; }
+
+/* Give the specimen the first screen; detailed coordinate controls remain below it. */
+.node-scene-header { padding: 10px 16px; }
+.node-scene .binder-heading { padding: 10px 16px; align-items: center; }
+.node-scene .binder-heading h3 { margin: 0; font-size: 18px; }
+.node-scene .binder-heading p, .node-scene .binder-eyebrow { display: none; }
+.node-scene .binder-timeline { padding: 8px 16px; gap: 7px; }
+.node-scene .binder-timeline > p { margin: 0; font-size: 10px; }
+.node-scene .binder-timeline > div { gap: 6px; }
+.node-scene .binder-timeline > div > span { font-size: 10px; }
+@media (min-width: 901px) {
+  .node-scene { container-type: size; height: 100%; }
+  .node-scene .binder-stage { height: clamp(220px, calc(100cqh - 205px), 700px); }
+}
+@media (max-width: 900px) {
+  .node-scene .binder-stage { height: 260px; }
+  .node-scene .binder-timeline > p { display: none; }
+  .node-scene-header > span { display: none; }
+}
+
+@media (max-width: 900px) {
+  .node-scene .binder-caption { top: 10px; left: 14px; right: 14px; display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 9px; row-gap: 4px; }
+  .node-scene .binder-caption strong { margin: 0; font-size: 12px; }
+  .node-scene .binder-caption small { grid-column: 1 / -1; font-size: 9px; }
+}

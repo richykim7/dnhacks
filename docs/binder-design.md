@@ -233,3 +233,15 @@ no observation event is appended. `binder-interface` is explicitly rejected as a
 `run_experiments` method ID; custom analysis must use `exploratory`.
 See the [native capture and review status](binder-review/native-review.md) for actual
 browser evidence and the provider-quota limitation on the latest image observation.
+
+### Persistent node workspace
+
+Available binder sources are selected in the owning researcher's persistent left scene, alongside
+real activity and experiment findings. Only one source viewer is mounted. The selector and native
+capture driver resolve the exact experiment and artifact hash at the current cursor. This is source
+selection; synchronized two-candidate comparison is still pending.
+
+Camera transitions use a700ms smooth orbit from the displayed pose, including when replacing a
+transition in progress. Pointer/orbit takeover cancels motion immediately; reduced motion is static.
+Scene readiness waits for settled motion before capture. Recipe export records the actual camera,
+including manual navigation. This presentation motion never moves scientific atom coordinates.

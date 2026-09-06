@@ -25,6 +25,7 @@ const radius: Record<string, number> = {
   P: 1.8,
 };
 export type SceneInspection = {
+  camera_transitioning: boolean;
   camera: unknown;
   renderer: unknown;
   visible_residue_ids: string[];
@@ -117,6 +118,12 @@ function Scene({
 }) {
   const { camera, gl, scene, size, invalidate } = useThree();
   const controls = useRef<OrbitImpl>(null!);
+  const initialized = useRef(false);
+  const transition = useRef<null | {
+    started: number; from: THREE.Vector3; to: THREE.Vector3;
+    fromTarget: THREE.Vector3; toTarget: THREE.Vector3;
+    fromUp: THREE.Vector3; toUp: THREE.Vector3; fromFov: number; toFov: number;
+  }>(null);
   const settled = useRef(0),
     frameTimes = useRef<number[]>([]);
   const parts = useMemo(() => {
@@ -167,13 +174,57 @@ function Scene({
     settled.current = 0;
     invalidate();
   }, [state.style, state.selected, representation, invalidate]);
+  useEffect(() => {
+    const media = matchMedia("(prefers-reduced-motion: reduce)");
+    const change = () => { if (media.matches) { transition.current = null; invalidate(); } };
+    media.addEventListener("change", change);
+    return () => media.removeEventListener("change", change);
+  }, [invalidate]);
   useFrame((_, delta) => {
+    const motion = transition.current;
+    if (motion) {
+      const fraction = Math.min(1, (performance.now() - motion.started) / 700);
+      const t = fraction * fraction * (3 - 2 * fraction);
+      const target = motion.fromTarget.clone().lerp(motion.toTarget, t);
+      const a = motion.from.clone().sub(motion.fromTarget);
+      const b = motion.to.clone().sub(motion.toTarget);
+      const distance = THREE.MathUtils.lerp(a.length(), b.length(), t);
+      const rotation = new THREE.Quaternion().setFromUnitVectors(a.normalize(), b.normalize());
+      const direction = a.applyQuaternion(new THREE.Quaternion().slerp(rotation, t));
+      camera.position.copy(target).addScaledVector(direction, distance);
+      camera.up.copy(motion.fromUp).lerp(motion.toUp, t).normalize();
+      (camera as THREE.PerspectiveCamera).fov = THREE.MathUtils.lerp(motion.fromFov, motion.toFov, t);
+      camera.updateProjectionMatrix();
+      controls.current.target.copy(target);
+      controls.current.update();
+      camera.updateMatrixWorld(true);
+      if (fraction === 1) transition.current = null;
+      settled.current = 0;
+      invalidate();
+    }
     settled.current++;
     if (settled.current < 5) invalidate();
     frameTimes.current.push(delta * 1000);
     if (frameTimes.current.length > 240) frameTimes.current.shift();
   });
   useEffect(() => {
+    const from = camera.position.clone(), fromTarget = controls.current.target.clone();
+    const fromUp = camera.up.clone(), fromFov = (camera as THREE.PerspectiveCamera).fov;
+    transition.current = null;
+    const finishPose = () => {
+      if (initialized.current && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        transition.current = { started: performance.now(), from, fromTarget, fromUp, fromFov,
+          to: camera.position.clone(), toTarget: controls.current.target.clone(),
+          toUp: camera.up.clone(), toFov: (camera as THREE.PerspectiveCamera).fov };
+        camera.position.copy(from); camera.up.copy(fromUp);
+        (camera as THREE.PerspectiveCamera).fov = fromFov;
+        controls.current.target.copy(fromTarget); controls.current.update();
+        camera.updateProjectionMatrix(); camera.updateMatrixWorld(true);
+      }
+      initialized.current = true;
+      settled.current = 0;
+      invalidate();
+    };
     if (state.camera) {
       const c = state.camera;
       camera.position.set(...c.position);
@@ -187,8 +238,7 @@ function Scene({
       camera.updateMatrixWorld(true);
       controls.current.target.set(...c.target);
       controls.current.update();
-      settled.current = 0;
-      invalidate();
+      finishPose();
       return;
     }
     const close = ["interface-close", "epitope", "reverse"].includes(
@@ -230,8 +280,7 @@ function Scene({
     }
     controls.current.target.copy(center);
     controls.current.update();
-    settled.current = 0;
-    invalidate();
+    finishPose();
   }, [
     state.preset,
     state.revision,
@@ -291,13 +340,14 @@ function Scene({
         gl.compile(scene, camera);
         await new Promise<void>((resolve) => {
           const check = () => {
-            if (!active || settled.current >= 4) resolve();
+            if (!active || (!transition.current && settled.current >= 4)) resolve();
             else requestAnimationFrame(check);
           };
           check();
         });
       },
       inspect: () => ({
+        camera_transitioning: transition.current !== null,
         representation,
         representation_protocol:
           representation === "surface"
@@ -496,6 +546,7 @@ function Scene({
         ref={controls}
         makeDefault
         enableDamping={false}
+        onStart={() => { transition.current = null; settled.current = 0; invalidate(); }}
         minDistance={4}
         maxDistance={400}
       />
