@@ -15,7 +15,9 @@ local neighborhood; 8–13 reveals the selected population; 11–15 gently shift
 surrounding stroma beside it; 15–18 holds. Every pose derives directly from the
 provided time, including backward seeks. Reduced motion fixes the composed
 15-second pose. The shell owns playback/reset. Rendering is on demand, with DPR
-capped at 1.5; no postprocessing or external fonts/textures are used.
+capped at 1.5; no postprocessing or external fonts/textures are used. Portrait
+stages pull the camera back according to the actual Canvas aspect ratio. Below
+600px of component width, provenance stacks beneath the legend without overlap.
 
 ## Preview and capture
 
@@ -62,3 +64,16 @@ coral stroma and two small labels. Artifacts are under `assets/`.
 TypeScript checking passed; browser capture reported no page errors. A backward
 seek capture is compared with the first 13-second capture to check deterministic
 reproduction. No broad suites or scientific validation were run.
+
+Mobile audit: `capture.mjs --mobile` (through the same queue wrapper above)
+captures a 360×530 stage inside a 390×844 viewport, matching the shell stage
+dimensions. Inspected opening and focus PNGs in `assets/tissue-mobile-*.png`: the
+whole cell neighborhood fits with side margins and provenance has a separate row.
+The mobile 13-second backward seek also reproduces its PNG byte-for-byte. These
+are isolated component captures, not screenshots of the shell.
+
+`--shell-mobile` also opens the integrated cinematic entry on the private preview
+server, selects tissue and seeks Interaction. Inspected the resulting
+`assets/tissue-shell-mobile.png` at 390×844: the neighborhood, two legend rows,
+provenance, shell heading and shell phase caption remain separate and visible.
+Desktop keyframe PNGs remained byte-identical after this responsive fix.

@@ -1,0 +1,26 @@
+.tissue-demo {
+  container-type: inline-size;
+}
+.tissue-demo-footer {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  bottom: 9%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  pointer-events: none;
+}
+@container (max-width: 600px) {
+  .tissue-demo-footer {
+    bottom: 6%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .tissue-demo-provenance {
+    max-width: 100%;
+  }
+}

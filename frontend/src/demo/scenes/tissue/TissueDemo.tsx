@@ -1,4 +1,5 @@
 import { useLayoutEffect, useMemo } from "react";
+import "./tissue.css";
 import { Canvas, useThree } from "@react-three/fiber";
 import { CatmullRomCurve3, Color, DoubleSide, Vector3 } from "three";
 
@@ -87,12 +88,15 @@ function Membrane({
   );
 }
 function Camera({ time, reducedMotion }: TissueDemoProps) {
-  const { camera, invalidate } = useThree();
+  const { camera, invalidate, size } = useThree();
   useLayoutEffect(() => {
     const t = reducedMotion ? 15 : time;
     const approach = smooth(5, 11, t);
     const orbit = Math.min(t, 15) * 0.018 - 0.14;
-    const distance = 17.8 - approach * 2.3;
+    // Fit the neighborhood horizontally in portrait stages; preserve the desktop orbit.
+    const aspect = size.width / Math.max(1, size.height);
+    const distance = (17.8 - approach * 2.3) * Math.max(1, 1.45 / aspect);
+    camera.far = distance + 40;
     camera.position.set(
       Math.sin(orbit) * distance + approach * 0.8,
       1.8 - approach * 0.8,
@@ -101,7 +105,7 @@ function Camera({ time, reducedMotion }: TissueDemoProps) {
     camera.lookAt(approach * 0.9, approach * 0.22, 0);
     camera.updateProjectionMatrix();
     invalidate();
-  }, [camera, invalidate, time, reducedMotion]);
+  }, [camera, invalidate, time, reducedMotion, size.width, size.height]);
   return null;
 }
 function Neighborhood({ time, reducedMotion }: TissueDemoProps) {
@@ -227,6 +231,7 @@ export default function TissueDemo({
   const t = Number.isFinite(time) ? Math.max(0, Math.min(18, time)) : 0;
   return (
     <div
+      className="tissue-demo"
       data-provenance="illustrative"
       aria-label="Illustrative tumor and stroma neighborhood"
       style={{
@@ -246,61 +251,58 @@ export default function TissueDemo({
       >
         <Neighborhood time={t} reducedMotion={reducedMotion} />
       </Canvas>
-      <div
-        style={{
-          position: "absolute",
-          left: "7%",
-          bottom: "9%",
-          color: "#e5f3f5",
-          font: "400 clamp(12px,1vw,18px)/1.5 system-ui",
-          letterSpacing: ".03em",
-          pointerEvents: "none",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span
-            style={{
-              background: cyan,
-              width: 5,
-              height: 5,
-              borderRadius: "50%",
-            }}
-          />
-          Tumor neighborhood
-        </div>
+      <div className="tissue-demo-footer">
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            opacity: 0.7,
-            marginTop: 6,
+            color: "#e5f3f5",
+            font: "400 clamp(12px,1vw,18px)/1.5 system-ui",
+            letterSpacing: ".03em",
+            pointerEvents: "none",
           }}
         >
-          <span
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span
+              style={{
+                background: cyan,
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+              }}
+            />
+            Tumor neighborhood
+          </div>
+          <div
             style={{
-              background: coral,
-              width: 5,
-              height: 5,
-              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              opacity: 0.7,
+              marginTop: 6,
             }}
-          />
-          Surrounding stroma
+          >
+            <span
+              style={{
+                background: coral,
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+              }}
+            />
+            Surrounding stroma
+          </div>
         </div>
-      </div>
-      <div
-        style={{
-          position: "absolute",
-          right: "7%",
-          bottom: "9%",
-          color: "#b6d4da",
-          font: "400 clamp(10px,.75vw,14px)/1.5 system-ui",
-          letterSpacing: ".14em",
-          opacity: 0.55,
-          pointerEvents: "none",
-        }}
-      >
-        ILLUSTRATIVE · NOT A SIMULATION
+        <div
+          className="tissue-demo-provenance"
+          style={{
+            color: "#b6d4da",
+            font: "400 clamp(10px,.75vw,14px)/1.5 system-ui",
+            letterSpacing: ".14em",
+            opacity: 0.55,
+            pointerEvents: "none",
+          }}
+        >
+          ILLUSTRATIVE · NOT A SIMULATION
+        </div>
       </div>
     </div>
   );
