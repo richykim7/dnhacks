@@ -1,0 +1,477 @@
+{
+  "schema": "ecosystem-cna-frozen-critic-v1",
+  "status": "development-only",
+  "biological_gate_passed": false,
+  "original_weight_sha256": "042c81bfd5a304106902b651397c70a8a53766cd4cd8dad4dce7c1733bb590ef",
+  "normalization": "original TRAIN load_views normalization followed by frozen fitter normalization; no new-data fitting",
+  "original_training_views": [
+    {
+      "file": "epithelial-enriched-donor-summaries.npz",
+      "sha256": "649f529176ff73e7e5b8763c83ebf50f47e41205651aba54cc97717ed626a753"
+    },
+    {
+      "file": "fibroblast-donor-summaries.npz",
+      "sha256": "1f254c23dd0cc0ac62a8a80950cee57bd04670b23220c1052f4a44b018280db1"
+    }
+  ],
+  "results": {
+    "GSE253429": {
+      "observed_donors": 8,
+      "distinct_pair_log_growth": -0.1938907504081726,
+      "projections": [
+        {
+          "simulated_donors": 18,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -1.5286988019943237,
+          "mean_block_h": -0.14405161142349243,
+          "mean_block_log_growth": -0.16985543072223663
+        },
+        {
+          "simulated_donors": 18,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -0.1940336376428604,
+          "mean_block_h": 0.0017357359174638987,
+          "mean_block_log_growth": -0.02155929058790207
+        },
+        {
+          "simulated_donors": 24,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -2.0343799591064453,
+          "mean_block_h": -0.14377470314502716,
+          "mean_block_log_growth": -0.1695316731929779
+        },
+        {
+          "simulated_donors": 24,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -0.2657981812953949,
+          "mean_block_h": 0.0011006704298779368,
+          "mean_block_log_growth": -0.02214984968304634
+        },
+        {
+          "simulated_donors": 40,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -3.3951706886291504,
+          "mean_block_h": -0.14393435418605804,
+          "mean_block_log_growth": -0.16975851356983185
+        },
+        {
+          "simulated_donors": 40,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0001,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            1.765267360112231e-05,
+            0.0005662688974013381
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 1,
+            "18": 0,
+            "19": 0,
+            "20": 0
+          },
+          "noncrossers": 9999,
+          "mean_final_log_wealth": -0.4652465879917145,
+          "mean_block_h": 3.238975477870554e-05,
+          "mean_block_log_growth": -0.023262325674295425
+        },
+        {
+          "simulated_donors": 60,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0,
+            "21": 0,
+            "22": 0,
+            "23": 0,
+            "24": 0,
+            "25": 0,
+            "26": 0,
+            "27": 0,
+            "28": 0,
+            "29": 0,
+            "30": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -5.090391635894775,
+          "mean_block_h": -0.14382494986057281,
+          "mean_block_log_growth": -0.16967973113059998
+        },
+        {
+          "simulated_donors": 60,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0005,
+          "anytime_rejection": 0.0006,
+          "final_interval": [
+            0.00021358842616382576,
+            0.0011700259461420934
+          ],
+          "anytime_interval": [
+            0.0002750134763309977,
+            0.001308524096300786
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0,
+            "21": 0,
+            "22": 0,
+            "23": 0,
+            "24": 0,
+            "25": 2,
+            "26": 0,
+            "27": 0,
+            "28": 1,
+            "29": 2,
+            "30": 1
+          },
+          "noncrossers": 9994,
+          "mean_final_log_wealth": -0.7042137980461121,
+          "mean_block_h": -0.0002617638965602964,
+          "mean_block_log_growth": -0.023473793640732765
+        },
+        {
+          "simulated_donors": 100,
+          "scenario": "empirical-joint",
+          "streams": 10000,
+          "final_rejection": 0.0,
+          "anytime_rejection": 0.0,
+          "final_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "anytime_interval": [
+            0.0,
+            0.00038399837067659573
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0,
+            "21": 0,
+            "22": 0,
+            "23": 0,
+            "24": 0,
+            "25": 0,
+            "26": 0,
+            "27": 0,
+            "28": 0,
+            "29": 0,
+            "30": 0,
+            "31": 0,
+            "32": 0,
+            "33": 0,
+            "34": 0,
+            "35": 0,
+            "36": 0,
+            "37": 0,
+            "38": 0,
+            "39": 0,
+            "40": 0,
+            "41": 0,
+            "42": 0,
+            "43": 0,
+            "44": 0,
+            "45": 0,
+            "46": 0,
+            "47": 0,
+            "48": 0,
+            "49": 0,
+            "50": 0
+          },
+          "noncrossers": 10000,
+          "mean_final_log_wealth": -8.471302032470703,
+          "mean_block_h": -0.14360575377941132,
+          "mean_block_log_growth": -0.16942602396011353
+        },
+        {
+          "simulated_donors": 100,
+          "scenario": "product-null",
+          "streams": 10000,
+          "final_rejection": 0.0037,
+          "anytime_rejection": 0.0063,
+          "final_interval": [
+            0.002685648037750953,
+            0.005095508744982636
+          ],
+          "anytime_interval": [
+            0.004927565458326495,
+            0.008051594532879576
+          ],
+          "detection_delay_blocks": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": 0,
+            "11": 0,
+            "12": 0,
+            "13": 0,
+            "14": 0,
+            "15": 0,
+            "16": 0,
+            "17": 0,
+            "18": 0,
+            "19": 0,
+            "20": 0,
+            "21": 0,
+            "22": 1,
+            "23": 0,
+            "24": 0,
+            "25": 4,
+            "26": 1,
+            "27": 0,
+            "28": 2,
+            "29": 2,
+            "30": 1,
+            "31": 3,
+            "32": 4,
+            "33": 0,
+            "34": 2,
+            "35": 0,
+            "36": 5,
+            "37": 1,
+            "38": 1,
+            "39": 0,
+            "40": 5,
+            "41": 4,
+            "42": 4,
+            "43": 2,
+            "44": 5,
+            "45": 0,
+            "46": 3,
+            "47": 2,
+            "48": 5,
+            "49": 4,
+            "50": 2
+          },
+          "noncrossers": 9937,
+          "mean_final_log_wealth": -1.146636962890625,
+          "mean_block_h": 0.0001432232093065977,
+          "mean_block_log_growth": -0.022932739928364754
+        }
+      ]
+    }
+  }
+}

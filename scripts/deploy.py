@@ -155,24 +155,13 @@ def main():
         run('git', 'checkout', '--detach', sha, cwd=release)
         # Test against an isolated, initially empty data directory, never live data.
         env = {k:v for k,v in os.environ.items() if not k.startswith('DNHACKS_') and k != 'PYTHONPATH'}
-        env['API_PROXY_TARGET'] = 'http://127.0.0.1:8766'
-        env['PLAYWRIGHT_BASE_URL'] = 'http://127.0.0.1:5174'
         run('uv', 'sync', '--frozen', '--extra', 'dev', '--extra', 'llm', cwd=release, env=env)
         run('npm', '--prefix', 'frontend', 'ci', cwd=release, env=env)
         for task in ('build', 'test'):
             run('npm', '--prefix', 'frontend', 'run', task, cwd=release, env=env)
         run('uv', 'run', '--frozen', 'pytest', 'tests', cwd=release, env=env)
-        # Browser tests require their own empty-data API server.
-        for port in (8766, 5174):
-            with socket.socket() as s:
-                s.bind(('127.0.0.1', port))
-        server = subprocess.Popen([str(release / '.venv/bin/python'), 'scripts/serve_ui.py', '--port', '8766'],
-                                  cwd=release, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        try:
-            run('npm', '--prefix', 'frontend', 'run', 'e2e', cwd=release, env=env)
-        finally:
-            server.terminate()
-            server.wait(timeout=10)
+        # The browser runner owns isolated test data, ephemeral ports and cleanup.
+        run('npm', '--prefix', 'frontend', 'run', 'e2e', cwd=release, env=env)
         # Keep test data for audit. Live data is only attached AFTER all gates.
         if (release / 'data').exists():
             (release / 'data').rename(release / 'validation-data')

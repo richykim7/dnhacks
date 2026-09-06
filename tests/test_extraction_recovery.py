@@ -1,6 +1,8 @@
 """Integration checks for replay, source-backed repair, and extraction accounting."""
 import asyncio
 import copy
+import json
+import re
 
 import pytest
 
@@ -44,6 +46,39 @@ def test_replay_avoids_reader_and_preserves_input(monkeypatch):
     assert result['stats']['kept'] == 1 and result['stats']['repair_attempted'] == 0
     assert result['claims'][0].evidence[0].source_ref == 17
     assert raw == original
+
+
+def test_reader_prompt_keeps_mutation_class_distinct_from_general_gene(monkeypatch):
+    class Reader:
+        truncated = False
+
+        def __init__(self, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            pass
+
+        async def ask(self, prompt):
+            example = re.search(r'"EGFR mutations shorten survival"\s*->\s*(\w+)', prompt)
+            assert example is not None and example.group(1) == 'mutant'
+            assert 'mutations as a class' in prompt
+            assert 'without a mutation-specific qualifier' in prompt
+            return json.dumps({'claims': [claim(subject_state={'functional': 'mutant'},
+                quote='EGFR mutations increase KRAS activity.')]})
+
+    monkeypatch.setattr(extract.llm, 'Session', Reader)
+    result = asyncio.run(extract.extract_paper('EGFR mutations increase KRAS activity.',
+        source_ref=17, source_label='Test2020', field='Cancer biology', direction_pass=False))
+    observed = result['claims'][0]
+    assert observed.spine.subject.state.functional == 'mutant'
+    assert observed.spine.subject.state.variant == ''
+    general = observed.model_dump()
+    general['spine']['subject']['state']['functional'] = 'general'
+    from dnhacksbio.litmap.schema import Claim
+    assert Claim.model_validate(general).claim_id != observed.claim_id
 
 
 def test_plural_experiments_routes_to_repair_with_actionable_feedback(monkeypatch):

@@ -1,0 +1,79 @@
+# Exploratory binder interfaces
+
+Use method_id `exploratory`; binder geometry is not a registered audited statistical method.
+Read the source evidence and explicitly identify construct, assembly and unresolved context.
+Use `python -m dnhacksbio.binder` with a JSON action request or the package's Python functions.
+Prepare the target with exact source hash and residue identities before defining an interface.
+An imported candidate carries project/run/experiment scope and reference/prediction/illustration
+provenance. Declare portable bundles in the output artifact manifest as kind `binder_bundle`.
+Do not print fabricated RESULT statistics or submit structural confidence as `p_null`/`robust`.
+
+Distances use immutable coordinates in Å; surface/camera scaling and exploded views never change
+analytical inputs. The default is interchain heavy-atom pairs within 4.5 Å, with 4.0/5.0 sensitivity.
+Total buried SASA is SASA(target)+SASA(binder)-SASA(complex), no division by two, 1.4 Å probe.
+Confidence, binding affinity, selectivity and PDAC efficacy are distinct and missing unless measured.
+An apparent contact in an image must be checked against the coordinate-derived table.
+
+Design starts return durable receipts; collection is cursor-based. A failed or canceled trajectory
+is not a negative biological result. Preserve partial output/rejection reasons. Deployment must
+pin code, actual environment and weight bytes and use bounded compute under the common GPU lock.
+Never order molecules or execute wet-lab follow-up. Assay proposals are for human review.
+The runner exposes the assigned identity in `DNHACKS_EXPERIMENT_SCOPE` as JSON; use it as the
+bundle scope when generating an artifact inside the owning experiment.
+
+
+For visual reasoning, use the trusted local scene CLI after the collector publishes the bundle.
+Every request carries `journal_directory` and `scope`; capture/pick additionally carry the local
+workspace `base_url`. The request shape is:
+```json
+{"action":"binder.open_scene","journal_directory":"/workspace/data/processed",
+ "scope":{"project_id":"PROJECT","run_id":"RUN","experiment_id":"EXPERIMENT"},
+ "args":{"bundle_sha256":"COLLECTED_BUNDLE_HASH","preset":"interface-close"}}
+```
+Use the returned `recipe_sha256` for `binder.capture_scene`; its args may include
+`viewport:[1600,1000]` and `render_seconds:60`. Pass the returned `capture_id` and a concrete
+visual `question` to `binder.inspect_scene_capture`. This operation sends the actual saved PNG.
+If the seam is hidden, call `binder.set_scene_view` with the latest recipe hash,
+`view:{"preset":"reverse"}` and a concise `note`, then capture and inspect again.
+Use `binder.pick` with capture ID, matching recipe hash and image pixel `x,y` to identify a residue.
+Check suspected contacts against the exact coordinate table before reporting a scientific finding.
+Supported view fields are preset, pearl/copper style, exact selected residue ID and explicit perspective
+or orthographic camera. Orthographic cameras require `projection:"OrthographicCamera"`, position,
+target and `height` (vertical frustum span in Å); optional `zoom` defaults to one. Captures preserve
+height and zoom for exact replay. Unsupported camera modes fail explicitly. Scene tools do not mutate source coordinates.
+The UI records these agent actions with adjustable replay speed; a user's independent exploration
+does not replace your saved recipe. Do not interpret replay duration as physical simulation time.
+
+
+For a surface specimen, include `surface_options:{"spacing":0.8,"probe":1.4,"max_grid_axis":64}`
+in `binder.import_candidate` args. This adds optional validated meshes; it does not change the
+contact/SASA protocol. The scene accepts `representation:"surface"` only when these members exist.
+`representation:"ribbon"` means the labeled source Cα trace, not an assigned secondary structure;
+missing traces fail explicitly. Close/reverse presets select atomic cutaways for contact inspection.
+Surface picking reports a source-atom association. Check its residue and distances in the table,
+and inspect the recorded approximation protocol before treating a surface feature as informative.
+
+
+If a worker disappears, request `binder.recover` from its original host/PID namespace. Do not retry
+inference on the same receipt. Different boot/namespace or inaccessible process identity requires
+operator reconciliation. `binder.attach_candidate` can attach reviewed partial bundles after a
+terminal outcome; supply the exact source hash, pinned target hash and mapping policy in
+`mapping_review`. This declaration does not excuse unreviewed chain renumbering. Preserve the
+original failure/cancellation and rejection annotation when collecting later artifacts.
+
+### Paired comparison contract
+
+Use `set_scene_view` on an existing primary recipe with
+`view: {preset: "candidate-compare", comparison_bundle_sha256: "SECOND_COLLECTED_HASH"}`.
+The second bundle must be available in the same experiment, with identical full target residue
+metadata, atom coordinates/identities and metric protocol. Formatting changes alone do not create
+a distinct candidate. `comparison_selected` identifies a residue in the second bundle; `selected`
+continues to identify a primary residue. Both requested representations must be available.
+Clear both comparison fields with `null` and choose another preset to leave paired mode.
+
+Paired captures record two equal horizontal viewports and their source identities, using the same
+camera and physical transform. A pick identifies the source under its saved pixel and returns both
+`bundle_sha256` and `residue_id`; residue aliases alone cannot distinguish candidates. Single-view
+picks also return their primary bundle hash. The native comparison table retains the actual collected
+byte hashes, even when its JSON formatting differs from canonical serialization. These are exploratory
+geometry comparisons, not evidence of affinity or independent biological replicates.

@@ -1,0 +1,1314 @@
+{
+  "training_studies": [
+    "CRA001160",
+    "GSE205013",
+    "GSE229413",
+    "GSE291124"
+  ],
+  "candidates": [
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 1,
+        "ridge": 0.1,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": -0.07794337719678879
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": -0.010572499595582485
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.1000760868191719
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.024562951177358627
+        }
+      ],
+      "mean_study_log_growth": -0.0032506852876394987
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 1,
+        "ridge": 0.1,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": -0.013502179645001888
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.005836009047925472
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.0068531278520822525
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.0129341259598732
+        }
+      ],
+      "mean_study_log_growth": -0.006863356102257967
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 1,
+        "ridge": 0.1,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.001661002286709845
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.008868137374520302
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.03271666541695595
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.0010306871263310313
+        }
+      ],
+      "mean_study_log_growth": -0.005289209657348692
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 1,
+        "ridge": 1.0,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": -0.10150919109582901
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": -0.014245106838643551
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.09198392182588577
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.030629634857177734
+        }
+      ],
+      "mean_study_log_growth": -0.01360000274144113
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 1,
+        "ridge": 1.0,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": -0.013794531114399433
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.0034052582923322916
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.010650450363755226
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.014045766554772854
+        }
+      ],
+      "mean_study_log_growth": -0.0034461472532711923
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 1,
+        "ridge": 1.0,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.0025909109972417355
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.006659010890871286
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.024376392364501953
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.0007791496464051306
+        }
+      ],
+      "mean_study_log_growth": -0.0039764050306985155
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 1,
+        "ridge": 10.0,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.04631487652659416
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": -0.03128037229180336
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.004797836299985647
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.07083450257778168
+        }
+      ],
+      "mean_study_log_growth": -0.01514945866074413
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 1,
+        "ridge": 10.0,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.02486862614750862
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": -0.006617484614253044
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.023233337327837944
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.019825154915452003
+        }
+      ],
+      "mean_study_log_growth": -0.006201837677508593
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 1,
+        "ridge": 10.0,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.008068162947893143
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": -0.000520666188094765
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.03537214919924736
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.004270230885595083
+        }
+      ],
+      "mean_study_log_growth": -0.008023720831261016
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 2,
+        "ridge": 0.1,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.038377825170755386
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": -0.061076611280441284
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.10590963065624237
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.03749256208539009
+        }
+      ],
+      "mean_study_log_growth": 0.03017585165798664
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 2,
+        "ridge": 0.1,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.03183034062385559
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 5.904393765376881e-05
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.028233597055077553
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.009589641354978085
+        }
+      ],
+      "mean_study_log_growth": 0.01742815574289125
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 2,
+        "ridge": 0.1,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.0116525087505579
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.013612906448543072
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.007747201714664698
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.02760467305779457
+        }
+      ],
+      "mean_study_log_growth": -0.0025216148933395743
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 2,
+        "ridge": 1.0,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.0313434898853302
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": -0.05580606311559677
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.11665647476911545
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.028966175392270088
+        }
+      ],
+      "mean_study_log_growth": 0.03029001923277974
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 2,
+        "ridge": 1.0,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.02722283825278282
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.0005612556706182659
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.04231290519237518
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.006327553186565638
+        }
+      ],
+      "mean_study_log_growth": 0.015942361482302658
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 2,
+        "ridge": 1.0,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.010061713866889477
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.011567601934075356
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.004671318456530571
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.032652679830789566
+        }
+      ],
+      "mean_study_log_growth": -0.003923670621588826
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 2,
+        "ridge": 10.0,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.018066292628645897
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": -0.02320600114762783
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.060276806354522705
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.06048710644245148
+        }
+      ],
+      "mean_study_log_growth": -0.0013375021517276764
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 2,
+        "ridge": 10.0,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.013465508818626404
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": -0.001383048016577959
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.009441898204386234
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.07332795113325119
+        }
+      ],
+      "mean_study_log_growth": -0.012950898031704128
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 2,
+        "ridge": 10.0,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.004602294415235519
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.001927054370753467
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.015244481153786182
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.0359838493168354
+        }
+      ],
+      "mean_study_log_growth": -0.01117474542115815
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 4,
+        "ridge": 0.1,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.06354235112667084
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.008035237900912762
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.07513973861932755
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.024827565997838974
+        }
+      ],
+      "mean_study_log_growth": 0.04288622341118753
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 4,
+        "ridge": 0.1,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.030187543481588364
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.03980688005685806
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.05573417991399765
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.0011002363171428442
+        }
+      ],
+      "mean_study_log_growth": 0.03170720994239673
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 4,
+        "ridge": 0.1,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.009132604114711285
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.020887525752186775
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.009941991418600082
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.015838129445910454
+        }
+      ],
+      "mean_study_log_growth": 0.006030997959896922
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 4,
+        "ridge": 1.0,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.05869166925549507
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.014203697443008423
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.07585223764181137
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.02566504292190075
+        }
+      ],
+      "mean_study_log_growth": 0.043603161815553904
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 4,
+        "ridge": 1.0,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.0259742122143507
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.03737356886267662
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.056641411036252975
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.010441151447594166
+        }
+      ],
+      "mean_study_log_growth": 0.027387010166421533
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 4,
+        "ridge": 1.0,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.007766955066472292
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.01803385093808174
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.0074232215993106365
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.017068499699234962
+        }
+      ],
+      "mean_study_log_growth": 0.004038881976157427
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 4,
+        "ridge": 10.0,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.031838852912187576
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.026156110689044
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.05902385711669922
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.004646564368158579
+        }
+      ],
+      "mean_study_log_growth": 0.028093064087443054
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 4,
+        "ridge": 10.0,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.01082827802747488
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.022760659456253052
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.011045318096876144
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.029560867697000504
+        }
+      ],
+      "mean_study_log_growth": 0.003768346970900893
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 4,
+        "ridge": 10.0,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.002973077120259404
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.008195266127586365
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.00574109610170126
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.013046178966760635
+        }
+      ],
+      "mean_study_log_growth": -0.0019047329551540315
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 8,
+        "ridge": 0.1,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.032476164400577545
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.026430753991007805
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.027644796296954155
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.008272443898022175
+        }
+      ],
+      "mean_study_log_growth": 0.02370603964664042
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 8,
+        "ridge": 0.1,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.028524521738290787
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.042911648750305176
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.03382030129432678
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.01519639603793621
+        }
+      ],
+      "mean_study_log_growth": 0.03011321695521474
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 8,
+        "ridge": 0.1,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.010222742334008217
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.018834663555026054
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.010945159010589123
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.0027296431362628937
+        }
+      ],
+      "mean_study_log_growth": 0.010683052008971572
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 8,
+        "ridge": 1.0,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.04869948327541351
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.029201505705714226
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.04012824222445488
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.010381151922047138
+        }
+      ],
+      "mean_study_log_growth": 0.03210259578190744
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 8,
+        "ridge": 1.0,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.030294422060251236
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.03569129854440689
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.03244779258966446
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.00927495863288641
+        }
+      ],
+      "mean_study_log_growth": 0.02692711795680225
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 8,
+        "ridge": 1.0,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.009905660524964333
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.014285164885222912
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.007943843491375446
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.0002827908319886774
+        }
+      ],
+      "mean_study_log_growth": 0.008104364933387842
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 8,
+        "ridge": 10.0,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.043156832456588745
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.02306351438164711
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.034950755536556244
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.0026292153634130955
+        }
+      ],
+      "mean_study_log_growth": 0.0259500794345513
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 8,
+        "ridge": 10.0,
+        "bandwidth": 1.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.01623798906803131
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.014076371677219868
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.0034541175700724125
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.006954430136829615
+        }
+      ],
+      "mean_study_log_growth": 0.006703512044623494
+    },
+    {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 8,
+        "ridge": 10.0,
+        "bandwidth": 2.0
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.004547997377812862
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.004524976015090942
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.0014613139210268855
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.0032448251731693745
+        }
+      ],
+      "mean_study_log_growth": 0.0010917085746768862
+    },
+    {
+      "config": {
+        "method": "native-growth",
+        "rank": 2,
+        "decay": 0.1,
+        "seed": 9201
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.02952267974615097
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.0056551056914031506
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.028881488367915154
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.017707401886582375
+        }
+      ],
+      "mean_study_log_growth": 0.020441668923012912
+    },
+    {
+      "config": {
+        "method": "native-growth",
+        "rank": 2,
+        "decay": 1.0,
+        "seed": 9201
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.0334123894572258
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": -0.006163934711366892
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.011160057038068771
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.06247897818684578
+        }
+      ],
+      "mean_study_log_growth": 0.025221872492693365
+    },
+    {
+      "config": {
+        "method": "native-growth",
+        "rank": 8,
+        "decay": 0.1,
+        "seed": 9201
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": -0.0267966128885746
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.07572123408317566
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": -0.15743230283260345
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": -0.039910949766635895
+        }
+      ],
+      "mean_study_log_growth": -0.03710465785115957
+    },
+    {
+      "config": {
+        "method": "native-growth",
+        "rank": 8,
+        "decay": 1.0,
+        "seed": 9201
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": -0.01969141885638237
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.10175919532775879
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.008128044195473194
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.016705995425581932
+        }
+      ],
+      "mean_study_log_growth": 0.026725454023107886
+    }
+  ],
+  "selected": {
+    "cca-rbf": {
+      "config": {
+        "method": "cca-rbf",
+        "rank": 4,
+        "ridge": 1.0,
+        "bandwidth": 0.5
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": 0.05869166925549507
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.014203697443008423
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.07585223764181137
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.02566504292190075
+        }
+      ],
+      "mean_study_log_growth": 0.043603161815553904
+    },
+    "native-growth": {
+      "config": {
+        "method": "native-growth",
+        "rank": 8,
+        "decay": 1.0,
+        "seed": 9201
+      },
+      "folds": [
+        {
+          "study": "CRA001160",
+          "donors": 13,
+          "log_growth": -0.01969141885638237
+        },
+        {
+          "study": "GSE205013",
+          "donors": 15,
+          "log_growth": 0.10175919532775879
+        },
+        {
+          "study": "GSE229413",
+          "donors": 7,
+          "log_growth": 0.008128044195473194
+        },
+        {
+          "study": "GSE291124",
+          "donors": 9,
+          "log_growth": 0.016705995425581932
+        }
+      ],
+      "mean_study_log_growth": 0.026725454023107886
+    }
+  }
+}

@@ -1,6 +1,6 @@
-"""Private operator pharmacotype registration and frozen-critic finite replay.
+"""Private operator pharmacotype registration and predictable-critic replay.
 
-No append or adaptive training surface. Serve under a separate OS service identity.
+No append surface. Serve under a separate OS service identity.
 """
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ def registered(manifest):
     origins = set(manifest['cohort']['aliases'].values())
     if origins & set(model['development_donors']):
         raise ValueError('Development/confirmation donor overlap')
-    if protocol['schedule'] != 'fully-frozen-v1' or protocol['sampling'] != 'iid-independent-donors':
+    if protocol['schedule'] not in {'fully-frozen-v1', 'past-block-bilinear-sgd-v1'} or protocol['sampling'] != 'iid-independent-donors':
         raise ValueError('Unsupported schedule/sampling')
     for key in ('null', 'population', 'family', 'parent', 'eligibility_justification', 'normalization_justification'):
         text(protocol[key])
@@ -97,9 +97,9 @@ class Store(BaseStore):
 
     @staticmethod
     def worker_hash():
-        from . import pharmacotype_data, pharmacotype_encoder, native_evidence, experiment_transport, drug_response_scoring
+        from . import pharmacotype_data, pharmacotype_encoder, pharmacotype_torch, native_evidence, experiment_transport, drug_response_scoring
         return digest({Path(m.__file__).name: hashlib.sha256(Path(m.__file__).read_bytes()).hexdigest()
-                       for m in (pharmacotype_data, pharmacotype_encoder, native_evidence, experiment_transport, drug_response_scoring)} |
+                       for m in (pharmacotype_data, pharmacotype_encoder, pharmacotype_torch, native_evidence, experiment_transport, drug_response_scoring)} |
                       {'pharmacotype_scoring.py': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()})
 
     def registration(self):

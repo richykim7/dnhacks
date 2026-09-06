@@ -90,10 +90,17 @@ changes. Fill in:
   helper process group, including its tmux child, so a stuck pane cannot freeze
   the mirror. Failed nudges are logged and dropped; failed message sends retain
   their cursor for retry on the next poll (an ambiguous send may be duplicated).
-- Every other machine: `python3 scripts/board_nudge.py` in a spare tmux
-  window (gh + tmux only). It turns `@name` mentions into a typed nudge in
-  that agent's pane when the pane is idle. Without it, your agents only see
-  mentions when they next read the board.
+- Every other machine: install one managed nudger using
+  `scripts/board_nudge_service.py`; see [setup and operation](docs/board-nudger.md).
+  systemd provides restart/logs and a source/config/dependency update timer. Exact
+  Board identities map explicitly to a verified Herdr pane and existing Codex thread, a guarded tmux pane,
+  or a durable local inbox. Busy/offline mentions survive restart. An ambiguous
+  send remains visible for reconciliation instead of being dropped or blindly
+  duplicated. Herdr's structured prompt API can buffer input to a working agent;
+  terminal/process pins and receipt checks detect replacements, but its API has no
+  atomic expected-thread guard (see the documented residual transport race).
+  The plain Codex queue fallback may require a later queue consumer. Inbox reads
+  remain available, and transport acceptance is distinguished from actual consumption.
 - Rich's machine only: `scripts/pr_digest.py --author iantinney` in its own
   tmux session (`dnhacks/pr-digest`). When a PR by that author merges, it
   reads the diff, has `claude -p` write a plain-prose summary of what the

@@ -5,12 +5,13 @@ operator-prejoined baseline RNA and complete single-agent response curves. No
 cohort is bundled. Outputs describe measured assay profiles or development
 predictions, never patient benefit probabilities, synergy or mechanism.
 
-The current implementation is a bounded CPU reference: separate identity/PCA or
+The implementation provides bounded CPU and optional Torch/CUDA training: separate identity/PCA or
 compact masked-reconstruction tanh encoders, a ridge curve predictor, and a
 bounded bilinear critic trained on matched versus crossed development donors.
-The nonlinear encoder is NumPy-based and has no GPU path. It is not a demonstrated
-improvement on PCA. Model selection, GPU benchmarking on acquired data, adaptive
-past-block critic updates and a scientific confirmation pilot remain pending.
+Real PRISM/CCLE training and three-seed GPU evaluation are recorded in the
+[model card](pharmacotype-training.md). PCA remains selected; the learned model
+did not reproducibly improve validation error. The shared core supports an opt-in
+past-block critic update. The scientific PDO confirmation pilot remains gated.
 
 ## Development input
 
@@ -90,7 +91,7 @@ The private manifest has `protocol_id`, `hypothesis_id`, `family_id`, `cohort_id
 `cohort` (same schema, role `confirmation`), complete frozen `model`, and `protocol`.
 The protocol declares:
 
-- `schedule: "fully-frozen-v1"`, `sampling: "iid-independent-donors"`, `stake` in
+- `schedule: "fully-frozen-v1"` or `"past-block-bilinear-sgd-v1"`, `sampling: "iid-independent-donors"`, `stake` in
   [0, .9], `null`, `population` matching the assay, `family` matching `family_id`,
   `parent`, `eligibility_justification`, and `normalization_justification`.
 - A prespecified even `required_donors` and canonical sorted `donor_order`.
@@ -125,7 +126,8 @@ observation digest atomically. The operator-only `replay` command retries interr
 queue worker lock; permanent validation failures stay failed. Interrupted replay repeats identical transitions,
 which do not increment twice. Reordering or changed observations fails. Software,
 manifest and model changes invalidate the frozen registration. No append endpoint
-or adaptive optimizer is implemented here.
+is provided. The adaptive schedule persists scored/next critic and fixed
+stateless SGD parameters atomically; see [core recovery semantics](native-evidence.md).
 
 The null concerns independence of the two frozen measured representations in the
 eligible assay population. The shared kernel evaluates four matched/crossed terms
@@ -140,16 +142,21 @@ No independent PDO denominator is established by the published library sizes.
 The [EGA record](https://ega-archive.org/datasets/EGAD00001005217), checked
 2026-09-06, lists 31 sequencing samples and committee-controlled access; it does
 not establish 31 eligible independent PDAC donors. No access request was sent.
-The [Tiriac publication record](https://pubmed.ncbi.nlm.nih.gov/29853643/) remains
-an acquisition candidate. Exact expression-response joins, canonical donor
-crosswalks, panel completeness, licenses and assay normalization need an acquired
-source-table audit. No real development curves or trained biological model are
-claimed. GPU availability was checked but no GPU job was launched.
+Tiriac raw sequencing access is controlled at [dbGaP phs001611.v1.p1](https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=phs001611.v1.p1),
+but processed RNA quantification is open through
+[GDC](https://portal.gdc.cancer.gov/projects/ORGANOID-PANCREATIC). Public
+PRISM/CCLE acquisition, canonical metadata join and real CPU/GPU training are
+complete; [source audit](pharmacotype-sources.json) and [model card](pharmacotype-training.md)
+record the counts, hashes, outcomes and domain limitations.
+The training script now defaults to CUDA for all model fitting, including PCA,
+ridge and critic optimization. The model card includes the completed nine-fit
+CUDA rerun and the ongoing public PDO source audit.
 
-Remaining plan milestones: acquired-data joins/counts; three-seed development
-benchmark and model selection; real held-out curve utility and domain shift;
-adaptive score-before-train core; null/heavy-tail/contamination and power/delay
-review at the audited donor budget; OS privacy deployment and fresh confirmation.
+Remaining scientific release work: accessible paired PDO measurements and donor
+audit, sufficient untouched independent donors, assay-specific power and
+sampling review, and deployment behind a separate OS identity. Published cohort
+sizes do not establish these gates. The synthetic 32-donor power result fails
+the target and cannot be used as a release attestation.
 The development code can be used before those gates pass. Falsifier, ToolResult,
 branch monitoring and human promotion behavior are unchanged.
 

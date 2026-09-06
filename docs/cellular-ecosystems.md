@@ -1,17 +1,26 @@
 # Donor-level cellular ecosystems
 
+**Research route cancelled and plan deprecated, 2026-09-06.** Insufficient accessible independent eligible donors left the biological power gate unmet. Models, data, results, audits and reusable code are preserved. The workflows below document retained capabilities; they do not authorize further research or autonomous resumption. See the [deprecated plan](../plans/evalue-tool-council/PLAN-cellular-ecosystems.md).
+
 The `ecosystem` command implements exposed development preparation, separate
 compartment count encoders, donor profiles, exploratory coupling/comparison and
 segmented-cell spatial summaries. Private registration/scoring is an operator
-surface that uses the [shared native core](native-evidence.md). No biological
-cohort is acquired or approved by this release. Confirmation remains unavailable
-until a separate operator audits and approves every design gate.
+surface that uses the [shared native core](native-evidence.md). Public Peng and Lin development count cohorts have been acquired and audited,
+and real compartment models trained and evaluated; see the [initial training report](ecosystem-training.md).
+The [expanded CUDA run](ecosystem-expansion.md) adds Werba, Steele and Zhang: 72 donor
+records, 338,900 prepared cells, three-seed neural models and exact GPU PCA controls.
+Confirmation remains unavailable; the research route is cancelled.
 
 ## Development workflow
 
 Install normally, then run `ecosystem --help`, or use
 `PYTHONPATH=src uv run python scripts/ecosystem.py --help` from the repository.
-PCA uses NumPy; optional NB training requires the `evalue` extra (Torch).
+PCA uses NumPy; optional NB/set training requires the `evalue` extra (Torch).
+Source preparation and figure export use the `ecosystem` extra (SciPy/Matplotlib/h5py).
+For historical GPU training reproduction, see the [expanded workflow](ecosystem-expansion.md#reproduce);
+its CUDA-only scripts include GPU PCA and hold the shared GPU lease. The original
+CLI examples below describe the earlier CPU-capable artifact format. Expanded
+checkpoints use a separate development schema and are not native registrations.
 
 ```sh
 ecosystem prepare --input training-csr.json --output training.npz
@@ -65,8 +74,10 @@ reconcile aliases across studies, releases, atlas components, organoids and
 modalities before preparing input. Raw-source checksums identify externally
 verified source bytes; the tool additionally hashes the complete prepared
 counts/metadata. It does not fetch or automatically verify upstream sources.
-[The candidate inventory](ecosystem-sources.json) deliberately has null checksums
-and donor counts: it is not an audited manifest and cannot pass preparation.
+[The source inventory](ecosystem-sources.json) records verified Peng/Lin/Werba/Steele/Zhang development
+inputs and unresolved/reserved alternatives. Original counts, source hashes,
+donor crosswalks, all-gene library offsets and preparation reports remain local
+under `data/interim/ecosystems/`; acquisition never downloads reserved Hwang data.
 
 One preselected specimen per donor is supported in release one. Multiple lanes
 or cells within it remain nested measurements. Repeated specimens/sections need
@@ -96,12 +107,20 @@ or exposed development information, never private donors.
 PCA uses measured-library log1p normalization and equally many cells per donor.
 The optional NB model learns a modest tanh cell encoder and softmax decoder,
 negative-binomial dispersion and masked-gene reconstruction loss. Decoder rates
-are multiplied by each cell's measured library size. Each model sees one
+are multiplied by each cell's measured all-gene library size; an extra residual
+bin accounts for counts outside the selected gene panel. This corrected artifact
+is `ecosystem-nb-v2`; older v1 count artifacts are rejected rather than silently
+reinterpreted. Preparation records `library_size_rule: measured-all-genes` and
+integer `library_size` on each cell; that rule and offsets remain frozen at inference. Each model sees one
 compartment only. Inference uses frozen NumPy arrays; its safe artifact includes
 training donor/source identity, losses and execution provenance. It is an
 implementation of a count reconstruction model, not the existing TPM encoder
-or a claim of equivalence to scVI. Aggregation is frozen mean/variance/occupancy;
-a learned set aggregator has not been selected or validated.
+or a claim of equivalence to scVI. The default aggregation remains frozen mean/variance/occupancy. A small
+permutation-invariant set encoder was trained using same-compartment donor-summary
+reconstruction and subbag stability, but underperformed the summary PCA baseline
+in the real pilot. `profile --set-model FILE` can expose its experimental embedding
+alongside the default summary, with the frozen cell/set model hashes. It does not
+change the default coupling vector or select private evidence after scoring.
 
 The initial NB implementation caps 100,000 training cells, 4,000 genes, 64 latent
 dimensions, 20 epochs, batch size 512 and two hours. It reports throughput, peak
@@ -163,9 +182,13 @@ The operator must inspect the referenced reports: entering a hash is not
 independent validation. Gate approval is not part of discovery submission.
 The private operator's evidence export is
 `export-private --state DIR --receipt ID`. Aliases resolve to the same result.
-The first release uses the fully frozen critic schedule, storing explicit null
-optimizer/RNG state. Adaptive learning and append requests through HTTP are
-unsupported; the core can privately advance fresh locked blocks atomically.
+The baseline uses `fully-frozen-v1`, storing explicit null optimizer/RNG state.
+After separate design and power review, the operator can opt into the shared
+`past-block-bilinear-sgd-v1` schedule: each block is scored with its prior critic,
+then deterministic SGD updates only from that consumed block. Scored and next
+critic state commit atomically. This option is not a measured ecosystem power
+advantage. Append requests through HTTP remain unsupported; only the private
+core advances fresh locked blocks.
 Odd final donors contribute no factor. Never multiply unrelated processes.
 
 Private storage must be inaccessible to discovery through actual service/OS
@@ -196,10 +219,10 @@ alternative had only 0.67% anytime rejection. These diagnostics do **not**
 meet the 80% power gate or validate a real cohort. Deliberately invalid controls
 are labeled and never offered as evidence methods.
 
-Still required before biological release: independently reviewed donor/source
-inventory and access, frozen real-data compartment interpretation and unseen
-study utility comparisons (including pseudobulk/fixed-state baselines), a
-predeclared assay-specific alternative with adequate power, deployment privacy
+Real-data donor/source preparation and separate compartment training/comparison
+are now completed for development. Still required before confirmation: independent
+review of the reserved cohort and sampling, resolved untreated status/assay transfer,
+a predeclared assay-specific alternative with adequate power, deployment privacy
 audit and a separately authorized sequestered pilot. No confirmation donor
 counts, spatial donor inventory, learned advantage or accepted discovery are
 claimed by this implementation.

@@ -1,12 +1,335 @@
 {
   "schema": "ecosystem-source-inventory-v1",
-  "status": "candidate-inventory-not-acquisition-approved",
+  "status": "five-original-study-development-expansion-acquired-and-CUDA-trained; confirmation-unavailable",
   "origin": "plans/evalue-tool-council/PLAN-cellular-ecosystems.md",
   "sources": [
-    {"study": "Peng 2019", "accessions": ["CRA001160", "PRJCA001063"], "proposed_role": "training-development", "access_status": "unverified", "sha256": null, "audited_donors": null, "blockers": ["count access", "sample-to-donor mapping", "untreated status", "compartment coverage"]},
-    {"study": "Elyada 2019", "accessions": [], "proposed_role": "development-state-interpretation", "access_status": "unverified", "sha256": null, "audited_donors": null, "blockers": ["human count accession and annotations", "adjacent tissue aliases", "exclude mice from human population"]},
-    {"study": "Moncada 2020", "accessions": ["GSE111672"], "proposed_role": "spatial-development", "access_status": "unverified", "sha256": null, "audited_donors": null, "blockers": ["spatial subset inventory", "linked specimen IDs", "segmentation and assay resolution"]},
-    {"study": "Hwang 2022", "accessions": ["GSE202051", "GSE199102", "SCP1089", "SCP1096", "DUOS000139"], "proposed_role": "reserved-private-candidate", "access_status": "unverified", "sha256": null, "audited_donors": null, "blockers": ["canonical donor overlaps", "untreated primary subset", "snRNA transfer", "compartment coverage", "novel question and uninspected observations", "power at audited donor budget"]},
-    {"study": "Human pancreatic single-cell atlas", "accessions": [], "proposed_role": "expanded-training-candidate", "access_status": "unverified", "sha256": null, "audited_donors": null, "blockers": ["component study crosswalk", "exclude whole reserved studies and donor aliases", "raw source and reference-fitting provenance"]}
-  ]
+    {
+      "study": "Peng 2019",
+      "accessions": [
+        "CRA001160",
+        "PRJCA001063"
+      ],
+      "proposed_role": "training-development",
+      "access_status": "verified-local-original-GSA-counts-and-annotations",
+      "sha256": "4cbfb38c61f0157e059bc74c03fbf18bb61d42b6682d0f8066d0cd3052d1ed60",
+      "audited_donors": 24,
+      "blockers": [
+        "Published type-2 ductal compartment is a malignant-enriched proxy, not independent CNA verification",
+        "Independent confirmation sampling review still required"
+      ],
+      "training_donors": 16,
+      "development_donors": 8,
+      "excluded_control_specimens": 11,
+      "treatment": "Original Results states without any treatment; publication-level attestation",
+      "primary_reference": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6796938/",
+      "canonical_donor_rule": "CRA001160:T1-T24; one original tumor sample per patient; T1-T16 train, T17-T24 development",
+      "aliases": [
+        "PRJCA001063",
+        "zenodo.3969339",
+        "TISCH:PAAD_CRA001160"
+      ]
+    },
+    {
+      "study": "Lin 2020",
+      "accessions": [
+        "GSE154778"
+      ],
+      "proposed_role": "external-development-only",
+      "access_status": "verified-local-original-GEO-10x-counts",
+      "audited_donors": 10,
+      "excluded_metastatic_specimens": 6,
+      "canonical_donor_rule": "P01-P10 are ten distinct original patients; GSM4679532-GSM4679541 map once each",
+      "annotation_source": "https://tisch.compbio.cn/static/data/PAAD_GSE154778/PAAD_GSE154778_CellMetainfo_table.tsv",
+      "primary_reference": "https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-020-00776-9",
+      "treatment": "unresolved",
+      "blockers": [
+        "Treatment status unresolved",
+        "TISCH lineage mapping is exposed development only; no frozen confirmation label-transfer approval"
+      ]
+    },
+    {
+      "study": "Elyada 2019",
+      "accessions": [],
+      "proposed_role": "development-state-interpretation",
+      "access_status": "human-data-dbgap-accession-on-request; not-downloaded",
+      "sha256": null,
+      "audited_donors": null,
+      "blockers": [
+        "human count accession and annotations",
+        "adjacent tissue aliases",
+        "exclude mice from human population",
+        "GSE129455 is mouse data, not a human count fallback"
+      ]
+    },
+    {
+      "study": "Moncada 2020",
+      "accessions": [
+        "GSE111672"
+      ],
+      "proposed_role": "spatial-development",
+      "access_status": "unverified",
+      "sha256": null,
+      "audited_donors": null,
+      "blockers": [
+        "spatial subset inventory",
+        "linked specimen IDs",
+        "segmentation and assay resolution"
+      ]
+    },
+    {
+      "study": "Hwang 2022",
+      "accessions": [
+        "GSE202051",
+        "GSE199102",
+        "SCP1089",
+        "SCP1096",
+        "DUOS000139"
+      ],
+      "proposed_role": "reserved-private-candidate",
+      "access_status": "unverified",
+      "sha256": null,
+      "audited_donors": null,
+      "blockers": [
+        "canonical donor overlaps",
+        "untreated primary subset",
+        "snRNA transfer",
+        "compartment coverage",
+        "novel question and uninspected observations",
+        "power at audited donor budget"
+      ]
+    },
+    {
+      "study": "Human pancreatic single-cell atlas",
+      "accessions": [],
+      "proposed_role": "expanded-training-candidate",
+      "access_status": "unverified",
+      "sha256": null,
+      "audited_donors": null,
+      "blockers": [
+        "component study crosswalk",
+        "exclude whole reserved studies and donor aliases",
+        "raw source and reference-fitting provenance"
+      ]
+    },
+    {
+      "study": "Werba",
+      "accessions": [
+        "GSE205013"
+      ],
+      "audited_donors": 17,
+      "proposed_role": "training-development",
+      "access_status": "verified-local-original-10x-counts",
+      "primary_reference": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205013",
+      "canonical_donor_rule": "Primary PDAC only; ten liver metastases excluded. Treatment mixtures are exposed development."
+    },
+    {
+      "study": "Steele reprocessed",
+      "accessions": [
+        "GSE229413",
+        "GSE155698"
+      ],
+      "audited_donors": 15,
+      "proposed_role": "training-and-donor-validation",
+      "access_status": "verified-local-original-10x-counts",
+      "primary_reference": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229413",
+      "canonical_donor_rule": "One original donor counted once across releases; Keller repeat and normals excluded. Thirteen annotation joins verified by barcode and full-library count; two explicit GEO donor identities retained with unknown labels for CUDA prediction."
+    },
+    {
+      "study": "Zhang",
+      "accessions": [
+        "GSE212966"
+      ],
+      "audited_donors": 6,
+      "proposed_role": "external-development-only",
+      "access_status": "verified-local-original-10x-counts",
+      "primary_reference": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE212966",
+      "canonical_donor_rule": "Six untreated primary PDAC donors; adjacent normals excluded; entire study held out from fitting."
+    }
+  ],
+  "audit_date": "2026-09-06",
+  "original_count_redistribution": false,
+  "inputs": [
+    {
+      "url": "https://download.cncb.ac.cn/gsa/CRA001160/all_celltype.txt",
+      "bytes": 2101436,
+      "sha256": "41a37cfd2a12c06e5583b57d23aab5e97abc6f6a138bc27972badd9bb9477a64"
+    },
+    {
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE154778&targ=all&form=text&view=full",
+      "bytes": 8063831,
+      "sha256": "a5082dd14f62cb70f597538ee7b500d4470062a59764160c01e4e9bdcf158259"
+    },
+    {
+      "url": "https://tisch.compbio.cn/static/data/PAAD_GSE154778/PAAD_GSE154778_CellMetainfo_table.tsv",
+      "bytes": 1828168,
+      "sha256": "f1f536d5d195a26404cff42182ef7bd87db3949a6e101473dd08080266b52767"
+    },
+    {
+      "url": "https://download.cncb.ac.cn/gsa/CRA001160/count-matrix.txt",
+      "bytes": 2771872913,
+      "sha256": "4cbfb38c61f0157e059bc74c03fbf18bb61d42b6682d0f8066d0cd3052d1ed60"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679532/suppl/GSM4679532_K16733_barcodes.tsv.gz",
+      "bytes": 2850,
+      "sha256": "9df9b910b95db00f7c53e5756da3a1d098b3ca2e8a92fc67d6fa34cd31619315"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679532/suppl/GSM4679532_K16733_features.tsv.gz",
+      "bytes": 294503,
+      "sha256": "df4cb26644b834c0029db7c6c8e104f5bd707bdf68a4fac394575dbd0a311a15"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679532/suppl/GSM4679532_K16733_matrix.mtx.gz",
+      "bytes": 3328803,
+      "sha256": "8372e2c2a2d7257be27aaa1c08ffd6a557a07abd34e0165059024987dbf3491c"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679533/suppl/GSM4679533_Y00006_barcodes.tsv.gz",
+      "bytes": 4030,
+      "sha256": "2af5baee47472e3eea1c36e5394e52c56ed720651f8a3c1a33ce00b687d8f0df"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679533/suppl/GSM4679533_Y00006_genes.tsv.gz",
+      "bytes": 257279,
+      "sha256": "c6b558045ba1b63da3c00510ba70d63b148e63a8f0d4551354bb8212d9b9a79f"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679533/suppl/GSM4679533_Y00006_matrix.mtx.gz",
+      "bytes": 995090,
+      "sha256": "0c09814531991ae413ebfbd942a514de4e862df2de7d5a0aa7c32c46b236395a"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679534/suppl/GSM4679534_T2_barcodes.tsv.gz",
+      "bytes": 4203,
+      "sha256": "1cebaac7a848265692a85087c1f89c93b45032cd50cea04cacaf07c83c8c5b1b"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679534/suppl/GSM4679534_T2_genes.tsv.gz",
+      "bytes": 257275,
+      "sha256": "26e366184042b2087232edaabfc8d39b4ec046a7f325b364c45321da687a3927"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679534/suppl/GSM4679534_T2_matrix.mtx.gz",
+      "bytes": 7661363,
+      "sha256": "00c7f2cc841d870f1b7d74dd8521a9a13fdd62b4005d80b296f32987183fba87"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679535/suppl/GSM4679535_T3_barcodes.tsv.gz",
+      "bytes": 5076,
+      "sha256": "f3c3d6c5a26c79f46069ecd4f5ac617a3503983a66dbec5a386a39f75b73dcba"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679535/suppl/GSM4679535_T3_genes.tsv.gz",
+      "bytes": 257275,
+      "sha256": "da4deb9ac445195a9726d6b4b7398d02c2026d1ea4729b8e3687055395ca5563"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679535/suppl/GSM4679535_T3_matrix.mtx.gz",
+      "bytes": 1736886,
+      "sha256": "9b0c3ee83b0c9a0053498f6058e05376beabf764eed6d3a4dee9634a12d85a06"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679536/suppl/GSM4679536_T4_barcodes.tsv.gz",
+      "bytes": 4566,
+      "sha256": "c5839ece9eff400da9e404ed073bd7153b0953626beb701c5df68be65d1a6d72"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679536/suppl/GSM4679536_T4_genes.tsv.gz",
+      "bytes": 257275,
+      "sha256": "935d890ed97da2238463e4fdd1b35cf85a383c109178843ce8b1e5678fc35880"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679536/suppl/GSM4679536_T4_matrix.mtx.gz",
+      "bytes": 4319004,
+      "sha256": "2f5601dc8f4ee4bcb81b870a85d236ff05a7a3b3f8e503bea25de653eeb778bc"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679537/suppl/GSM4679537_T5_barcodes.tsv.gz",
+      "bytes": 3945,
+      "sha256": "43ffdb62283f78af9e9f7a94cc7327fd0476f0bd672625ee9f94bf76bd8f8eab"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679537/suppl/GSM4679537_T5_genes.tsv.gz",
+      "bytes": 257275,
+      "sha256": "d87f4446e52639a43c751ef4b75292bb3e2531171c9a161e691085717ed215f4"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679537/suppl/GSM4679537_T5_matrix.mtx.gz",
+      "bytes": 7559656,
+      "sha256": "acf79e48b43781b8dcb055230b5fcc3d28eefb2191393ab8eac7a07bf3b97a35"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679538/suppl/GSM4679538_T6_barcodes.tsv.gz",
+      "bytes": 5369,
+      "sha256": "32d9c086c9e4fed009b79350d7efd2c669cdfe2eb5416408d93643298aaedca3"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679538/suppl/GSM4679538_T6_genes.tsv.gz",
+      "bytes": 257275,
+      "sha256": "23cf30bad7210131d04f4c58aea72f59de43992331a3d3ac08c02e42c2937225"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679538/suppl/GSM4679538_T6_matrix.mtx.gz",
+      "bytes": 8632683,
+      "sha256": "993e2975b44a30014a1ca35e27371024ecac15377cfb59032bb84a46b5a578be"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679539/suppl/GSM4679539_T8_barcodes.tsv.gz",
+      "bytes": 5526,
+      "sha256": "3eded34782a7df5c703ffed96e531cab0fec2befd2a1b23a82d978da78399251"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679539/suppl/GSM4679539_T8_genes.tsv.gz",
+      "bytes": 257275,
+      "sha256": "e06499182ee8784b80f82a0b24f166e57224d511f0dec96847630791e3000652"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679539/suppl/GSM4679539_T8_matrix.mtx.gz",
+      "bytes": 10754948,
+      "sha256": "6edd5153d013be06fc30a645d202c8afb77b918c9ec9162854d069b984e394e6"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679540/suppl/GSM4679540_T9_barcodes.tsv.gz",
+      "bytes": 4538,
+      "sha256": "46e1cd6593c2b97dc96c6560299dbdba7e5225bfd6511d38a88a514834c0c0e5"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679540/suppl/GSM4679540_T9_genes.tsv.gz",
+      "bytes": 257275,
+      "sha256": "4ae172ff1a5bdc2df67b16d74eea8b19f72f941028b198be5eaaea767b90f0be"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679540/suppl/GSM4679540_T9_matrix.mtx.gz",
+      "bytes": 6116792,
+      "sha256": "dac00475cfa9e9ecf524ccb185381e8c4039a1750c53a9dc6e697d74c37e3cd4"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679541/suppl/GSM4679541_T10_barcodes.tsv.gz",
+      "bytes": 7390,
+      "sha256": "130e7b5152a7ffcee71488a1fbc4231316c9b2a6498675a6508b4875aea54b72"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679541/suppl/GSM4679541_T10_genes.tsv.gz",
+      "bytes": 257276,
+      "sha256": "36e5084a23fe65e800e88dff9322599735d76efe5dc9908b34ac88f0b33c2f7d"
+    },
+    {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4679nnn/GSM4679541/suppl/GSM4679541_T10_matrix.mtx.gz",
+      "bytes": 12265376,
+      "sha256": "c30ec72cb2735586cbe3512ebf7154d7af5d813fb794aabe53512534b6e056bc"
+    }
+  ],
+  "checksum_scope": "SHA256 of actual downloaded bytes; no upstream count checksum assertion. Peng expected byte size additionally checked.",
+  "cross_study_review": "Peng recruited at Peking Union Medical College Hospital; Lin at HonorHealth and Samsung. Different original studies and institutions support exposed-development separation; this is not a confirmation identity certificate.",
+  "expanded_development": {
+    "donor_records": 72,
+    "prepared_cells": 338900,
+    "gpu_loaded_cells": 313518,
+    "common_genes": 2625,
+    "complete_donors_at_32_cells_per_compartment": 55,
+    "report": "ecosystem-expansion.md",
+    "new_source_bytes_and_hashes": "ecosystem-expansion/acquisition.json",
+    "reserved_Hwang_opened": false
+  }
 }

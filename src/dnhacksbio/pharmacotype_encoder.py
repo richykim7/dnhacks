@@ -76,7 +76,57 @@ def fit_view(train, validation, *, kind, latent, seed, epochs):
     return a
 
 
-def train(data, splits, *, kind='pca', latent=8, seed=0, epochs=100, ridge=1., missing_tolerance=.1):
+def fit_view_torch(train, validation, *, kind, latent, seed, epochs, device):
+    """Same frozen tanh artifact, fitted with bounded Adam masked reconstruction."""
+    import torch
+    if kind != 'mlp':
+        return fit_view(train, validation, kind=kind, latent=latent, seed=seed, epochs=epochs)
+    mean, scale = train.mean(0), np.maximum(train.std(0),1e-8)
+    torch.manual_seed(seed)
+    z = torch.tensor((train-mean)/scale,dtype=torch.float32,device=device)
+    v = torch.tensor((validation-mean)/scale,dtype=torch.float32,device=device)
+    encoder = torch.nn.Linear(train.shape[1],latent,device=device)
+    decoder = torch.nn.Linear(latent,train.shape[1],device=device)
+    optimizer = torch.optim.Adam([*encoder.parameters(),*decoder.parameters()],lr=.001)
+    best, best_loss, stale = None,float('inf'),0
+    started = time.monotonic()
+    for epoch in range(epochs):
+        if time.monotonic()-started > 300:
+            raise TimeoutError('View training exceeded five-minute pilot cap')
+        optimizer.zero_grad()
+        masked = z.masked_fill(torch.rand_like(z)<.15,0)
+        loss = ((decoder(torch.tanh(encoder(masked)))-z)**2).mean()
+        if not torch.isfinite(loss): raise ValueError('Nonfinite training loss')
+        loss.backward();optimizer.step()
+        with torch.no_grad():
+            value=float(((decoder(torch.tanh(encoder(v)))-v)**2).mean().cpu())
+        if value < best_loss-1e-8:
+            best_loss,stale=value,0
+            best=[p.detach().cpu().numpy().copy() for p in (*encoder.parameters(),*decoder.parameters())]
+            used=epoch+1
+        else: stale+=1
+        if stale>=15: break
+    w,b,d,db=best
+    return dict(kind='mlp',mean=mean.tolist(),scale=scale.tolist(),weights=w.T.tolist(),bias=b.tolist(),
+                decoder=d.T.tolist(),decoder_bias=db.tolist(),epochs=used,
+                validation_reconstruction_mse=best_loss,optimizer='Adam',device=device)
+
+
+def train(data, splits, *, backend='numpy', device='cpu', **kwargs):
+    """GPU lease covers both representations, critic and all synchronization."""
+    if backend not in {'numpy','torch'} or device not in {'cpu','cuda'}:
+        raise ValueError('Unsupported backend/device')
+    if device=='cuda' and backend!='torch': raise ValueError('CUDA requires Torch')
+    from contextlib import ExitStack
+    import fcntl
+    with ExitStack() as stack:
+        if device=='cuda':
+            lock=stack.enter_context(open('/tmp/dnhacks-gpu.lock','a'))
+            fcntl.flock(lock,fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return _train(data,splits,backend=backend,device=device,**kwargs)
+
+
+def _train(data, splits, *, kind='pca', latent=8, seed=0, epochs=100, ridge=1., missing_tolerance=.1, backend='numpy', device='cpu'):
     if data['role'] != 'development' or kind not in {'pca', 'identity', 'mlp'}:
         raise ValueError('Development training only')
     if not 0 <= missing_tolerance < 1 or not 1 <= epochs <= 500 or not 1 <= latent <= 128 or not np.isfinite(ridge) or ridge <= 0:
@@ -86,14 +136,27 @@ def train(data, splits, *, kind='pca', latent=8, seed=0, epochs=100, ridge=1., m
     if any(len(g) < 2 for g in groups) or len(set(flattened)) != len(flattened) or set(flattened) != set(data['donors']):
         raise ValueError('Exhaustive disjoint canonical-donor splits required (>=2 each)')
     ix = [[data['donors'].index(d) for d in group] for group in groups]
+    if backend=='torch':
+        from .pharmacotype_torch import fit
+        return fit(data,splits,ix,kind=kind,latent=latent,seed=seed,epochs=epochs,
+                   ridge=ridge,missing_tolerance=missing_tolerance,device=device)
     x, y = data['x'], data['y']
     fill = np.nanmean(x[ix[0]], axis=0)
     if not np.isfinite(fill).all():
         raise ValueError('Training feature entirely missing')
     x = _fill(x, fill, missing_tolerance)
     started = time.monotonic()
-    ex = fit_view(x[ix[0]], x[ix[1]], kind=kind, latent=latent, seed=seed, epochs=epochs)
-    ey = fit_view(y[ix[0]], y[ix[1]], kind=kind, latent=latent, seed=seed+1, epochs=epochs)
+    gpu_metrics = {}
+    if backend=='torch':
+        import torch
+        torch.set_num_threads(2)
+        if device=='cuda':
+            torch.cuda.reset_peak_memory_stats()
+        ex = fit_view_torch(x[ix[0]],x[ix[1]],kind=kind,latent=latent,seed=seed,epochs=epochs,device=device)
+        ey = fit_view_torch(y[ix[0]],y[ix[1]],kind=kind,latent=latent,seed=seed+1,epochs=epochs,device=device)
+    else:
+        ex = fit_view(x[ix[0]], x[ix[1]], kind=kind, latent=latent, seed=seed, epochs=epochs)
+        ey = fit_view(y[ix[0]], y[ix[1]], kind=kind, latent=latent, seed=seed+1, epochs=epochs)
     zx, zy = encode(x, ex), encode(y, ey)
     design = np.column_stack((zx[ix[0]], np.ones(len(ix[0]))))
     penalty = np.eye(design.shape[1]) * ridge; penalty[-1, -1] = 0
@@ -109,6 +172,21 @@ def train(data, splits, *, kind='pca', latent=8, seed=0, epochs=100, ridge=1., m
         score = np.tanh(features @ cw)
         gradient = features.T @ ((score-labels)*(1-score**2)) / len(score) + .01*cw
         cw -= .01 * np.clip(gradient, -10, 10)
+    if backend=='torch':
+        features_t=torch.tensor(features,dtype=torch.float32,device=device)
+        labels_t=torch.tensor(labels,dtype=torch.float32,device=device)
+        cw_t=torch.nn.Parameter(torch.tensor(cw,dtype=torch.float32,device=device))
+        optimizer=torch.optim.Adam([cw_t],lr=.001)
+        for _ in range(epochs):
+            optimizer.zero_grad()
+            loss=((torch.tanh(features_t@cw_t)-labels_t)**2).mean()+.01*(cw_t**2).mean()
+            loss.backward();optimizer.step()
+        cw=cw_t.detach().cpu().numpy()
+        gpu_metrics={'torch':torch.__version__,'device':device}
+        if device=='cuda':
+            torch.cuda.synchronize()
+            gpu_metrics.update(peak_allocated_bytes=torch.cuda.max_memory_allocated(),
+                               peak_reserved_bytes=torch.cuda.max_memory_reserved())
     metrics = {}
     for name, indices in zip(('validation', 'test'), ix[1:]):
         predicted = np.column_stack((zx[indices], np.ones(len(indices)))) @ coef
@@ -118,7 +196,8 @@ def train(data, splits, *, kind='pca', latent=8, seed=0, epochs=100, ridge=1., m
         'development_donors': data['donors'], 'splits': splits, 'fill': fill.tolist(),
         'missing_tolerance': missing_tolerance, 'molecular': ex, 'response': ey,
         'predictor': coef.tolist(), 'critic': cw.reshape(zx.shape[1], zy.shape[1]).tolist(),
-        'seed': seed, 'epochs_cap': epochs, 'ridge': ridge, 'latent': latent,
+        'seed': seed, 'epochs_cap': epochs, 'ridge': ridge, 'latent': latent, 'backend':backend,
+        'resource_metrics':gpu_metrics,
         'metrics': metrics, 'training_seconds': time.monotonic()-started,
         'software': {'python': platform.python_version(), 'numpy': np.__version__},
         'limitations': 'Development only; no clinical probability, mechanism, synergy or confirmation. Test split must not select models.'})

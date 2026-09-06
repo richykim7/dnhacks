@@ -1,0 +1,375 @@
+.binder-workbench {
+  background: #091420;
+  color: #dbe6ef;
+  border: 1px solid #29404f;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 16px 0;
+  min-width: 0;
+  font-family: "IBM Plex Sans Variable", sans-serif;
+}
+.binder-heading {
+  padding: 24px 26px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #263848;
+}
+.binder-eyebrow {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #80abbf;
+}
+.binder-heading h3 {
+  font-size: 29px;
+  letter-spacing: -1px;
+  margin: 7px 0;
+}
+.binder-heading p {
+  font-size: 12px;
+  color: #9db4c5;
+  margin: 0;
+}
+.binder-workbench button,
+.binder-workbench select {
+  font: inherit;
+  font-size: 11px;
+  background: #102332;
+  color: #dce9ef;
+  border: 1px solid #3c586c;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.binder-workbench button:focus-visible,
+.binder-workbench select:focus-visible {
+  outline: 2px solid #70dce7;
+  outline-offset: 2px;
+}
+.binder-workbench button[aria-pressed="true"] {
+  color: #70dce7;
+  border-color: #70dce7;
+  background: #143341;
+}
+.binder-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 238px;
+}
+.binder-stage {
+  height: 460px;
+  position: relative;
+  isolation: isolate;
+}
+.binder-stage canvas {
+  display: block;
+}
+.binder-caption {
+  position: absolute;
+  left: 22px;
+  top: 20px;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.binder-caption strong {
+  font-size: 15px;
+  font-weight: 450;
+}
+.binder-caption small {
+  font-size: 10px;
+  color: #9db4c5;
+}
+.binder-badge {
+  font-size: 9px;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  border: 1px solid #536c7b;
+  border-radius: 20px;
+  width: fit-content;
+  padding: 4px 9px;
+  color: #c0d3df;
+}
+.binder-legend {
+  position: absolute;
+  bottom: 18px;
+  left: 22px;
+  display: flex;
+  gap: 15px;
+  font-size: 10px;
+  color: #afc1d0;
+  pointer-events: none;
+}
+.binder-legend i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.binder-legend .target {
+  background: #c7d3db;
+}
+.binder-legend .binder {
+  background: #26b8cd;
+}
+.binder-legend .seam {
+  background: #e9907b;
+}
+.binder-loading {
+  position: absolute;
+  left: 22px;
+  bottom: 45px;
+  color: #bad5e5;
+  font-size: 12px;
+}
+.binder-inspector {
+  border-left: 1px solid #263848;
+  padding: 22px 18px;
+  background: linear-gradient(140deg, #122332, #0b1825);
+}
+.binder-inspector h4 {
+  font-size: 19px;
+  line-height: 1.25;
+  margin: 14px 0 10px;
+  color: #e3edf4;
+}
+.binder-inspector p {
+  font-size: 11px;
+  line-height: 1.65;
+  color: #a9c0d0;
+}
+.binder-inspector dl {
+  margin: 22px 0;
+}
+.binder-inspector dl div {
+  padding: 10px 0;
+  border-top: 1px solid #294050;
+}
+.binder-inspector dt {
+  font-size: 10px;
+  color: #9ab4c5;
+}
+.binder-inspector dd {
+  margin: 4px 0 0;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+}
+.binder-inspector dd:last-child {
+  line-height: 1.2;
+}
+.binder-inspector label {
+  display: block;
+  font-size: 11px;
+  margin-top: 20px;
+}
+.binder-inspector select {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+}
+.binder-inspector > button {
+  width: 100%;
+  margin-top: 8px;
+}
+.binder-context {
+  font-size: 11px;
+  color: #c3bc9f;
+  padding: 10px 12px;
+  border-left: 2px solid #b19864;
+  background: #242723;
+}
+.binder-views {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 13px 18px;
+  border-top: 1px solid #203444;
+}
+.binder-views button {
+  text-transform: capitalize;
+}
+.binder-sequence {
+  display: flex;
+  gap: 5px;
+  overflow: auto;
+  padding: 0 18px 15px;
+  max-height: 90px;
+  flex-wrap: wrap;
+}
+.binder-sequence button {
+  font-size: 10px;
+  white-space: nowrap;
+  padding: 5px 7px;
+}
+.binder-table {
+  padding: 16px 22px;
+  border-top: 1px solid #294050;
+  font-size: 11px;
+}
+.binder-table summary {
+  cursor: pointer;
+  color: #9fd5e0;
+}
+.binder-table p {
+  line-height: 1.6;
+  color: #a1b9ca;
+}
+.binder-table > div {
+  max-height: 260px;
+  overflow: auto;
+}
+.binder-table table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #c2d2df;
+}
+.binder-table td,
+.binder-table th {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid #294050;
+  font-size: 10px;
+}
+.detail-panel:has(.binder-workbench) {
+  width: min(1120px, calc(100vw - 30px));
+}
+.binder-expanded {
+  position: fixed;
+  inset: 20px;
+  z-index: 1000;
+  margin: 0;
+  overflow: auto;
+}
+.binder-expanded .binder-stage {
+  height: calc(100vh - 330px);
+  min-height: 400px;
+}
+.binder-expanded .binder-layout {
+  grid-template-columns: minmax(0, 1fr) 285px;
+}
+@media (max-width: 700px) {
+  .binder-layout,
+  .binder-expanded .binder-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .binder-heading {
+    padding: 16px;
+    align-items: flex-start;
+  }
+  .binder-heading h3 {
+    font-size: 23px;
+  }
+  .binder-stage,
+  .binder-expanded .binder-stage {
+    height: 380px;
+    min-height: 0;
+  }
+  .binder-inspector {
+    border-left: 0;
+    border-top: 1px solid #263848;
+    padding: 18px;
+  }
+  .binder-inspector dl {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .binder-caption {
+    left: 14px;
+    top: 14px;
+  }
+  .binder-expanded {
+    inset: 5px;
+  }
+  .binder-heading > button {
+    max-width: 90px;
+  }
+  .binder-table {
+    padding: 14px;
+  }
+  .binder-legend {
+    left: 14px;
+    gap: 10px;
+  }
+}
+
+.binder-heading h3,
+.binder-inspector h4 {
+  font-family: inherit;
+}
+.binder-workbench:has(select option[value="copper"]:checked)
+  .binder-legend
+  .target {
+  background: #a77948;
+}
+.binder-workbench:has(select option[value="copper"]:checked)
+  .binder-legend
+  .binder {
+  background: #9193fc;
+}
+.binder-workbench:has(select option[value="copper"]:checked)
+  .binder-legend
+  .seam {
+  background: #e9be69;
+}
+.binder-timeline {
+  padding: 13px 24px;
+  border-bottom: 1px solid #294050;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 11px;
+  background: #10212e;
+}
+.binder-timeline > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-right: 12px;
+}
+.binder-timeline span,
+.binder-timeline small {
+  color: #a1b9ca;
+}
+.binder-timeline p {
+  margin: 0;
+  width: 100%;
+  color: #b8d0df;
+}
+.binder-timeline input {
+  min-width: 120px;
+  flex: 1;
+  accent-color: #69d2de;
+}
+.binder-timeline label {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.binder-recorded-capture {
+  margin: 14px 0;
+}
+.binder-recorded-capture img {
+  width: 100%;
+  border-radius: 12px;
+}
+.binder-recorded-capture figcaption {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.binder-compare-select { display: flex; gap: 12px; align-items: center; padding: 8px 16px; font-size: 11px; border-bottom: 1px solid #263848; }
+.binder-compare-select select { max-width: 70%; }
+.binder-compare-stage { position: absolute; inset: 0; display: flex; }
+.binder-compare-view { position: relative; width: 50%; height: 100%; }
+.binder-compare-view + .binder-compare-view::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; border-left: 1px solid #294050; pointer-events: none; }
+.binder-compare-names { position: absolute; top: 104px; left: 0; right: 0; display: grid; grid-template-columns: 1fr 1fr; color: #c3d8e8; font-size: 11px; pointer-events: none; }
+.binder-compare-names span { padding: 0 20px; overflow-wrap: anywhere; }
+.binder-comparison-metrics { padding: 16px; overflow-x: auto; }
+.binder-comparison-metrics table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.binder-comparison-metrics caption { text-align: left; margin-bottom: 10px; color: #b7cde0; }
+.binder-comparison-metrics th, .binder-comparison-metrics td { text-align: left; padding: 8px; border-bottom: 1px solid #294050; }
+@media (max-width: 900px) { .node-scene .binder-compare-names { top: 62px; font-size: 9px; } .binder-compare-names span { padding: 0 10px; } }

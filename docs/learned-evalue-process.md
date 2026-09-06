@@ -461,3 +461,84 @@ Infrastructure milestone gates after integrating the other tools and extraction 
 Final controller review strengthened restart handling: continuation objectives are reloaded from durable state, concurrent SDK fork claims and same-child execution are serialized, and allocation receives bounded ordinary evidence records with explicit coverage rather than an experiment-count/dead-end proxy.
 
 Final integration gates against main 899651c: 309 Python tests passed with the same six optional dependency/hardware skips; frontend build, six unit tests and 19 browser tests passed. The operator CLI help command also passed.
+
+
+## Shared subtree budget engineering
+
+Implemented the next controller stage with deterministic fixtures before corpus readiness. A durable
+ledger now shares action and operation-time allowances across descendants and continuation rounds,
+reserves reporting before granting research, and grants all fork children transactionally. Restart
+cannot refresh a contract or refund ambiguous paid work. Concurrency, nested budgets, failed launches,
+zero-action reporting and exhaustion across rounds have focused regression coverage.
+
+The time measure is summed operation wall time, not GPU compute or money; interrupted/overrunning
+backends are marked as operational violations, not valid completed negative examples. No actual
+trajectory collection, model scoring, training or GPU run was performed for this stage.
+
+
+## Private outcome-label workflow
+
+Completed the engineering separately from deferred science runs. The operator can prepare a runtime
+identity and freeze its actual subtree contract, starting evidence, rubric/model and adjudication
+policy before research. The label worker gathers real recorded code/output/results from the child and
+descendants, waits for the matching automated verification and privately applies the fixed rubric.
+No manually asserted success, fork count or child summary substitutes for those artifacts.
+
+Tests exercise slow-start continuation, global exhaustion with mandatory reporting, concurrent grants,
+restart ambiguity, descendant success, initial-evidence replay, delayed verification, fixed deadlines,
+assessor outages, altered artifacts, duplicate workers and exclusion of future/private feedback.
+Missing evidence and operational failures become censored examples; failed soundness is not success.
+Only workflow-qualified completed labels enter the training CLI. The initial adapter covers the legacy
+submission gate; private receipt methods require explicit validated adapters.
+
+Budget milestone gates: 321 Python passed / 6 optional skips, frontend build, 6 unit and 19 browser
+tests passed. No actual investigation, assessor invocation, trajectory scoring, training or GPU job
+was launched. These tests demonstrate accounting and labeling behavior, not scientific predictive power.
+
+Final review also covered standalone child resumption (inherit the ancestor allowance), complete
+operation reservations before research admission, serialized parent controllers, authoritative budget
+snapshots at checkpoints, and outcome-before-prefix-replay ordering. Historical replay is limited to
+the frozen terminal cursor and never exposes labels in verifier input.
+
+Final integrated gates against main 268f120: 421 Python tests passed, six optional checks skipped
+(Rscript, PyDESeq2 twice, decoupler, CUDA, opt-in Docker). Frontend build, six unit tests and
+19 browser tests passed. Both label-before-replay and label-during-replay orderings are covered.
+
+
+## 2026-09-06 — Registered receipt outcome adapters
+
+Closed the ingestion-independent integration gap left by the initial legacy-only outcome workflow.
+Added runner-owned registered submission for pathway/TF expression, Chronos dependency and biomarker/AUC
+response; exact public requests bind run/experiment ownership. Private adapters join those requests to
+canonical queue identities and immutable completion snapshots, checking method, settings, artifacts,
+validity/family reviews and endpoint deadlines without rescoring. Renamed/baseline evidence cannot earn
+another finding. Valid evidence routes to private human review and the frozen final rubric; no numerical
+threshold alone is success. Unsupported/unbound receipts and unavailable verification are censored.
+
+Synthetic real-worker tests exercise all three methods through descendant labels and private review,
+including immutable completion/restart, pending/late jobs, forged identities, altered provenance,
+concurrent aliases, historical-prefix replay after labeling and training-eligible export. These are
+engineering checks, not scientific validation or evidence of predictive pruning quality. Legacy TPM
+diagnostic output and other native receipt methods are outside these explicit contracts.
+
+Readiness remains distinct from a completed training study: actual corpus confirmation, assessor/rubric
+validation, development horizon selection, frozen sampling/family/disclosure policy, representative
+independent grouped rollouts and fit/calibration/evaluation are still required. No real trajectory
+collection/scoring/training, GPU work, account provisioning or deployment was performed. See the
+[operational coverage and readiness audit](branch-monitoring.md#readiness-after-this-engineering-milestone).
+
+Adapter milestone after integrating main 945d269: 149 focused Python checks passed, six optional
+Torch/CUDA/PyDESeq2 skips. Initial broad testing exposed native replay incompatibility; completion
+immutability now requires each concrete registered service to opt in, preserving native replay.
+Build and 12 frontend unit tests passed; full integration/browser gates remain in progress.
+
+Added the operator `route` worker for private evidence inspection before the subtree endpoint. It
+uses the same frozen adapter checks but never calls a model or labels an episode. Tests confirm
+idempotent CLI/restart behavior and that human decisions/notes do not enter final assessment or research.
+
+Final validation: full Python suite 663 passed / 46 optional dependency/native-build skips; latest
+monitoring regression set 69 passed, including reversed concurrent request/acceptance order and exact
+canonical payload matching. After syncing main's spindle runtime changes, 48 affected runtime/spindle
+checks passed / 2 optional skips and the frontend build passed. Frontend unit suite: 12 passed. All six
+runtime browser cases are covered: five passed initially; the review-button lookup timeout passed on
+an isolated rerun (4 seconds). No UI/product fix or weakened assertion was needed for that timeout.

@@ -8,6 +8,8 @@ report real cache hit rates. Model routing: OPUS for scientific judgment, SONNET
 from __future__ import annotations
 
 import asyncio
+import base64
+import struct
 import json
 import os
 import re
@@ -101,11 +103,32 @@ def _msg_to_dict(msg) -> dict:
     return d
 
 
+def image_prompt(prompt: str, images: list[bytes] | None):
+    """SDK image-bearing user message; paths and prose are never treated as pixels."""
+    if not images:
+        return prompt
+    if not isinstance(images, list) or len(images) > 2:
+        raise ValueError("Vision observation accepts one or two PNG images")
+    content = [{"type": "text", "text": prompt}]
+    for raw in images:
+        if not isinstance(raw, bytes) or len(raw) > 8 * 1024 * 1024 or len(raw) < 33 or raw[:8] != b"\x89PNG\r\n\x1a\n" or raw[12:16] != b"IHDR":
+            raise ValueError("Vision observation requires bounded PNG bytes")
+        width, height = struct.unpack(">II", raw[16:24])
+        if not 1 <= width <= 1920 or not 1 <= height <= 1080:
+            raise ValueError("Vision image dimensions exceed 1920 by 1080")
+        content.append({"type": "image", "source": {"type": "base64", "media_type": "image/png",
+                                                  "data": base64.b64encode(raw).decode()}})
+    async def stream():
+        yield {"type": "user", "message": {"role": "user", "content": content},
+               "parent_tool_use_id": None}
+    return stream()
+
+
 async def acomplete(prompt: str, *, model: str = OPUS, system: str | None = None,
                     effort: str = "medium", max_turns: int = 6, thinking: bool = False,
                     capture: dict | None = None, tools_disabled: bool = False,
                     max_output_tokens: int | None = None, max_attempts: int = 3,
-                    cwd: str | None = None) -> str:
+                    cwd: str | None = None, images: list[bytes] | None = None) -> str:
     """One-shot completion. Returns the final text; records usage in the global LEDGER. Retries transient
     SDK errors.
 
@@ -127,7 +150,7 @@ async def acomplete(prompt: str, *, model: str = OPUS, system: str | None = None
             capture["attempts"] = attempt + 1
         try:
             text, think, msgs = "", "", []
-            async for msg in query(prompt=prompt, options=_opts(
+            async for msg in query(prompt=image_prompt(prompt, images), options=_opts(
                     model, system, effort, max_turns, tconf, tools_disabled=tools_disabled,
                     max_output_tokens=max_output_tokens, cwd=cwd)):
                 if isinstance(msg, AssistantMessage):
@@ -181,12 +204,12 @@ class Session:
     async def __aexit__(self, *exc):
         await self._client.disconnect()
 
-    async def ask(self, prompt: str, capture: dict | None = None) -> str:
+    async def ask(self, prompt: str, capture: dict | None = None, *, images: list[bytes] | None = None) -> str:
         """One turn on the persistent conversation. Records usage in the global LEDGER. Pass a `capture`
         dict to receive {text, thinking, messages} (same shape as acomplete) for the reasoning trace."""
         text, think, msgs = "", "", []
         self.truncated = False
-        await self._client.query(prompt)
+        await self._client.query(image_prompt(prompt, images))
         async for msg in self._client.receive_response():
             # every SDK message carries the live session UUID; capture it so a running branch knows its own
             # fork handle (the first non-None wins and is stable for the session's life).

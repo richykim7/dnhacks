@@ -1,7 +1,8 @@
 """Development ecosystem operations and receipt-only private registration.
 
 Private release requires an operator-reviewed design and immutable observations.
-No first-release spatial confirmation, paired comparison or adaptive critic.
+No first-release spatial confirmation or paired comparison; critic schedules
+are implemented by the shared private core.
 """
 from __future__ import annotations
 
@@ -14,7 +15,7 @@ import sys
 import numpy as np
 
 from .ecosystem_design import CountData, digest, names
-from .ecosystem_encoder import CompartmentEncoder, fit_pca, fit_nb, load_encoder, profile, evaluate_holdout
+from .ecosystem_encoder import CompartmentEncoder, fit_pca, fit_nb, load_encoder, FrozenSetAggregator, profile, evaluate_holdout
 from .experiment_transport import QueueStore, REQUEST_ID, send_payload, serve
 from .native_evidence import KERNEL, PrivateProcessStore
 
@@ -212,7 +213,7 @@ def main(argv=None):
     train.add_argument('--cells-per-donor', type=int, default=64); train.add_argument('--seed', type=int, default=0)
     for verb in ('profile', 'evaluate'):
         sub = subs.add_parser(verb); sub.add_argument('--input', required=True); sub.add_argument('--model', required=True)
-        sub.add_argument('--states', required=True); sub.add_argument('--cells-per-donor', type=int, default=64)
+        sub.add_argument('--set-model'); sub.add_argument('--states', required=True); sub.add_argument('--cells-per-donor', type=int, default=64)
         sub.add_argument('--min-cells', type=int, default=32); sub.add_argument('--seed', type=int, default=0)
     for verb in ('couple', 'compare'):
         sub = subs.add_parser(verb); sub.add_argument('--left', required=True); sub.add_argument('--right', required=True)
@@ -245,7 +246,8 @@ def main(argv=None):
         elif args.verb in ('profile', 'evaluate'):
             fn = profile if args.verb == 'profile' else evaluate_holdout
             result = fn(CountData.load(args.input, roles=('development',)), load_encoder(args.model),
-                        states=args.states.split(','), min_cells=args.min_cells, cells_per_donor=args.cells_per_donor, seed=args.seed)
+                        states=args.states.split(','), min_cells=args.min_cells, cells_per_donor=args.cells_per_donor, seed=args.seed,
+                        set_encoder=FrozenSetAggregator.load(args.set_model) if args.set_model else None)
         elif args.verb in ('couple', 'compare'):
             result = (couple if args.verb == 'couple' else compare)(read(args.left), read(args.right))
         elif args.verb == 'spatial-profile': result = spatial_profile(read(args.input))

@@ -41,6 +41,14 @@ not bury the experience in warnings. Do not invent a successful experiment to ma
 
 ## Shared architecture to implement later
 
+User requirement (2026-09-06): every 3D tool must provide discoverable agent
+instructions in `skills/`, executable scene controls for the research agent, and
+both user modes: watch/replay the agent's actual recorded scene interactions with
+pause, seek and adjustable playback speed; or independently explore the same
+experiment. User exploration must preserve the agent timeline. Label action
+replay time separately from physical simulation time. A static viewer or exported
+movie alone does not satisfy this interaction requirement.
+
 Keep selected-experiment ownership and the existing immutable runtime artifact flow. Introduce
 versioned molecular, cell/field and filament-trajectory adapters behind a shared scene interface.
 Extend the collector deliberately: current PDB/mmCIF collection does not already support spatial

@@ -1,0 +1,314 @@
+{
+  "schema": "ProteinNativeDiagnostics-v1",
+  "alpha": 0.05,
+  "kernel": "learned_evalue._log_payoffs",
+  "schedule": "two burn-in batches, 8 pairs/batch",
+  "critic": "predictable past-mean direction, previous-batch stake selection; not neural Adam power",
+  "minimum_effect": 0.4,
+  "minimum_effect_basis": "rounded down from fixed development mitotic difference 0.4791",
+  "results": {
+    "normal_null": {
+      "streams": 10000,
+      "pairs": 48,
+      "scored_pairs": 32,
+      "case": "normal_null",
+      "invalid_control": false,
+      "effect": 0.4,
+      "final_rejections": 39,
+      "final_rate": 0.0039,
+      "final_ci95": [
+        0.002854360868773877,
+        0.005326642314611441
+      ],
+      "anytime_rejections": 130,
+      "anytime_rate": 0.013,
+      "anytime_ci95": [
+        0.010959440195307129,
+        0.015414574217731875
+      ],
+      "median_detection_pair_if_detected": 38.0,
+      "final_log_wealth_quantiles": [
+        -12.582827762128074,
+        -0.6758237888378946,
+        0.37883820559986664,
+        2.2571263163469495,
+        3.9264807646741855,
+        6.160496702660882
+      ],
+      "maximum_log_wealth": 6.160496702660882
+    },
+    "heavy_tail_null": {
+      "streams": 10000,
+      "pairs": 48,
+      "scored_pairs": 32,
+      "case": "heavy_tail_null",
+      "invalid_control": false,
+      "effect": 0.4,
+      "final_rejections": 35,
+      "final_rate": 0.0035,
+      "final_ci95": [
+        0.0025177785056224875,
+        0.004863531876459371
+      ],
+      "anytime_rejections": 127,
+      "anytime_rate": 0.0127,
+      "anytime_ci95": [
+        0.010684882862923493,
+        0.015089361949137917
+      ],
+      "median_detection_pair_if_detected": 37.0,
+      "final_log_wealth_quantiles": [
+        -21.21136445493853,
+        -0.9126470711178027,
+        0.2379437447423645,
+        2.173429057935517,
+        3.822511499119468,
+        7.458915438453255
+      ],
+      "maximum_log_wealth": 8.383167403872363
+    },
+    "missingness_null": {
+      "streams": 10000,
+      "pairs": 48,
+      "scored_pairs": 32,
+      "case": "missingness_null",
+      "invalid_control": false,
+      "effect": 0.4,
+      "final_rejections": 36,
+      "final_rate": 0.0036,
+      "final_ci95": [
+        0.0026016036387784434,
+        0.004979629943629281
+      ],
+      "anytime_rejections": 112,
+      "anytime_rate": 0.0112,
+      "anytime_ci95": [
+        0.009316987490236137,
+        0.013458409316937302
+      ],
+      "median_detection_pair_if_detected": 37.5,
+      "final_log_wealth_quantiles": [
+        -11.050059705777498,
+        -0.6632372139535723,
+        0.33376045771152807,
+        2.02327656975088,
+        4.082207373004815,
+        6.418362742542294
+      ],
+      "maximum_log_wealth": 6.418362742542294
+    },
+    "shift": {
+      "streams": 10000,
+      "pairs": 48,
+      "scored_pairs": 32,
+      "case": "shift",
+      "invalid_control": false,
+      "effect": 0.4,
+      "final_rejections": 262,
+      "final_rate": 0.0262,
+      "final_ci95": [
+        0.02324661275726247,
+        0.029517264098790668
+      ],
+      "anytime_rejections": 547,
+      "anytime_rate": 0.0547,
+      "anytime_ci95": [
+        0.05041173530937794,
+        0.05933025363954662
+      ],
+      "median_detection_pair_if_detected": 38.0,
+      "final_log_wealth_quantiles": [
+        -13.25151285843819,
+        -0.5220870657200829,
+        1.3533008624076466,
+        4.1935745605830475,
+        6.996505754529096,
+        8.440717091890589
+      ],
+      "maximum_log_wealth": 8.771996572355022
+    },
+    "nonlinear": {
+      "streams": 10000,
+      "pairs": 48,
+      "scored_pairs": 32,
+      "case": "nonlinear",
+      "invalid_control": false,
+      "effect": 0.4,
+      "final_rejections": 1111,
+      "final_rate": 0.1111,
+      "final_ci95": [
+        0.10508940612398694,
+        0.1174092678087253
+      ],
+      "anytime_rejections": 2079,
+      "anytime_rate": 0.2079,
+      "anytime_ci95": [
+        0.20005927290068545,
+        0.2159650589474638
+      ],
+      "median_detection_pair_if_detected": 36.0,
+      "final_log_wealth_quantiles": [
+        -24.829871072650572,
+        -0.12081098775807161,
+        3.181775489374146,
+        6.423138755773099,
+        8.8954207039208,
+        12.942020260043115
+      ],
+      "maximum_log_wealth": 12.942020260043115
+    },
+    "missingness_alternative": {
+      "streams": 10000,
+      "pairs": 48,
+      "scored_pairs": 32,
+      "case": "missingness_alternative",
+      "invalid_control": false,
+      "effect": 0.4,
+      "final_rejections": 6435,
+      "final_rate": 0.6435,
+      "final_ci95": [
+        0.6340589898499985,
+        0.6528308026176172
+      ],
+      "anytime_rejections": 6895,
+      "anytime_rate": 0.6895,
+      "anytime_ci95": [
+        0.680359960926723,
+        0.6984945036907906
+      ],
+      "median_detection_pair_if_detected": 37.0,
+      "final_log_wealth_quantiles": [
+        -5.182271898800502,
+        3.9012321059723467,
+        6.833862005914235,
+        8.816916865639245,
+        9.96811986651708,
+        11.089500757432411
+      ],
+      "maximum_log_wealth": 11.089500757432411
+    },
+    "batch_shift": {
+      "streams": 10000,
+      "pairs": 48,
+      "scored_pairs": 32,
+      "case": "batch_shift",
+      "invalid_control": false,
+      "effect": 0.4,
+      "final_rejections": 267,
+      "final_rate": 0.0267,
+      "final_ci95": [
+        0.023717565703441683,
+        0.03004592715424078
+      ],
+      "anytime_rejections": 602,
+      "anytime_rate": 0.0602,
+      "anytime_ci95": [
+        0.05570480725325504,
+        0.06503295771359208
+      ],
+      "median_detection_pair_if_detected": 38.0,
+      "final_log_wealth_quantiles": [
+        -13.394885177166298,
+        -0.5430320072699407,
+        1.3977436882309147,
+        4.027063428559597,
+        6.075705449189858,
+        9.614537192369033
+      ],
+      "maximum_log_wealth": 9.614537192369033
+    },
+    "current_batch_leak": {
+      "streams": 10000,
+      "pairs": 48,
+      "scored_pairs": 32,
+      "case": "current_batch_leak",
+      "invalid_control": true,
+      "effect": 0.4,
+      "final_rejections": 9998,
+      "final_rate": 0.9998,
+      "final_ci95": [
+        0.9992710041559925,
+        0.9999451510726791
+      ],
+      "anytime_rejections": 9999,
+      "anytime_rate": 0.9999,
+      "anytime_ci95": [
+        0.9994337311025987,
+        0.9999823473263989
+      ],
+      "median_detection_pair_if_detected": 27.0,
+      "final_log_wealth_quantiles": [
+        2.645878542170962,
+        8.702304693166825,
+        11.000071315612253,
+        12.724137030202096,
+        13.778593099292305,
+        14.367570589455507
+      ],
+      "maximum_log_wealth": 14.367570589455507
+    },
+    "shift_at_26_pair_audit_ceiling": {
+      "streams": 10000,
+      "pairs": 26,
+      "scored_pairs": 10,
+      "case": "shift",
+      "invalid_control": false,
+      "effect": 0.4,
+      "final_rejections": 35,
+      "final_rate": 0.0035,
+      "final_ci95": [
+        0.0025177785056224875,
+        0.004863531876459371
+      ],
+      "anytime_rejections": 50,
+      "anytime_rate": 0.005,
+      "anytime_ci95": [
+        0.0037949010708382257,
+        0.006585257316131604
+      ],
+      "median_detection_pair_if_detected": 25.0,
+      "final_log_wealth_quantiles": [
+        -10.021698017476865,
+        0.0,
+        0.7835795539809451,
+        2.4115046686028827,
+        3.478637233203894,
+        5.0162113408921005
+      ],
+      "maximum_log_wealth": 5.0162113408921005
+    },
+    "shift_at_96_pairs": {
+      "streams": 10000,
+      "pairs": 96,
+      "scored_pairs": 80,
+      "case": "shift",
+      "invalid_control": false,
+      "effect": 0.4,
+      "final_rejections": 787,
+      "final_rate": 0.0787,
+      "final_ci95": [
+        0.07358271825711664,
+        0.08414083877001548
+      ],
+      "anytime_rejections": 1876,
+      "anytime_rate": 0.1876,
+      "anytime_ci95": [
+        0.18006893903480972,
+        0.19537098314718895
+      ],
+      "median_detection_pair_if_detected": 59.0,
+      "final_log_wealth_quantiles": [
+        -16.605415122421558,
+        -1.4472998310116258,
+        2.49856432236978,
+        6.522380027403489,
+        9.215327822672531,
+        12.986732567334135
+      ],
+      "maximum_log_wealth": 16.85454782150755
+    }
+  },
+  "seconds": 2.6009498790372163,
+  "biological_release": "unavailable: not an audited independent confirmation cohort or model-specific power certificate",
+  "sampling_argument": "Conditional exchangeability and a past-measurable witness make the clipped tanh contrast odd with conditional mean zero. Factors are positive with conditional mean one. Distinct IDs, simulations and batch correction cannot establish these assumptions for actual samples."
+}

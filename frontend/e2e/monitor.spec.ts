@@ -25,7 +25,7 @@ test('operator monitor shows an actual single point and distinguishes missing ca
   await expect(page.locator('#chart circle')).toHaveCount(1);
   await expect(page.locator('#chart .threshold')).toHaveCount(0);
   await expect(page.getByText('No associated experimental evidence.')).toBeVisible();
-  await page.screenshot({path:'/tmp/dnhacks-monitor-single-point.png',fullPage:true});
+  await page.screenshot({path:test.info().outputPath('dnhacks-monitor-single-point.png'),fullPage:true});
   await page.setViewportSize({width:390,height:844});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
 });

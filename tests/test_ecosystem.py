@@ -106,9 +106,11 @@ def private_document():
     return dict(spec=s,observations=observations,gates=gates)
 
 
-def test_private_queue_retry_receipts_and_http_containment(tmp_path):
+@pytest.mark.parametrize('schedule', ['fully-frozen-v1', 'past-block-bilinear-sgd-v1'])
+def test_private_queue_retry_receipts_and_http_containment(tmp_path, schedule):
     q=EcosystemQueue(tmp_path)
-    doc=private_document(); doc['ledger_directory']=str(tmp_path/'shared-ledger'); registration=q.configure(doc)
+    doc=private_document(); doc['spec']['schedule']=schedule
+    doc['ledger_directory']=str(tmp_path/'shared-ledger'); registration=q.configure(doc)
     server=make_server(q,port=0); thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
     url=f'http://127.0.0.1:{server.server_port}'
     try:
@@ -184,3 +186,66 @@ def test_simulation_summary_keeps_noncrossers():
     assert result['noncrossers']==1
     assert result['detection_delay_blocks']=={'1':1,'2':1}
     assert result['final_rejection']==pytest.approx(1/3)
+
+
+def test_measured_library_offsets_are_frozen_and_not_selected_totals():
+    from dnhacksbio.ecosystem_encoder import log_library
+    train=dataset('training','train');train.manifest['library_size_rule']='measured-all-genes'
+    for c in train.cells:c['library_size']=100
+    model=fit_pca(train,'malignant',components=2,cells_per_donor=4)
+    with pytest.raises(ValueError,match='offsets'):model.transform([[1,2,3]],train.genes)
+    assert not np.allclose(log_library([[1,2,3]],[100]),log_library([[1,2,3]]))
+    with pytest.raises(ValueError):log_library([[1,2,3]],[5])
+    with pytest.raises(ValueError):log_library([[1,2,3]],[float('nan')])
+    train.data[:3]=0
+    assert np.array_equal(train.rows([0]),[[0,0,0]])
+    train.cells[0]['library_size']=0
+    with pytest.raises(ValueError):train.rows([0])
+
+
+def test_original_count_parser_rejects_truncated_rows(tmp_path):
+    from dnhacksbio.ecosystem_data import count_rows
+    path=tmp_path/'matrix.txt';path.write_text('"T1_a" "T2_b"\n"G1" 1 2\n"G2" 0 3\n')
+    rows=list(count_rows(path));assert [g for g,_ in rows]==['G1','G2']
+    assert rows[0][1].tolist()==[1,2]
+    path.write_text('"T1_a" "T2_b"\n"G1" 1\n')
+    with pytest.raises(ValueError):list(count_rows(path))
+
+
+def test_pseudobulk_uses_donors_and_full_library_offsets():
+    from dnhacksbio.ecosystem_encoder import fit_pseudobulk_pca
+    train=dataset('training','train')
+    model=fit_pseudobulk_pca(train,'malignant',components=32,cells_per_donor=4)
+    assert model.projection.shape==(3,3)
+    assert len(model.manifest['training_donors'])==4
+    assert model.manifest['model_choice']=='donor-pseudobulk-PCA-baseline'
+
+
+def test_learned_set_frozen_invariant_and_donor_safe(tmp_path):
+    pytest.importorskip('torch')
+    from dnhacksbio.ecosystem_encoder import FrozenSetAggregator, fit_set_aggregator, evaluate_set_aggregator
+    train=dataset('training','train');dev=dataset()
+    cell=fit_pca(train,'malignant',components=2,cells_per_donor=4)
+    model,baseline=fit_set_aggregator(train,cell,components=2,cells_per_donor=4,epochs=2)
+    model.save(tmp_path/'set.npz');loaded=FrozenSetAggregator.load(tmp_path/'set.npz')
+    assert loaded.identity==model.identity
+    rows=[0,1,2,3];z=cell.transform(dev.rows(rows),dev.genes,dev.library_sizes(rows))
+    np.testing.assert_allclose(loaded.transform(z,cell_encoder_hash=cell.identity),loaded.transform(z[::-1],cell_encoder_hash=cell.identity))
+    with pytest.raises(ValueError):loaded.transform(z,cell_encoder_hash='a'*64)
+    with pytest.raises(ValueError):loaded.weights[0][0,0]=0
+    result=evaluate_set_aggregator(dev,cell,loaded,baseline,cells_per_donor=4)
+    assert result['eligible_donors']==4 and all(np.isfinite(v) for v in result['means'].values())
+    p=profile(dev,cell,states=['s1','s2'],min_cells=4,cells_per_donor=4,set_encoder=loaded)
+    shifted=dataset();shifted.manifest['assay']='snRNA'
+    with pytest.raises(ValueError,match='domain shift'):evaluate_set_aggregator(shifted,cell,loaded,baseline,cells_per_donor=4)
+    assert p['set_model_hash']==loaded.identity
+    assert all(len(v['learned_set_embedding'])==2 for v in p['donors'].values())
+    overlap=dataset('development','train')
+    with pytest.raises(ValueError,match='overlap'):evaluate_set_aggregator(overlap,cell,loaded,baseline,cells_per_donor=4)
+
+
+def test_original_count_parser_rejects_fractional_or_negative_counts(tmp_path):
+    from dnhacksbio.ecosystem_data import count_rows
+    for values in ('1 2.5','1 -2','1 NaN'):
+        path=tmp_path/'matrix.txt';path.write_text('"T1_a" "T2_b"\n"G1" '+values+'\n')
+        with pytest.raises(ValueError):list(count_rows(path))
