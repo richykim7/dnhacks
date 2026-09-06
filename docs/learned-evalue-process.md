@@ -1,8 +1,10 @@
 # Learned e-values: process and slide notes
 
-Current milestone: real-expression encoder training on L40S, held-out comparison, 10,000 synthetic
-null runs, and a standalone wealth report are complete. The chronology below distinguishes the
-earlier CPU/synthetic work from this GPU/real-data iteration.
+Current status (2026-09-05): GPU encoder training, held-out real-expression evaluation, 10,000
+synthetic null runs, slide figures, and the receipt-only background scoring service are implemented.
+The trained biological two-sample diagnostic is based on Pandeva et al.; it is not an implementation
+of Genentech's E-valuator agent-trajectory monitor. Sections below preserve historical milestones
+and distinguish numerical validation, operational integration and remaining scientific evidence.
 
 ## What we set out to build
 
@@ -144,8 +146,8 @@ device reports **NVIDIA L40S, 46,068 MiB memory**. The earlier training and benc
 hardware availability was not checked before those runs and should have been. Pointers now exist
 in local `CLAUDE.md` and shared `AGENTS.md` so future compute planning starts with the handoff.
 
-This was a hardware/connectivity check, not a GPU training run. The remote default system Python
-does not currently import Torch; other environments were not inventoried. At that point, the bettor and
+This was a hardware/connectivity check, not a GPU training run. At that historical check, the
+remote default system Python did not import Torch; other environments were not inventoried. At that point, the bettor and
 encoder trainer explicitly constructed CPU tensors, so installing CUDA Torch alone will not move
 training to the GPU. A GPU iteration needs an isolated environment, explicit device support,
 device/replay validation and a timed smoke run before larger training. Connection information stays
@@ -191,9 +193,8 @@ A separate real-expression null audit fixes unordered, disjoint held-out donor p
 pair an independent fair orientation. Pair order remains fixed (`pairing="in_order"`); reshuffling
 would break the conditional construction. This checks the learner on real feature geometry under
 an artificial null. It does not assert that observed COVID labels were randomized. The synthetic
-null evaluation separately targets 10,000 repetitions with disjoint seeds and the original fixed
-pilot architecture. The real-expression counts and uncertainty follow below; the expanded synthetic results are recorded
-when the fixed evaluation completes.
+null evaluation completed 10,000 repetitions with disjoint seeds and the original fixed
+pilot architecture. The real-expression counts and expanded synthetic results are recorded below.
 
 ### Held-out real-data results
 
@@ -266,7 +267,9 @@ this checkout has no GPU; the same test runs and passes on the remote device.
 
 The first invocation guide exposed the numerical diagnostic to the discovery agent. The revised
 interface separates experiment submission from scoring: an agent saves TPM inputs and a declared
-specification, runs `python -m dnhacksbio.expression_experiment`, and records a durable receipt.
+specification, runs `python -m dnhacksbio.expression_experiment`, and receives a durable receipt
+from the command. The runtime captures stdout automatically; the agent does not need to repeat,
+reconstruct or return the receipt.
 The client imports no numerical code and never relays service response bodies or scoring failures.
 The self-contained `expression-experiment` skill replaces the direct-call skill. General rigor and
 DepMap guidance no longer request native diagnostic emission.
@@ -287,3 +290,54 @@ as the same OS user. Production blinding requires the service's state and confir
 outside the agent's access permissions, and human exports must not be fed back during discovery.
 The upload interface cannot prove that submitted donors were untouched during hypothesis selection.
 Operator setup and replay procedures are in [the service guide](expression-scoring.md).
+
+
+## Source-paper identification
+
+Our numerical implementation follows [Pandeva et al., Deep anytime-valid hypothesis testing,
+AISTATS 2024](https://proceedings.mlr.press/v238/pandeva24a.html), adapted with a frozen expression
+encoder and an independent two-sample contract. Earlier use of “trained judge” described the neural
+bettor and should not be read as a claim that we implemented a learned judge of agent trajectories.
+
+The paper the user recalled is [Sadhuka et al., E-valuator: Reliable Agent Verifiers with Sequential
+Hypothesis Testing](https://arxiv.org/html/2512.03109v2), with Genentech-affiliated authors (v2,
+28 May 2026). It learns from labeled successful/unsuccessful trajectories and verifier-score histories,
+then calibrates an alarm threshold on a separate set. Its usual null is a successful trajectory;
+its false alarm is incorrectly flagging one. Estimated density ratios need calibration; they do
+not automatically inherit exact e-process guarantees. We have not implemented or evaluated this
+trajectory-monitoring method. Our biological-null benchmarks are not E-valuator benchmarks.
+
+## Background-scoring rollout and evidence index
+
+[PR #26](https://github.com/richykim7/dnhacks/pull/26) landed the GPU/real-data diagnostic work.
+[PR #34](https://github.com/richykim7/dnhacks/pull/34), main `d3d545bd`, landed the submission client,
+durable queue, worker, receipt-only skill and explicit exception to Explorer's usual RESULT instructions.
+That commit passed **117 Python tests, 6 frontend unit tests, 18 browser tests and the frontend build**.
+The two Python skips were local CUDA and opt-in Docker; the background worker tests used native processes.
+Eight dedicated integration tests cover instruction delivery, the command/worker path, persistence,
+retry identity, failures, timeout, restart recovery, frozen configuration/artifacts and feedback exclusion.
+These are scripted model actions plus real command/numerical execution, not a live autonomous-agent trial.
+
+At rollout the local service was started on localhost:8793 with the previously trained autoencoder,
+seed 0 and batch size 8. Its result HTTP route returns 404. Default minimum size is 48 donors per group
+and the numerical default is at most 500 epochs per update. This differs from the recorded real-data
+benchmark (30 pairs, batch size 4, at most 100 epochs) and the small synthetic benchmark. Do not present
+any one benchmark as an exhaustive validation of all deployed configurations or future cohorts.
+The service files remain outside the normal discovery artifact directory. This prevents routine
+feedback leakage, but unrestricted code under the same OS user can still access those files.
+
+| Evidence for slides | Artifact | Claim it supports |
+| --- | --- | --- |
+| 10,000 null repetitions | [Expanded null summary](../research/learned-evalue-validation/expanded-null.json) | Learned final rejection 0.20%; ever-crossing 1.12% (95% interval 0.93–1.35%) in the specified simulation |
+| 100 repetitions per alternative | [Expanded alternatives](../research/learned-evalue-validation/expanded-alternatives.json) | Scenario-specific power and comparison with simpler baselines; no universal winner |
+| Real RNA-seq, actual GPU training | [Real-data record](../research/learned-evalue-validation/real-expression/README.md) | A predeclared held-out comparison; learned features beat PCA here, scalar evidence was stronger |
+| Real-data evidence accumulation | [SVG](../research/learned-evalue-validation/real-expression/wealth.svg), [PNG](../research/learned-evalue-validation/real-expression/wealth.png), [HTML report](../research/learned-evalue-validation/real-expression/index.html) | Directly reusable figures with the method, comparison and threshold labeled |
+| Agent-facing integration | `tests/test_expression_scoring.py` | Numerical results stay out of the tested command output, prompts, journal and recall |
+
+Still unmeasured: scientific benefit during autonomous agent use, replication across independent disease
+cohorts, and an investigation-wide error guarantee under adaptive hypothesis/data reuse. A large
+expression-distribution e-value does not establish gene-effect direction or a causal mechanism.
+
+The user-requested independent review of candidate follow-on tools is recorded separately in
+[the tool council](evalue-tool-council.md). It proposes future work and does not authorize or claim
+implementation of those integrations.
