@@ -125,12 +125,13 @@ def waiting_popup(screen: Screen) -> Popup | None:
         rows.append(match.groups())
         end += 1
     labels = tuple(r[2] for r in rows)
-    if labels not in (
+    two_options = labels == ("Dismiss and keep waiting", "Learn more")
+    if not two_options and labels not in (
         ("Retry with a faster model", "Dismiss and keep waiting", "Learn more"),
         ("Retry with a faster model", "Keep waiting", "Learn more"),
     ):
         return None
-    if [r[1] for r in rows] != ["1", "2", "3"]:
+    if [r[1] for r in rows] != [str(i + 1) for i in range(len(labels))]:
         return None
     selected = [i for i, r in enumerate(rows) if r[0]]
     if len(selected) != 1:
@@ -151,11 +152,23 @@ def waiting_popup(screen: Screen) -> Popup | None:
         "Giving this request a little extra thought If you'd rather not wait, retry "
         "with a faster model. It may be less capable of handling complex requests.",
     )
+    if two_options:
+        # Only the observed two-row variant: do not combine its rows with a
+        # three-row header or a generic approval footer.
+        headers = (
+            "Our systems are thinking a bit more about this request before responding.",
+        )
+        if footer != (
+            "No action is required. Codex will keep waiting, and this menu will close when the response is ready."
+        ):
+            return None
     prefix = " ".join(lines[:start])
     header = next((h for h in headers if prefix.endswith(h)), None)
     if header is None:
         return None
-    return Popup(selected[0], 1, (header, *labels, footer))
+    waiting = next(i for i, label in enumerate(labels)
+                   if label in ("Dismiss and keep waiting", "Keep waiting"))
+    return Popup(selected[0], waiting, (header, *labels, footer))
 
 
 def menu_or_busy(screen: Screen) -> bool:
