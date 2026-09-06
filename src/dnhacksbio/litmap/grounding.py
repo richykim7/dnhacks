@@ -316,6 +316,21 @@ def _taxon_curie(organism: str) -> str:
     return CONTEXT_SLOTS["organism"]["map"].get(_ncit_norm(t), "")
 
 
+def species_gene_collision(surface: str, organism: str) -> dict | None:
+    """Verified species/symbol collisions where human string matching changes gene identity.
+
+    H2-Ab1 is mouse MHC class II beta (NCBI Gene 14961), while the punctuation-stripped
+    human H2AB1 is a histone. Preserve the hyphen and require explicit mouse context;
+    this is not a general exception to ortholog normalization or the human-name veto.
+    Sources: https://www.ncbi.nlm.nih.gov/gene/14961
+    https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:22516
+    """
+    if (surface or "").strip().lower() != "h2-ab1" or _taxon_curie(organism) != "NCBITaxon:10090":
+        return None
+    return {"curie": "NCBIGene:14961", "label": "H2-Ab1", "kind": "entity", "db": "NCBIGene",
+            "score": 1.0, "organism": "10090"}
+
+
 def nonhuman_gene_lookup(text: str, organism: str) -> dict | None:
     """A species-specific gene symbol -> its NCBI Gene id, within one non-human species' table. Returns a
     hit dict, None on a plain miss, and raises LookupError with the reason whenever answering could put a
@@ -323,6 +338,9 @@ def nonhuman_gene_lookup(text: str, organism: str) -> dict | None:
     t = (text or "").strip()
     if not t:
         return None
+    collision = species_gene_collision(t, organism)
+    if collision:
+        return collision
     human = _ORTHOLOG_SYMBOL.get(t.lower())
     if human:
         raise LookupError(f"{text!r} is a tracked ortholog written onto the human node "
