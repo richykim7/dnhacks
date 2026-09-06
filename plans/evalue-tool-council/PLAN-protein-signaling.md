@@ -1,6 +1,12 @@
 # Learned protein and phosphosignaling tool
 
-Planning only, 2026-09-06. No acquisition, training or implementation is authorized by this document. This plan depends on [the shared native evidence contract](native-evidence-contract.md), preserving the existing verifier, private evidence boundary and human promotion gate.
+Implementation status, 2026-09-06: subsequently authorized acquisition and real-data
+training are recorded in [protein training](../../docs/protein-training.md).
+Discovery tools and private finite replay are implemented; the actual cohort and
+power studies fail confirmation release gates, as recorded in
+[native validation](../../docs/protein-native.md). The remaining design below is
+the acceptance contract, not a claim that every scientific gate passed.
+This plan depends on [the shared native evidence contract](native-evidence-contract.md), preserving the existing verifier, private evidence boundary and human promotion gate.
 All training follows the [shared single-GPU scheduling rule](native-evidence-contract.md#coordination-on-the-shared-gpu): CPU work can overlap, but initial GPU pilots run serially; concurrency requires measured combined memory and throughput, a shared queue/lease, and separate artifacts. Individual job caps are not simultaneous GPU reservations.
 
 ## Biological operations and first endpoint

@@ -389,6 +389,19 @@ export function RuntimeDetail({
                         {artifact.kind === "binder_bundle" ? (
                           <BinderWorkbench
                             sha256={artifact.sha256}
+                            sceneActions={(run?.history ?? [])
+                              .filter(
+                                (e: RuntimeEvent) =>
+                                  e.kind === "scene.recipe" &&
+                                  e.experiment_id === exp.experiment_id &&
+                                  e.payload.bundle_sha256 === artifact.sha256,
+                              )
+                              .map((e: RuntimeEvent) => ({
+                                sequence: e.sequence,
+                                note: e.payload.note,
+                                recipe_sha256: e.payload.recipe.sha256,
+                                view: e.payload.view,
+                              }))}
                             url={runtimeUrl(
                               runId,
                               `blob/${artifact.storage_key}`,
@@ -416,6 +429,22 @@ export function RuntimeDetail({
                         <small>SHA-256: {artifact.sha256}</small>
                       </Disclosure>
                     </>
+                  ) : artifact.kind === "scene_capture" &&
+                    artifact.status === "available" ? (
+                    <figure className="binder-recorded-capture">
+                      <img
+                        src={runtimeUrl(
+                          runId,
+                          `blob/${artifact.storage_key}`,
+                          project,
+                          historic ? artifact.available_sequence : null,
+                        )}
+                        alt={artifact.name}
+                      />
+                      <figcaption>
+                        Recorded agent view · {artifact.name}
+                      </figcaption>
+                    </figure>
                   ) : (
                     <p className="notice">
                       Artifact {artifact.status}:{" "}

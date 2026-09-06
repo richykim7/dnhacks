@@ -51,11 +51,27 @@ export type Preset =
   | "candidate-compare"
   | "small-screen";
 export type Style = "pearl" | "copper";
+export type CameraRecipe = {
+  position: [number, number, number];
+  target: [number, number, number];
+  up?: [number, number, number];
+  fov?: number;
+  near?: number;
+  far?: number;
+  projection?: string;
+};
+export type SceneAction = {
+  sequence: number;
+  note: string;
+  recipe_sha256: string;
+  view: Omit<SceneState, "revision">;
+};
 export type SceneState = {
   preset: Preset;
   style: Style;
   selected: string | null;
   revision: number;
+  camera?: CameraRecipe | null;
 };
 export const label = (r: Residue) =>
   `${r.chain} · ${r.name} ${r.auth_seq_id}${r.insertion_code}`;

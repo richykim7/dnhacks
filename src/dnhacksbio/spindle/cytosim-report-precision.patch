@@ -1,0 +1,12 @@
+diff --git a/src/sim/simul_report.cc b/src/sim/simul_report.cc
+index febb01c..8c5a881 100644
+--- a/src/sim/simul_report.cc
++++ b/src/sim/simul_report.cc
+@@ -173,6 +173,7 @@ void Simul::mono_report(std::ostream& out, std::string const& arg, Glossary& opt
+     std::ofstream nul("/dev/null");
+     // use a buffer alias to avoid repeating the comments:
+     std::ostream OUT(out.rdbuf());
++    OUT.precision(P); // Preserve requested export precision.
+     if ( veb & 1 )
+         out.setf(std::ios_base::fixed, std::ios_base::floatfield);
+     else  // report is discarded if first bit of verbose is 0:

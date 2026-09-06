@@ -1,6 +1,6 @@
 # Donor-level tumor–stroma cellular ecosystems
 
-Planning specification, 2026-09-06; no implementation, acquisition, training or confirmation authorized. Read with [the shared native contract](native-evidence-contract.md). This adds compartment distributions and cross-compartment hypotheses beyond bulk learned expression. It does not replace the verifier or human promotion gate.
+Original planning specification, 2026-09-06. The user subsequently authorized implementation, development-data acquisition and model training. Current status: [tool guide](../../docs/cellular-ecosystems.md) and [real training/audit report](../../docs/ecosystem-training.md). The code, original Peng/Lin development preparation, separate PCA/NB and learned-set pilots, and synthetic calibration diagnostics are implemented; biological confirmation remains unavailable pending its scientific/privacy gates and separately authorized pilot. Read with [the shared native contract](native-evidence-contract.md). This adds compartment distributions and cross-compartment hypotheses beyond bulk learned expression. It does not replace the verifier or human promotion gate.
 All training follows the [shared single-GPU scheduling rule](native-evidence-contract.md#coordination-on-the-shared-gpu): CPU work can overlap, but initial GPU pilots run serially; concurrency requires measured combined memory and throughput, a shared queue/lease, and separate artifacts. Individual job caps are not simultaneous GPU reservations.
 
 ## Reusable biological operations
@@ -47,7 +47,7 @@ Specific safeguards:
 
 ## Source inventory and partition audit
 
-Counts below are publication inventories, not audited usable confirmation donors. Public availability statements are not verified downloads.
+The table below preserves the original candidate inventory. Current downloaded-source checksums, resolved access and actual eligible development counts are in [the source audit](../../docs/ecosystem-sources.json) and [training report](../../docs/ecosystem-training.md); publication inventories are not confirmation donor counts.
 
 | Candidate and proposed role | Published inventory and access | Required audit |
 | --- | --- | --- |
@@ -65,7 +65,7 @@ Forty-three specimens provide at most 21 blocks; the reported untreated subset g
 
 Before private release simulate 18, 24, 40, 60 and 100 independent donors, varying nonlinear state coupling, rare-state frequency, cell counts, dropout, batch confounding and missing-compartment selection. Compare frozen simple/kernel/PCA/learned critics at equal donor budgets. Report final/anytime rejection, binomial uncertainty, power and detection-delay distributions including noncrossers. Use at least 10,000 independent null streams at alpha .05, plus invalid current-block training, shared-denominator and cell-pseudoreplication controls. Predeclare a useful alternative on development data and require 80% power at the available donor budget before advertising a confirmatory capability. Otherwise release development profiling with confirmation explicitly unavailable for that design.
 
-The centrally checked L40S had 46,068 MiB and was idle at observation; it is not reserved. Proposed pilot: one GPU, <=100,000 training cells, 2,000–4,000 genes, batches 256–512, 20 epochs, <=2 GPU-hours initial cap. Measure throughput, peak memory, host RAM and validation loss after one epoch; stop on nonfinite losses or projected overrun. Permit a <=12 GPU-hour comparison only after the pilot, training-only access audit and donor-held-out utility gain justify it. Stream sparse counts; never densify the atlas in memory. Reserve <=32 GiB VRAM initially and compare CPU inference. No training was run for this plan.
+The centrally checked L40S had 46,068 MiB and was idle at observation; it is not reserved. Proposed pilot: one GPU, <=100,000 training cells, 2,000–4,000 genes, batches 256–512, 20 epochs, <=2 GPU-hours initial cap. Measure throughput, peak memory, host RAM and validation loss after one epoch; stop on nonfinite losses or projected overrun. Permit a <=12 GPU-hour comparison only after the pilot, training-only access audit and donor-held-out utility gain justify it. Stream sparse counts; never densify the atlas in memory. Reserve <=32 GiB VRAM initially and compare CPU inference. Implementation update: separate real Peng/Lin development PCA/NB/set pilots have now run on CPU; see the training report. No GPU expansion was justified by these results.
 
 ## Implementation milestones and release gates
 

@@ -621,6 +621,8 @@ export function Investigation({
                           <button
                             className="experiment-row"
                             key={exp.experiment_id}
+                            data-scene-run={r.run_id}
+                            data-scene-experiment={exp.experiment_id}
                             onClick={() => {
                               setSelected(r.run_id);
                               setSelectedExperiment(exp.experiment_id);

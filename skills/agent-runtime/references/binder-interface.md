@@ -20,3 +20,24 @@ pin code, actual environment and weight bytes and use bounded compute under the 
 Never order molecules or execute wet-lab follow-up. Assay proposals are for human review.
 The runner exposes the assigned identity in `DNHACKS_EXPERIMENT_SCOPE` as JSON; use it as the
 bundle scope when generating an artifact inside the owning experiment.
+
+
+For visual reasoning, use the trusted local scene CLI after the collector publishes the bundle.
+Every request carries `journal_directory` and `scope`; capture/pick additionally carry the local
+workspace `base_url`. The request shape is:
+```json
+{"action":"binder.open_scene","journal_directory":"/workspace/data/processed",
+ "scope":{"project_id":"PROJECT","run_id":"RUN","experiment_id":"EXPERIMENT"},
+ "args":{"bundle_sha256":"COLLECTED_BUNDLE_HASH","preset":"interface-close"}}
+```
+Use the returned `recipe_sha256` for `binder.capture_scene`; its args may include
+`viewport:[1600,1000]` and `render_seconds:60`. Pass the returned `capture_id` and a concrete
+visual `question` to `binder.inspect_scene_capture`. This operation sends the actual saved PNG.
+If the seam is hidden, call `binder.set_scene_view` with the latest recipe hash,
+`view:{"preset":"reverse"}` and a concise `note`, then capture and inspect again.
+Use `binder.pick` with capture ID, matching recipe hash and image pixel `x,y` to identify a residue.
+Check suspected contacts against the exact coordinate table before reporting a scientific finding.
+Supported view fields are preset, pearl/copper style, exact selected residue ID and explicit perspective
+camera. Unsupported camera modes fail explicitly. Scene tools do not mutate source coordinates.
+The UI records these agent actions with adjustable replay speed; a user's independent exploration
+does not replace your saved recipe. Do not interpret replay duration as physical simulation time.

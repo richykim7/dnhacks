@@ -1,10 +1,12 @@
 # Measured protein discovery
 
 `protein_design.py`, `protein_encoder.py` and `protein_tools.py` implement a local,
-exploratory measured-protein workspace. No cohort is downloaded, no biological result
-is claimed, and private native evidence is **unavailable**. `protein_experiment.Store`
-uses the existing queue base but rejects registration and submission unconditionally;
-operator assertions cannot enable it. No verifier, promotion or HTTP route changes.
+exploratory measured-protein workspace. Four public CPTAC development cohorts have
+been acquired and real PCA/denoising models trained; see [measured results](protein-training.md).
+Private native evidence remains **unavailable for these data**. The conditional
+operator adapter now supports reviewed independent-group finite replay through the
+shared donor ledger; see [native operations and failed release gates](protein-native.md).
+No verifier or promotion behavior changes.
 
 ## Input contract
 
@@ -76,10 +78,14 @@ Artifacts are NPZ numerical arrays plus JSON metadata, loaded with pickle disabl
 shape and content-hash validation. They retain training/validation donor hashes,
 source hashes, preprocessing, objective, seed, versions, selected epoch, elapsed time,
 throughput, process peak RSS, numerical weight bytes and held-out observed-entry MSE.
-RSS is a process-lifetime high-water mark, not an isolated training allocation. This MSE measures reconstruction of visible
-validation inputs; it is not an imputation benchmark or evidence of useful transfer.
+RSS is a process-lifetime high-water mark, not an isolated training allocation.
+Metadata distinguishes visible-entry reconstruction from hidden-entry validation;
+neither alone establishes useful biological transfer.
 No assay alignment is fitted on the queried cohort; mismatched assay/scale is rejected.
-GPU execution is not exposed until a shared lease and measured resource gates exist.
+CUDA training now acquires the shared host lease and enforces the bounded pilot
+caps. Real-data acquisition, measured training and held-out comparisons are recorded
+in [protein training](protein-training.md). Checkpoints now use hidden observed
+validation entries rather than visible-entry reconstruction alone.
 
 ## Operator audit and deferred evidence
 
@@ -95,10 +101,12 @@ file permissions and role labels alone do not contain a same-user discovery agen
 No public audit endpoint exists. The report does not assert untouched status,
 normalization independence, externally interpreted histology or adequate power.
 
-Private registration/scoring, canonical cross-process donor/segment consumption,
-replay/append transactions, the 10,000-stream null and prespecified-power studies,
-assay transfer/rank baselines, learned-versus-linear/kernel utility studies, GPU
-resource profiling and external cohort acquisition remain pending. They require the
+Private registration/scoring, canonical cross-process donor consumption and atomic
+finite replay are implemented. Append is unsupported. Ten diagnostic cases of
+10,000 streams each have run; the declared-effect power target failed. Independent
+biological power/release review remains pending. Rank/PCA, module, linear/kernel,
+and denoiser development comparisons plus a real GPU pilot have run; see the
+training record for results and the explicit lack of a neural advantage. Private release requires the
 shared native core and audited data described in the [implementation plan](../plans/evalue-tool-council/PLAN-protein-signaling.md).
 The discovery release does not certify the private evidence release gates. No
 synthetic test result is reported as biological validation or measured cohort power.

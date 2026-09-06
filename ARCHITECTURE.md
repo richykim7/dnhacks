@@ -421,11 +421,13 @@ and forking possible; a `UsageLedger` records tokens and cache hits per run.
 `protein_design.py`, `protein_encoder.py` and `protein_tools.py` provide exploratory
 protein profiles, coverage, module means, nearest development profiles, context
 comparisons and localization-aware site tables. Frozen mask-aware PCA and optional
-CPU denoising artifacts use donor-disjoint non-PDAC training/validation cohorts;
+CPU/CUDA denoising artifacts use donor-disjoint non-PDAC training/validation cohorts;
 confirmation data and cross-assay transforms are rejected by discovery operations.
 The operator-only audit preserves grade eligibility and the 48-pair policy.
-`protein_experiment.py` blocks native registration until shared ledger, sampling,
-privacy and validation prerequisites are implemented and reviewed. No native wealth
+`protein_experiment.py` conditionally registers operator-reviewed independent-group
+finite replay through `native_group_replay.py` and the shared canonical donor ledger.
+Real CPTAC development models are trained; the audited grade budget and simulated
+declared-effect power fail release gates, so biological confirmation stays unavailable. No native wealth
 or verification verdict is exposed. See [protein signaling](docs/protein-signaling.md).
 
 ## 9. The console
@@ -563,7 +565,10 @@ and private atomic frozen-critic donor ledger. Receipt aliases share one process
 identical replay does not add wealth, and consumed canonical donors cannot be
 reused across processes in one shared store. This infrastructure does not itself
 satisfy biological access, sampling or power gates and does not alter discovery
-promotion. Adaptive critics are not implemented. See [native evidence](docs/native-evidence.md).
+promotion. The opt-in `past-block-bilinear-sgd-v1` schedule scores each block
+with the prior critic before a deterministic consumed-block update; scored and
+next critic states commit atomically. The fully frozen baseline remains available.
+See [native evidence](docs/native-evidence.md).
 
 ## Cellular ecosystem development tool
 
@@ -575,8 +580,14 @@ subsamples, frozen gene/assay/state references and explicit missing coverage
 preserve measurement boundaries. The private receipt adapter uses the shared
 native frozen process ledger and requires operator-reviewed identity, access,
 sampling, transfer, selection, privacy, novelty and power artifacts. No biological
-cohort or confirmatory capability is approved; real-data audits and adequate
-power remain release gates. No graph promotion or branch-success behavior changes.
+confirmatory capability is approved. Original Peng/Lin development counts and
+donor partitions have been audited and separate count/PCA/set models actually
+trained: held-out reconstruction favored cell PCA; learned set pooling did not
+improve on donor-summary PCA. All-gene library offsets and a residual NB decoder
+bin preserve selected-panel measurement semantics. The [training report](docs/ecosystem-training.md)
+records coverage, source checksums and negative pilot results. Reserved-cohort
+audit, adequate power and deployment privacy remain confirmation gates.
+No graph promotion or branch-success behavior changes.
 See [cellular ecosystems](docs/cellular-ecosystems.md) for schemas, CLI and limits.
 
 ### Exploratory binder interfaces
@@ -587,4 +598,6 @@ provenance and experiment-scope checks before publication. RuntimeDetail opens t
 artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
 Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
 verification. No live design pilot, biological efficacy, runtime vision or performance acceptance
-is implied. See [supported behavior and remaining acceptance](docs/binder-design.md).
+is implied. Immutable scoped scene recipes and PNG captures support actual image observations,
+recorded action replay and independent user exploration inside the owning experiment.
+See [supported behavior and remaining acceptance](docs/binder-design.md).
