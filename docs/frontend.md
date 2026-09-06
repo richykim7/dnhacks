@@ -76,3 +76,11 @@ frontend_test_data=$(mktemp -d)
 
 Install the browser once if needed: `cd frontend && npx playwright install chromium`.
 Browser fixtures are isolated under `frontend/e2e` and never imported by the application. The suite exercises live selection, evidence inspection, project edits, assistant proposals, review scope, playback, accessibility and mobile layout. Screenshots are written under `/tmp/dn-*.png`. Inspect dark, light and mobile captures after visual changes. The 3D viewer is code-split; 3Dmol's upstream bundle contains an `eval` that Vite reports at build time.
+
+## Prepared forecasting demo
+
+Open `/#forecast` for the checked-in historical replay, graph revisions, source-linked
+recommendations and explicit later-evidence reveal. Recorded model memory has a separate
+flat/static/evolving comparison. The illustrative provider supports a deterministic fallback
+without measured claims. [Demo guide](forecasting-demo.md) documents the artifacts, API
+boundaries, date semantics, and presentation script.

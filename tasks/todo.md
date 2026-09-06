@@ -20,13 +20,14 @@ Latest user decision: **greedy coverage is the provisional production policy**. 
 
 ## Next implementation tasks
 
-- [ ] Post and agree on the tiny scenario/evidence/forecast/event contract with the active frontend owner.
-- [ ] Build one CIViC historical scenario packet with cutoff-eligible candidates, source metadata, and separately stored outcomes. This is the recommended next task for this session.
-- [ ] Feed an illustrative sequence into the teammate's active frontend; retain existing frontend/API ownership.
-- [ ] Add structural graph scoring and provisional greedy selection through the current injection seam.
-- [ ] Add an evaluator and save predictions before revealing outcomes; keep CIViC and Dyport scorecards separate.
+- [x] Publish the scenario/evidence/forecast/event contract on the Board and assume the authorized Forecast UI slice.
+- [x] Build one CIViC historical scenario packet with cutoff-eligible candidates, source metadata, and separately stored outcomes.
+- [x] Add a clearly labeled illustrative provider and recorded replay in the existing frontend.
+- [x] Add structural graph scoring and provisional greedy selection through the current injection seam.
+- [x] Add an evaluator and save predictions before revealing outcomes; keep CIViC and Dyport scorecards separate.
 - [ ] Compare flat evidence, static graph plus append log, and evolving graph at matched information and compute budgets.
-- [ ] Compare greedy, current judge, uniform, and top-singleton selection; use exact small-instance optimum to measure the gap.
+- [x] Compare greedy, uniform and top-singleton at matched evidence budgets; verify exact small-instance coverage optima.
+- [ ] A current-judge baseline needs a separately frozen comparable candidate/action protocol; do not imply it was measured.
 - [x] Run the isolated policy lab: complementary evidence first, shared acquisition as the stronger long-term target; apply two-hour and six-hour gates. See the policy-lab review below.
 - [ ] Rehearse a measured replay, inspect misses and citations, and polish the graph transitions and evidence drawer.
 
@@ -62,6 +63,16 @@ Integration status and the resulting main commit are recorded on the [Board](htt
 - The initial `uv sync --extra dev` test environment lacked `claude-agent-sdk`, imported by the existing web server. Installed that existing optional dependency in the isolated environment to run the gates; no dependency manifest or lockfile changed. Only tracked tests are present in this worktree; the wider unversioned local vocabulary suite was not copied.
 - Validation: frontend production build, 2 unit tests, all 10 browser tests and 46 tracked Python tests passed; `git diff --check` clean. Browser gates used isolated backend 8782/Vite 5188. The existing molecular invalid-file test failed twice on a cold preview while loading 3Dmol, then the unchanged full suite passed after the module was loaded; preload optional 3D assets before any demonstration. The existing 3Dmol build warning remains.
 - Prototype validation: all four desktop scenes and the mobile reveal had zero axe violations; checked frozen ranking, outcome lock/reset, unresolved results, record disclosure, fallback scene preservation, offline stepping, reduced motion, no browser errors and a visible main control at 1440 × 900. Final integration status is recorded on the Board with the landed commit.
+
+## Review — working forecast demo
+
+- Parallel slices landed: historical data (PR #8), evaluator (PR #7), structural runner and saved comparisons (PR #10), molecular-viewer loading fix (PR #12), and controlled model graph reasoning (PR #16). E-values remain teammate scope; theoretical exploration remains the independent policy-lab session.
+- Forecast opens at `/#forecast`: deterministic illustrative or computed historical playback, stable bounded graph, acquired source contexts, selected support paths, saved ranks, explicit outcome reveal, real citation links and full run download. A separate recorded model-memory panel compares flat log, static graph and evolving graph.
+- Structural results: 683 candidates and 24 later-observed associations. Greedy AP 0.05169 is lower than uniform AP 0.08405 under the same acquisition budget. Full-history AP 0.20108 uses more evidence and is a reference, not a fair-budget win.
+- Scientific audit: all 27 future-label evidence records cite papers published 2008–2016; 16 share URLs with historical evidence. This particular replay predicts later CIViC curation of older science. The interface shows release and publication dates separately; it makes no first-discovery or treatment-efficacy claim.
+- Real model pilot: six successful calls, three representations, the same 20 historical candidates and 12 source records, two reasoning steps. The historically selected cohort has no later positive labels, so AP/AUROC are unavailable. Preserving this null cohort; a fixed all-query comparison is running separately.
+- Initial UI validation: production build, 2 frontend unit tests, 3 new forecast browser tests (fixed positions/ranks/reveal, accessible dark/light controls, mobile layout, illustrative fallback) and 61 Python tests passed, with one optional e-value module skipped without Torch. Final expanded gates and resulting merge are recorded on the Board.
+- [Demo script, reproducible launch and UX-session prompt](../docs/forecasting-demo.md). Public preview remains a temporary read-only tunnel; the built local app is the venue fallback.
 
 ## Review — policy lab proofs and experiments
 
