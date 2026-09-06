@@ -491,8 +491,14 @@ d3-force for the literature graph, Dagre for investigation trees, and 3Dmol for 
 to the JSON and SSE API. A project selector in the header scopes every view. The views:
 
 - **Investigations.** The project's runs grouped into fork trees. The selected investigation shows its
-  search tree as a spatial graph of agents, a live activity feed streamed step by step, and each experiment
-  with its code, result and provenance. Historical runs play back recorded activity. A disclosure explains
+  full-viewport vertical search tree with collapsible navigation and animated inline researcher expansion.
+  Each researcher shows its objective, experiments and artifacts above bounded major research steps;
+  raw runtime diagnostics are opt-in. Activity requires fresh heartbeat evidence, and candidate counts
+  deduplicate recorded submission/retry identities at the live or historical cursor. A discoverable candidate
+  queue opens the owning experiment for human Accept/Reject review with required notes and source context.
+  Decisions use the existing promotion gate, persist while a graph is busy, and can be applied individually;
+  acceptance remains separate from automated candidate status. Historical runs play back recorded activity
+  without exposing present-day review cards or permitting decisions. A disclosure explains
   how the research process works, drawn from the architecture endpoint.
   Molecular PDB/mmCIF geometry appears inside the selected researcher's experiment only when that
   experiment produced a validated, collected artifact. Ribbon, atomic and surface views use its actual
@@ -634,8 +640,8 @@ portable `binder_bundle.v1` artifacts with optional rebuilt source-derived surfa
 Worker-parsed surfaces and labeled Cα traces remain visual representations of immutable coordinates. The existing collector and explorer enforce source/hash,
 provenance and experiment-scope checks before publication. RuntimeDetail opens those collected
 artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning experiment.
-A persistent node workspace keeps one selected molecular/binder source beside the researcher activity
-and findings; source availability follows the exact event cursor. Binder cameras transition smoothly
+A persistent inline node workspace keeps one selected molecular/binder source above the researcher’s
+experiments and major steps; source availability follows the exact event cursor. Binder cameras transition smoothly
 and yield immediately to manual orbit; reduced motion and saved captures remain deterministic.
 Paired candidates use two scissored views with one actual camera, matching target coordinates and
 metric protocol. Captures retain both source hashes; saved-pixel picks resolve the exact candidate

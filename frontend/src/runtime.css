@@ -173,3 +173,78 @@
   .node-scene .binder-caption strong { margin: 0; font-size: 12px; }
   .node-scene .binder-caption small { grid-column: 1 / -1; font-size: 9px; }
 }
+
+/* Inline researcher content keeps the research hierarchy ahead of diagnostics. */
+.research-overview {
+  overflow: visible;
+  flex: 0 0 auto;
+}
+.research-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 16px;
+  flex-wrap: wrap;
+}
+.research-section-heading h3,
+.research-milestones > h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.research-section-heading h3 span {
+  color: var(--muted);
+  margin-left: 6px;
+}
+.runtime-candidate-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+}
+.research-overview .experiment-detail {
+  border-top: 1px solid var(--border);
+  padding: 16px 0;
+}
+.research-overview .experiment-detail h3 {
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  margin: 10px 0 6px;
+}
+.research-overview .experiment-detail > .muted {
+  font-size: 11px;
+}
+.research-milestones {
+  margin: 26px 0 18px;
+}
+.research-milestones .activity-entry {
+  padding: 12px 0;
+}
+.research-milestones .activity-entry p {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.node-research .detail-intro h2 {
+  font-size: 17px;
+  line-height: 1.45;
+  max-height: none;
+}
+.node-research .current-work {
+  margin: 12px 0;
+  padding: 10px 12px;
+  gap: 5px;
+}
+.node-research .current-work p {
+  font-size: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

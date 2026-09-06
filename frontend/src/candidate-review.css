@@ -1,0 +1,53 @@
+.candidate-review {
+  margin-block: 16px;
+  padding: 16px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--selected);
+}
+.candidate-review-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.candidate-review-heading > svg {
+  color: var(--accent);
+}
+.candidate-review-body {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+.candidate-review-body h4 {
+  font-weight: 550;
+}
+.candidate-review-body blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
+  margin: 0;
+}
+.candidate-review-body cite {
+  display: block;
+  color: var(--muted);
+  margin-top: 6px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.review-note {
+  display: grid;
+  gap: 8px;
+}
+.review-note textarea {
+  width: 100%;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  resize: vertical;
+}
+.candidate-review-actions {
+  display: flex;
+  gap: 10px;
+}

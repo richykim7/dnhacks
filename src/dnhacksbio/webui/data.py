@@ -977,6 +977,15 @@ def _record_promotion_decision(test_id, decision: str, note: str = "",
 
 
 def _apply_promotions(project: str | None = None, test_id: int | None = None) -> dict:
+    from contextlib import nullcontext
+    from .membership import project_lease
+    # Saving a decision precedes this nonblocking lease, so busy collections
+    # retain the decision without racing build/run/membership writers.
+    with project_lease(project) if project else nullcontext():
+        return _apply_promotions_leased(project, test_id)
+
+
+def _apply_promotions_leased(project: str | None = None, test_id: int | None = None) -> dict:
     """Apply all recorded decisions via the real litmap/promote.apply_decisions:
     stamp the working graph, copy VALIDATED edges into the master graph, and push
     each note to the explorer as feedback / CORRECTION. Clears the decisions file

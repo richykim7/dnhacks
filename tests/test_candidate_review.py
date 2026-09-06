@@ -136,3 +136,13 @@ def test_http_candidate_review_is_persisted(collection):
         server.shutdown()
         server.server_close()
         thread.join()
+
+
+def test_shared_membership_lease_keeps_decision_pending(collection):
+    from dnhacksbio.webui.membership import project_lease
+    with project_lease("fixture"):
+        result = review.decide("fixture-run", "exp1", "validated", "Checked", "fixture")
+        assert result["status"] == "pending_application"
+        assert "busy" in result["message"]
+        assert not result["test"]["human_review"]
+    assert review.decide("fixture-run", "exp1", "validated", "Checked", "fixture")["status"] == "validated"

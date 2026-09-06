@@ -9,6 +9,8 @@ import {
   Plus,
   Sun,
   CircleHelp,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { useResource } from "./lib/api";
 import type { Project } from "./lib/types";
@@ -46,6 +48,7 @@ export default function App() {
 }
 function Workspace() {
   const [route, setRoute] = useState(readRoute);
+  const [navigationCollapsed, setNavigationCollapsed] = useState(() => safeStorage("dn-navigation-collapsed", "false") === "true");
   const [theme, setTheme] = useState(() => safeStorage("dn-theme", "dark"));
   const [project, setProject] = useState(
     () =>
@@ -103,7 +106,7 @@ function Workspace() {
     { view: "knowledge" as const, label: "Knowledge", icon: Network },
   ];
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${navigationCollapsed ? "navigation-collapsed" : "navigation-expanded"}`}>
       <a
         href="#workspace"
         className="skip-link"
@@ -115,6 +118,20 @@ function Workspace() {
         Skip to workspace
       </a>
       <header className="app-header">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="navigation-toggle"
+          aria-label={navigationCollapsed ? "Expand main navigation" : "Collapse main navigation"}
+          aria-expanded={!navigationCollapsed}
+          aria-controls="main-navigation"
+          onClick={() => setNavigationCollapsed(value => {
+            saveStorage("dn-navigation-collapsed", String(!value));
+            return !value;
+          })}
+        >
+          {navigationCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+        </Button>
         <a
           className="brand"
           href="#investigations"
@@ -181,7 +198,7 @@ function Workspace() {
         </Button>
       </header>
       <div className="app-body">
-        <nav className="navigation" aria-label="Main navigation">
+        <nav id="main-navigation" className="navigation" aria-label="Main navigation" hidden={navigationCollapsed}>
           {nav.map((n) => (
             <a
               key={n.view}
@@ -200,7 +217,7 @@ function Workspace() {
           </Button>
           <span className="nav-footer">DNHacks 2026</span>
         </nav>
-        <main id="workspace" tabIndex={-1}>
+        <main id="workspace" className={`workspace-${route.view}`} tabIndex={-1}>
           <ErrorNotice message={projects.error} retry={projects.refresh} />
           {project && !active && projects.data && (
             <div className="notice">

@@ -166,5 +166,6 @@ decision, then applies only that test through the existing promotion gate. Saved
 working/master writer locks and runtime-publication failure; the response distinguishes pending
 application from applied review. Identical retries finish missing publication without duplicate
 correction notes, and conflicting decisions are rejected. Old bulk promotion endpoints share the
-per-collection decision lock. Accepted records retain their supported source provenance; review events
+per-collection decision lock. Graph application additionally holds the shared Library/build/run
+collection lease; saving the decision does not wait on that lease. Accepted records retain their supported source provenance; review events
 remain in the existing durable publication outbox and appear only after their historical cursor.
