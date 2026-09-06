@@ -27,7 +27,7 @@ implemented scope below remain proposed deliverables.
 
 The first implementation is `src/dnhacksbio/learned_evalue.py`, `expr_encoder.py`, and `evalues.py`,
 with `scripts/train_expr_encoder.py`, `scripts/evalue_harness.py`, tracked regression tests and
-`skills/learned-evalue/SKILL.md`. The executable API extends the sketch below with a required
+`skills/expression-experiment/SKILL.md`. The executable API extends the sketch below with a required
 `SamplingContract` and replay metadata; encoder artifacts use non-pickle NPZ, and identity features
 are supported explicitly. Install with `uv sync --extra dev --extra evalue`.
 Initial synthetic results and limitations are recorded in
@@ -221,8 +221,9 @@ family-level integration as a separate reviewed step after the standalone test w
 
 ### 4.4 Agent and dashboard integration
 
-Proposed skill: `skills/learned-evalue/SKILL.md`, describing the supported null, independent-unit
-requirements, minimum data policy, invocation, and RESULT fields. State separately how primary
+Agent skill: `skills/expression-experiment/SKILL.md`, describing the supported comparison, independent-unit
+requirements, minimum data policy and receipt-only command. Background scoring and private result
+storage belong to the operator service, never agent-written scoring code or agent-visible RESULT fields. State separately how primary
 readout effects and null evidence are computed. Unit counts must have an explicit meaning rather
 than silently conflating samples, donors, and pairs.
 

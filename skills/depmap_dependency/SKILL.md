@@ -3,9 +3,8 @@
 **trust_class:** audited-statistic
 **How to run it:** write your own analysis code reading the mounted tables at `/data/interim/explorer_ready/`
 (`cell_line_meta.parquet` + `gene_dependency.parquet`) — the exact schema + a worked example (LOF-vs-WT with a
-permutation null over the cell-line unit) is in `/data/interim/explorer_ready/SKILL.md`. This is a
-TWO-GROUP comparison, so also emit a native `e_value` via `import evalue; evalue.two_sample_e(...)` (see the
-`experimental-rigor` skill).
+permutation null over the cell-line unit) is in `/data/interim/explorer_ready/SKILL.md`. Follow the
+`experimental-rigor` skill for the ordinary analysis result contract.
 
 ## Tests (hypothesis shape)
 `A-<event> → selective dependency on B` — i.e. lines carrying the A event need B more (or less) than lines

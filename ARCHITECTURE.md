@@ -330,10 +330,14 @@ These are in the package and tested, and deliberately not connected to the falsi
   batches (deep anytime-valid testing). It requires declared donor identifiers, a frozen encoder trained on a
   separate cohort, and a sampling contract; it rejects shared donors and undeclared aggregation. It cannot
   establish a gene effect, a direction or a mechanism. Torch is an optional extra (`uv sync --extra evalue`).
+- `expression_experiment.py`: agent command that submits declared TPM inputs and returns a durable
+  receipt only. `expression_scoring.py` runs the private queue and numerical worker separately;
+  it has no result-reading HTTP endpoint or feedback callback. See `docs/expression-scoring.md`
+  for operator setup and the required filesystem separation when agents run unrestricted code.
 - `expr_encoder.py`: frozen PCA or masked-gene autoencoder encoders with recorded training provenance,
   trained by `scripts/train_expr_encoder.py`.
 - `evalues.py`: p-to-e calibration, merging and e-BH helpers. Inputs must already be valid.
-- `skills/learned-evalue`, `docs/learned-evalue-process.md`, `plans/PLAN-learned-evalue.md` and
+- `skills/expression-experiment`, `docs/learned-evalue-process.md`, `plans/PLAN-learned-evalue.md` and
   `research/` hold the guide, the process record, the plan and the paper.
 
 ## 8. The model seam (`llm.py`)
@@ -433,7 +437,7 @@ Custom exploratory methods cannot be submitted as audited results. Method guides
 `effect-sizes-and-floors`, `bootstrap-confidence-intervals`, `confounding-and-causal-inference`,
 `mixed-models-pseudoreplication`, `regression-glm`, `batch-correction-combat-sva`,
 `rnaseq-qc-normalization`, `pydeseq2`, `gsea-enrichment`, `depmap_dependency`, `co_essentiality`,
-`geo_expression`, `learned-evalue`. `skills/README.md` states the trust boundary and the result contract;
+`geo_expression`, `expression-experiment`. `skills/README.md` states the trust boundary and the result contract;
 `TEMPLATE.md` is the layout.
 
 ## 13. Running it
