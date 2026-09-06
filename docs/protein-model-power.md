@@ -79,8 +79,9 @@ from this new cohort has been opened. Audit files stay under `data/raw/protein/k
 
 Another primary source, PRIDE PXD059074, reports115 pancreatic adenocarcinoma samples
 from125 collected cases. Its protocol uses survival-blocked preparation batches and
-MaxLFQ protein quantification. Actual grade counts and processing independence remain
-to be audited. These sample ceilings do not yet supply the384 pairs in this modeled
+MaxLFQ protein quantification. The subsequent [embedded-annotation audit](protein-confirmation-audit.md)
+resolves35 strict-ductal clinical grade pairs; processing independence and release
+reviews remain unresolved. These sample counts do not yet supply the384 pairs in this modeled
 successful fixed-module case. The goal stays active.
 
 ## Prespecified calibration-efficiency follow-up
