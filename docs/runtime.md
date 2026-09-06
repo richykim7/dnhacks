@@ -131,6 +131,16 @@ claims, or send feedback into exploration. A failed runtime publication retains 
 for an idempotent retry. The review database must be inside its own project directory and may not be
 a symlink or hard link. This operator-only flag cannot be enabled or cleared by a browser project patch.
 
+An operator may also set `presentation_source_project` to an existing non-presentation collection
+with a graph. Its attached private project is omitted from the collection switcher, and its runtime
+investigations appear in that source collection's investigation list. Manifests keep their original
+private owner. Only snapshots, ordered events/streams, immutable blobs and exact candidate lookup
+accept the configured source scope. Candidate decisions resolve back to the private owner's database
+and decision file; corpus and bulk-promotion APIs never treat this association as a writable alias.
+Terminal and specialized instrument routes retain exact-owner scope. Unrelated, missing, self-referential
+or chained presentation associations grant no additional access. Browser project patches cannot set
+this operator-only association.
+
 Use `scripts/import_presentation.py --source <staged-data> --destination <app-data>
 --project <id> --root <run-root>` to validate a staged presentation without writing destination state.
 After the deployed app supports presentation-only review isolation, add `--apply

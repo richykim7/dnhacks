@@ -6,7 +6,7 @@ import pytest
 
 from dnhacksbio.explorer.runtime import Journal
 from dnhacksbio.litmap.store import KGStore
-from dnhacksbio.webui import candidate_review, data, jobs, membership, projects
+from dnhacksbio.webui import candidate_review, data, jobs, membership, projects, runtime
 
 
 @pytest.fixture
@@ -95,3 +95,86 @@ def test_presentation_mutations_and_shared_review_database_rejected(presentation
     db.symlink_to(owned)
     with pytest.raises(RuntimeError, match="private database"):
         data.apply_promotions(pid)
+
+
+def attach_source(pid):
+    source = projects.create("Source collection")["id"]
+    KGStore(projects.kg_path(source)).close()
+    path = projects._record_path(pid)
+    record = json.loads(path.read_text())
+    record["presentation_source_project"] = source
+    path.write_text(json.dumps(record))
+    return source
+
+
+def test_attached_investigation_list_and_review_keep_private_owner(presentation):
+    pid, journal = presentation
+    source = attach_source(pid)
+    for name in ("first-investigation", "second-investigation"):
+        journal.register(name, "Source investigation", project=source)
+        journal.append(name, "attempt", "attempt.started", {})
+    rows = data.list_runs(project=source)
+    assert {r["run_id"] for r in rows} == {"first-investigation", "second-investigation", "example-run"}
+    assert next(r for r in rows if r["run_id"] == "example-run")["project"] == pid
+    assert len(data.investigations(project=source)) == 3
+    assert pid not in {r["id"] for r in projects.summaries()}
+    assert source in {r["id"] for r in projects.summaries()}
+    source_db = projects.kg_path(source)
+    before = hashlib.sha256(source_db.read_bytes()).hexdigest()
+    result = candidate_review.decide("example-run", "exp-1", "validated", "Private review", source)
+    assert result["project"] == pid and result["status"] == "validated"
+    assert hashlib.sha256(source_db.read_bytes()).hexdigest() == before
+    assert journal.manifest("example-run")["project_id"] == pid
+    assert not data.promotion_decisions_path(source).exists()
+    with pytest.raises(FileNotFoundError):
+        candidate_review.candidate("example-run", "exp-2", "unrelated")
+
+
+def test_source_alias_runtime_reads_keep_cursor_guard(presentation):
+    pid, journal = presentation
+    source = attach_source(pid)
+    journal.append("example-run", "attempt", "experiment.queued", {"title": "Fixture"}, experiment_id="exp-1")
+    blob = journal.blob('{"schema":"illustrative_scene.v1"}')
+    journal.append("example-run", "attempt", "artifact", {
+        **blob, "artifact_id": "fixture-artifact", "kind": "illustrative_scene", "status": "available",
+    }, experiment_id="exp-1", producer="collector")
+
+    class Handler:
+        def _project_arg(self, qs):
+            return qs.get("project", [None])[0]
+        def _send_json(self, value):
+            return value
+        def _send_bytes(self, value, media):
+            return value
+
+    h = Handler()
+    qs = {"project": [source]}
+    assert "example-run" in runtime.handle(h, "example-run/snapshot", qs)["runs"]
+    assert runtime.handle(h, "example-run/events", qs)["events"]
+    route = f"example-run/blob/{blob['storage_key']}"
+    assert runtime.handle(h, route, qs) == b'{"schema":"illustrative_scene.v1"}'
+    with pytest.raises(FileNotFoundError, match="not available"):
+        runtime.handle(h, route, {**qs, "through": ["1"]})
+    for action in ("snapshot", "events", "terminal", f"blob/{blob['storage_key']}", "inhibitor/exp-1"):
+        with pytest.raises(FileNotFoundError):
+            runtime.handle(h, f"example-run/{action}", {"project": ["unrelated"]})
+    for action in ("terminal", "inhibitor/exp-1"):
+        with pytest.raises(FileNotFoundError):
+            runtime.handle(h, f"example-run/{action}", qs)
+
+
+def test_source_alias_requires_operator_flag_and_existing_source(presentation):
+    pid, _ = presentation
+    source = attach_source(pid)
+    path = projects._record_path(pid)
+    record = json.loads(path.read_text())
+    for changes in (
+        {"presentation_source_project": "missing"},
+        {"presentation_source_project": pid},
+        {"presentation_only": False},
+    ):
+        path.write_text(json.dumps({**record, **changes}))
+        assert not projects.matches_run_scope(pid, source)
+    path.write_text(json.dumps(record))
+    projects.update(source, {"presentation_source_project": pid})
+    assert not projects.load(source).get("presentation_source_project")

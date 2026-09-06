@@ -7,7 +7,7 @@ import subprocess
 import time
 
 from dnhacksbio.explorer.runtime import Journal, process_identity, process_namespace, redact
-from . import data
+from . import data, projects
 
 
 def journal():
@@ -73,9 +73,14 @@ def handle(handler, rest: str, qs: dict):
     run_id = parts[0]
     project = handler._project_arg(qs)
     j = journal()
-    manifest = j.manifest(run_id, project)
-    root = manifest["investigation_id"]
     action = parts[1] if len(parts) > 1 else "snapshot"
+    if action in {"snapshot", "events", "stream", "blob"}:
+        manifest = j.manifest(run_id)
+        if not projects.matches_run_scope(manifest.get("project_id"), project):
+            raise FileNotFoundError("Run not in this project")
+    else:
+        manifest = j.manifest(run_id, project)
+    root = manifest["investigation_id"]
     if action == "terminal":
         return handler._send_json(terminal(j, run_id))
     through = int(qs["through"][0]) if "through" in qs else None

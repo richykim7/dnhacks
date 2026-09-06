@@ -299,6 +299,28 @@ def assert_writable(pid: str) -> None:
         raise ValueError("This presentation-only collection permits inspection and isolated candidate review only")
 
 
+def presentation_source(pid: str | None) -> str | None:
+    """Resolve one operator-configured display association, never a writable graph alias."""
+    if not pid:
+        return None
+    try:
+        rec = load(pid)
+        source = rec.get("presentation_source_project")
+        if rec.get("presentation_only") is not True or not isinstance(source, str) or source == pid:
+            return None
+        target = load(source)
+        if target.get("presentation_only") is True or not target.get("kg_db"):
+            return None
+        return source
+    except (KeyError, ValueError):
+        return None
+
+
+def matches_run_scope(owner: str | None, requested: str | None) -> bool:
+    """Read/review lookup may use a source collection; the manifest retains its private owner."""
+    return not requested or requested == owner or requested == presentation_source(owner)
+
+
 def save(rec: dict) -> dict:
     pid = rec["id"]
     if exists(pid):
@@ -433,6 +455,8 @@ def summaries() -> list[dict]:
     """The switcher payload — small enough to fetch on every page load."""
     out = []
     for r in list_projects():
+        if presentation_source(r["id"]):
+            continue
         db = Path(r["kg_db"]) if r.get("kg_db") else None
         # The stored build summary is right for a graph this console built; for an adopted corpus
         # there is no build record, so read the graph itself. Showing "0 claims" next to a large
