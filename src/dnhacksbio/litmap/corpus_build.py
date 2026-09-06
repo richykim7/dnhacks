@@ -18,7 +18,9 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import hashlib
 import json
+import uuid
 import re
 import sys
 import time
@@ -72,7 +74,9 @@ def _rank_by_theme(cands: list[find.Candidate], theme: str, prog: jobs.Progress)
 
 
 async def _extract_with_progress(docs: list[Document], concurrency: int,
-                                 prog: jobs.Progress, field: str = "") -> dict[int, dict]:
+                                 prog: jobs.Progress, field: str = "",
+                                 audit_dir: Path | None = None, *, timeline=None,
+                                 source_metadata: dict[int, dict] | None = None) -> dict[int, dict]:
     """Extract every paper with bounded concurrency, consuming results as they complete so the UI can
     count them. Returns {ref: {claims, experiments, deferrals, ...}}; a failed paper yields an empty
     extraction rather than killing the build."""
@@ -84,9 +88,18 @@ async def _extract_with_progress(docs: list[Document], concurrency: int,
     claims = 0
     out: dict[int, dict] = {}
 
+    def paper_metadata(d):
+        return {**(source_metadata or {}).get(d.ref, {}),
+                "source_ref": d.ref, "source_label": d.label, "source_id": d.source_id,
+                "source_sha256": hashlib.sha256(d.text.encode()).hexdigest()}
+
     async def one(d: Document):
         try:
             async with sem:
+                if timeline is not None:
+                    timeline.event("paper_started", ["paper_started", d.ref],
+                                   paper_metadata(d),
+                                   timestamp_basis="ingestion_wall_clock")
                 return d, await extract_mod.extract_paper(
                     d.text, source_ref=d.ref, source_label=d.label, field=field)
         except Exception as exc:
@@ -97,10 +110,36 @@ async def _extract_with_progress(docs: list[Document], concurrency: int,
         done += 1
         if isinstance(res, Exception):
             out[d.ref] = {"claims": [], "experiments": [], "deferrals": []}
+            if timeline is not None:
+                timeline.event("paper_failed", ["paper_failed", d.ref],
+                               {**paper_metadata(d),
+                                "error_type": type(res).__name__, "error": str(res)},
+                               timestamp_basis="ingestion_wall_clock")
             prog.emit("extract", "warn", f"{d.label}: extraction failed ({type(res).__name__}: {res})",
                       done=done, total=total)
             continue
         out[d.ref] = res
+        if timeline is not None:
+            metadata = paper_metadata(d)
+            if res.get("stats", {}).get("pass1_failed"):
+                timeline.event("paper_failed", ["paper_failed", d.ref],
+                               {**metadata, "error_type": "ReaderParseFailure",
+                                "error": "Reader returned an extraction failure",
+                                "stats": res.get("stats", {})},
+                               timestamp_basis="ingestion_wall_clock")
+            else:
+                timeline.paper_completed(d.ref, {**res, "source_metadata": metadata},
+                                         timestamp_basis="ingestion_wall_clock")
+        if audit_dir is not None:
+            audit_dir.mkdir(parents=True, exist_ok=True)
+            audit_path = audit_dir / f"{d.ref}.json"
+            temporary = audit_path.with_suffix(".json.tmp")
+            temporary.write_text(json.dumps({
+                "source_ref": d.ref, "stats": res.get("stats", {}),
+                "metadata": res.get("extraction_metadata", {}), "reader": res.get("raw_extraction"),
+                "repair": res.get("repair_audit", {}), "warnings": res.get("warnings", [])
+            }, indent=2), encoding="utf-8")
+            temporary.replace(audit_path)
         claims += len(res.get("claims", []))
         prog.emit("extract", "progress", f"{d.label}: {len(res.get('claims', []))} claims "
                                          f"({len(res.get('deferrals', []))} deferred)",
@@ -353,46 +392,67 @@ async def build(project_id: str, prog: jobs.Progress, *, dry: bool = False) -> d
     prog.start("extract", f"reading {len(docs)} papers with the extraction model "
                           f"({spec['concurrency']} at a time) — this is the slow, paid step",
                total=len(docs))
-    extractions = await _extract_with_progress(docs, spec["concurrency"], prog, spec.get("theme", ""))
-    n_claims = sum(len(e.get("claims", [])) for e in extractions.values())
-    n_empty = sum(1 for e in extractions.values() if not e.get("claims"))
-    prog.done("extract", f"{n_claims} claims from {len(docs) - n_empty} papers "
-                         f"({n_empty} produced none)", n_claims=n_claims, n_empty=n_empty)
-    if n_claims == 0:
-        raise BuildError(
-            "extraction returned zero claims from every paper. That usually means the LLM seam is "
-            "unavailable (no Claude CLI / API access) rather than a bad corpus — check the job log.")
-
-    # ---- store ------------------------------------------------------------------------------
-    prog.start("store", "writing claims into the knowledge graph")
-    store = KGStore(db_path=db, fresh=True)
+    audit_dir = out_dir / "extraction_audits" / uuid.uuid4().hex
+    from dnhacksbio.litmap.timeline import TimelineRecorder
+    timeline = TimelineRecorder(audit_dir, db)
     try:
-        for ref, pe in extractions.items():
-            store.write_paper(ref, pe.get("claims", []), pe.get("experiments", []),
-                              pe.get("deferrals", []))
-        rollup = store.refresh_status()
-        prog.done("store", f"{rollup.get('claims', n_claims)} claims stored, "
-                           f"{rollup.get('disputed_claims', 0)} disputed", **{
-            k: v for k, v in rollup.items() if isinstance(v, (int, float))})
+        timeline.event("ingestion_started", ["ingestion_started"],
+                       {"project_id": project_id, "n_papers": len(docs),
+                        "concurrency": spec["concurrency"]}, timestamp_basis="ingestion_wall_clock")
+        extractions = await _extract_with_progress(docs, spec["concurrency"], prog,
+                                                   spec.get("theme", ""), audit_dir=audit_dir,
+                                                   timeline=timeline, source_metadata={m["ref"]: m for m in meta})
+        n_claims = sum(len(e.get("claims", [])) for e in extractions.values())
+        n_empty = sum(1 for e in extractions.values() if not e.get("claims"))
+        prog.done("extract", f"{n_claims} claims from {len(docs) - n_empty} papers "
+                             f"({n_empty} produced none)", n_claims=n_claims, n_empty=n_empty)
+        if n_claims == 0:
+            raise BuildError(
+                "extraction returned zero claims from every paper. That usually means the LLM seam is "
+                "unavailable (no Claude CLI / API access) rather than a bad corpus — check the job log.")
 
-        # ---- full text alongside the graph ---------------------------------------------------
-        prog.start("papers", "storing full text next to the graph")
-        from dnhacksbio.explorer.fulltext import FullTextStore
-        ft_store = FullTextStore(con=store.con)
-        by_ref = {m["ref"]: m for m in meta}
-        for d in docs:
-            m = by_ref.get(d.ref, {})
-            ft_store.add_paper(source_ref=d.ref, source_label=d.label, doi=m.get("doi", ""),
-                               pmid=m.get("pmid", ""), pmcid=m.get("pmcid", ""), title=m.get("title", d.label),
-                               license=m.get("license", ""), url=m.get("url", ""),
-                               year=m.get("year"), text=d.text,
-                               is_full_text=bool(m.get("is_full_text")))
-        paper_counts = ft_store.counts()
-        kg_counts = store.counts()
-        prog.done("papers", f"{paper_counts.get('papers', len(docs))} papers stored", **{
-            k: v for k, v in paper_counts.items() if isinstance(v, (int, float))})
+        # ---- store ------------------------------------------------------------------------------
+        prog.start("store", "writing claims into the knowledge graph")
+        store = KGStore(db_path=db, fresh=True)
+        try:
+            for ref, pe in extractions.items():
+                store.write_paper(ref, pe.get("claims", []), pe.get("experiments", []),
+                                  pe.get("deferrals", []))
+            rollup = store.refresh_status()
+            prog.done("store", f"{rollup.get('claims', n_claims)} claims stored, "
+                               f"{rollup.get('disputed_claims', 0)} disputed", **{
+                k: v for k, v in rollup.items() if isinstance(v, (int, float))})
+
+            # ---- full text alongside the graph ---------------------------------------------------
+            prog.start("papers", "storing full text next to the graph")
+            from dnhacksbio.explorer.fulltext import FullTextStore
+            ft_store = FullTextStore(con=store.con)
+            by_ref = {m["ref"]: m for m in meta}
+            for d in docs:
+                m = by_ref.get(d.ref, {})
+                ft_store.add_paper(source_ref=d.ref, source_label=d.label, doi=m.get("doi", ""),
+                                   pmid=m.get("pmid", ""), pmcid=m.get("pmcid", ""), title=m.get("title", d.label),
+                                   license=m.get("license", ""), url=m.get("url", ""),
+                                   year=m.get("year"), text=d.text,
+                                   is_full_text=bool(m.get("is_full_text")))
+            paper_counts = ft_store.counts()
+            kg_counts = store.counts()
+            prog.done("papers", f"{paper_counts.get('papers', len(docs))} papers stored", **{
+                k: v for k, v in paper_counts.items() if isinstance(v, (int, float))})
+        finally:
+            store.close()
+
+        timeline.poll_graph()
+        timeline.event("graph_published", ["graph_published"],
+                       {"db_path": str(db), "counts": kg_counts, "papers": paper_counts},
+                       timestamp_basis="ingestion_wall_clock")
+    except BaseException as exc:
+        timeline.event("ingestion_failed", ["ingestion_failed"],
+                       {"error_type": type(exc).__name__, "error": str(exc)},
+                       timestamp_basis="ingestion_wall_clock")
+        raise
     finally:
-        store.close()
+        timeline.close()
 
     # ---- the corpus card the engine reads ----------------------------------------------------
     card = projects.write_corpus_card(project_id)

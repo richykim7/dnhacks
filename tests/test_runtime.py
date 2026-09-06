@@ -74,10 +74,10 @@ def action(name, args=None):
 
 
 @pytest.mark.parametrize("replies,steps,state", [
-    ([action("done")], 3, "completed"), ([action("reflect")], 1, "budget_exhausted"),
+    ([action("done")], 3, "reporting_blocked"), ([action("reflect")], 1, "reporting_blocked"),
     ([RuntimeError("model error")], 1, "failed"), ([TimeoutError("timeout")], 1, "failed"),
     ([{"action": "done"}, {"action": "done"}], 1, "failed"),
-    ([{"action": "done"}, action("done")], 1, "completed"),
+    ([{"action": "done"}, action("done")], 1, "reporting_blocked"),
 ])
 def test_lifecycle_protocol_and_complete_instructions(tmp_path, monkeypatch, replies, steps, state):
     ex, prompts = make_explorer(tmp_path, monkeypatch, iter(replies))
@@ -184,7 +184,8 @@ def test_real_incremental_stdout_stderr_before_exit():
     rc, out, err, timeout = stream_process([sys.executable, "-u", "-c", "import time,sys; print('first'); time.sleep(.2); print('last',file=sys.stderr)"], 3,
                                           on_output=chunks.append)
     assert rc == 0 and not timeout and "first" in out and "last" in err
-    assert chunks[0]["text"] == "first\n" and chunks[0]["offset"] == 0
+    assert chunks[0]["stream"] == "stdout" and chunks[0]["offset"] == 0
+    assert "".join(c["text"] for c in chunks if c["stream"] == "stdout") == "first\n"
 
 
 @pytest.mark.parametrize("path", ["../outside.pdb", "/etc/passwd", "linked.pdb", "invalid.pdb"])
@@ -214,19 +215,22 @@ def test_collected_structure_is_durable_and_integrity_checked(tmp_path):
 
 
 def test_resume_and_fork_redeliver_guidance_preserve_question(tmp_path, monkeypatch):
-    ex, prompts = make_explorer(tmp_path, monkeypatch, iter([action("done"), action("done"), action("done")]))
+    from test_branch_control import report
+    ex, prompts = make_explorer(tmp_path, monkeypatch, iter([action("done"), report()] * 3))
     try:
         asyncio.run(ex.run(1))
         old = ex.attempt_id
         ex._resume_sid = "injected-session"
+        ex.control.decide("study", 1, {"action": "continue", "reason": "Useful next question",
+                                      "objective": "Inspect evidence", "allowance": 1})
         asyncio.run(ex.run(1))
-        assert old != ex.attempt_id and len(prompts) == 2
-        assert all(skills.snapshot("agent-runtime")["content"] in p for p in prompts)
+        assert old != ex.attempt_id and len(prompts) == 4
+        assert all(skills.snapshot("agent-runtime")["content"] in prompts[i] for i in [0, 2])
         child = ex._spawn_child("study~1", "injected-child", "Branch briefing", "Test independent evidence")
         asyncio.run(child.run(1))
         assert child.manifest["original_question"] == "Original research question"
         assert child.manifest["branch_objective"] == "Test independent evidence"
-        assert skills.snapshot("agent-runtime")["content"] in prompts[2]
+        assert skills.snapshot("agent-runtime")["content"] in prompts[4]
     finally:
         ex.close()
 

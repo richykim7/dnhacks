@@ -1,0 +1,149 @@
+{
+  "schema": "ecosystem-snrna-transfer-v1",
+  "status": "frozen-exposed-development",
+  "biological_gate_passed": false,
+  "device": "NVIDIA L40S",
+  "input_hashes": [
+    {
+      "file": "GSE154778.npz",
+      "sha256": "880323f0192b597934fa3551753f8610ed3eeca6f18dc07ed64ea7e1e49c93b5"
+    },
+    {
+      "file": "GSE205013.npz",
+      "sha256": "692946dd217a3683dfc08aa6b93acd5a59cbe7ea643680e3a0d7eb9fc83fc94c"
+    },
+    {
+      "file": "GSE212966.npz",
+      "sha256": "fe71d94277cbe3d3313d9b455b10e25999d6b4d3dbb7ed46aef14e8c9d948960"
+    },
+    {
+      "file": "GSE229413.npz",
+      "sha256": "1460e6ea775626f5afddec7bde1aa5e9090dcce3e405d78ea73c1189b8f80403"
+    },
+    {
+      "file": "peng.npz",
+      "sha256": "19dd04937d256c1b07f9f5e52117d4c389a20da7a2317d571c397c6ed25b8e24"
+    }
+  ],
+  "donors": 72,
+  "cells": 313518,
+  "unassigned_cells": 30343,
+  "compartments": {
+    "epithelial-enriched": {
+      "metrics": {
+        "train": {
+          "cells": 78076,
+          "log_library_mse": 0.2780564184713795
+        },
+        "validation": {
+          "cells": 8692,
+          "log_library_mse": 0.2014408425645914
+        },
+        "external-test": {
+          "cells": 8842,
+          "log_library_mse": 0.291775953983154
+        }
+      },
+      "complete_donors": 68
+    },
+    "fibroblast": {
+      "metrics": {
+        "train": {
+          "cells": 15528,
+          "log_library_mse": 0.29192208506599443
+        },
+        "validation": {
+          "cells": 2185,
+          "log_library_mse": 0.2407711588754495
+        },
+        "external-test": {
+          "cells": 9938,
+          "log_library_mse": 0.24355904165348974
+        }
+      },
+      "complete_donors": 58
+    }
+  },
+  "marker_diagnostic": {
+    "epithelial": {
+      "assigned_cells": 95610,
+      "top_marker_agreement": 0.8977094888687134
+    },
+    "fibroblast": {
+      "assigned_cells": 27651,
+      "top_marker_agreement": 0.9856062531471252
+    },
+    "immune": {
+      "assigned_cells": 126453,
+      "top_marker_agreement": 0.8546020984649658
+    },
+    "endothelial": {
+      "assigned_cells": 10274,
+      "top_marker_agreement": 0.7110180854797363
+    }
+  },
+  "marker_panel": {
+    "epithelial": [
+      "EPCAM",
+      "KRT8",
+      "KRT18",
+      "KRT19"
+    ],
+    "fibroblast": [
+      "COL1A1",
+      "COL1A2",
+      "DCN",
+      "LUM"
+    ],
+    "immune": [
+      "PTPRC",
+      "CD3D",
+      "LYZ"
+    ],
+    "endothelial": [
+      "VWF",
+      "KDR"
+    ]
+  },
+  "measurement": "one deterministic32-cell bag per compartment; seed derived from donor and compartment",
+  "program_genes": {
+    "epithelial-enriched": [
+      "DDIT3",
+      "HSPA5",
+      "ATF4",
+      "XBP1",
+      "SLC1A5",
+      "SLC38A2",
+      "SLC7A5",
+      "SLC16A1",
+      "B2M",
+      "HLA-A",
+      "HLA-B",
+      "HLA-C",
+      "TAP1"
+    ],
+    "fibroblast": [
+      "ACTA2",
+      "TAGLN",
+      "MYL9",
+      "COL1A1",
+      "COL1A2",
+      "CXCL12",
+      "IL6",
+      "CXCL14",
+      "CFD",
+      "DPT",
+      "CD74",
+      "HLA-DRA",
+      "HLA-DPA1",
+      "HLA-DPB1",
+      "SLC16A1",
+      "LDHA",
+      "SLC38A2",
+      "GOT1",
+      "PSAT1"
+    ]
+  },
+  "complete_paired_donors": 55,
+  "peak_allocated_bytes": 9878840320
+}

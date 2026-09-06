@@ -56,7 +56,7 @@ export function reduceRuntime(
   else if (kind === "lifecycle") {
     Object.assign(run, p);
     if (
-      ["completed", "failed", "cancelled", "budget_exhausted"].includes(
+      ["completed", "failed", "cancelled", "budget_exhausted", "pruned"].includes(
         p.lifecycle,
       )
     ) {
@@ -96,7 +96,8 @@ export function reduceRuntime(
       ...exp,
       artifacts: [...exp.artifacts, { ...p, available_sequence: e.sequence }],
     };
-  } else if (kind === "branch.decision") run.decision = p;
+  } else if (kind === "checkpoint.report") run.checkpoint = p;
+  else if (kind === "branch.decision") run.decision = p;
   if (kind !== "heartbeat") run.history = [...run.history, e];
   return {
     ...state,

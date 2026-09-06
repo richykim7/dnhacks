@@ -203,6 +203,7 @@ _CANONICAL_PREFIX: dict[str, str] = {
 # diverged for this and defer instead.
 _ORTHOLOG_SYMBOL: dict[str, str] = {
     "cdkn2a-arf": "CDKN2A", "p19arf": "CDKN2A", "p14arf": "CDKN2A",
+    "trp53": "TP53",  # mouse ortholog; https://www.ncbi.nlm.nih.gov/gene/22059
 }
 
 
@@ -228,11 +229,18 @@ def _owner_hit(lexname: str, text: str, kind: str, db: str) -> dict | None:
     lex = _lex(lexname)
     if not lex:
         return None
-    t = (text or "").strip()
-    for k in (_ncit_norm(t), _ncit_norm(t.replace("-", "")), _ncit_norm(t.replace("-", " "))):
+    t = _ncit_norm(text)
+    for k in (t, _ncit_norm(t.replace("-", "")), _ncit_norm(t.replace("-", " "))):
         hit = lex.get(k)
-        if hit:
-            return {"curie": hit[0], "label": hit[1], "kind": kind, "db": db, "score": 1.0}
+        if hit and canonical_curie(hit[0]).partition(":")[0] in ({"DFAM", "DFAMCLASS"} if db == "DFAM" else {db}):
+            return {"curie": canonical_curie(hit[0]), "label": hit[1], "kind": kind, "db": db, "score": 1.0}
+    # ChEBI:28939 is N-acetyl-L-cysteine. These are verified spelling variants,
+    # not a general rule deleting chemical punctuation (which can change identity).
+    if lexname == "chebi" and t in {"n-acetyl cysteine", "n acetyl cysteine", "n-acetylcysteine"}:
+        for name in ("n-acetyl-l-cysteine", "n-acetylcysteine"):
+            hit = lex.get(name)
+            if hit and canonical_curie(hit[0]) == "CHEBI:28939":
+                return {"curie": "CHEBI:28939", "label": hit[1], "kind": kind, "db": db, "score": 1.0}
     return None
 
 
@@ -284,6 +292,18 @@ def repeat_lookup(text: str) -> dict | None:
 # deferral queue can show it.
 _HGNC_VETO_SCORE = 0.7          # ground_curie's own acceptance bar, applied in both directions
 
+# Verified owner records absent from the locally built species tables. Kept taxon-scoped;
+# these are NCBI identifiers, not an orthology assertion or a species inference.
+_NONHUMAN_SUPPLEMENT = {
+    "10090": {
+        "saa3": ("NCBIGene:20210", "Saa3"),
+        "saa-3": ("NCBIGene:20210", "Saa3"),
+        "serum amyloid a 3": ("NCBIGene:20210", "Saa3"),
+        "serum amyloid a3": ("NCBIGene:20210", "Saa3"),
+    },
+}
+_NONHUMAN_SUPPLEMENT_SOURCES = {"NCBIGene:20210": "https://www.ncbi.nlm.nih.gov/gene/20210"}
+
 
 def _taxon_curie(organism: str) -> str:
     """Raw organism context ('C. elegans', 'worm', or 'NCBITaxon:6239') -> NCBITaxon CURIE, from the same
@@ -296,6 +316,21 @@ def _taxon_curie(organism: str) -> str:
     return CONTEXT_SLOTS["organism"]["map"].get(_ncit_norm(t), "")
 
 
+def species_gene_collision(surface: str, organism: str) -> dict | None:
+    """Verified species/symbol collisions where human string matching changes gene identity.
+
+    H2-Ab1 is mouse MHC class II beta (NCBI Gene 14961), while the punctuation-stripped
+    human H2AB1 is a histone. Preserve the hyphen and require explicit mouse context;
+    this is not a general exception to ortholog normalization or the human-name veto.
+    Sources: https://www.ncbi.nlm.nih.gov/gene/14961
+    https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:22516
+    """
+    if (surface or "").strip().lower() != "h2-ab1" or _taxon_curie(organism) != "NCBITaxon:10090":
+        return None
+    return {"curie": "NCBIGene:14961", "label": "H2-Ab1", "kind": "entity", "db": "NCBIGene",
+            "score": 1.0, "organism": "10090"}
+
+
 def nonhuman_gene_lookup(text: str, organism: str) -> dict | None:
     """A species-specific gene symbol -> its NCBI Gene id, within one non-human species' table. Returns a
     hit dict, None on a plain miss, and raises LookupError with the reason whenever answering could put a
@@ -303,6 +338,9 @@ def nonhuman_gene_lookup(text: str, organism: str) -> dict | None:
     t = (text or "").strip()
     if not t:
         return None
+    collision = species_gene_collision(t, organism)
+    if collision:
+        return collision
     human = _ORTHOLOG_SYMBOL.get(t.lower())
     if human:
         raise LookupError(f"{text!r} is a tracked ortholog written onto the human node "
@@ -322,7 +360,9 @@ def nonhuman_gene_lookup(text: str, organism: str) -> dict | None:
                           "and this claim carries none")
     if taxon == "NCBITaxon:9606":
         raise LookupError(f"{text!r} claimed as non_human_gene with organism=human; refused")
-    species = (_lex("nonhuman_gene") or {}).get(taxon.partition(":")[2]) or {}
+    taxon_id = taxon.partition(":")[2]
+    species = {**_NONHUMAN_SUPPLEMENT.get(taxon_id, {}),
+               **((_lex("nonhuman_gene") or {}).get(taxon_id) or {})}
     if not species:
         raise LookupError(f"no non-human gene table for {taxon}")
     for k in (_ncit_norm(t), _ncit_norm(t.replace("-", "")), _ncit_norm(t.replace("-", " "))):
@@ -376,10 +416,7 @@ def route_to_owner(curie: str) -> str:
 def chebi_lookup(text: str) -> dict | None:
     """Current ChEBI, which is newer than Gilda's shipped index. Consulted before any gap-filler, since ChEBI
     owns chemicals."""
-    hit = _lex("chebi").get(_ncit_norm(text))
-    if not hit:
-        return None
-    return {"curie": hit[0], "label": hit[1], "kind": "entity", "db": "CHEBI", "score": 1.0}
+    return _owner_hit("chebi", text, "entity", "CHEBI")
 
 
 def disease_lookup(text: str) -> dict | None:
@@ -451,7 +488,9 @@ def ncit_lookup(text: str) -> dict | None:
 
 
 def _ncit_norm(s: str) -> str:
-    return re.sub(r"\s+", " ", (s or "").strip().lower()).strip(" .,;:")
+    # Typography only: preserve ASCII chemical punctuation and gene-symbol content.
+    text = (s or "").translate(str.maketrans({"‐": "-", "‑": "-", "–": "-", "−": "-"}))
+    return re.sub(r"\s+", " ", text.strip().lower()).strip(" .,;:")
 
 
 def _ambiguous_tie(matches: list[dict], namespaces=None) -> bool:
@@ -472,6 +511,10 @@ def ground_curie(text: str, min_score: float = 0.7, namespaces=None) -> dict | N
     Owner lexicon first, then Gilda within the permitted namespaces, then the last-resort chain."""
     if not text or not text.strip():
         return None
+    from .lexicon_supplement import supplement_lookup
+    supplemented = supplement_lookup(text, namespaces=namespaces)
+    if supplemented and (not namespaces or supplemented["curie"].partition(":")[0] in namespaces):
+        return supplemented
     text = _ORTHOLOG_SYMBOL.get(text.strip().lower(), text)
     owned = owner_first(text, namespaces)
     if owned:
@@ -724,40 +767,51 @@ def _ols_exact(query: str, ontology: str, timeout: float = 15.0) -> dict | None:
     """Exact label/synonym match, preferring an exact label hit over a synonym hit (a synonym match can
     generalise a specific outcome into its regulator)."""
     try:
-        r = requests.get(_OLS, params={"q": query, "ontology": ontology, "rows": 10, "exact": "true",
+        r = requests.get(_OLS, params={"q": query, "ontology": ontology, "rows": 40, "exact": "true",
                                        "queryFields": "label,synonym",
                                        "fieldList": "obo_id,label"},
                          headers=_UA, timeout=timeout)
-        docs = [d for d in ((r.json().get("response") or {}).get("docs") or []) if d.get("obo_id")]
+        docs = [d for d in ((r.json().get("response") or {}).get("docs") or [])
+                if d.get("obo_id") and canonical_curie(d["obo_id"]).partition(":")[0] == ontology.upper()
+                and _mesh_ok(canonical_curie(d["obo_id"]))]
     except Exception:
         return None
     q = query.strip().lower()
-    for d in docs:                                     # exact label wins over any synonym match
-        if (d.get("label") or "").strip().lower() == q:
-            return {"curie": canonical_curie(d["obo_id"]), "label": d["label"],
-                    "kind": kind_from_curie(d["obo_id"]),
-                    "db": ontology.upper(), "matched": query, "match": "label"}
-    for d in docs:
-        return {"curie": canonical_curie(d["obo_id"]), "label": d.get("label") or query,
-                "kind": kind_from_curie(d["obo_id"]),
-                "db": ontology.upper(), "matched": query, "match": "synonym"}
-    return None
+    labels = {canonical_curie(d["obo_id"]): d for d in docs
+              if (d.get("label") or "").strip().lower() == q}
+    matches = labels or {canonical_curie(d["obo_id"]): d for d in docs}
+    if len(matches) != 1:
+        return None                         # homonyms require a source-reading choice
+    curie, d = next(iter(matches.items()))
+    return {"curie": curie, "label": d.get("label") or query,
+            "kind": kind_from_curie(curie), "db": ontology.upper(), "matched": query,
+            "match": "label" if labels else "synonym"}
 
 
 def resolve_process(text: str, namespaces: tuple[str, ...] | None = None) -> dict | None:
     """Surface string -> a CURIE for a process used as an object, or None when nothing matches exactly,
     which routes the claim to the deferral queue rather than attaching a near-miss."""
-    key = (text or "").strip().lower()
+    key = _ncit_norm(text)
     if not key:
         return None
     ontologies = _process_ontologies(namespaces)
     allowed = {o.upper() for o in ontologies}
+    from .lexicon_supplement import supplement_lookup
+    supplemented = supplement_lookup(text, namespaces=tuple(allowed)) if allowed else None
+    if supplemented and supplemented["curie"].partition(":")[0] in allowed:
+        return {**supplemented, "matched": text, "match": "label"}
     ck = (key, ontologies)
     if ck in _proc_cache:
         return _proc_cache[ck]
     out = None
     for onto in ontologies:
-        for cand in (key, *(p.format(key) for p in _PROCESS_EXPANSIONS)):
+        # Only a caller explicitly selecting pathological processes supplies enough
+        # context to interpret bare "invasion" as neoplasm invasiveness (MeSH D009361).
+        alias = "neoplasm invasiveness" if (
+            ontologies == ("mesh",) and key in {"invasion", "cell invasion", "cellular invasion", "tumor invasion", "tumour invasion"}
+        ) else ""
+        queries = tuple(dict.fromkeys((key, *((alias,) if alias else ()), *(p.format(key) for p in _PROCESS_EXPANSIONS))))
+        for cand in queries:
             out = _ols_exact(cand, onto)
             # OLS's `go` ontology includes the terms GO imports from UBERON, CL, ChEBI and PATO, so the
             # answer's namespace is checked as well as the query's.
@@ -775,7 +829,7 @@ def resolve_process(text: str, namespaces: tuple[str, ...] | None = None) -> dic
             break
     if out:
         out = demote_regulation_term(out)
-        out["kind"] = _kind_for(out)          # a GO cellular component is a thing, not a process
+        out["kind"] = mesh_kind(out["curie"]) if out["curie"].startswith("MESH:") else _kind_for(out)
         out["go_namespace"] = go_namespace(out.get("curie", ""))
     _proc_cache[ck] = out
     return out
@@ -832,8 +886,8 @@ def process_candidates(text: str, limit: int = 8,
     acceptable here because the reader makes the final call. Candidates are interleaved across ontologies
     so one ontology cannot fill the menu before another gets a seat.
     """
-    key = (text or "").strip()
-    if not key:
+    key = _ncit_norm(text)
+    if not key or limit <= 0:
         return []
     ontologies = _process_ontologies(namespaces)
     allowed = {o.upper() for o in ontologies}
@@ -844,7 +898,7 @@ def process_candidates(text: str, limit: int = 8,
     per_onto: list[list[dict]] = []
     for onto in ontologies:
         try:
-            r = requests.get(_OLS, params={"q": key, "ontology": onto, "rows": limit,
+            r = requests.get(_OLS, params={"q": key, "ontology": onto, "rows": max(40, limit * 5),
                                            "queryFields": "label,synonym",
                                            "fieldList": "obo_id,label,description"},
                              headers=_UA, timeout=15.0)
@@ -891,9 +945,11 @@ def demote_regulation_term(hit: dict) -> dict:
     if not _REGULATION_PREFIX.match(label):
         return hit
     base = _REGULATION_PREFIX.sub("", label).strip()
-    for onto in _PROCESS_ONTOLOGIES:
+    owner = canonical_curie(hit.get("curie", "")).partition(":")[0]
+    for onto in _process_ontologies((owner,)):
         got = _ols_exact(base, onto)
-        if got and not _REGULATION_PREFIX.match(got.get("label") or ""):
+        if (got and canonical_curie(got.get("curie", "")).partition(":")[0] == owner
+                and _mesh_ok(got["curie"]) and not _REGULATION_PREFIX.match(got.get("label") or "")):
             got["demoted_from"] = hit["curie"]
             return got
     hit["regulation_term_kept"] = True

@@ -65,7 +65,7 @@ python3 scripts/board.py show
 python3 scripts/board.py check
 git fetch origin
 <rebase unpublished commits, or merge origin/main to preserve published history>
-<run every test gate listed in AGENTS.md>
+<run the change-scoped test gates listed in AGENTS.md>
 git commit
 git push
 <create/update PR; review diff; merge automatically after checks pass>
@@ -86,6 +86,11 @@ a side channel, so everyone sees the exchange. Round trip is about a minute; do 
 things you can decide yourself. A mention becomes a typed nudge in the mentioned agent's tmux pane only
 on a machine running `scripts/board_nudge.py` (or the mirror), and only for an agent whose tmux session
 name is its board name; otherwise it lands on the agent's next `show`.
+
+Automated typing defers on menus or uncertain input state. The optional
+[Codex popup watcher](docs/board-popup-watcher.md) selects only the recognized keep-waiting
+option and shares an input lock with both board delivery scripts. Restart those scripts after
+upgrading them; existing processes retain their old delivery behavior.
 
 **Leave informational mentions unanswered.** Reply only when your answer is needed to resolve a concrete
 blocker or make a required decision. Do not post thanks, "noted", acknowledgements, or related findings
@@ -146,3 +151,22 @@ already point here. If you run an agent that reads neither, paste this into its 
 > active branches; use a separate branch and worktree if another agent is on yours. Run `show` and
 > `check`, sync with origin/main, and validate before every commit. Push and automatically merge completed
 > work after checks pass. Claims are heads-ups, not locks. Full rules: BOARD.md and AGENTS.md.
+
+## Mirror delivery recovery
+
+The Telegram mirror imports its legacy JSON fetch cursor once into
+`~/.cache/repo-board/mirror-board-OWNER__REPO-ISSUE.sqlite3` (or the same path under
+`XDG_CACHE_HOME`). Each comment/recipient and the cursor commit together. Pending
+busy, offline, and input-guard deferrals have no retry expiry and survive restarts.
+The fetch window overlaps by two seconds to collect comments sharing a timestamp.
+Unresolved mention names remain pending until a matching local fleet session appears.
+Logs identify comment/recipient keys for queued, pending, accepted and uncertain sends.
+
+Inspect records with `python3 scripts/board_inbox.py --state /absolute/path/to/mirror-board-OWNER__REPO-ISSUE.sqlite3 show`.
+A possibly partial or interrupted terminal send is retained as `uncertain`; inspect
+the receiver before explicitly using the same command with `retry KEY`. Acceptance
+of text and Enter does not prove the agent consumed or answered the message.
+Dry runs leave delivery and inbox cursors unchanged. Run only one mirror process;
+restart it from the updated checkout to activate changes. Previously dropped nudges
+cannot be recovered from the old fetch cursor alone: review their Board comments
+and repost only requests that still need action. Do not replay old Telegram posts.
