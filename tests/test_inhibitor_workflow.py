@@ -81,3 +81,21 @@ def test_surface_coordinates_and_atom_identity():
     assert set(s['triangle_atom_ids'])=={'a'}
     import math
     assert all(math.dist(p,[0,0,0])==pytest.approx(3.1,abs=.06) for p in s['positions'])
+
+
+def test_timeline_has_receipts_and_keeps_source_actor_cursor_scope(workbench):
+    w,key=workbench
+    first=w.scene(key,{'shot':'arrival'},0,'agent','Locate reference')
+    w.event('scene.capture',{'source_hash':key,'image_hash':'image-a','recipe':first['recipe']})
+    w.event('scene.vision',{'capture_id':'image-a','observation':'Visible reference'})
+    w.event('scene.vision',{'capture_id':'outside','observation':'Must stay outside'})
+    w.event('scene.measurement',{'source_hash':key,'value':2.7,'units':'Å','atom_ids':['a','b']})
+    w.scene(key,{'shot':'oblique'},0,'user','User exploration')
+    timeline=w.describe(key)['timeline']
+    assert [e['kind'] for e in timeline]==['scene.changed','scene.capture','scene.vision','scene.measurement','scene.changed']
+    assert timeline[3]['note']=='Measured 2.700 Å'
+    assert timeline[2]['details']['observation']=='Visible reference'
+    assert timeline[2]['recipe']==first['recipe']
+    assert timeline[-1]['actor']=='user'
+    historic=Workbench(w.j,w.run,w.experiment,w.project,first['sequence'])
+    assert len(historic.describe(key)['timeline'])==1
