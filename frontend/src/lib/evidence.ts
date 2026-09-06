@@ -55,6 +55,8 @@ export interface EvidenceGraph {
   nodes: GraphNode[];
   edges: ClaimEdge[];
   shown?: number;
+  complete?: boolean;
+  loaded_entities?: number;
   matched?: number;
   total_claims?: number;
   status_counts?: Record<string, number>;

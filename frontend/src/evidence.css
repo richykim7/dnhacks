@@ -946,3 +946,52 @@ a.curie {
     transition: none;
   }
 }
+
+.graph-camera-controls {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  z-index: 4;
+  display: flex;
+  gap: 8px;
+}
+.evidence-page .evidence-map-caption {
+  max-width: calc(100% - 340px);
+}
+.evidence-page .kg-label strong {
+  max-width: none;
+}
+.evidence-page .react-flow__node:hover {
+  z-index: 1001 !important;
+}
+.evidence-page .kg-node:hover .kg-label {
+  visibility: visible;
+}
+@media (max-width: 700px) {
+  .graph-camera-controls {
+    top: 12px;
+    right: 12px;
+    gap: 4px;
+  }
+  .graph-camera-controls .button {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  .evidence-page .evidence-map-caption {
+    display: none;
+  }
+}
+.evidence-page .kg-node svg > * {
+  stroke-width: var(--node-stroke);
+}
+
+.evidence-page .evidence-map-caption {
+  background: var(--stage);
+  padding: 8px 10px;
+  left: 14px;
+  top: 10px;
+}
+.evidence-page .claim-result {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 140px;
+}

@@ -10,7 +10,6 @@ import {
   Handle,
   Position,
   useInternalNode,
-  useViewport,
   useStore,
   type Edge,
   type EdgeProps,
@@ -217,8 +216,9 @@ export function nodeRadius(degree: number): number {
 type EntityData = GraphNode & {
   r: number;
   selected: boolean;
+  primary: boolean;
   dim: boolean;
-  prominent: boolean;
+  labelZoom: number;
   [key: string]: unknown;
 };
 function shapePath(shape: KindShape, r: number): React.ReactNode {
@@ -270,14 +270,22 @@ function shapePath(shape: KindShape, r: number): React.ReactNode {
   }
 }
 function EntityNode({ data }: NodeProps<Node<EntityData>>) {
-  const { zoom } = useViewport();
-  const showLabel = data.selected || data.prominent || zoom >= 0.8;
+  const zoom = useStore((s) =>
+    Math.max(0.05, Math.round(s.transform[2] * 20) / 20),
+  );
+  const showLabel = data.primary || zoom >= data.labelZoom;
   const size = data.r * 2;
   const claims = data.degree === 1 ? "1 claim" : `${data.degree} claims`;
   return (
     <div
       className={`kg-node ${data.selected ? "selected" : ""} ${data.dim ? "dim" : ""}`}
-      style={{ width: size, height: size }}
+      style={
+        {
+          width: size,
+          height: size,
+          "--node-stroke": `${(data.selected ? 2 : 1) / zoom}px`,
+        } as React.CSSProperties
+      }
       title={`${data.label} · ${kindLabel(data.kind)} · ${claims}`}
     >
       <Handle type="target" position={Position.Top} />
@@ -291,10 +299,10 @@ function EntityNode({ data }: NodeProps<Node<EntityData>>) {
       </svg>
       <span
         className={`kg-label ${showLabel ? "" : "quiet-label"}`}
-        style={{ fontSize: Math.min(30, 14 / zoom) }}
+        style={{ fontSize: 14 / zoom }}
       >
-        <strong>{data.label}</strong>
-        {data.selected && data.curie && <code>{data.curie}</code>}
+        <strong style={{ maxWidth: 180 / zoom }}>{data.label}</strong>
+        {data.primary && data.curie && <code>{data.curie}</code>}
       </span>
       <Handle type="source" position={Position.Bottom} />
     </div>
@@ -320,6 +328,11 @@ function ClaimEdgeView({
   label,
   data,
 }: EdgeProps<Edge<ClaimEdgeData>>) {
+  const scale = useStore((s) =>
+    Math.pow(2, Math.round(Math.log2(s.transform[2]))),
+  );
+  const far = useStore((s) => s.transform[2] < 0.3);
+  const detailed = useStore((s) => s.transform[2] >= 0.35);
   const a = useInternalNode(source);
   const b = useInternalNode(target);
   if (!a || !b) return null;
@@ -347,16 +360,26 @@ function ClaimEdgeView({
   const ty = q.y - uy * (q.r + 1) + ux * bow * 0.35;
   const mx = (sx + tx) / 2 - uy * bow * 2;
   const my = (sy + ty) / 2 + ux * bow * 2;
-  const path = `M ${sx} ${sy} Q ${mx} ${my} ${tx} ${ty}`;
-  const lx = (sx + tx) / 2 - uy * bow;
-  const ly = (sy + ty) / 2 + ux * bow;
+  const loop = p.r + 50 + Math.abs(bow) * 2 + (bow >= 0 ? 22 : 0);
+  const path =
+    source === target
+      ? `M ${p.x - p.r * 0.7} ${p.y - p.r * 0.7} C ${p.x - loop} ${p.y - loop * 2}, ${p.x + loop} ${p.y - loop * 2}, ${p.x + p.r * 0.7} ${p.y - p.r * 0.7}`
+      : `M ${sx} ${sy} Q ${mx} ${my} ${tx} ${ty}`;
+  const lx = source === target ? p.x : (sx + tx) / 2 - uy * bow;
+  const ly = source === target ? p.y - loop * 1.5 : (sy + ty) / 2 + ux * bow;
   return (
     <>
       <BaseEdge
         id={id}
         path={path}
-        style={style}
-        markerEnd={markerEnd as string}
+        style={{
+          ...style,
+          opacity: data?.dim ? 0.025 : data?.active ? 0.95 : far ? 0.24 : 0.13,
+          strokeWidth:
+            Number(data?.active ? style?.strokeWidth : far ? 0.65 : 0.8) /
+            scale,
+        }}
+        markerEnd={detailed || data?.active ? (markerEnd as string) : undefined}
       />
       {label && (
         <EdgeLabelRenderer>
@@ -426,29 +449,148 @@ export function forceLayout(
   );
 }
 
-function FocusEvidence({ ids }: { ids: string }) {
+// Greedy label placement in screen space at zoom bands. Every node stays in the graph;
+// only its label waits until there is room. Hover and selection always reveal it.
+export function labelThresholds(
+  nodes: GraphNode[],
+  positions: Map<string, { x: number; y: number }>,
+) {
+  const result = new Map<string, number>();
+  const ranked = [...nodes].sort(
+    (a, b) => b.degree - a.degree || a.id.localeCompare(b.id),
+  );
+  for (const zoom of [0.08, 0.15, 0.25, 0.4, 0.65, 1, 1.5, 2]) {
+    const boxes: { x: number; y: number; w: number; h: number }[] = [];
+    const candidates =
+      zoom < 0.25
+        ? ranked.slice(0, 12)
+        : zoom < 0.4
+          ? ranked.slice(0, 60)
+          : ranked;
+    // Keep labels already admitted at wider zooms before admitting new neighbors.
+    const ordered = [...candidates].sort(
+      (a, b) => Number(result.has(b.id)) - Number(result.has(a.id)),
+    );
+    for (const node of ordered) {
+      const p = positions.get(node.id);
+      if (!p) continue;
+      const w = Math.min(180, node.label.length * 7.5) + 16;
+      const h = node.label.length * 7.5 > 180 ? 44 : 26;
+      const r = nodeRadius(node.degree);
+      const box = {
+        x: (p.x + r) * zoom - w / 2,
+        y: (p.y + r * 2) * zoom + 4,
+        w,
+        h,
+      };
+      if (
+        boxes.some(
+          (b) =>
+            box.x < b.x + b.w &&
+            box.x + box.w > b.x &&
+            box.y < b.y + b.h &&
+            box.y + box.h > b.y,
+        )
+      )
+        continue;
+      boxes.push(box);
+      if (!result.has(node.id)) result.set(node.id, zoom);
+    }
+  }
+  return result;
+}
+
+// Highest number of distinct connected neighbors, never claim status or source count.
+export function denseCenter(
+  nodes: GraphNode[],
+  edges: ClaimEdge[],
+  positions: Map<string, { x: number; y: number }>,
+) {
+  const neighbors = new Map(nodes.map((n) => [n.id, new Set<string>()]));
+  for (const e of edges) {
+    if (e.source === e.target) continue;
+    neighbors.get(e.source)?.add(e.target);
+    neighbors.get(e.target)?.add(e.source);
+  }
+  const ranked = [...nodes].sort(
+    (a, b) =>
+      (neighbors.get(b.id)?.size || 0) - (neighbors.get(a.id)?.size || 0) ||
+      a.id.localeCompare(b.id),
+  );
+  const node = ranked[0];
+  const p = node && positions.get(node.id);
+  return p
+    ? {
+        x: p.x + nodeRadius(node.degree),
+        y: p.y + nodeRadius(node.degree),
+        small: nodes.length <= 24,
+      }
+    : null;
+}
+
+function FocusEvidence({
+  ids,
+  center,
+}: {
+  ids: string;
+  center: { x: number; y: number; small: boolean } | null;
+}) {
   const flow = useReactFlow();
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("sceneReview") !== "1") return;
+    const target = window as unknown as {
+      knowledgeReview?: {
+        nodes: typeof flow.getNodes;
+        edges: typeof flow.getEdges;
+      };
+    };
+    const review = { nodes: flow.getNodes, edges: flow.getEdges };
+    target.knowledgeReview = review;
+    return () => {
+      if (target.knowledgeReview === review) delete target.knowledgeReview;
+    };
+  }, [flow]);
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
+  const duration = () =>
+    matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 250;
+  const home = () =>
+    center && !center.small
+      ? flow.setCenter(center.x, center.y, { zoom: 0.7, duration: duration() })
+      : flow.fitView({ padding: 0.18, maxZoom: 1, duration: duration() });
   useEffect(() => {
     if (!width || !height) return;
-    const timer = setTimeout(
-      () =>
+    const timer = setTimeout(() => {
+      if (ids)
         void flow.fitView({
-          nodes: ids
-            ? JSON.parse(ids).map((nodeId: string) => ({ id: nodeId }))
-            : undefined,
-          padding: ids ? 0.45 : 0.18,
+          nodes: JSON.parse(ids).map((id: string) => ({ id })),
+          padding: 0.45,
           maxZoom: 1,
-          duration: matchMedia("(prefers-reduced-motion: reduce)").matches
-            ? 0
-            : 250,
-        }),
-      100,
-    );
+          duration: duration(),
+        });
+      else void home();
+    }, 100);
     return () => clearTimeout(timer);
-  }, [ids, flow, width, height]);
-  return null;
+    // Scalar coordinates keep background polling from resetting a manually explored camera.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ids, flow, width, height, center?.x, center?.y, center?.small]);
+  return (
+    <div className="graph-camera-controls">
+      <Button onClick={() => void home()}>Connected region</Button>
+      <Button
+        onClick={() =>
+          void flow.fitView({
+            padding: 0.12,
+            minZoom: 0.015,
+            maxZoom: 1,
+            duration: duration(),
+          })
+        }
+      >
+        Fit all
+      </Button>
+    </div>
+  );
 }
 function useDebounced<T>(value: T, delay = 250): T {
   const [debounced, setDebounced] = useState(value);
@@ -478,7 +620,7 @@ function Relationships({ project }: { project: string }) {
   const [selected, setSelected] = useState("");
   const [claimId, setClaimId] = useState("");
   const [browse, setBrowse] = useState(false);
-  const [limit, setLimit] = useState("36");
+
   useEffect(() => {
     const close = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -490,7 +632,7 @@ function Relationships({ project }: { project: string }) {
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
   }, []);
-  const params = new URLSearchParams({ limit });
+  const params = new URLSearchParams({ complete: "1" });
   if (source) params.set("source", source);
   if (filters.status) params.set("status", filters.status);
   if (filters.polarity) params.set("polarity", filters.polarity);
@@ -521,16 +663,23 @@ function Relationships({ project }: { project: string }) {
         : [],
   );
   const focusIds = focused.size ? JSON.stringify([...focused].sort()) : "";
+  const topology = JSON.stringify([
+    data?.nodes.map((n) => [n.id, n.degree]),
+    data?.edges.map((e) => [e.source, e.target]),
+  ]);
   const positions = useMemo(
     () => (data ? forceLayout(data.nodes, data.edges) : new Map()),
-    [data],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [topology],
   );
   const anyFocus = Boolean(claimId || selected);
-  const prominent = new Set(
-    [...(data?.nodes || [])]
-      .sort((a, b) => b.degree - a.degree || a.id.localeCompare(b.id))
-      .slice(0, 24)
-      .map((n) => n.id),
+  const labelZooms = useMemo(
+    () => labelThresholds(data?.nodes || [], positions),
+    [data, positions],
+  );
+  const center = useMemo(
+    () => denseCenter(data?.nodes || [], data?.edges || [], positions),
+    [data, positions],
   );
   const nodes: Node<EntityData>[] =
     data?.nodes.map((n) => {
@@ -539,12 +688,36 @@ function Relationships({ project }: { project: string }) {
         id: n.id,
         type: "entity",
         position: positions.get(n.id) || { x: 0, y: 0 },
+        width: r * 2,
+        height: r * 2,
+        measured: { width: r * 2, height: r * 2 },
+        handles: [
+          {
+            type: "source",
+            position: Position.Bottom,
+            x: r,
+            y: r,
+            width: 1,
+            height: 1,
+          },
+          {
+            type: "target",
+            position: Position.Top,
+            x: r,
+            y: r,
+            width: 1,
+            height: 1,
+          },
+        ],
         style: { width: r * 2, height: r * 2 },
         data: {
           ...n,
           r,
-          prominent: prominent.has(n.id),
+          labelZoom: labelZooms.get(n.id) ?? Infinity,
           selected: focused.has(n.id),
+          primary: claim
+            ? n.id === claim.source || n.id === claim.target
+            : n.id === selected,
           dim: anyFocus && !focused.has(n.id),
         },
       };
@@ -724,30 +897,24 @@ function Relationships({ project }: { project: string }) {
             ))}
           </select>
         </label>
-        <label>
-          View
-          <select
-            aria-label="Graph density"
-            value={limit}
-            onChange={(e) => {
-              setLimit(e.target.value);
-              clear();
-            }}
-          >
-            <option value="36">Overview · 36 claims</option>
-            <option value="160">Expanded · 160 claims</option>
-            <option value="800">Wide · 800 claims</option>
-          </select>
-        </label>
-        <span className="muted view-count">
+        <span className="muted view-count" aria-live="polite">
+          {graph.loading && !data && "Loading all claims and entities…"}
           {data?.shown != null &&
             (filtered
-              ? `${number(data.shown)} of ${number(data.matched)} matching claims shown`
-              : `${number(data.shown)} of ${number(data.total_claims)} claims shown`)}
+              ? `${number(data.shown)} / ${number(data.matched)} matching claims loaded · ${number(data.nodes.length)} entities`
+              : `${number(data.shown)} / ${number(data.total_claims)} claims loaded · ${number(data.nodes.length)} entities`)}
         </span>
       </div>
       {data?.summary && <CollectionStrip data={data} />}
-      <ErrorNotice message={graph.error} retry={graph.refresh} />
+      <ErrorNotice
+        message={
+          graph.error ||
+          (data && data.shown !== data.matched
+            ? "Incomplete graph response. Reload with a server supporting complete collection retrieval."
+            : undefined)
+        }
+        retry={graph.refresh}
+      />
       {graph.loading && !data ? (
         <Loading />
       ) : !data?.nodes.length ? (
@@ -784,23 +951,26 @@ function Relationships({ project }: { project: string }) {
               <div className="evidence-map-caption">
                 <strong>Literature relationships</strong>
                 <span>
-                  Disputed claims first, then source count. Search the entire
-                  collection. Select an entity or connection to inspect.
+                  {data.shown === data.matched
+                    ? "All matching relationships loaded."
+                    : "Incomplete response; reload to retrieve the complete graph."}{" "}
+                  Zoom for detail; fit all to see every component.
                 </span>
               </div>
               <ReactFlowProvider>
                 <ReactFlow
-                  key={`${source}:${q}:${JSON.stringify(filters)}:${limit}`}
+                  key={`${source}:${q}:${JSON.stringify(filters)}`}
                   nodes={nodes}
                   edges={edges}
                   nodeTypes={nodeTypes}
                   edgeTypes={edgeTypes}
                   fitView
                   fitViewOptions={{ padding: 0.18, maxZoom: 1.1 }}
-                  minZoom={0.1}
+                  minZoom={0.015}
                   maxZoom={2}
                   nodesConnectable={false}
                   nodesDraggable={false}
+                  onlyRenderVisibleElements
                   onNodeClick={(_, n) => choose(n.id)}
                   onEdgeClick={(_, e) => {
                     const found = data.edges.find((c) => claimKey(c) === e.id);
@@ -808,9 +978,9 @@ function Relationships({ project }: { project: string }) {
                   }}
                   onPaneClick={clear}
                 >
-                  <FocusEvidence ids={focusIds} />
+                  <FocusEvidence ids={focusIds} center={center} />
                   <Background gap={24} size={0.6} color="var(--grid)" />
-                  <Controls showInteractive={false} />
+                  <Controls showInteractive={false} showFitView={false} />
                 </ReactFlow>
               </ReactFlowProvider>
               <Button
