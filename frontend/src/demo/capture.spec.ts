@@ -50,6 +50,16 @@ test("inspect the cinematic map and available scene controls", async ({
         ),
       )
       .toBeGreaterThan(11);
+    const started = Number(
+      await page.getByRole("slider", { name: "Scene time" }).inputValue(),
+    );
+    await page.waitForTimeout(1100);
+    const advanced =
+      Number(
+        await page.getByRole("slider", { name: "Scene time" }).inputValue(),
+      ) - started;
+    expect(advanced).toBeGreaterThan(0.85);
+    expect(advanced).toBeLessThan(1.8);
     await page.getByRole("button", { name: "Pause", exact: true }).click();
     const paused = await page
       .getByRole("slider", { name: "Scene time" })
@@ -82,4 +92,36 @@ test("inspect the cinematic map and available scene controls", async ({
   }
   expect(errors).toEqual([]);
   expect(apiRequests).toEqual([]);
+});
+
+test("record binder node reveal", async ({ browser, baseURL }) => {
+  const context = await browser.newContext({
+    viewport: { width: 1920, height: 1080 },
+    recordVideo: {
+      dir: directory + ".video-tmp",
+      size: { width: 1920, height: 1080 },
+    },
+  });
+  const page = await context.newPage();
+  await page.goto(`${baseURL}/?demo=cinematic`);
+  await page
+    .getByRole("heading", { name: "Follow the question. See the possibility." })
+    .waitFor();
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(1000);
+  await page
+    .getByRole("button", { name: "Explore the interface", exact: true })
+    .click();
+  await page.locator("canvas").waitFor();
+  await expect(page.getByRole("slider", { name: "Scene time" })).toHaveValue(
+    "18",
+    { timeout: 25000 },
+  );
+  await expect(
+    page.getByRole("button", { name: "Play", exact: true }),
+  ).toBeVisible();
+  await page.waitForTimeout(700);
+  await context.close();
+  await page.video()!.saveAs(directory + "binder-node-reveal.webm");
+  await page.video()!.delete();
 });

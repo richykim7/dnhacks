@@ -126,9 +126,10 @@ export default function CinematicDemo() {
     let frame: number;
     let previous: number | undefined;
     const tick = (now: number) => {
-      if (previous !== undefined)
-        setTime((t) => Math.min(DEMO_DURATION, t + (now - previous!) / 1000));
+      // Capture the delta before React may defer the state updater.
+      const delta = previous === undefined ? 0 : (now - previous) / 1000;
       previous = now;
+      if (delta) setTime((t) => Math.min(DEMO_DURATION, t + delta));
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -176,8 +177,9 @@ export default function CinematicDemo() {
       setNotice("Fullscreen is unavailable in this browser.");
     }
   }
-  const phase =
-    time < 5
+  const phase = reducedMotion
+    ? "Static view"
+    : time < 5
       ? "Establish"
       : time < 11
         ? "Approach"
@@ -318,6 +320,7 @@ export default function CinematicDemo() {
                 <button
                   key={s.id}
                   disabled={!scenes[s.id]}
+                  aria-label={s.short}
                   aria-pressed={selected === s.id}
                   onClick={() => open(s.id)}
                 >
