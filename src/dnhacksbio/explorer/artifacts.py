@@ -77,6 +77,14 @@ def collect(output: Path, journal: Journal) -> list[dict]:
     for entry in entries:
         a = {"artifact_id": uuid4().hex, "created_at": time.time(), "status": "rejected"}
         try:
+            if isinstance(entry, dict) and entry.get("kind") == "tissue_simulation":
+                from dnhacksbio.tissue.artifacts import collect_tissue
+                a.update(collect_tissue(output, entry, journal))
+                total += sum(c["byte_length"] for c in a["chunks"]) + a["byte_length"]
+                if total > 64 * 1024 * 1024:
+                    raise ValueError("Experiment artifact quota exceeded")
+                artifacts.append(a)
+                continue
             if not isinstance(entry, dict) or entry.get("kind") not in {"molecular_structure", "binder_bundle", "filament_trajectory"}:
                 raise ValueError("Unsupported artifact kind")
             fmt = entry.get("format")
@@ -120,6 +128,7 @@ def collect(output: Path, journal: Journal) -> list[dict]:
                      storage_key=key, sha256=key, byte_length=len(raw), atom_count=count,
                      provenance=prov, name=Path(entry["path"]).name)
         except Exception as exc:
+            a["status"] = "rejected"
             a["failure_reason"] = str(exc)
         artifacts.append(a)
     return artifacts
