@@ -210,6 +210,12 @@ class ControlStore:
             c.execute("INSERT INTO decisions VALUES (?,?)", (did, encoded(record)))
             return record
 
+    def decision_history(self, run_id):
+        """Prior allocations for this exact node, in report order; no sibling findings."""
+        with self.connect() as c:
+            records = [json.loads(row[0]) for row in c.execute("SELECT body FROM decisions")]
+        return sorted((r for r in records if r["run_id"] == run_id), key=lambda r: r["report_version"])
+
     def decision(self, did):
         with self.connect() as c:
             r = c.execute("SELECT body FROM decisions WHERE id=?", (did,)).fetchone()
