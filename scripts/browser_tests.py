@@ -16,9 +16,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 @contextmanager
-def browser_slot():
+def browser_slot(path=None):
     # Shared by all worktrees; do not unlink a flock file while waiters may hold it.
-    path = Path(f"/tmp/dnhacks-browser-{os.getuid()}.lock")
+    path = Path(path) if path is not None else Path(f"/tmp/dnhacks-browser-{os.getuid()}.lock")
     fd = os.open(path, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     with os.fdopen(fd, "w") as lock:
         try:

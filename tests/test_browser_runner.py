@@ -17,17 +17,18 @@ spec.loader.exec_module(runner)
 
 def test_browser_slot_queues_and_releases_on_exception(tmp_path):
     marker = tmp_path / "entered"
+    lock_path = tmp_path / "queue.lock"
     code = f"""
 import sys
 from pathlib import Path
 sys.path.insert(0, {str(SCRIPT.parent)!r})
 from browser_tests import browser_slot
-with browser_slot():
+with browser_slot({str(lock_path)!r}):
     Path({str(marker)!r}).touch()
 """
     process = None
     try:
-        with pytest.raises(ValueError), runner.browser_slot():
+        with pytest.raises(ValueError), runner.browser_slot(lock_path):
             process = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, text=True)
             assert "Waiting for another browser run" in process.stdout.readline()
             assert not marker.exists()
