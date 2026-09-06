@@ -38,3 +38,11 @@ run. `repair=False` disables repair; also set `direction_pass=False` for a looku
 the original reader's `claims` count. Compare source claim records and explicit outcomes,
 not just a deferral-list length. Successful lookup decisions are scoped by category and
 species; contextual model choices are not reused across papers in the new flow.
+
+Repair feedback includes exact-search synonym candidates ahead of broad search results,
+starting with the first attempt. A related synonym remains a contextual choice, not an
+automatic identifier equivalence (for example, hyaluronan versus hyaluronic acid).
+Known species/name collisions are checked before human grounding: mouse `H2-Ab1` is
+MHC class II `NCBIGene:14961`, whereas human `H2AB1` is an unrelated histone. The exact
+mouse symbol requires the non-human category and mouse context; ordinary human H2AB1
+and the existing verified ortholog conventions are preserved.

@@ -606,6 +606,9 @@ def _entity(surface: str, state: dict | None, category: str,
     category = (category or "").strip().lower()
     if category not in CATEGORIES:
         raise DeferralError(f"unknown or missing category {category!r}; choose a supported category")
+    if category == "gene" and G.species_gene_collision(surface, organism):
+        raise DeferralError(f"gene {surface!r} is a verified species-specific symbol that collides "
+                            "with an unrelated human gene; use non_human_gene and preserve organism context")
     kind_hint = _path_for(category)
     ns = CATEGORY_NS[category] or None
     def checked(hit):
@@ -1089,7 +1092,7 @@ async def extract_paper(text: str, *, source_ref: int, source_label: str = "", f
     The returned repair audit preserves original claims, corrections and explicit outcomes.
     """
     from dnhacksbio.litmap.repair import repair_claims, quote_supported
-    from dnhacksbio.litmap.lexicon_supplement import SUPPLEMENT, VERSION as LEXICON_VERSION, supplement_lookup
+    from dnhacksbio.litmap.lexicon_supplement import SUPPLEMENT, VERSION as LEXICON_VERSION, supplement_lookup, supplement_candidates
 
     def supplement_category(term):
         prefix = term.curie.split(":", 1)[0]
@@ -1231,6 +1234,11 @@ async def extract_paper(text: str, *, source_ref: int, source_label: str = "", f
                         suggestions.append({"side": side, "label": surface,
                                             "category": "non_human_gene",
                                             "definition": "Verified gene in the stated species table; preserve organism context"})
+                if category in CATEGORIES:
+                    suggestions.extend({"side": side, "label": candidate["label"],
+                                        "category": candidate["category"], "definition": candidate["definition"],
+                                        "match": candidate["match"]}
+                                       for candidate in supplement_candidates(surface, CATEGORY_NS[category]))
                 reviewed = supplement_lookup(surface)
                 if reviewed:
                     entry = next(t for t in supplement_menu if t["curie"] == reviewed["curie"])
@@ -1239,6 +1247,15 @@ async def extract_paper(text: str, *, source_ref: int, source_label: str = "", f
                 if category not in CATEGORIES:
                     continue
                 key = _resolution_key(surface, category, _claim_organism(rc, paper_org))
+                # An exact-search synonym can be the best contextual option even when it must
+                # not be accepted automatically. Keep it ahead of broad search alternatives.
+                if key in lookup_tasks:
+                    exact_candidate = await lookup_tasks[key]
+                    if exact_candidate:
+                        suggestions.append({"side": side, "label": exact_candidate["label"],
+                                            "category": category,
+                                            "definition": exact_candidate.get("definition", ""),
+                                            "match": exact_candidate.get("match", "")})
                 if key not in candidate_tasks:
                     if _path_for(category) == "process":
                         candidate_tasks[key] = asyncio.create_task(asyncio.to_thread(
@@ -1321,6 +1338,13 @@ async def extract_paper(text: str, *, source_ref: int, source_label: str = "", f
                     failure["raw"]["experiment"] = experiment
                 else:
                     failure["raw"].pop("experiment", None)
+        # Give the first repair attempt the same concrete alternatives as a retry. This avoids
+        # spending an entire round proposing the original failed surface again.
+        async def enrich_failure(failure):
+            feedback = await validate(failure["raw"])
+            if feedback:
+                failure["reason"] += "; validation feedback: " + str(feedback)
+        await asyncio.gather(*(enrich_failure(failure) for failure in failures))
         instructions = build_prompt(field, doc_type, "[Source is supplied separately below]")
         instructions += ("\nREPAIR EXPERIMENT OVERRIDE: Never output numeric experiment references. "
                          "Use an inline experiment with its actual source passage only when it supports "

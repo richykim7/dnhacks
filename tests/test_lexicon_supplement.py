@@ -1,4 +1,4 @@
-from dnhacksbio.litmap.lexicon_supplement import SUPPLEMENT, supplement_lookup
+from dnhacksbio.litmap.lexicon_supplement import SUPPLEMENT, supplement_candidates, supplement_lookup
 
 
 def test_owner_gate_prevents_category_correction_by_alias():
@@ -73,3 +73,25 @@ def test_disease_subtype_keeps_grade_without_fake_mondo_equivalence():
     assert supplement_lookup("HGSOC", ("MONDO",)) is None
     assert supplement_lookup("ovarian serous adenocarcinoma", ("LOCALDISEASE",)) is None
     assert supplement_lookup("ovarian cancer cell lines", ("CVCL",)) is None
+
+
+def test_related_hyaluronan_alias_only_offers_candidate():
+    assert supplement_lookup("hyaluronan", ("CHEBI",)) is None
+    candidates = supplement_candidates("hyaluronan", ("CHEBI",))
+    assert len(candidates) == 1
+    hit = candidates[0]
+    assert hit["curie"] == "CHEBI:16336"
+    assert hit["label"] == "hyaluronic acid"
+    assert hit["category"] == "chemical"
+    assert hit["match"] == "related_synonym"
+    assert hit["definition"] and hit["sources"]
+    assert "hasRelatedSynonym" in hit["provenance"]["coverage_note"]
+    assert supplement_lookup("hyaluronan", ("CHEBI",)) is None
+
+
+def test_related_candidates_respect_owner_and_do_not_expand_substances():
+    assert supplement_candidates("hyaluronan", ("GO",)) == []
+    assert supplement_candidates("hyaluronan", ()) == []
+    assert supplement_candidates("sulfated hyaluronan", ("CHEBI",)) == []
+    assert supplement_candidates("hyaluronate", ("CHEBI",)) == []
+    assert supplement_candidates("hyaluronan", ("chebi",))[0]["curie"] == "CHEBI:16336"
