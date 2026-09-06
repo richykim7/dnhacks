@@ -24,7 +24,7 @@ def browser_slot():
         yield
 
 
-def renderer(service, base_url=None):
+def renderer(service, base_url=None, *, benchmark=False):
     def render(recipe, viewport):
         service.artifact(recipe["artifact_sha256"])
         payload = dict(
@@ -34,6 +34,7 @@ def renderer(service, base_url=None):
             recipe_sha256=digest(recipe),
             viewport=list(viewport),
             investigation_id=service.manifest["investigation_id"],
+            benchmark=benchmark,
         )
         script = (
             Path(__file__).resolve().parents[3] / "frontend/scripts/render-tissue.mjs"
@@ -61,8 +62,8 @@ def renderer(service, base_url=None):
                 if not out.is_file() or out.stat().st_size > 32 * 1024 * 1024:
                     raise ValueError("Capture output missing or oversized")
             except subprocess.TimeoutExpired as exc:
-                detail=(exc.stderr or b'').decode(errors='replace')[-1500:]
-                raise TimeoutError('Tissue capture exceeded90s. '+detail) from exc
+                detail = (exc.stderr or b"").decode(errors="replace")[-1500:]
+                raise TimeoutError("Tissue capture exceeded90s. " + detail) from exc
             finally:
                 try:
                     os.killpg(process.pid, signal.SIGKILL)

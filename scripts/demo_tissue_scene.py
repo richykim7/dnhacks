@@ -158,6 +158,8 @@ async def run(args):
                 view=view,
                 note=f"Inspect {name.lower()} using exact native frame",
             )
+        if args.views and name not in args.views:
+            continue
         cap = await tool(
             "capture_scene", recipe_sha256=scene["recipe_sha256"], viewport=viewport
         )
@@ -204,6 +206,21 @@ def main():
     p.add_argument("--reuse", action="store_true")
     p.add_argument("--boundary", type=float, default=0.05)
     p.add_argument("--all-views", action="store_true")
+    p.add_argument(
+        "--views",
+        nargs="+",
+        choices=[
+            "Exterior",
+            "Core",
+            "Comparison",
+            "Presentation-Exterior",
+            "Presentation-Core",
+            "Presentation-Comparison",
+            "Light",
+            "Mobile",
+            "Neighborhood",
+        ],
+    )
     asyncio.run(run(p.parse_args()))
 
 

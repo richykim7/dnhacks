@@ -230,6 +230,7 @@ The actions:
 | `run_experiments` | run several pieces of Python in parallel |
 | `inhibitor` | skill-gated, experiment-scoped bounded preparation/docking, scene vision and canonical measurements; exploratory artifacts only |
 | `spindle` | bounded provisional 3D filament jobs, collected numerical ensembles and separate scoped scene/capture/vision operations; requires spindle-interface guidance |
+| `tissue` | skill-gated conditional PhysiCell/BioFVM jobs, exact source-cell/field queries, immutable scene actions and actual PNG review; simulation sensitivity only |
 | `log` | record an idea, observation, dead end, open question or note with a promise score |
 | `submit` | send a self-judged experiment to verification |
 | `fork`, `checkpoint` | request parent allocation through a mandatory checkpoint report |
@@ -635,7 +636,9 @@ cell inspection and paired conditions. Numerical sampling uses source coordinate
 CAF shape and membrane shading are illustrative. The skill-gated `tissue` research action shares
 the CLI's scoped model/job/scene operations. Immutable agent revisions support separate scene-action
 playback; rendered PNG bytes reach the model seam and unavailable vision cannot complete a review.
-The sourced sensitivity study and final performance acceptance remain active validation work.
+The sourced sensitivity study and actual-image reviews are recorded. Large scenes retain all source
+cells through adaptive drawing and mobile aggregation; software-rendered motion measurements miss
+the60/30fps targets, so hardware-accelerated throughput is not claimed.
 See [tumor–stroma](docs/tumor-stroma.md).
 
 ### Spindle experiment adapter
