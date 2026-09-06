@@ -531,3 +531,14 @@ Adapter milestone after integrating main 945d269: 149 focused Python checks pass
 Torch/CUDA/PyDESeq2 skips. Initial broad testing exposed native replay incompatibility; completion
 immutability now requires each concrete registered service to opt in, preserving native replay.
 Build and 12 frontend unit tests passed; full integration/browser gates remain in progress.
+
+Added the operator `route` worker for private evidence inspection before the subtree endpoint. It
+uses the same frozen adapter checks but never calls a model or labels an episode. Tests confirm
+idempotent CLI/restart behavior and that human decisions/notes do not enter final assessment or research.
+
+Final validation: full Python suite 663 passed / 46 optional dependency/native-build skips; latest
+monitoring regression set 69 passed, including reversed concurrent request/acceptance order and exact
+canonical payload matching. After syncing main's spindle runtime changes, 48 affected runtime/spindle
+checks passed / 2 optional skips and the frontend build passed. Frontend unit suite: 12 passed. All six
+runtime browser cases are covered: five passed initially; the review-button lookup timeout passed on
+an isolated rerun (4 seconds). No UI/product fix or weakened assertion was needed for that timeout.

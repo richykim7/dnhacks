@@ -409,7 +409,8 @@ Chronos dependency and biomarker/AUC receipts under `registered-receipts-v1`. Th
 operator adapters reconcile these against frozen queue settings, scientific identities and immutable
 completion snapshots. They never infer ownership from printed receipts or rescore an experiment.
 Method-specific evidence and a prospective validity/family review feed the frozen rubric, without a
-universal e-value success threshold. Completed evidence routes to private human review automatically;
+universal e-value success threshold. Completed evidence routes to private human review automatically through labeling or the separate
+operator `route` worker, which permits inspection before the subtree endpoint without calling a model;
 review decisions are not training labels. Unsupported/unbound receipt workflows are censored.
 `experiment_transport.py` provides an opt-in immutable completion contract for these three registered
 queues; it records terminal status/result/config/time atomically and prevents terminal result rewrites.

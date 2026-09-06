@@ -111,7 +111,7 @@ def test_pending_receipt_survives_endpoint_then_completes_without_new_research(t
     assert deadline == end['at'] + 60
 
 
-@pytest.mark.parametrize('failure', ['not_accepted', 'failed', 'mismatched_payload', 'mismatched_hash', 'missing_completion', 'changed_settings', 'late', 'late_acceptance'])
+@pytest.mark.parametrize('failure', ['not_accepted', 'failed', 'mismatched_payload', 'mismatched_hash', 'mismatched_job', 'missing_completion', 'changed_settings', 'late', 'late_acceptance'])
 def test_unavailable_is_censored_never_negative(tmp_path, registration, failure):
     method = 'dependency-chronos-v1'; q, payload = queue_fixture(tmp_path, method, registration)
     m, j, c, trace, _ = setup(tmp_path, q, method)
@@ -125,6 +125,12 @@ def test_unavailable_is_censored_never_negative(tmp_path, registration, failure)
         if failure == 'mismatched_payload':
             con.execute("UPDATE aliases SET payload=?", (canonical({**payload, 'input': {}}),))
         elif failure == 'mismatched_hash': con.execute("UPDATE aliases SET digest='wrong'")
+        elif failure == 'mismatched_job':
+            forged = {**payload, 'request_id': 'another-run'}
+            con.execute('DROP TRIGGER immutable_completed_job')
+            con.execute('DROP TRIGGER immutable_completion_update')
+            con.execute('UPDATE jobs SET payload=?,digest=?', (canonical(forged), digest(forged)))
+            con.execute('UPDATE completions SET digest=?', (digest(forged),))
         elif failure == 'changed_settings': con.execute("UPDATE settings SET config='{}'")
         elif failure == 'missing_completion':
             con.execute('DROP TRIGGER immutable_completion_delete'); con.execute('DELETE FROM completions')
@@ -341,3 +347,57 @@ def test_disclosure_policy_cannot_disagree_with_episode(tmp_path, registration):
         prepare(m, j, trace, **spec)
     with m.connect() as con:
         assert con.execute("SELECT count(*) FROM episodes WHERE id='new'").fetchone()[0] == 0
+
+
+def test_live_routing_before_endpoint_is_private_and_never_assesses_or_labels(tmp_path, registration, monkeypatch):
+    from dnhacksbio import llm
+    method = 'dependency-chronos-v1'; q, payload = queue_fixture(tmp_path, method, registration)
+    m, j, c, trace, _ = setup(tmp_path, q, method)
+    request(j, q, payload, method)
+    assert adapters.route(m, j, trace, 'e')['pending'] == 1
+    q.process_one()
+    public = j.events('r'); episode = m.episode('e'); state = workflow(m, 'e')
+    monkeypatch.setattr(llm, 'acomplete', lambda *a, **k: pytest.fail('Live routing invoked a model'))
+    assert adapters.route(m, j, trace, 'e')['routed'] == 1
+    assert adapters.route(MonitorStore(m.directory), j, trace, 'e')['routed'] == 1
+    with m.connect() as con:
+        assert con.execute('SELECT count(*) FROM reviews').fetchone()[0] == 1
+        review = json.loads(con.execute('SELECT body FROM reviews').fetchone()[0])
+    m.review(review['review_id'], 'rejected', 'PRIVATE HUMAN OPINION')
+    assert m.episode('e') == episode and workflow(m, 'e') == state and j.events('r') == public
+    finish(c)
+    # Human review is separate; it is not a success label or input to the frozen assessor.
+    async def assessor(prompt):
+        assert 'PRIVATE HUMAN OPINION' not in prompt
+        return await yes(prompt)
+    assert asyncio.run(adjudicate(m, j, trace, 'e', complete_fn=assessor))['outcome'] == 'success'
+    with m.connect() as con: assert con.execute('SELECT count(*) FROM reviews').fetchone()[0] == 1
+
+
+def test_operator_route_cli_does_not_load_a_model_or_write_public_state(tmp_path, registration):
+    import subprocess
+    import sys
+    method = 'dependency-chronos-v1'; q, payload = queue_fixture(tmp_path, method, registration)
+    m, j, c, trace, _ = setup(tmp_path, q, method)
+    request(j, q, payload, method); q.process_one()
+    before = j.events('r')
+    proc = subprocess.run([sys.executable, '-m', 'dnhacksbio.branch_monitoring', 'route',
+                           '--state', str(m.directory), '--trace-dir', str(trace), '--episode-id', 'e'],
+                          capture_output=True, text=True, timeout=10)
+    assert proc.returncode == 0, proc.stderr
+    assert not proc.stdout and before == j.events('r')
+    assert m.episode('e')['outcome'] == 'unknown'
+    with m.connect() as con: assert con.execute('SELECT count(*) FROM reviews').fetchone()[0] == 1
+
+
+def test_request_order_does_not_let_alias_hide_later_canonical_candidate(tmp_path, registration):
+    method = 'dependency-chronos-v1'; q, payload = queue_fixture(tmp_path, method, registration)
+    m, j, c, trace, _ = setup(tmp_path, q, method)
+    alias, _ = request(j, q, payload, method, receipt='alias', rid='r~1', enqueue=False)
+    request(j, q, payload, method, receipt='canonical', rid='r~2')
+    q.enqueue(alias)  # Concurrent requests can reach the queue in a different order than the journal.
+    q.process_one(); finish(c)
+    result = asyncio.run(adjudicate(m, j, trace, 'e', complete_fn=yes))
+    assert result['outcome'] == 'success'
+    assert result['label_provenance']['evidence'][0]['finding_id'] == 'canonical'
+    assert workflow(m, 'e')['attempts'] == 1
