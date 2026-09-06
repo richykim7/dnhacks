@@ -151,13 +151,13 @@ test("spindle saved coordinates, deterministic views, condition comparison and r
     await page.getByLabel("Centrosome", { exact: true }).selectOption("C1");
     await page.getByLabel("View", { exact: true }).selectOption(shot);
     await expect(scene).toHaveAttribute("data-scene-ready", "true");
-    await page.screenshot({ path: `/tmp/spindle-${pass}-${shot}.png` });
+    await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-${shot}.png`) });
   }
   await page.getByLabel("View", { exact: true }).selectOption("oblique");
   for (const t of [0, 10, 20]) {
     await page.getByLabel("Spindle physical time").fill(String(t));
     await expect(scene).toHaveAttribute("data-scene-ready", "true");
-    await page.screenshot({ path: `/tmp/spindle-${pass}-time-${t}.png` });
+    await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-time-${t}.png`) });
   }
   await expect(page.locator(".spindle-readout")).toContainText(
     "C1 · (-5.000, -0.700, -0.500)",
@@ -165,15 +165,15 @@ test("spindle saved coordinates, deterministic views, condition comparison and r
   await page.getByLabel("Condition", { exact: true }).selectOption("1");
   await expect(page.locator(".spindle-caption")).toContainText("100.00 s");
   await expect(scene).toHaveAttribute("data-scene-ready", "true");
-  await page.screenshot({ path: `/tmp/spindle-${pass}-multipolar.png` });
+  await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-multipolar.png`) });
   await page.getByLabel("Filaments", { exact: true }).selectOption("fine");
   await expect(scene).toHaveAttribute("data-scene-ready", "true");
-  await page.screenshot({ path: `/tmp/spindle-${pass}-fine.png` });
+  await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-fine.png`) });
   await page.setViewportSize({ width: 1920, height: 1080 });
   await expect(scene).toHaveAttribute("data-scene-ready", "true");
-  await page.screenshot({ path: `/tmp/spindle-${pass}-presentation.png` });
+  await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-presentation.png`) });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(scene).toHaveAttribute("data-scene-ready", "true");
-  await page.screenshot({ path: `/tmp/spindle-${pass}-mobile.png` });
+  await page.screenshot({ path: test.info().outputPath(`spindle-${pass}-mobile.png`) });
 });

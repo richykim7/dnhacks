@@ -152,7 +152,7 @@ test("binder visual review captures", async ({ page }) => {
   test.setTimeout(180000);
   await fixture(page);
   await page.getByRole("button", { name: "Expand workbench" }).click();
-  const dir = process.env.BINDER_REVIEW_DIR || "/tmp/binder-review-r01";
+  const dir = process.env.BINDER_REVIEW_DIR || test.info().outputPath("binder-review-r01");
   mkdirSync(dir, { recursive: true });
   for (const preset of [
     "hero",

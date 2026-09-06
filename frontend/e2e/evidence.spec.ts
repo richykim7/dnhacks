@@ -317,14 +317,14 @@ test("a relationship opens its exact source/context; search and return retain gr
   await expect(page.getByText("Hypothesized", { exact: true })).toBeVisible();
   await expect(page.getByText("This source's own finding")).toBeVisible();
   await expect(page.getByText("model and checker agreed")).toBeVisible();
-  await page.screenshot({ path: "/tmp/ux-code-evidence-dark.png" });
+  await page.screenshot({ path: test.info().outputPath("ux-code-evidence-dark.png") });
   expect(
     (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze())
       .violations,
   ).toEqual([]);
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await page.screenshot({
-    path: "/tmp/ux-code-evidence-light.png",
+    path: test.info().outputPath("ux-code-evidence-light.png"),
     animations: "disabled",
   });
   expect(
@@ -368,7 +368,7 @@ test("claim request errors remain visible and evidence is accessible on a narrow
   await page.unroute("**/api/kg?**claim=claim-1");
   await page.getByRole("button", { name: "Retry", exact: true }).click();
   await expect(page.locator(".source-evidence blockquote")).toBeVisible();
-  await page.screenshot({ path: "/tmp/ux-code-evidence-mobile.png" });
+  await page.screenshot({ path: test.info().outputPath("ux-code-evidence-mobile.png") });
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

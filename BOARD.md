@@ -65,7 +65,7 @@ python3 scripts/board.py show
 python3 scripts/board.py check
 git fetch origin
 <rebase unpublished commits, or merge origin/main to preserve published history>
-<run every test gate listed in AGENTS.md>
+<run the change-scoped test gates listed in AGENTS.md>
 git commit
 git push
 <create/update PR; review diff; merge automatically after checks pass>

@@ -61,23 +61,58 @@ Research IDs live behind disclosures. New manifest questions survive job cleanup
 
 ## Validation
 
+Choose checks for the changed behavior; the policy is in `AGENTS.md`. Documentation-only and
+backend/coordination-only edits do not require unrelated UI or 3D suites.
+
+| UI area | Browser selection after `npm --prefix frontend run e2e --` |
+| --- | --- |
+| Library, navigation, investigation tree, accessibility | `e2e/workspace.spec.ts` (use `--grep` for a specific flow) |
+| Knowledge graph/evidence inspection | `e2e/evidence.spec.ts` |
+| Runtime, experiment navigation, human review, molecular/inhibitor views | `e2e/runtime.spec.ts` (use `--grep` to select the affected flow) |
+| Private branch-monitoring display | `e2e/monitor.spec.ts` |
+| Binder viewer/camera/export | `e2e/binder.spec.ts` |
+| Spindle viewer | `e2e/spindle.spec.ts` |
+
+For frontend edits run the build, relevant unit tests, and the selected browser tests. Shared UI,
+API or dependency changes can require the full frontend suite at the integration milestone.
+New viewers should add their own spec to this table.
+
 ```sh
 npm --prefix frontend run build
-npm --prefix frontend run test
+npm --prefix frontend run test -- src/lib/runtime.test.ts # substitute the affected unit test
+npm --prefix frontend run e2e -- e2e/workspace.spec.ts --grep 'empty real backend'
+# Full browser suite when its scope is relevant:
 npm --prefix frontend run e2e
-uv run pytest tests/test_frontend_server.py
 ```
 
-Playwright starts Vite if needed. The real empty-state check needs a Python server on 8766 with no recorded investigations. If your development data is populated, stop that development server and launch an isolated one from an empty working directory:
+Install dependencies with `uv sync --extra dev` and `npm --prefix frontend ci`; install Chromium
+once with `cd frontend && npx playwright install chromium`. The runner uses `.venv/bin/python`;
+set `E2E_PYTHON=/absolute/path/to/python` to reuse another prepared development environment.
+No manually launched Python or Vite server is needed.
 
-```sh
-frontend_test_repo="$PWD" # run from the repository root
-frontend_test_data=$(mktemp -d)
-(cd "$frontend_test_data" && PYTHONPATH="$frontend_test_repo/src" "$frontend_test_repo/.venv/bin/python" "$frontend_test_repo/scripts/serve_ui.py" --port 8766)
-```
+### Concurrent agent sessions
 
-Install the browser once if needed: `cd frontend && npx playwright install chromium`.
-Browser fixtures are isolated under `frontend/e2e` and never imported by the application. The suite exercises live selection, evidence inspection, project edits, assistant proposals, hidden review controls, playback, accessibility and mobile layout. Screenshots are written under `/tmp/dn-*.png`. Inspect dark, light and mobile captures after visual changes. The 3D viewer is code-split; 3Dmol's upstream bundle contains an `eval` that Vite reports at build time.
+`npm run e2e` uses `scripts/browser_tests.py`. One browser invocation per host/user runs at a time;
+others print a waiting message and queue on a shared OS file lock. The lock covers all worktrees,
+and releases on exit. This also limits contention from expensive software-rendered 3D tests.
+Already-running older harnesses and other users' processes do not participate in this queue.
+
+Each invocation starts its own backend from an empty temporary data directory and its own Vite
+server from the requested checkout. Both bind OS-assigned ports. No existing development server
+is reused, and no developer data is read or overwritten. Each run has a separate Vite cache,
+Playwright artifacts and review screenshots under `frontend/test-results/run-*/`; its printed
+path contains `run.json` with checkout/URLs, server logs and per-test artifacts. Artifacts persist
+for review; the temporary backend data and owned process groups are cleaned up on normal exit,
+failure or interruption. Do not kill another agent's servers or delete their run directories.
+Use the npm wrapper, including for filtered runs; direct `playwright test` is rejected by config.
+Separate worktrees are still required for concurrent edits/builds. The queue is not a machine-wide
+CPU/GPU scheduler and cannot prevent load from unrelated jobs.
+
+Browser fixtures under `frontend/e2e` are never imported by the application. Inspect relevant dark,
+light and mobile captures after visual changes. The 3D viewer is code-split; 3Dmol's upstream bundle
+contains an `eval` that Vite reports at build time. Playwright documents why [reusing an existing
+server](https://playwright.dev/docs/test-webserver) can attach a run to an already-listening URL;
+this harness instead owns the servers for the entire run.
 
 ### Binder candidate artifacts
 
