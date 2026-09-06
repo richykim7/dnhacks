@@ -23,7 +23,7 @@ import re
 import sys
 import time
 import traceback
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from dnhacksbio.litmap import find
@@ -136,6 +136,65 @@ def _attachment_documents(pid: str, prog: jobs.Progress) -> tuple[list[Document]
     return docs, meta
 
 
+def _write_selected_papers(path: Path, selected: list[tuple[find.Candidate, dict]], queries, completeness):
+    papers = [{"doi": c.doi, "pmid": c.pmid, "pmcid": c.pmcid, "title": c.title,
+               "year": c.year, "publication_date": c.publication_date, "score": round(c.score, 4),
+               "channels": sorted(c.channels), "is_oa": c.is_oa,
+               "is_full_text": bool(ft.get("is_full_text")), "source": ft.get("source"),
+               "url": ft.get("url"), "license": ft.get("license"),
+               "artifact_dir": ft.get("artifact_dir"), "raw_sha256": ft.get("raw_sha256")}
+              for c, ft in selected]
+    path.write_text(json.dumps({"n_papers": len(papers), "selection": "retrieved",
+                               "queries": queries, "completeness": completeness, "papers": papers}, indent=2),
+                    encoding="utf-8")
+
+
+def _fetch_selected(ranked: list[find.Candidate], target: int, full_text_only: bool,
+                    artifact_root: Path, prog: jobs.Progress, seed_dois=()) -> list[tuple[find.Candidate, dict]]:
+    """Persist retrievals before extraction and refill rejected full-text candidates in ranked order."""
+    seed_set = {find.normalize_doi(d) for d in seed_dois}
+    seeds = [c for c in ranked if find.normalize_doi(c.doi) in seed_set]
+    queue = seeds + [c for c in ranked if c not in seeds]
+    accepted, attempted, n_full = [], 0, 0
+    required = max(target, len(seeds))
+    reports = []
+    accepted_ids, accepted_hashes = set(), set()
+    while queue and len(accepted) < required:
+        batch, queue = queue[:min(10, required - len(accepted))], queue[min(10, required - len(accepted)):]
+        with ThreadPoolExecutor(max_workers=10) as ex:
+            futures = [ex.submit(find.fetch_fulltext, c, artifact_root) for c in batch]
+            for c, future in zip(batch, futures):
+                attempted += 1
+                try:
+                    ft = future.result()
+                except Exception as exc:
+                    ft = {"text": "", "is_full_text": False, "source": "failed",
+                          "attempts": [{"status": "fetch-failed", "error_type": type(exc).__name__}]}
+                valid = len(ft.get("text") or "") >= MIN_DOC_CHARS
+                identities = find._aliases(c)
+                raw_hash = ft.get("raw_sha256")
+                duplicate = bool(identities & accepted_ids or (raw_hash and raw_hash in accepted_hashes))
+                include = valid and not duplicate and (bool(ft.get("is_full_text")) or not full_text_only)
+                reports.append({"key": c.key, "included": include, "is_full_text": bool(ft.get("is_full_text")),
+                                "duplicate": duplicate, "attempts": ft.get("attempts", []), "artifact_dir": ft.get("artifact_dir")})
+                # Preserve partial progress even if later retrieval or extraction is interrupted.
+                artifact_root.mkdir(parents=True, exist_ok=True)
+                (artifact_root / "attempts.json").write_text(json.dumps(reports, indent=2), encoding="utf-8")
+                if include:
+                    accepted_ids.update(identities)
+                    if raw_hash:
+                        accepted_hashes.add(raw_hash)
+                    accepted.append((c, ft))
+                    n_full += bool(ft.get("is_full_text"))
+                prog.emit("fetch", "progress", f"{attempted} attempted · {len(accepted)}/{required} usable · {n_full} full text",
+                          done=attempted, n_full=n_full, n_accepted=len(accepted), target=required)
+    if full_text_only and n_full < required:
+        raise BuildError(f"full-text minimum not met: {n_full}/{required} readable full texts after "
+                         f"{attempted} candidates. Retrieval artifacts are saved; broaden discovery or fix "
+                         "failed routes before extraction. No extraction was started.")
+    return accepted
+
+
 # --- the pipeline -----------------------------------------------------------
 
 async def build(project_id: str, prog: jobs.Progress, *, dry: bool = False) -> dict:
@@ -162,8 +221,15 @@ async def build(project_id: str, prog: jobs.Progress, *, dry: bool = False) -> d
         allc += hits
         prog.emit("discover", "progress", f"{q[:80]} → {len(hits)} hits",
                   done=i + 1, total=len(spec["queries"]), n_hits=len(allc))
+    oa_hits = find.openalex_search(spec["theme"], max_results=PER_QUERY_MAX, channel="openalex-theme")
+    allc += oa_hits
+    prog.emit("discover", "progress", f"OpenAlex theme search → {len(oa_hits)} hits", n_hits=len(allc))
     for j, doi in enumerate(spec["seed_dois"]):
         allc += find.europepmc_search(f'DOI:"{doi}"', max_results=2, channel="seed")
+        seed = find.openalex_by_doi(doi)
+        if seed:
+            seed.channels.add("seed")
+            allc.append(seed)
     if spec["seed_dois"]:
         prog.emit("discover", "progress", f"{len(spec['seed_dois'])} seed DOIs force-included")
     if not allc:
@@ -218,7 +284,7 @@ async def build(project_id: str, prog: jobs.Progress, *, dry: bool = False) -> d
                    "score": round(c.score, 4), "is_oa": c.is_oa,
                    "channels": sorted(c.channels)} for c in top]
     (out_dir / "paper_list.json").write_text(json.dumps(
-        {"n_papers": len(top), "queries": spec["queries"], "completeness": completeness,
+        {"n_papers": len(top), "selection": "proposed", "queries": spec["queries"], "completeness": completeness,
          "papers": paper_list}, indent=2, default=str))
 
     if dry:
@@ -232,21 +298,12 @@ async def build(project_id: str, prog: jobs.Progress, *, dry: bool = False) -> d
 
     # ---- fetch full text --------------------------------------------------------------------
     prog.start("fetch", f"fetching full text for {len(top)} papers", total=len(top))
-    fetched: list[dict] = [None] * len(top)               # type: ignore[list-item]
-    n_full = 0
-    with ThreadPoolExecutor(max_workers=10) as ex:
-        futs = {ex.submit(find.fetch_fulltext, c): i for i, c in enumerate(top)}
-        for done_n, fut in enumerate(as_completed(futs), start=1):
-            i = futs[fut]
-            try:
-                ft = fut.result()
-            except Exception as exc:
-                ft = {"text": "", "is_full_text": False, "source": "txt", "error": str(exc)}
-            fetched[i] = ft
-            n_full += bool(ft.get("is_full_text"))
-            if done_n % 5 == 0 or done_n == len(top):
-                prog.emit("fetch", "progress", f"{done_n}/{len(top)} fetched · {n_full} full text",
-                          done=done_n, total=len(top), n_full=n_full)
+    selected = _fetch_selected(ranked, spec["n_papers"], spec["full_text_only"],
+                               out_dir / "retrieval", prog, spec["seed_dois"])
+    _write_selected_papers(out_dir / "paper_list.json", selected, spec["queries"], completeness)
+    top = [c for c, _ in selected]
+    fetched = [ft for _, ft in selected]
+    n_full = sum(bool(ft.get("is_full_text")) for ft in fetched)
     prog.done("fetch", f"{n_full} full text · {len(top) - n_full} abstract only", n_full=n_full)
 
     # ---- documents ---------------------------------------------------------------------------
@@ -264,12 +321,29 @@ async def build(project_id: str, prog: jobs.Progress, *, dry: bool = False) -> d
                              path=c.doi or str(ref), text=text, n_chars=len(text),
                              source_id=c.doi or ""))
         meta.append({"ref": ref, "doi": c.doi, "pmid": c.pmid, "pmcid": c.pmcid, "title": c.title,
-                     "year": yr, "is_full_text": bool(ft.get("is_full_text")),
+                     "year": yr, "publication_date": c.publication_date,
+                     "license": ft.get("license", ""), "url": ft.get("url", ""),
+                     "artifact_dir": ft.get("artifact_dir"), "figures": ft.get("figures", []),
+                     "parser": ft.get("parser"), "raw_sha256": ft.get("raw_sha256"),
+                     "is_full_text": bool(ft.get("is_full_text")),
                      "score": round(c.score, 4), "attachment": False})
 
     if att_docs:
         prog.done("attach", f"{len(att_docs)} uploaded document(s) folded into the corpus",
                   n_attachments=len(att_docs))
+    # A local copy of an already retrieved paper must not inflate counts or overwrite its source_ref.
+    paper_ids = {find.normalize_doi(m.get("doi") or "") for m in meta if m.get("doi")}
+    unique_att_docs, unique_att_meta = [], []
+    for d, m in zip(att_docs, att_meta):
+        doi = find.normalize_doi(m.get("doi") or "")
+        if doi and doi in paper_ids:
+            prog.emit("attach", "warn", f"{d.label}: duplicate DOI already in corpus, skipped")
+            continue
+        if doi:
+            paper_ids.add(doi)
+        unique_att_docs.append(d)
+        unique_att_meta.append(m)
+    att_docs, att_meta = unique_att_docs, unique_att_meta
     docs += att_docs
     meta += att_meta
     if not docs:
@@ -309,7 +383,8 @@ async def build(project_id: str, prog: jobs.Progress, *, dry: bool = False) -> d
         for d in docs:
             m = by_ref.get(d.ref, {})
             ft_store.add_paper(source_ref=d.ref, source_label=d.label, doi=m.get("doi", ""),
-                               pmid=m.get("pmid", ""), title=m.get("title", d.label),
+                               pmid=m.get("pmid", ""), pmcid=m.get("pmcid", ""), title=m.get("title", d.label),
+                               license=m.get("license", ""), url=m.get("url", ""),
                                year=m.get("year"), text=d.text,
                                is_full_text=bool(m.get("is_full_text")))
         paper_counts = ft_store.counts()
