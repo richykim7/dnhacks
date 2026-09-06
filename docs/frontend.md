@@ -95,3 +95,8 @@ in the spindle observatory, using saved physical frames, persistent pole IDs,
 condition switching, camera controls and local PNG export. This is an in-progress
 exploratory viewer, not a calibrated spindle model or runtime vision pipeline.
 See [spindle operations](spindle-simulator.md) for the contract and remaining work.
+
+Binder scene history supports following the agent, action replay at 0.25–4× and independent
+local exploration. Replay uses only recipes visible at the current runtime cursor. The production
+workbench element provides a bounded controller for the local capture worker; only its convenient
+window alias requires `?sceneReview=1`. Scene replay is not physical simulation time.

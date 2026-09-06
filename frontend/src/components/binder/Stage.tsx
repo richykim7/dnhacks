@@ -104,7 +104,7 @@ function Scene({
   bundle: Bundle;
   state: SceneState;
   onPick: (id: string) => void;
-  onHandle: (h: StageHandle) => void;
+  onHandle: (h: StageHandle | null) => void;
 }) {
   const { camera, gl, scene, size, invalidate } = useThree();
   const controls = useRef<OrbitImpl>(null!);
@@ -147,6 +147,23 @@ function Scene({
     if (frameTimes.current.length > 240) frameTimes.current.shift();
   });
   useEffect(() => {
+    if (state.camera) {
+      const c = state.camera;
+      camera.position.set(...c.position);
+      camera.up.set(...(c.up || [0, 1, 0]));
+      camera.lookAt(...c.target);
+      (camera as THREE.PerspectiveCamera).fov = c.fov || 38;
+      (camera as THREE.PerspectiveCamera).aspect = size.width / size.height;
+      camera.near = Math.max(0.01, c.near || 0.1);
+      camera.far = Math.max(camera.near + 0.1, c.far || 2000);
+      camera.updateProjectionMatrix();
+      camera.updateMatrixWorld(true);
+      controls.current.target.set(...c.target);
+      controls.current.update();
+      settled.current = 0;
+      invalidate();
+      return;
+    }
     const close = ["interface-close", "epitope", "reverse"].includes(
       state.preset,
     );
@@ -237,13 +254,15 @@ function Scene({
         ),
       };
     };
+    let active = true;
     onHandle({
       ready: async () => {
         await document.fonts.ready;
-        await gl.compileAsync(scene, camera);
+        if (!active) return;
+        gl.compile(scene, camera);
         await new Promise<void>((resolve) => {
           const check = () => {
-            if (settled.current >= 4) resolve();
+            if (!active || settled.current >= 4) resolve();
             else requestAnimationFrame(check);
           };
           check();
@@ -295,6 +314,10 @@ function Scene({
         return gl.domElement.toDataURL("image/png");
       },
     });
+    return () => {
+      active = false;
+      onHandle(null);
+    };
   }, [camera, gl, scene, size, parts, onHandle, state.preset]);
   const pearl = state.style === "pearl";
   const detail = ["interface-close", "reverse"].includes(state.preset);
@@ -394,7 +417,7 @@ export default function Stage(props: {
   bundle: Bundle;
   state: SceneState;
   onPick: (id: string) => void;
-  onHandle: (h: StageHandle) => void;
+  onHandle: (h: StageHandle | null) => void;
 }) {
   return (
     <Canvas
