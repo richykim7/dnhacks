@@ -201,6 +201,10 @@ test("full-canvas researcher morph, stable origin and candidate replay", async (
   expect(Math.abs(expanded!.y - canvas!.y)).toBeLessThan(2);
   expect(Math.abs(expanded!.width - canvas!.width)).toBeLessThan(2);
   expect(Math.abs(expanded!.height - canvas!.height)).toBeLessThan(2);
+  await expect(detail.locator(".workspace-render")).toHaveCount(0);
+  const information = await detail.locator(".node-research").boundingBox();
+  const workspace = await detail.locator(".researcher-workspace").boundingBox();
+  expect(Math.abs(information!.width - workspace!.width)).toBeLessThan(2);
   const viewport = page.locator(".react-flow__viewport");
   const before = await viewport.getAttribute("style");
   await page.waitForTimeout(5500); // One investigation poll must preserve the user's viewport.

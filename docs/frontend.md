@@ -174,8 +174,8 @@ See the binder guide for mesh approximation and exact source-picking semantics.
 
 A researcher with an available molecular, binder, tissue or spindle artifact opens a persistent expanded workspace:
 a borderless collected source occupies roughly 65% on the left, with experiment records and major steps
-on the right. Mobile stacks these areas. A researcher without collected visual artifacts has an explicit
-empty visual area; the interface never generates a substitute.
+on the right. Mobile stacks these areas. For a researcher without collected visual artifacts, the visual
+pane is omitted entirely and information, experiments and review use the full available width.
 The scene remains mounted while browsing the researcher’s records. The scene selector is restricted
 to that researcher's available artifacts at the current cursor; rewinding removes later sources.
 The selected experiment’s available visual source is preferred. Choosing another
