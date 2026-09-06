@@ -22,7 +22,24 @@ DEFAULT_CONTRACT = dict(version=1, policy_id="parent-allocation-v1", seconds=432
                         judge_seconds=90., fork_seconds=10.)
 
 
+# Version 2 preserves an action horizon without wall-clock cutoffs.
+ACTION_CONTRACT = dict(version=2, policy_id="parent-allocation-actions-v1", seconds=None, actions=2880,
+                       research_seconds=None, report_seconds=None, report_attempts=3,
+                       judge_seconds=None, fork_seconds=None)
+
+
+def action_only(b):
+    return b["contract"]["version"] == 2
+
+
 def contract(value=None):
+    if value and value.get("version") == 2:
+        v = dict(ACTION_CONTRACT, **value)
+        if set(v) != set(ACTION_CONTRACT) or any(v[k] is not None for k in ("seconds", "research_seconds", "report_seconds", "judge_seconds", "fork_seconds")):
+            raise ValueError("Action-only contract cannot contain wall-clock limits")
+        if type(v["actions"]) is not int or v["actions"] < 0 or v["report_attempts"] != 3 or not isinstance(v["policy_id"], str) or not v["policy_id"].strip():
+            raise ValueError("Invalid action-only contract")
+        return v
     v = dict(DEFAULT_CONTRACT, **(value or {}))
     if set(v) != set(DEFAULT_CONTRACT) or v["version"] != 1 or not isinstance(v["policy_id"], str) or not v["policy_id"].strip():
         raise ValueError("Invalid frozen budget contract")
@@ -57,6 +74,8 @@ def scopes(c, rid):
 
 
 def free(b):
+    if action_only(b):
+        return math.inf
     return max(0., b["contract"]["seconds"] - b["spent"] - sum(b["holds"].values()) - sum(b["active"].values()))
 
 
@@ -94,7 +113,7 @@ def hold_reports(c, rids, allowance=0, *, partial=False):
             key = rid + ":report"
             if key in b["holds"]:
                 continue
-            amount = b["contract"]["report_seconds"] * 3
+            amount = 0. if action_only(b) else b["contract"]["report_seconds"] * 3
             if free(b) + 1e-9 < amount:
                 raise BudgetUnavailable("Insufficient shared allowance for mandatory reports")
             b["holds"][key] = amount
@@ -106,8 +125,8 @@ def hold_reports(c, rids, allowance=0, *, partial=False):
         grant = min(allowance, left // len(owned)) if partial else allowance
         if left < grant * len(owned):
             raise BudgetUnavailable("Insufficient shared action grants for children")
-        per_node = min(b["contract"]["research_seconds"] * grant, max(b["contract"]["research_seconds"], free(b) / (len(owned) + 1)))
-        if grant and free(b) < b["contract"]["research_seconds"] * len(owned):
+        per_node = 0. if action_only(b) else min(b["contract"]["research_seconds"] * grant, max(b["contract"]["research_seconds"], free(b) / (len(owned) + 1)))
+        if not action_only(b) and grant and free(b) < b["contract"]["research_seconds"] * len(owned):
             if partial:
                 grant, per_node = 0, 0.
             else:
@@ -120,7 +139,7 @@ def hold_reports(c, rids, allowance=0, *, partial=False):
 
 def hold_launches(c, rid, count):
     for b in scopes(c, rid):
-        amount = count * b["contract"]["fork_seconds"]
+        amount = 0. if action_only(b) else count * b["contract"]["fork_seconds"]
         if free(b) < amount:
             raise BudgetUnavailable("Insufficient fork launch allowance")
         b["holds"][rid + ":fork"] = amount
@@ -140,8 +159,8 @@ def available(c, rid):
     return all(not b["terminal"] and not b["violation"]
                and (b["action_holds"].get(rid, 0) if rid in b["action_holds"] else
                     b["contract"]["actions"] - b["actions"] - sum(b["action_holds"].values())) > 0
-               and (b["holds"].get(rid + ":research", 0.) >= b["contract"]["research_seconds"] if rid in b["action_holds"] else
-                    free(b) >= b["contract"]["research_seconds"] + 3 * b["contract"]["report_seconds"] + b["contract"]["judge_seconds"]) for b in bs)
+               and (action_only(b) or (b["holds"].get(rid + ":research", 0.) >= b["contract"]["research_seconds"] if rid in b["action_holds"] else
+                    free(b) >= b["contract"]["research_seconds"] + 3 * b["contract"]["report_seconds"] + b["contract"]["judge_seconds"])) for b in bs)
 
 
 def reserve(c, rid, phase):
@@ -153,10 +172,13 @@ def reserve(c, rid, phase):
     if any(b["terminal"] or b["violation"] for b in bs):
         raise BudgetUnavailable("Budget closed or blocked")
     key = rid + ":" + phase
-    limits = [b["contract"][phase + "_seconds"] for b in bs]
-    limits += [b["holds"].get(key, 0.) if phase in {"report", "research", "fork"} else free(b) for b in bs]
-    seconds = min(limits)
-    if seconds < .001 or phase == "research" and (seconds < min(b["contract"]["research_seconds"] for b in bs) or any(b["action_holds"].get(rid, 0) <= 0 for b in bs)):
+    timed = [b for b in bs if not action_only(b)]
+    limits = [b["contract"][phase + "_seconds"] for b in timed]
+    limits += [b["holds"].get(key, 0.) if phase in {"report", "research", "fork"} else free(b) for b in timed]
+    seconds = min(limits) if limits else None
+    if (seconds is not None and seconds < .001) or (phase == "research" and (
+        any(b["action_holds"].get(rid, 0) <= 0 for b in bs)
+        or (timed and seconds < min(b["contract"]["research_seconds"] for b in timed)))):
         raise BudgetUnavailable("Shared subtree allowance exhausted")
     # One in-flight operation per node, including allocation/fork controllers.
     for row in c.execute("SELECT body FROM budget_operations"):
@@ -167,12 +189,12 @@ def reserve(c, rid, phase):
     op = dict(operation_id=oid, run_id=rid, phase=phase, seconds=seconds,
               scopes=[b["run_id"] for b in bs], status="active", started_at=time.time())
     for b in bs:
-        if phase in {"report", "research", "fork"}:
+        if not action_only(b) and phase in {"report", "research", "fork"}:
             b["holds"][key] -= seconds
         if phase == "research":
             b["actions"] += 1
             b["action_holds"][rid] -= 1
-        b["active"][oid] = seconds
+        b["active"][oid] = seconds or 0.
         put(c, b)
     c.execute("INSERT INTO budget_operations VALUES (?,?)", (oid, json.dumps(op)))
     return op
@@ -188,12 +210,12 @@ def settle(c, oid, elapsed, *, interrupted=False):
         return op
     # Cancellation/timeout may leave external compute alive: retain the entire reservation,
     # block further dispatch, and mark the continuation censored rather than claim a valid cap.
-    violation = interrupted or elapsed > op["seconds"] + .1
-    charged = max(elapsed, op["seconds"]) if violation else elapsed
+    violation = interrupted or (op["seconds"] is not None and elapsed > op["seconds"] + .1)
+    charged = max(elapsed, op["seconds"] or 0.) if violation else elapsed
     for b in scopes(c, op["run_id"]):
         b["active"].pop(oid)
         b["spent"] += charged
-        if op["phase"] == "research" and not violation:
+        if op["phase"] == "research" and not violation and not action_only(b):
             b["holds"][op["run_id"] + ":research"] += max(0., op["seconds"] - charged)
         b["violation"] |= violation
         put(c, b)

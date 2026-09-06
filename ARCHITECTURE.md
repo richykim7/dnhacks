@@ -264,8 +264,8 @@ graph. The map from run id to model session id is written to disk so a stopped r
 
 Each worker has at most 18 research actions per round, with a warning at three remaining. `checkpoint`,
 `fork` and `done` pause research for the same child's mandatory report; `done` requests completion.
-At the action ceiling a separate tool-disabled turn resumes that child's transcript, with a 4096-token,
-90-second output allowance and at most two format repairs. Failure leaves `reporting_blocked` durable.
+At the action ceiling a separate tool-disabled turn resumes that child's transcript. Default action-only
+runs have no app-imposed report deadline or custom output-token ceiling; at most two format repairs apply. Failure leaves `reporting_blocked` durable.
 A valid report leaves `awaiting_parent`; neither state is completion or scientific failure.
 
 The parent controller inspects the report and supporting work and explicitly continues, forks, finishes
@@ -279,10 +279,12 @@ ambiguous launch failure. A revised decision/operator recovery is needed for blo
 
 Operational limits remain depth 6, 72 total descendant slots, six continuation rounds and 96 research
 actions per node. In addition, `explorer/budget.py` enforces a frozen shared action/operation-time
-contract across descendants and continuations. New investigations default to 2,880 research actions
-and 43,200 summed operation seconds (12 aggregate hours); existing frozen contracts retain their
-original allowances. The CLI `--budget-spec` can set an explicit contract before a run starts.
-Research grants reserve reporting first; fork grants,
+contract across descendants and continuations. New investigations use a version-2 action-only contract:
+2,880 research actions, with no wall-clock research/report/judge/fork deadline. The 18-action checkpoints
+and parent allocation remain intact. Operation time and SDK tokens are still recorded. Existing
+version-1 timed contracts retain their original allowances; an explicit empty budget spec selects
+the legacy 43,200-second/2,880-action timed contract. The CLI `--budget-spec` can set an explicit contract before a run starts.
+For timed contracts, research grants reserve reporting first. For both contract versions, fork grants,
 consumption and refunds share the controller transaction. Restart never refreshes the endpoint or
 refunds ambiguous operations. Async operation deadlines mark backend overrun/cancellation uncertainty
 as operational violations; summed operation wall time is not an OS CPU/GPU quota or calibrated horizon.

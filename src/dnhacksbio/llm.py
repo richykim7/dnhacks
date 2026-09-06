@@ -59,7 +59,7 @@ class UsageLedger:
 LEDGER = UsageLedger()
 
 MAX_OUTPUT_TOKENS = 64000
-os.environ.setdefault("CLAUDE_CODE_MAX_OUTPUT_TOKENS", str(MAX_OUTPUT_TOKENS))
+
 
 
 def _opts(model: str, system: str | None, effort: str, max_turns: int, thinking=None,
@@ -193,7 +193,7 @@ class Session:
         # (claude_agent_sdk.fork_session(session_id)), distinct from the path-encoded run_id.
         self.session_id: str | None = None
         tconf = {"type": "enabled", "budget_tokens": 8000, "display": "summarized"} if thinking else None
-        self._output_limit = max_output_tokens or MAX_OUTPUT_TOKENS
+        self._output_limit = max_output_tokens
         self._client = ClaudeSDKClient(_opts(model, system, effort, max_turns, tconf, resume=resume,
                                             tools_disabled=tools_disabled, max_output_tokens=max_output_tokens))
 
@@ -224,7 +224,7 @@ class Session:
                         think += b.thinking
             elif isinstance(msg, ResultMessage):
                 LEDGER.add(self.model, msg.usage or {})
-                if (msg.usage or {}).get("output_tokens", 0) >= self._output_limit:
+                if self._output_limit is not None and (msg.usage or {}).get("output_tokens", 0) >= self._output_limit:
                     self.truncated = True
             if capture is not None:
                 msgs.append(_msg_to_dict(msg))

@@ -14,8 +14,9 @@ allowance. Forking atomically reserves all child slots and transfers the origina
 A launch recorded as `launching` without a saved session stays blocked after restart: repeating a fork
 could duplicate paid work. Existing children resume their stored transcript and control state.
 
-The report-only SDK connection disables tools/MCP and caps output at 4096 tokens and 90 seconds per
-attempt; two formatting repairs are allowed. An outage blocks immediately. `reporting_blocked` requires
+The report-only SDK connection disables tools/MCP. Default version-2 action-only runs have no app
+report timeout or custom output-token ceiling; legacy timed contracts retain their frozen deadline
+and 4096-token report ceiling. Two formatting repairs are allowed. An outage blocks immediately. `reporting_blocked` requires
 explicit operator intervention; invoking normal run again does not silently restart it. A blocked parent
 decision leaves `awaiting_parent` and can be retried by the controller. Failed/cancelled research remains
 operational failure, distinct from a parent prune. The UI renders these actual lifecycle names.
@@ -59,9 +60,12 @@ A minimal enrollment file has this shape (values shown are examples, not a valid
 The example's 288-action horizon is not a recommended success deadline. The runtime now enforces
 prospective subtree contracts in `explorer/budget.py`, in the same SQLite transactions as parent grants.
 Pass `--budget-spec contract.json` to the explorer CLI; Python callers use `subtree_budget`.
-The default engineering contract is 43200 summed operation seconds and 2880 research actions, with
-600-second research operations, 90-second report/judge calls and 10-second fork launches. These are
-operational defaults, not empirically selected scientific horizons. Restart loads the original contract;
+New runs default to version 2, policy `parent-allocation-actions-v1`: 2880 research actions, with all
+wall-clock allowance fields set to null. Checkpoint/parent allocation and finite action accounting
+remain enforced. This can define a research-action horizon, not an accounted-seconds horizon.
+An explicit empty budget spec selects the legacy timed engineering contract: 43200 summed operation
+seconds and 2880 research actions, with 600-second research operations, 90-second report/judge calls
+and 10-second fork launches. These are operational defaults, not empirically selected scientific horizons. Restart loads the original contract;
 a changed contract or retrospective enrollment is rejected. Nested explicit budgets charge every ancestor.
 
 Before research, the controller reserves up to three mandatory report attempts. A fork reserves each
