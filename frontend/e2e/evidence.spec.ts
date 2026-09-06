@@ -259,6 +259,7 @@ test("a relationship opens its exact source/context; search and return retain gr
 }) => {
   await evidenceApi(page);
   await page.goto("/?project=ion-channels#knowledge");
+  await page.getByLabel("Hide single-claim nodes").uncheck();
   await page.getByRole("button", { name: "Browse 2 relationships" }).click();
   await expect(page.locator(".claim-result")).toHaveCount(2);
   await expect(
@@ -363,6 +364,7 @@ test("claim request errors remain visible and evidence is accessible on a narrow
     route.fulfill({ status: 503, json: { error: "Source store unavailable" } }),
   );
   await page.goto("/?project=ion-channels#evidence");
+  await page.getByLabel("Hide single-claim nodes").uncheck();
   await page.getByRole("button", { name: "Browse 2 relationships" }).click();
   await page.locator(".claim-result").filter({ hasText: "regulates" }).click();
   await expect(page.getByRole("alert")).toContainText(

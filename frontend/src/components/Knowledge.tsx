@@ -620,6 +620,7 @@ function Relationships({ project }: { project: string }) {
   const [selected, setSelected] = useState("");
   const [claimId, setClaimId] = useState("");
   const [browse, setBrowse] = useState(false);
+  const [hideLeaves, setHideLeaves] = useState(true);
 
   useEffect(() => {
     const close = (event: KeyboardEvent) => {
@@ -641,6 +642,24 @@ function Relationships({ project }: { project: string }) {
   if (q) params.set("q", q);
   const graph = useResource<EvidenceGraph>(`/api/kg?${params}`, 15000);
   const data = graph.data;
+  const leaves = useMemo(() => {
+    const incident = new Map<string, Set<string>>();
+    for (const edge of data?.edges || []) {
+      for (const node of new Set([edge.source, edge.target])) {
+        if (!incident.has(node)) incident.set(node, new Set());
+        incident.get(node)!.add(claimKey(edge));
+      }
+    }
+    return new Set(
+      [...incident].filter(([, claims]) => claims.size === 1).map(([id]) => id),
+    );
+  }, [data]);
+  const visibleEdges = (data?.edges || []).filter(
+    (e) => !hideLeaves || (!leaves.has(e.source) && !leaves.has(e.target)),
+  );
+  const visibleNodeCount = (data?.nodes || []).filter(
+    (n) => !hideLeaves || !leaves.has(n.id),
+  ).length;
   const labels = useMemo(
     () => new Map(data?.nodes.map((n) => [n.id, n.label])),
     [data],
@@ -652,7 +671,7 @@ function Relationships({ project }: { project: string }) {
   const claim = data?.edges.find((e) => claimKey(e) === claimId);
   const entity = nodesById.get(selected);
   const related =
-    data?.edges.filter(
+    visibleEdges.filter(
       (e) => !selected || e.source === selected || e.target === selected,
     ) || [];
   const focused = new Set(
@@ -687,6 +706,7 @@ function Relationships({ project }: { project: string }) {
       return {
         id: n.id,
         type: "entity",
+        hidden: hideLeaves && leaves.has(n.id),
         position: positions.get(n.id) || { x: 0, y: 0 },
         width: r * 2,
         height: r * 2,
@@ -757,6 +777,7 @@ function Relationships({ project }: { project: string }) {
         source: e.source,
         target: e.target,
         type: "claim",
+        hidden: hideLeaves && (leaves.has(e.source) || leaves.has(e.target)),
         data: { bow, dim, active },
         label: (claim ? active : labelAll)
           ? humanize(e.predicate).toLowerCase()
@@ -897,12 +918,29 @@ function Relationships({ project }: { project: string }) {
             ))}
           </select>
         </label>
+        <label className="leaf-filter">
+          <input
+            type="checkbox"
+            checked={hideLeaves}
+            onChange={(e) => {
+              setHideLeaves(e.target.checked);
+              clear();
+            }}
+          />
+          Hide single-claim nodes
+        </label>
         <span className="muted view-count" aria-live="polite">
           {graph.loading && !data && "Loading all claims and entities…"}
           {data?.shown != null &&
             (filtered
               ? `${number(data.shown)} / ${number(data.matched)} matching claims loaded · ${number(data.nodes.length)} entities`
               : `${number(data.shown)} / ${number(data.total_claims)} claims loaded · ${number(data.nodes.length)} entities`)}
+          {data && (
+            <span className="visible-count">
+              Showing {number(visibleEdges.length)} claims ·{" "}
+              {number(visibleNodeCount)} entities
+            </span>
+          )}
         </span>
       </div>
       {data?.summary && <CollectionStrip data={data} />}
@@ -954,7 +992,9 @@ function Relationships({ project }: { project: string }) {
                   {data.shown === data.matched
                     ? "All matching relationships loaded."
                     : "Incomplete response; reload to retrieve the complete graph."}{" "}
-                  Zoom for detail; fit all to see every component.
+                  {hideLeaves
+                    ? "Single-claim nodes and their claims are hidden."
+                    : "Zoom for detail; fit all to see every component."}
                 </span>
               </div>
               <ReactFlowProvider>
@@ -1189,7 +1229,7 @@ function Legend({ kinds }: { kinds: string[] }) {
               strokeDasharray="6 4"
             />
           </svg>
-          disputed in corpus
+          dashed = disputed in corpus
         </span>
       </div>
       {kinds.length > 0 && (
