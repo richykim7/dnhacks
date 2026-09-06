@@ -206,14 +206,14 @@ test("node execution, opt-in terminal, inline real geometry and replay boundary"
   });
   await expect(page.getByText("Preparing experiment structure")).toHaveCount(0);
   await page.waitForTimeout(700);
-  await page.screenshot({ path: "/tmp/dn-runtime-molecule-dark.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-runtime-molecule-dark.png") });
   await page.getByRole("tab", { name: "Surface", exact: true }).click();
   await page.waitForTimeout(800);
-  await page.screenshot({ path: "/tmp/dn-runtime-surface.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-runtime-surface.png") });
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await page.getByRole("tab", { name: "Ribbon", exact: true }).click();
   await page.waitForTimeout(600);
-  await page.screenshot({ path: "/tmp/dn-runtime-molecule-light.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-runtime-molecule-light.png") });
   await page.getByLabel("Activity playback position").fill("7");
   await expect(page.locator(".artifact-viewer")).toHaveCount(0);
   await expect(page.locator(".experiment-detail")).toContainText("Running");
@@ -257,9 +257,9 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   await page.waitForTimeout(1700); // one refresh: user camera must not be overwritten
   expect(await page.evaluate(()=>window.inhibitorScene!.recipe()!.shot)).toBe('oblique');
   expect(writes).toBe(0);
-  await page.screenshot({path:'/tmp/dn-inhibitor-desktop.png'});
+  await page.screenshot({path:test.info().outputPath('dn-inhibitor-desktop.png')});
   await page.setViewportSize({width:390,height:844});
-  await page.screenshot({path:'/tmp/dn-inhibitor-mobile.png'});
+  await page.screenshot({path:test.info().outputPath('dn-inhibitor-mobile.png')});
   await page.getByRole('button', {name:'Return to experiment'}).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
@@ -333,7 +333,7 @@ test("mobile node-specific geometry remains usable", async ({ page }) => {
   });
   await page.locator(".artifact-canvas").scrollIntoViewIfNeeded();
   await page.waitForTimeout(700);
-  await page.screenshot({ path: "/tmp/dn-runtime-mobile.png" });
+  await page.screenshot({ path: test.info().outputPath("dn-runtime-mobile.png") });
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

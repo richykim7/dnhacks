@@ -32,10 +32,26 @@ Setup: `uv sync --extra dev` and `npm --prefix frontend ci` (Node 22.12+).
 Build/serve: `npm --prefix frontend run build`, then `uv run python scripts/serve_ui.py --port 8765`.
 Frontend development and environment/key handling: `docs/frontend.md`.
 
-Before every commit: `npm --prefix frontend run build`, `npm --prefix frontend run test`,
-`npm --prefix frontend run e2e`, `uv run pytest tests`, and `git diff --check`.
-The browser suite needs an empty-data Python server on port 8766; see `docs/frontend.md`.
-The wider local Python suite requires its local vocabulary datasets; report missing-data skips/failures explicitly.
+Before every commit, run `git diff --check` and the checks relevant to the changed behavior:
+
+| Change | Required checks |
+| --- | --- |
+| Documentation/plans only | Review links, commands and consistency; no code suites. |
+| Python module or CLI/coordination script | Focused `uv run pytest tests/test_<area>.py` files covering the change and its callers. No frontend build/browser tests unless a UI/API contract changes. |
+| Frontend behavior or styles | `npm --prefix frontend run build`, relevant unit tests (`npm --prefix frontend run test -- <file>`), and the affected browser tests. Inspect captures for visual changes. |
+| 3D viewer/geometry integration | Frontend checks plus that viewer's browser tests; other viewers are required only when shared rendering/runtime behavior changes. |
+| Shared schema, runtime, API or dependency changes | Tests for affected producers and consumers. At the merge milestone, run the full suite for each broadly affected layer (Python and/or frontend). |
+| Browser harness/configuration | Runner tests and representative real browser tests, including concurrent invocation/cleanup checks when isolation changes. |
+
+Use `npm --prefix frontend run e2e -- e2e/<area>.spec.ts` (optionally `--grep "test title"`).
+The runner queues browser runs across this user's local worktrees and owns isolated servers, data,
+ports and artifacts. Do not bypass it with raw `playwright test` or reuse a development server.
+See `docs/frontend.md` for test selection and setup. Broader suites belong at relevant integration
+milestones or when failures/uncertain impact justify them, not every commit or unrelated PR.
+Full layer commands remain `uv run pytest tests`, `npm --prefix frontend run test`, and
+`npm --prefix frontend run e2e` (plus the frontend build). Report selected checks and any missing-data
+skips/failures. Required CI checks still apply. After syncing main, rerun checks affected by the new
+diff/conflict resolution; do not repeat unrelated suites just because main advanced.
 
 ## Rules that must not be broken
 1. Never force-push, never rewrite history on `main`.
@@ -64,7 +80,7 @@ Rules:
 2. Claims are heads-ups, NOT locks. You may work in a file someone else is in. Then: say so in your post, keep the
    diff small, commit soon, and sync with `origin/main` before committing. Whoever integrates resolves conflicts, reading the other
    agent's board posts to understand their intent. If the resolution is not obvious, post it and wait for a reply.
-3. Before every commit: board `show` and `check`, sync with `origin/main` as described below, then all gates.
+3. Before every commit: board `show` and `check`, sync with `origin/main` as described below, then the applicable gates above.
    Push after every commit; automatically integrate completed, validated work into `main`.
 4. Shared interfaces (schemas, API contracts, generated types) always get a board post BEFORE the edit. Generated
    files and lockfiles are never hand-merged: take one side, rerun the generator.
@@ -106,7 +122,7 @@ interlocked by the web guard. Initial migration is explicit and must preserve da
   Git mutations; the board is advisory, not an atomic lock. Do not stage or commit another agent's work.
 - Before every commit, fetch `origin` and incorporate `origin/main`. Rebase unpublished commits when
   safe; if rebasing would rewrite published commits, merge `origin/main` into the task branch instead.
-  Resolve conflicts and run all gates on the result. Push after every commit. Never force-push.
+  Resolve conflicts and run the applicable gates above on the result. Push after every commit. Never force-push.
 - Automatically integrate completed, validated work into `main`; this is standing user authorization,
   with no routine per-PR approval request. Create/update a PR, review its diff, and use
   `gh pr merge <number> --rebase --match-head-commit <validated-sha>` after checks pass, or add `--auto`
