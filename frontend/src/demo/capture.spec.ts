@@ -14,7 +14,7 @@ test("inspect the cinematic map and available scene controls", async ({
   await page.goto("/?demo=cinematic");
   await expect(
     page.getByRole("heading", {
-      name: "Follow the question. See the possibility.",
+      name: "Biological interactions",
     }),
   ).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
@@ -23,6 +23,7 @@ test("inspect the cinematic map and available scene controls", async ({
   const count = await nodes.count();
   for (let i = 0; i < count; i++) {
     const name = await nodes.nth(i).getAttribute("aria-label");
+    const origin = await nodes.nth(i).boundingBox();
     await nodes.nth(i).click();
     await expect(page.locator("canvas")).toBeVisible();
     await page.getByRole("button", { name: "Reset", exact: true }).click();
@@ -30,15 +31,23 @@ test("inspect the cinematic map and available scene controls", async ({
       "0",
     );
     await page
-      .getByRole("button", { name: "Interaction", exact: false })
+      .getByRole("button", { name: "Step 3: Interaction", exact: true })
       .click();
     await expect(page.getByRole("slider", { name: "Scene time" })).toHaveValue(
       "11",
     );
     await page.waitForTimeout(1200);
-    const id = name?.includes("interface")
+    const stage = await page.locator(".cine-stage").boundingBox();
+    const info = await page
+      .getByRole("complementary", { name: "Experiment context" })
+      .boundingBox();
+    expect(stage!.x + stage!.width).toBeLessThanOrEqual(info!.x);
+    expect(
+      await page.locator(".cine-expanded").evaluate((el) => el.clientWidth),
+    ).toBeGreaterThan(1800);
+    const id = name?.includes("binder")
       ? "binder"
-      : name?.includes("neighborhood")
+      : name?.includes("tissue")
         ? "tissue"
         : "spindle";
     await page.screenshot({ path: directory + `${id}-1920x1080.png` });
@@ -68,8 +77,9 @@ test("inspect the cinematic map and available scene controls", async ({
     await expect(page.getByRole("slider", { name: "Scene time" })).toHaveValue(
       paused,
     );
-    await page.getByRole("button", { name: "Investigation map" }).click();
+    await page.getByRole("button", { name: "Collapse node" }).click();
     await expect(nodes.nth(i)).toBeFocused();
+    expect(await nodes.nth(i).boundingBox()).toEqual(origin);
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: directory + "map-mobile.png" });
@@ -105,12 +115,12 @@ test("record binder node reveal", async ({ browser, baseURL }) => {
   const page = await context.newPage();
   await page.goto(`${baseURL}/?demo=cinematic`);
   await page
-    .getByRole("heading", { name: "Follow the question. See the possibility." })
+    .getByRole("heading", { name: "Biological interactions" })
     .waitFor();
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(1000);
   await page
-    .getByRole("button", { name: "Explore the interface", exact: true })
+    .getByRole("button", { name: "Open binder node", exact: true })
     .click();
   await page.locator("canvas").waitFor();
   await expect(page.getByRole("slider", { name: "Scene time" })).toHaveValue(
@@ -121,7 +131,13 @@ test("record binder node reveal", async ({ browser, baseURL }) => {
     page.getByRole("button", { name: "Play", exact: true }),
   ).toBeVisible();
   await page.waitForTimeout(700);
+  await page.screenshot({ path: directory + "demo-expanded.png" });
+  await page.getByRole("button", { name: "Collapse node" }).click();
+  await expect(
+    page.getByRole("button", { name: "Open binder node", exact: true }),
+  ).toBeFocused();
+  await page.waitForTimeout(500);
   await context.close();
-  await page.video()!.saveAs(directory + "binder-node-reveal.webm");
+  await page.video()!.saveAs(directory + "demo-expanded.webm");
   await page.video()!.delete();
 });

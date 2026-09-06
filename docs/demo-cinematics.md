@@ -1,6 +1,6 @@
 # Illustrative cinematic demo
 
-This is a curated visual story, not a simulated experiment result. It uses fixed local
+This is an illustrative investigation demo, not a simulated experiment result. It uses fixed local
 illustrative geometry, no backend, network data, model calls, investigation mutation,
 or invented scientific measurements. The normal research workspace is unchanged.
 
@@ -45,8 +45,15 @@ Open <http://127.0.0.1:5191/?demo=cinematic>. For a built preview, run
 `npm --prefix frontend run build` followed by
 `npm --prefix frontend run preview -- --port 5192 --strictPort` and open
 <http://127.0.0.1:5192/?demo=cinematic>. No Python/backend process is needed.
-Click a scene node to reveal it; use the transport controls to replay or inspect time.
-The scene selector only enables components present in this checkout. No deployment
+Click a research node to expand it into the available workspace. The existing geometry
+floats on the left; experiment context, color legend and selectable sequence steps appear
+on the right. Transport controls sit below the rendering. On narrow screens, information
+stacks beneath it. Collapse returns to the originating node and preserves tree position.
+The shell uses Motion shared layout IDs on the node surface and expanded article, keeps
+the tree mounted, and suppresses the transition under reduced motion. This follows the
+same left-render/right-information composition as the actual Investigation tree owned
+separately by s16; demo data does not enter that tree.
+Only nodes with components present in this checkout are enabled. No deployment
 or running research service is involved.
 
 ## Shell validation and captures
@@ -59,13 +66,14 @@ E2E_PYTHON=/path/to/prepared/.venv/bin/python npm --prefix frontend run e2e -- -
 ```
 
 It writes the map and available scene stills to `frontend/src/demo/captures/`, checks
-node reveal, seeking, pause, reset, return focus, reduced-motion default, mobile overflow
+node expansion, left-render/right-info placement, seeking, pause, reset, return focus
+and exact node position, reduced-motion default, mobile overflow
 and absence of API requests. Captures use Chromium SwiftShader; they are visual review
 artifacts, not a claim about hardware frame rate. Use a local `npm ci` installation:
 Vite can block font assets when node_modules is symlinked outside the checkout.
 
-The inspected `captures/binder-node-reveal.webm` records a 1920×1080 node click and
-the complete 18-second sequence. Reproduce only that recording with the capture
+The inspected `captures/demo-expanded.webm` records a 1920×1080 node click and
+the expansion, complete 18-second sequence and collapse back to the originating node. Reproduce only that recording with the capture
 command above plus `--grep "record binder node reveal"`. The clip uses SwiftShader.
 
 ## Visual review
@@ -77,3 +85,9 @@ cover all three scenes; the recorded sequence reaches 18.0 seconds and stops.
 The tissue owner's follow-up fixes the observed 390×844 framing and label collision;
 its integrated mobile capture is in `scenes/tissue/assets/tissue-shell-mobile.png`.
 No frame-rate benchmark or scientific output is implied.
+
+The revised still and video are copied to ignored `screenshots/demo-expanded.png` and
+`screenshots/demo-expanded.webm` in the original checkout for review. The tracked source
+artifacts are `frontend/src/demo/captures/demo-expanded.png` and `demo-expanded.webm`.
+Labels name the experiment and sequence stage directly; no promotional titles or invented
+scientific results are shown.
