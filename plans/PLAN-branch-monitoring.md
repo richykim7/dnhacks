@@ -5,7 +5,8 @@ Records the user's agreed design, including full-subtree outcomes and checkpoint
 Implementation status: checkpoint reporting, explicit parent allocation, a private observation-only
 monitor pipeline and separate authenticated operator console are implemented. User deferred actual
 trajectory scoring/training until corpus ingestion. Controlled statistical deployment remains blocked
-on representative rollouts, a frozen/enforced total compute horizon, calibration and account separation.
+on representative rollouts, pilot-selected horizons, calibration and account separation. Shared runtime
+action/time reservations are implemented; artifact-based outcome workflow is the next engineering stage.
 See [implementation and limitations](../docs/branch-monitoring.md).
 The paper analysis remains in [the research review](../docs/evaluator-tree-search-review.md).
 
