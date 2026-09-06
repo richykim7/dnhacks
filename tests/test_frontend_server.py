@@ -44,6 +44,23 @@ def test_built_frontend_and_assets(http):
     assert get(http, "/assets/app.js")[:2] == (200, "text/javascript; charset=utf-8")
 
 
+def test_runtime_http_scope_cursor_and_blob_integrity(http, tmp_path, monkeypatch):
+    from dnhacksbio.explorer.runtime import Journal
+    monkeypatch.setattr(data, "PROCESSED", tmp_path / "processed")
+    j = Journal(data.PROCESSED)
+    j.register("recorded", "A persisted question", project="alpha")
+    j.append("recorded", "a", "attempt.started", {"original_question": "A persisted question"})
+    blob = j.blob("Complete observation")
+    j.append("recorded", "a", "tool.ended", {"observation": blob})
+    status, _, body = get(http, "/api/runtime/recorded/snapshot?project=alpha")
+    assert status == 200 and json.loads(body)["sequence"] == 2
+    assert get(http, "/api/runtime/recorded/snapshot?project=beta")[0] == 404
+    path = f"/api/runtime/recorded/blob/{blob['storage_key']}"
+    assert get(http, path)[2] == b"Complete observation"
+    assert get(http, path + "?through=1")[0] == 404
+    assert json.loads(get(http, "/api/runtime/recorded/events?after=1")[2])["events"][0]["sequence"] == 2
+
+
 def test_missing_build_is_actionable(http):
     (http[1] / "index.html").unlink()
     status, _, body = get(http, "/")

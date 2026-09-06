@@ -273,11 +273,32 @@ def list_runs(include_all: bool = False, project: str | None = None) -> list[dic
             "beam": forks.get(run_id),   # the parent's badge for this branch (None for a root/unforked run)
         }
         out.append(row)
+    from dnhacksbio.explorer.runtime import Journal
+    journal = Journal(PROCESSED, create=False)
+    by_run = {r["run_id"]: r for r in out}
+    snapshots = {}
+    for m in journal.manifests():
+        rid = m["run_id"]
+        if not include_all and SKIP_RUN_RE.search(rid):
+            continue
+        root = m["investigation_id"]
+        if root not in snapshots:
+            snapshots[root] = journal.snapshot(root)
+        live = snapshots[root]["runs"].get(rid, {})
+        row = by_run.setdefault(rid, {"run_id": rid, "root": root, "depth": LIN.depth(rid),
+                                     "parent": LIN.parent(rid), "is_branch": bool(LIN.parent(rid)),
+                                     "steps": 0, "last_action": "", "size": 0})
+        row.update(runtime=True, lifecycle=live.get("lifecycle", "queued"),
+                   active=live.get("lifecycle") in {"running", "waiting"},
+                   updated_at=live.get("updated_at", m["created_at"]), goal=m["original_question"],
+                   project=m.get("project_id"), objective=m["branch_objective"])
+    out = list(by_run.values())
     out.sort(key=lambda r: r["updated_at"], reverse=True)
     if project:
-        out = [r for r in out if project_of_run(r["run_id"]) == project]
+        out = [r for r in out if r.get("project") == project or (not r.get("runtime") and project_of_run(r["run_id"]) == project)]
     for r in out:
-        r["project"] = project_of_run(r["run_id"])
+        if not r.get("runtime"):
+            r["project"] = project_of_run(r["run_id"])
     return out
 
 
@@ -305,9 +326,10 @@ def investigations(include_all: bool = False, project: str | None = None) -> lis
         t["last_action"] = (root_row or t["runs"][0]).get("last_action", "")
         # The question lives on the launch job, not on the corpus definition.
         # Surface it so the UI need not use an opaque filesystem run id as its title.
-        t["goal"] = ""
+        t["goal"] = (root_row or {}).get("goal", "")
+        t["runtime"] = bool((root_row or {}).get("runtime"))
         job_ref = _job_for_run(t["root"])
-        if job_ref:
+        if job_ref and not t["goal"]:
             from . import jobs as _jobs
             try:
                 t["goal"] = _jobs.get_job(*job_ref).get("goal", "")

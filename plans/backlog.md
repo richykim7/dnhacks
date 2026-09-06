@@ -82,6 +82,23 @@ This is the user's stated emphasis, not a claim that the official rubric has bee
   failures/timeouts; show uncertainty only when supported by the number and independence of samples.
 - Acceptance: a clean rerunnable baseline comparison, not a leaderboard built from cherry-picked wins.
 
+## UX-01 — Live knowledge-graph construction and demo playback
+
+Deferred; implement only when the user explicitly requests this item.
+
+- Animate a knowledge graph being built from scratch on first ingestion, and incremental additions
+  to an existing graph. Drive both from actual backend ingestion/graph-write events, not timers or
+  animation-specific updates the research agent must remember to emit.
+- Record additions, changes, and provenance in a durable ordered history. Live and replay modes
+  use the same graph changes; do not display future nodes or edges before their recorded availability.
+- Add a demo timeline with play/pause, seek, restart, and speed-up controls. Clearly distinguish
+  live activity from accelerated recorded playback; idle-gap skipping must be explicit.
+- Keep the evolving graph legible: stable layout, restrained node/edge reveals, batching for large
+  updates, reduced-motion support, and readable source/claim details on selection.
+- Acceptance: real backend build and incremental update visible without custom agent narration;
+  deterministic replay and reconnect recovery; speed controls affect presentation, not backend work.
+  Scope is KG construction history, distinct from agent execution playback in the observability plan.
+
 ## Shared presentation requirements for any approved evaluation
 
 - Display dataset/protocol version, sample size, run date, measured versus illustrative status, and

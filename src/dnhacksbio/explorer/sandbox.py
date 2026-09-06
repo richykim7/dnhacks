@@ -15,8 +15,10 @@ import subprocess
 import tempfile
 import threading
 import time
+import selectors
+import codecs
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from uuid import uuid4
 
@@ -64,7 +66,8 @@ def _build_run_argv(name: str, image: str, jobdir: str, data_dir: str | None, ti
             # writable HOME so tools that cache under $HOME (matplotlib, numba) work as non-root
             "-e", "HOME=/tmp", "-e", "MPLCONFIGDIR=/tmp", "-e", "PYTHONDONTWRITEBYTECODE=1",
             # helper modules in /opt/sandbox_lib (mounted below) importable without any sys.path fiddling
-            "-e", f"PYTHONPATH={SANDBOX_LIB_MNT}",
+            "-e", f"PYTHONPATH={SANDBOX_LIB_MNT}", "-e", "PYTHONUNBUFFERED=1",
+            "-e", "DN_ARTIFACT_DIR=/work/output",
             "-v", f"{jobdir}:/work", "-w", "/work"]
     if data_dir:
         argv += ["-v", f"{data_dir}:/data:ro"]
@@ -153,13 +156,62 @@ class RunResult:
     stderr: str
     duration_s: float
     timed_out: bool
+    artifacts: list[dict] = field(default_factory=list)
+
+
+def stream_process(cmd, timeout, *, on_output=None, cancel=None, stop=None):
+    """Drain both pipes incrementally with bounded retained tails and explicit offsets."""
+    tails = {"stdout": "", "stderr": ""}
+    offsets = {"stdout": 0, "stderr": 0}
+    sent = {"stdout": 0, "stderr": 0}
+    decoder = {s: codecs.getincrementaldecoder("utf-8")("replace") for s in tails}
+    timed_out = False
+    stopped = False
+    start = time.monotonic()
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+        try:
+            with selectors.DefaultSelector() as selector:
+                for name in tails:
+                    selector.register(getattr(proc, name), selectors.EVENT_READ, name)
+                while selector.get_map():
+                    if not stopped and ((cancel and cancel.is_set()) or time.monotonic() - start > timeout):
+                        stopped = True
+                        timed_out = not (cancel and cancel.is_set())
+                        if stop:
+                            stop()
+                        proc.kill()
+                    for key, _ in selector.select(0.1):
+                        raw = os.read(key.fileobj.fileno(), 4096)
+                        name = key.data
+                        chunk = decoder[name].decode(raw, final=not raw)
+                        if not raw:
+                            selector.unregister(key.fileobj)
+                        tails[name] = (tails[name] + chunk)[-_STREAM_CAP:]
+                        if on_output and raw and sent[name] < _STREAM_CAP:
+                            on_output({"stream": name, "offset": offsets[name], "text": chunk})
+                            sent[name] += len(raw)
+                        offsets[name] += len(raw)
+                proc.wait(timeout=5)
+        except BaseException:
+            if stop:
+                stop()
+            proc.kill()
+            proc.wait()
+            raise
+    for name in tails:
+        if offsets[name] > _STREAM_CAP:
+            tails[name] = f"[Earlier output truncated; {offsets[name]} bytes produced]\n" + tails[name]
+            if on_output:
+                on_output({"stream": name, "offset": offsets[name], "truncated": True,
+                           "text": "[Live output capped; final retained tail is in recorded output]"})
+    return proc.returncode, tails["stdout"], tails["stderr"], timed_out
 
 
 def run_code(code: str, *, image: str = IMAGE, timeout: int = 600, memory: str = "8g", cpus=4,
              network: str = "none", data_dir: Path | str | None = DATA_DIR,
              extra_mounts: list[tuple[str, str, bool]] | None = None,
              cache_dir: Path | str | None = None, job_base: str | None = None,
-             scratch_dir: Path | str | None = None) -> RunResult:
+             scratch_dir: Path | str | None = None, progress=None, journal=None, cancel=None) -> RunResult:
     """Run `code` in a fresh container and return its outcome. `network='none'` (default) isolates it;
     pass 'bridge' only for an experiment that must fetch. Defaults (600 s, 8g, 4 cpu) let a dataset
     download plus analysis fit.
@@ -171,6 +223,7 @@ def run_code(code: str, *, image: str = IMAGE, timeout: int = 600, memory: str =
     jobdir = Path(tempfile.mkdtemp(prefix="explorer-job-", dir=job_base))
     try:
         (jobdir / "code.py").write_text(code)
+        (jobdir / "output").mkdir()
         name = "explorer-" + uuid4().hex[:12]
         # Always expose the standalone helper library (read-only) so `import geoharmonize` works.
         extra_mounts = list(extra_mounts or [])
@@ -192,20 +245,20 @@ def run_code(code: str, *, image: str = IMAGE, timeout: int = 600, memory: str =
         cmd = _docker_argv(argv, _is_native())
         t0 = time.monotonic()
         timed_out = False
-        try:
-            p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 30)
-            rc, out, err = p.returncode, p.stdout, p.stderr
-        except subprocess.TimeoutExpired as e:
-            timed_out, rc = True, -9
-            out = e.stdout if isinstance(e.stdout, str) else (e.stdout or b"").decode(errors="replace")
-            err = (e.stderr if isinstance(e.stderr, str) else (e.stderr or b"").decode(errors="replace"))
-            err = (err or "") + "\n[sandbox] wall-clock timeout; container stopped"
-            _kill(name)
+        if progress:
+            progress("experiment.started", {"status": "running"})
+        rc, out, err, timed_out = stream_process(cmd, timeout + 30, cancel=cancel, stop=lambda: _kill(name),
+                    on_output=(lambda payload: progress("experiment.output", payload)) if progress else None)
         dur = round(time.monotonic() - t0, 2)
-        if rc == 124:                                # `timeout` inside the container fired
+        if rc == 124 or (rc == 137 and dur >= timeout):  # early 137 may be OOM/cancel, not timeout
             timed_out = True
-        return RunResult(ok=(rc == 0 and not timed_out), exit_code=rc, stdout=(out or "")[-_STREAM_CAP:],
-                         stderr=(err or "")[-_STREAM_CAP:], duration_s=dur, timed_out=timed_out)
+        artifacts = []
+        if journal:
+            from .artifacts import collect
+            artifacts = collect(jobdir / "output", journal)
+        return RunResult(ok=(rc == 0 and not timed_out), exit_code=rc, stdout=out or "",
+                         stderr=err or "", duration_s=dur, timed_out=timed_out,
+                         artifacts=artifacts)
     finally:
         shutil.rmtree(jobdir, ignore_errors=True)
 
@@ -233,7 +286,7 @@ class SandboxPool:
 
 
 def run_many(codes: list[str], *, max_parallel: int = 4, pool: "SandboxPool | None" = None,
-             **kw) -> list[RunResult]:
+             progress=None, **kw) -> list[RunResult]:
     """Run several experiments concurrently (the explorer's divergent fan-out). Order preserved.
 
     Blocking; call it off the event loop (`asyncio.to_thread`). `max_parallel` bounds this branch's
@@ -242,11 +295,17 @@ def run_many(codes: list[str], *, max_parallel: int = 4, pool: "SandboxPool | No
     if not codes:
         return []
 
-    def one(c: str) -> RunResult:
+    def one(item) -> RunResult:
+        i, c = item
+        args = dict(kw, progress=(lambda kind, payload: progress(i, kind, payload)) if progress else None)
+        if kw.get("cancel") and kw["cancel"].is_set():
+            return RunResult(False, -9, "", "Cancelled before execution", 0, False)
         if pool is None:
-            return run_code(c, **kw)
+            return run_code(c, **args)
         with pool.slot():
-            return run_code(c, **kw)
+            if kw.get("cancel") and kw["cancel"].is_set():
+                return RunResult(False, -9, "", "Cancelled before execution", 0, False)
+            return run_code(c, **args)
 
     with ThreadPoolExecutor(max_workers=max(1, min(max_parallel, len(codes)))) as ex:
-        return list(ex.map(one, codes))
+        return list(ex.map(one, enumerate(codes)))

@@ -45,6 +45,8 @@ import {
 import { Button } from "./ui/button";
 import { AnimatedTabs } from "./ui/animated-tabs";
 import { Disclosure, Empty, ErrorNotice, Loading, Status } from "./common";
+import { emptyRuntime, reduceRuntime, useRuntime } from "@/lib/runtime";
+import { RuntimeDetail } from "./RuntimeDetail";
 
 type AgentData = {
   run: RunSummary;
@@ -55,11 +57,13 @@ type AgentData = {
 };
 function AgentNode({ data }: NodeProps<Node<AgentData>>) {
   const r = data.run;
-  const state = r.active
-    ? "Working"
-    : r.last_action === "done"
-      ? "Finished"
-      : "No recent activity";
+  const state = r.lifecycle
+    ? human(r.lifecycle)
+    : r.active
+      ? "Working"
+      : r.last_action === "done"
+        ? "Finished"
+        : "No recent activity";
   return (
     <div
       className={`agent-node ${data.selected ? "selected" : ""} ${r.beam?.kept === false ? "closed-branch" : ""}`}
@@ -87,11 +91,13 @@ function AgentNode({ data }: NodeProps<Node<AgentData>>) {
         </div>
         <h3>{data.title}</h3>
         <p>
-          {r.active
-            ? actionLabel(r.last_action)
-            : r.beam?.kept === false
-              ? "Not selected to continue"
-              : state}
+          {r.runtime
+            ? state
+            : r.active
+              ? actionLabel(r.last_action)
+              : r.beam?.kept === false
+                ? "Not selected to continue"
+                : state}
         </p>
         <div className="agent-node-bottom">
           <span>
@@ -162,6 +168,13 @@ export function Investigation({
     5000,
   );
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedExperiment, setSelectedExperiment] = useState<string | null>(
+    null,
+  );
+  const selectAgent = (run: string) => {
+    setSelectedExperiment(null);
+    setSelected(run);
+  };
   const [view, setView] = useState("tree");
   const [query, setQuery] = useState("");
   const investigation =
@@ -171,6 +184,10 @@ export function Investigation({
         t.runs.some((r) => r.run_id === requestedRun),
     ) || (!requestedRun ? list.data?.[0] : undefined);
   const root = investigation?.root;
+  const runtime = useRuntime(
+    investigation?.runtime && root ? root : null,
+    project,
+  );
   const waitingJobs = useResource<{ jobs: JsonRecord[] }>(
     project && requestedRun && list.data && !investigation
       ? `/api/projects/${id(project)}/jobs`
@@ -181,21 +198,31 @@ export function Investigation({
     (j) => j.run_id === requestedRun,
   );
   const tree = useResource<TreeData>(
-    root ? `/api/tree/${id(root)}` : null,
+    root && !investigation?.runtime ? `/api/tree/${id(root)}` : null,
     5000,
   );
   const events = useResource<JsonRecord>(
-    root ? `/api/events/${id(root)}` : null,
+    root && !investigation?.runtime ? `/api/events/${id(root)}` : null,
     5000,
   );
   const [cursor, setCursor] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
   useEffect(() => {
     setSelected(null);
+    setSelectedExperiment(null);
     setCursor(null);
     setPlaying(false);
   }, [root, project]);
-  const allEvents: JsonRecord[] = events.data?.events || [];
+  const allEvents: JsonRecord[] = investigation?.runtime
+    ? runtime.events.map((e) => ({
+        ...e,
+        id: e.event_id,
+        type: e.kind,
+        action: e.payload.action || e.kind.replaceAll(".", " "),
+        title: e.payload.intent || e.payload.title || e.payload.label || "",
+        t: e.recorded_at,
+      }))
+    : events.data?.events || [];
   const max = allEvents.length;
   useEffect(() => {
     if (!playing) return;
@@ -212,8 +239,34 @@ export function Investigation({
   }, [playing, max]);
   const historic = cursor !== null;
   const visibleEvents = historic ? allEvents.slice(0, cursor) : allEvents;
+  const runtimeState = useMemo(
+    () =>
+      (historic ? runtime.events.slice(0, cursor) : runtime.events).reduce(
+        reduceRuntime,
+        emptyRuntime(),
+      ),
+    [runtime.events, historic, cursor],
+  );
   const visibleRuns = useMemo(() => {
     if (!investigation) return [];
+    if (investigation.runtime)
+      return Object.values(runtimeState.runs).map(
+        (r) =>
+          ({
+            run_id: r.run_id,
+            root: root!,
+            parent: r.parent_run_id || null,
+            depth: r.run_id.split("~").length - 1,
+            steps: r.history.length,
+            active: !historic && ["running", "waiting"].includes(r.lifecycle),
+            last_action: r.activity?.action || "",
+            updated_at: r.updated_at,
+            runtime: true,
+            lifecycle: r.lifecycle,
+            objective: r.branch_objective,
+            beam: r.decision,
+          }) as RunSummary,
+      );
     if (!historic) return investigation.runs;
     const known = new Set([
       root,
@@ -235,7 +288,7 @@ export function Investigation({
           beam: undefined,
         };
       });
-  }, [investigation, historic, visibleEvents, root]);
+  }, [investigation, historic, visibleEvents, root, runtimeState]);
   useEffect(() => {
     if (selected && !visibleRuns.some((r) => r.run_id === selected))
       setSelected(null);
@@ -264,19 +317,22 @@ export function Investigation({
       data: {
         run: r,
         title:
+          r.objective ||
           r.beam?.angle ||
           (r.depth === 0
             ? investigationTitle(investigation!)
             : `Branch ${r.run_id.split("~").slice(1).join(".")}`),
-        count: historic
-          ? visibleEvents
-              .filter((e) => e.run_id === r.run_id && e.type === "experiment")
-              .reduce((total, e) => total + (e.n ?? 1), 0)
-          : tree.data?.nodes.filter(
-              (e) => e.run_id === r.run_id && e.kind === "experiment",
-            ).length || 0,
+        count: investigation?.runtime
+          ? Object.keys(runtimeState.runs[r.run_id]?.experiments || {}).length
+          : historic
+            ? visibleEvents
+                .filter((e) => e.run_id === r.run_id && e.type === "experiment")
+                .reduce((total, e) => total + (e.n ?? 1), 0)
+            : tree.data?.nodes.filter(
+                (e) => e.run_id === r.run_id && e.kind === "experiment",
+              ).length || 0,
         selected: r.run_id === selected,
-        onSelect: () => setSelected(r.run_id),
+        onSelect: () => selectAgent(r.run_id),
       },
       draggable: false,
     }));
@@ -287,6 +343,7 @@ export function Investigation({
     investigation,
     historic,
     visibleEvents,
+    runtimeState,
   ]);
   const edges = visibleRuns
     .filter((r) => r.parent && visibleRuns.some((p) => p.run_id === r.parent))
@@ -431,6 +488,12 @@ export function Investigation({
                 tone={investigation.active && !historic ? "live" : "neutral"}
               />
             </header>
+            <ErrorNotice message={runtime.error} />
+            {!investigation.runtime && (
+              <p className="legacy-notice">
+                Legacy history · lifecycle and full replay were not recorded.
+              </p>
+            )}
             <div className="canvas-toolbar">
               <AnimatedTabs
                 label="Investigation view"
@@ -444,11 +507,16 @@ export function Investigation({
               />
               <div className="toolbar-note">
                 {visibleRuns.length} researchers<span>·</span>
-                {historic
-                  ? visibleEvents
-                      .filter((e) => e.type === "experiment")
-                      .reduce((total, e) => total + (e.n ?? 1), 0)
-                  : (tree.data?.counts.experiments ?? "—")}{" "}
+                {investigation.runtime
+                  ? Object.values(runtimeState.runs).reduce(
+                      (sum, r) => sum + Object.keys(r.experiments).length,
+                      0,
+                    )
+                  : historic
+                    ? visibleEvents
+                        .filter((e) => e.type === "experiment")
+                        .reduce((total, e) => total + (e.n ?? 1), 0)
+                    : (tree.data?.counts.experiments ?? "—")}{" "}
                 experiments
               </div>
             </div>
@@ -493,7 +561,7 @@ export function Investigation({
                         maxZoom={1.5}
                         nodesDraggable={false}
                         nodesConnectable={false}
-                        onNodeClick={(_, n) => setSelected(n.id)}
+                        onNodeClick={(_, n) => selectAgent(n.id)}
                         colorMode="system"
                       >
                         <Background
@@ -524,7 +592,7 @@ export function Investigation({
                         <button
                           className="event-row"
                           key={e.id || `${e.run_id}-${i}`}
-                          onClick={() => setSelected(e.run_id)}
+                          onClick={() => selectAgent(e.run_id)}
                         >
                           <span className="event-time">{date(e.t)}</span>
                           <span>
@@ -542,7 +610,27 @@ export function Investigation({
                 {view === "experiments" && (
                   <div className="activity-page">
                     <h2>Experiments</h2>
-                    {historic ? (
+                    {investigation.runtime ? (
+                      Object.values(runtimeState.runs).flatMap((r) =>
+                        Object.values(r.experiments).map((exp: any) => (
+                          <button
+                            className="experiment-row"
+                            key={exp.experiment_id}
+                            onClick={() => {
+                              setSelected(r.run_id);
+                              setSelectedExperiment(exp.experiment_id);
+                            }}
+                          >
+                            <FlaskConical size={17} />
+                            <span>
+                              <strong>{exp.title || "Experiment"}</strong>
+                              <small>{human(exp.method)}</small>
+                            </span>
+                            <Status label={human(exp.status)} />
+                          </button>
+                        )),
+                      )
+                    ) : historic ? (
                       <p>
                         Return to the latest state to inspect full experiment
                         results.
@@ -554,7 +642,10 @@ export function Investigation({
                           <button
                             className="experiment-row"
                             key={n.entry_id}
-                            onClick={() => setSelected(n.run_id)}
+                            onClick={() => {
+                              setSelected(n.run_id);
+                              setSelectedExperiment(String(n.entry_id));
+                            }}
                           >
                             <FlaskConical size={17} />
                             <span>
@@ -592,19 +683,36 @@ export function Investigation({
                     transition={{ duration: 0.18 }}
                     key={selected}
                   >
-                    <AgentDetail
-                      runId={selected}
-                      summary={investigation.runs.find(
-                        (r) => r.run_id === selected,
-                      )}
-                      experiments={
-                        tree.data?.nodes.filter((n) => n.run_id === selected) ||
-                        []
-                      }
-                      onClose={() => setSelected(null)}
-                      historic={historic}
-                      events={visibleEvents}
-                    />
+                    {investigation.runtime ? (
+                      <RuntimeDetail
+                        experimentId={selectedExperiment}
+                        key={selected}
+                        runId={selected}
+                        run={runtimeState.runs[selected]}
+                        project={project}
+                        cursor={historic ? runtimeState.sequence : null}
+                        connection={runtime.connection}
+                        onClose={() => setSelected(null)}
+                      />
+                    ) : (
+                      <AgentDetail
+                        initialTab={
+                          selectedExperiment ? "experiments" : "activity"
+                        }
+                        runId={selected}
+                        summary={investigation.runs.find(
+                          (r) => r.run_id === selected,
+                        )}
+                        experiments={
+                          tree.data?.nodes.filter(
+                            (n) => n.run_id === selected,
+                          ) || []
+                        }
+                        onClose={() => setSelected(null)}
+                        historic={historic}
+                        events={visibleEvents}
+                      />
+                    )}
                   </motion.aside>
                 )}
               </AnimatePresence>
@@ -662,6 +770,7 @@ export function Investigation({
 }
 
 function AgentDetail({
+  initialTab = "activity",
   runId,
   summary,
   experiments,
@@ -669,6 +778,7 @@ function AgentDetail({
   historic,
   events,
 }: {
+  initialTab?: string;
   runId: string;
   summary?: RunSummary;
   experiments: Experiment[];
@@ -678,6 +788,7 @@ function AgentDetail({
 }) {
   const { run, error, connection } = useAgent(historic ? null : runId);
   const [tab, setTab] = useState("activity");
+  useEffect(() => setTab(initialTab), [initialTab]);
   const [follow, setFollow] = useState(true);
   const steps = historic
     ? events.filter((e) => e.run_id === runId && e.type === "step")

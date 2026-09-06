@@ -26,6 +26,7 @@ import signal
 import subprocess
 import sys
 import time
+from uuid import uuid4
 from pathlib import Path
 from typing import Iterator
 
@@ -153,10 +154,21 @@ def start_run(project_id: str, *, goal: str = "", steps: int = 30) -> dict:
         raise ValueError(
             "a run needs a question — say what you want the engine to find out from this corpus")
 
-    run_id = f"{project_id}-{time.strftime(RUN_ID_FMT)}"
+    run_id = f"{project_id}-{time.strftime(RUN_ID_FMT)}-{uuid4().hex[:8]}"
     argv = [_python(), str(ROOT / "scripts" / "run_explorer.py"),
             "--run-id", run_id, "--db", str(db), "--steps", str(steps), "--goal", goal]
-    job = _spawn(project_id, "run", argv, extra={"run_id": run_id, "goal": goal, "steps": steps})
+    from dnhacksbio.explorer.runtime import Journal
+    journal = Journal(ROOT / "data" / "processed")
+    manifest = journal.register(run_id, goal, project=project_id, config={"steps": steps})
+    journal.append(run_id, "launch", "lifecycle", {**manifest, "lifecycle": "queued", "reason": "Waiting for worker startup"})
+    try:
+        job = _spawn(project_id, "run", argv, extra={"run_id": run_id, "goal": goal, "steps": steps})
+        from dnhacksbio.explorer.runtime import process_identity
+        journal.append(run_id, "launch", "worker.registered", {"pid": job["pid"],
+                       "process_identity": process_identity(job["pid"])})
+    except Exception as exc:
+        journal.append(run_id, "launch", "lifecycle", {"lifecycle": "failed", "reason": f"Launch failed: {exc}"})
+        raise
 
     # Record the run on the project so the console can list it before the run has written enough
     # rows for `data.project_of_run` to resolve it from the graph.
@@ -195,7 +207,9 @@ def _spawn(project_id: str, kind: str, argv: list[str], *, extra: dict | None = 
     finally:
         log.close()
 
+    from dnhacksbio.explorer.runtime import process_identity
     job = {"id": job_id, "kind": kind, "project": project_id, "argv": argv, "pid": proc.pid,
+           "process_identity": process_identity(proc.pid),
            "dry": False, "started": time.time(), "status": "running",
            "finished": None, "exit_code": None, "error": None, **(extra or {})}
     projects._write_atomic(rec_path, job)
@@ -207,6 +221,9 @@ def cancel(project_id: str, job_id: str) -> dict:
     if job.get("status") != "running":
         return job
     pid = job.get("pid")
+    from dnhacksbio.explorer.runtime import process_identity
+    if pid and job.get("process_identity") and process_identity(pid) != job["process_identity"]:
+        pid = None  # never signal a reused PID belonging to another process
     if pid:
         try:
             os.killpg(os.getpgid(pid), signal.SIGTERM)   # the whole group: the child forks workers
@@ -216,6 +233,14 @@ def cancel(project_id: str, job_id: str) -> dict:
             except OSError:
                 pass
     job.update(status="cancelled", finished=time.time(), error="cancelled by user")
+    if job.get("run_id"):
+        from dnhacksbio.explorer.runtime import Journal
+        journal = Journal(ROOT / "data" / "processed", create=False)
+        if journal.path.exists():
+            for run in journal.snapshot(job["run_id"])["runs"].values():
+                if run.get("lifecycle") in {"queued", "running", "waiting"}:
+                    journal.append(run["run_id"], run.get("attempt_id", "launch"), "lifecycle",
+                                   {"lifecycle": "cancelled", "reason": "Cancelled by user"}, producer="supervisor")
     rec_path, _, _ = _job_paths(project_id, job_id)
     projects._write_atomic(rec_path, job)
     return job

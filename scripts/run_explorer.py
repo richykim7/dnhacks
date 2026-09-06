@@ -64,10 +64,15 @@ async def _run(goal: str, steps: int, interval: float, run_id: str, db: str | No
                 print(f"[worker] {type(e).__name__}: {e}")
             await asyncio.sleep(interval)
 
+    import signal
+    loop = asyncio.get_running_loop()
+    task = asyncio.current_task()
+    loop.add_signal_handler(signal.SIGTERM, task.cancel)
     w = asyncio.create_task(worker())
     try:
         summary = await ex.run(max_steps=steps)
     finally:
+        loop.remove_signal_handler(signal.SIGTERM)
         stop.set()
         await w
         # final drain to catch anything submitted after the worker's last pass
