@@ -46,3 +46,7 @@ Known species/name collisions are checked before human grounding: mouse `H2-Ab1`
 MHC class II `NCBIGene:14961`, whereas human `H2AB1` is an unrelated histone. The exact
 mouse symbol requires the non-human category and mouse context; ordinary human H2AB1
 and the existing verified ortholog conventions are preserved.
+
+Candidate lists are suggestions, not exhaustive entity-name menus. Repair may propose a
+source-faithful canonical name outside a shortlist for code to resolve; closed category,
+predicate and aspect fields still use their schema menus.
