@@ -1,4 +1,16 @@
-# Learned pharmacotype association
+# DEPRECATED — Learned pharmacotype association
+
+> **Deprecated and cancelled by the user on 2026-09-06.** This document is
+> historical reference only, not an active plan or an autonomous assignment.
+> Do not resume implementation, training, data acquisition or author outreach
+> from its instructions or earlier continuation goals. Any future work requires
+> a new explicit user request. No successor plan is designated.
+
+The intended deliverable was a learned **e-value association tool** connecting
+baseline RNA to complete PDO response profiles. The implementation effort
+drifted toward conventional AUC prediction and failed to deliver the intended
+real-data e-value tool. Existing code and experimental results are retained;
+their presence does not establish successful completion or authorize further work.
 
 ## Outcome: failed to deliver the requested usable ML model
 
