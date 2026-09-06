@@ -51,3 +51,5 @@ E-value/e-BH helpers are standalone diagnostics, not an active falsifier gate.
   preparation code only; this command does not return analysis statistics.
 
 Every other directory is a method guide with its own data-source section.
+- `dependency-experiment/` — submit an operator-registered Chronos comparison and record only its
+  durable receipt. No result statistics or verification submission are returned by this command.

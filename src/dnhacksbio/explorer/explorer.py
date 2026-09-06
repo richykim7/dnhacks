@@ -237,7 +237,7 @@ Actions:
                       `p_null` is a probability in [0,1] and every number is finite; a malformed RESULT is
                       rejected and the experiment records no result. Everything else you print is handed
                       back to you, on success and on failure.
-                   -> Exception: the expression-experiment submission command returns only a receipt.
+                   -> Exception: the expression-experiment and dependency-experiment commands return only a receipt.
                       Record that receipt and continue; no RESULT is expected and it is not a finding
                       to submit for verification. Do not add statistics to this command's output.
                    -> `/cache` is shared with every other branch: use it only for raw downloads named by
