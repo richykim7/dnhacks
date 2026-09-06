@@ -265,7 +265,7 @@ graph. The map from run id to model session id is written to disk so a stopped r
 Each worker has at most 18 research actions per round, with a warning at three remaining. `checkpoint`,
 `fork` and `done` pause research for the same child's mandatory report; `done` requests completion.
 At the action ceiling a separate tool-disabled turn resumes that child's transcript, with a 4096-token,
-90-second output allowance and at most two format repairs. Failure leaves `reporting_blocked` durable.
+600-second default reporting allowance (enforced by the frozen phase contract) and at most two format repairs. Failure leaves `reporting_blocked` durable.
 A valid report leaves `awaiting_parent`; neither state is completion or scientific failure.
 
 The parent controller inspects the report and supporting work and explicitly continues, forks, finishes

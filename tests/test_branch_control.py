@@ -190,3 +190,23 @@ def test_restart_preserves_parent_granted_objective(tmp_path,monkeypatch):
         assert "Inspect the approved donor manifest" in prompts[1]
         assert ex.control.get("study")["total_actions"] == 1
     finally: ex.close()
+
+
+@pytest.mark.parametrize("report_seconds, expected", [(0.2, "awaiting_parent"), (0.01, "reporting_blocked")])
+def test_reporting_obeys_its_frozen_phase_deadline(tmp_path, monkeypatch, report_seconds, expected):
+    from dnhacksbio.explorer import budget
+    monkeypatch.setitem(budget.DEFAULT_CONTRACT, "report_seconds", report_seconds)
+    ex, _ = make_explorer(tmp_path, monkeypatch, iter([]))
+    async def delayed_report(_):
+        await asyncio.sleep(0.04)
+        return json.dumps(report())
+    ex._inject_complete = delayed_report
+    ex.model_timeout_s = 0.001  # research's timeout must not silently shorten reporting
+    try:
+        assert asyncio.run(ex.run(0))["status"] == expected
+        ledger = ex.control.budgets("study")[0]
+        assert ledger["violation"] == (expected == "reporting_blocked")
+        if expected == "awaiting_parent":
+            assert ex.control.get("study")["report"]["request"] == "finish"
+    finally:
+        ex.close()

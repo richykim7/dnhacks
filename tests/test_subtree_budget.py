@@ -152,7 +152,7 @@ def test_one_parent_controller_at_a_time(tmp_path, monkeypatch):
 
 
 def test_insufficient_time_admits_no_research_but_still_reports(tmp_path, monkeypatch):
-    monkeypatch.setitem(budget.DEFAULT_CONTRACT, "seconds", 270.)
+    monkeypatch.setitem(budget.DEFAULT_CONTRACT, "seconds", 3 * budget.DEFAULT_CONTRACT["report_seconds"])
     ex, prompts = make_explorer(tmp_path, monkeypatch, iter([report()]))
     try:
         result = asyncio.run(ex.run_investigation(18))

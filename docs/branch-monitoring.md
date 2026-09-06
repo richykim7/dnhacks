@@ -14,7 +14,7 @@ allowance. Forking atomically reserves all child slots and transfers the origina
 A launch recorded as `launching` without a saved session stays blocked after restart: repeating a fork
 could duplicate paid work. Existing children resume their stored transcript and control state.
 
-The report-only SDK connection disables tools/MCP and caps output at 4096 tokens and 90 seconds per
+The report-only SDK connection disables tools/MCP and caps output at 4096 tokens and the frozen report-phase time allowance (600 seconds by default) per
 attempt; two formatting repairs are allowed. An outage blocks immediately. `reporting_blocked` requires
 explicit operator intervention; invoking normal run again does not silently restart it. A blocked parent
 decision leaves `awaiting_parent` and can be retried by the controller. Failed/cancelled research remains
@@ -60,7 +60,7 @@ The example's 288-action horizon is not a recommended success deadline. The runt
 prospective subtree contracts in `explorer/budget.py`, in the same SQLite transactions as parent grants.
 Pass `--budget-spec contract.json` to the explorer CLI; Python callers use `subtree_budget`.
 The default engineering contract is 43200 summed operation seconds and 2880 research actions, with
-600-second research operations, 90-second report/judge calls and 10-second fork launches. These are
+600-second research operations, 600-second report/judge calls and 10-second fork launches. These are
 operational defaults, not empirically selected scientific horizons. Restart loads the original contract;
 a changed contract or retrospective enrollment is rejected. Nested explicit budgets charge every ancestor.
 

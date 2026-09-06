@@ -1267,8 +1267,8 @@ class Explorer:
                         if report_session and not report_connected:
                             await report_session.__aenter__()
                             report_connected = True
-                        return await asyncio.wait_for(self._inject_complete(prompt) if self._inject_complete
-                            else report_session.ask(prompt, capture=cap), timeout=min(90, self.model_timeout_s))
+                        return await (self._inject_complete(prompt) if self._inject_complete
+                            else report_session.ask(prompt, capture=cap))
                     raw = await self._funded("report", ask_report)
                     report = validate_report(json.loads(raw))
                     if report_session and report_session.truncated:
@@ -1283,8 +1283,8 @@ class Explorer:
                     return
                 except (ValueError, TypeError) as exc:
                     error = "Repair the report format: " + str(exc)
-                except Exception:
-                    error = "Report generation unavailable; progress remains paused"
+                except Exception as exc:
+                    error = f"Report generation unavailable ({type(exc).__name__}); progress remains paused"
                     break
                 finally:
                     if not report_cost_saved:
@@ -1361,8 +1361,8 @@ class Explorer:
                 if inspect.isawaitable(result):
                     result = await result
             else:
-                raw = await asyncio.wait_for(llm.acomplete(prompt, model=self.model, tools_disabled=True,
-                    max_output_tokens=4096, max_turns=1, max_attempts=1, capture=cap), timeout=90)
+                raw = await llm.acomplete(prompt, model=self.model, tools_disabled=True,
+                    max_output_tokens=4096, max_turns=1, max_attempts=1, capture=cap)
                 result = json.loads(raw)
             return validate_decision(result)
         finally:
