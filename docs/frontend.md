@@ -74,8 +74,10 @@ backend/coordination-only edits do not require unrelated UI or 3D suites.
 | Spindle viewer | `e2e/spindle.spec.ts` |
 | Tissue viewer, exact-frame inspection and agent replay | `e2e/tissue.spec.ts` |
 
-For frontend edits run the build, relevant unit tests, and the selected browser tests. Shared UI,
-API or dependency changes can require the full frontend suite at the integration milestone.
+Local tests are optional by default (see `AGENTS.md`). For frontend changes, select a build,
+focused unit/browser cases or manual visual inspection according to the affected behavior and risk.
+Shared UI, API and dependency edits do not automatically require the full frontend suite.
+Broaden only for a concrete integration risk or an explicit request.
 New viewers should add their own spec to this table.
 
 ```sh
