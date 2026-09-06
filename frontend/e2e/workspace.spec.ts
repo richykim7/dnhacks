@@ -59,7 +59,9 @@ test("tree, live detail, recorded experiments and theme screenshots", async ({
   ).toBeVisible();
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await page.waitForTimeout(400);
-  await page.screenshot({ path: test.info().outputPath("dn-detail-light.png") });
+  await page.screenshot({
+    path: test.info().outputPath("dn-detail-light.png"),
+  });
   expect(errors).toEqual([]);
 });
 test("library edits, assistant proposals, uploads, build and launch requests", async ({
@@ -67,9 +69,13 @@ test("library edits, assistant proposals, uploads, build and launch requests", a
 }) => {
   const writes = await mockApi(page);
   await page.goto("/?project=ion-channels#library");
+  await page
+    .getByRole("button", { name: "Manage collection", exact: true })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Ion-channel mechanisms", exact: true }),
   ).toBeVisible();
+  await page.getByText("Scope and relevance criteria", { exact: true }).click();
   await page
     .getByLabel("Relevance criteria")
     .fill("Only independent functional evidence");
@@ -97,7 +103,9 @@ test("library edits, assistant proposals, uploads, build and launch requests", a
   expect(
     writes.some((w) => w.path.endsWith("/build") && !w.body.dry),
   ).toBeTruthy();
-  await page.getByRole("button", { name: "Ask a research question" }).click();
+  await page
+    .getByRole("button", { name: "New investigation", exact: true })
+    .click();
   await page
     .getByLabel("Research question", { exact: true })
     .fill("Which mechanism explains this effect?");
@@ -196,6 +204,9 @@ test("library provenance, documents, history and accessible light theme", async 
 }) => {
   const writes = await mockApi(page);
   await page.goto("/?project=ion-channels#library");
+  await page
+    .getByRole("button", { name: "Manage collection", exact: true })
+    .click();
   await expect(
     page.getByText(
       "The collection settings have changed since the last build. Rebuild to include those changes in future investigations.",
@@ -203,7 +214,9 @@ test("library provenance, documents, history and accessible light theme", async 
   ).toBeVisible();
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await page.waitForTimeout(300);
-  await page.screenshot({ path: test.info().outputPath("dn-library-light.png") });
+  await page.screenshot({
+    path: test.info().outputPath("dn-library-light.png"),
+  });
   const axe = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();
@@ -212,7 +225,9 @@ test("library provenance, documents, history and accessible light theme", async 
       (v) => `${v.id}: ${v.nodes.map((n) => n.target).join(",")}`,
     ),
   ).toEqual([]);
-  await page.getByRole("tab", { name: "Documents", exact: true }).click();
+  await page
+    .getByRole("tab", { name: "Import documents", exact: true })
+    .click();
   await page.locator("input[type=file]").setInputFiles({
     name: "research-note.md",
     mimeType: "text/markdown",
@@ -232,15 +247,17 @@ test("project creation and missing-project scope do not leak a prior graph", asy
 }) => {
   const writes = await mockApi(page);
   await page.goto("/#library");
-  await page.getByRole("button", { name: "New project", exact: true }).click();
   await page
-    .getByLabel("Project name", { exact: true })
+    .getByRole("button", { name: "New collection", exact: true })
+    .click();
+  await page
+    .getByLabel("Collection name", { exact: true })
     .fill("New test collection");
   await page
     .getByLabel("What does this collection cover?")
     .fill("Independent functional studies");
   await page
-    .getByRole("button", { name: "Create project", exact: true })
+    .getByRole("button", { name: "Create collection", exact: true })
     .click();
   expect(writes.find((w) => w.path === "/api/projects")?.body.name).toBe(
     "New test collection",
@@ -249,7 +266,7 @@ test("project creation and missing-project scope do not leak a prior graph", asy
   await expect(page.locator(".agent-node")).toHaveCount(0);
   await expect(
     page.getByText(
-      "This project is unavailable. Select another project or All projects.",
+      "This collection is unavailable. Select another collection or All collections.",
     ),
   ).toBeVisible();
 });

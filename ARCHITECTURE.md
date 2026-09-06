@@ -497,9 +497,12 @@ to the JSON and SSE API. A project selector in the header scopes every view. The
   Molecular PDB/mmCIF geometry appears inside the selected researcher's experiment only when that
   experiment produced a validated, collected artifact. Ribbon, atomic and surface views use its actual
   coordinates and provenance; there is no standalone Structures tab, remote lookup or local file picker.
-- **Library.** Create a project; edit every collection field; run a dry preview or a full build; upload
-  and remove documents; talk to the assistant and accept its proposed settings; see build and run history
-  with progress, logs and cancellation.
+- **Library.** Browse every stored corpus paper in readable rows, search title/authors/DOI, filter
+  by publication year, topic and available text/figures, and open a paper reader with stored full text
+  and local figures. The read-only project paper routes use the existing graph and optional corpus
+  manifest/raw citation metadata, with explicit missing-content states. Manage collection holds
+  settings, preview/build, document import/removal, assistant proposals and build/run history.
+  Collection selection/creation is separate from starting a scoped investigation.
 - **Knowledge.** The project's literature claim graph with entity-kind shapes, signed relationships,
   collection-wide database search and vocabulary filters, collection totals and a capped graph view.
   Claim inspection shows entity forms, exact quotations, source papers, biological context, reported

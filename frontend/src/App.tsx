@@ -140,14 +140,14 @@ function Workspace() {
         <div className="header-divider" />
         <div className="project-picker">
           <label className="sr-only" htmlFor="project-picker">
-            Active project
+            Active collection
           </label>
           <select
             id="project-picker"
             value={project}
             onChange={(e) => chooseProject(e.target.value)}
           >
-            <option value="">All projects</option>
+            <option value="">All collections</option>
             {projects.data?.projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -194,9 +194,9 @@ function Workspace() {
             </a>
           ))}
           <div className="nav-spacer" />
-          <Button variant="ghost" className="new-research" onClick={start}>
+          <Button variant="ghost" className="new-research" onClick={start} disabled={!active?.has_kg} title={active?.has_kg ? "Ask a question of this collection" : "Select a populated collection to start an investigation"}>
             <Plus size={19} />
-            <span>New research</span>
+            <span>New investigation</span>
           </Button>
           <span className="nav-footer">DNHacks 2026</span>
         </nav>
@@ -204,8 +204,8 @@ function Workspace() {
           <ErrorNotice message={projects.error} retry={projects.refresh} />
           {project && !active && projects.data && (
             <div className="notice">
-              This project is unavailable. Select another project or All
-              projects.
+              This collection is unavailable. Select another collection or All
+              collections.
             </div>
           )}
           {route.view === "investigations" && (
@@ -223,7 +223,6 @@ function Workspace() {
               projects={projects.data?.projects || []}
               onProject={chooseProject}
               onRefresh={projects.refresh}
-              onInvestigate={() => setLaunch(true)}
             />
           )}{" "}
           {route.view === "knowledge" && (
