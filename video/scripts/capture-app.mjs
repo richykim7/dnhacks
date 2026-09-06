@@ -357,21 +357,39 @@ try {
     const nodes = await page.locator(".react-flow__node").count();
     const edges = await page.locator(".react-flow__edge").count();
     manifest.kg = { nodes, edges };
+    const graphEdges = (
+      await (
+        await page.request.get(base + "/api/kg?complete=1&source=pdac-frozen")
+      ).json()
+    ).edges;
+    const endpoints = Object.fromEntries(
+      graphEdges.map((e) => [
+        e.claim_id,
+        { source: e.source, target: e.target },
+      ]),
+    );
     for (let i = 0; i <= 65; i++) {
       await page.evaluate(
-        ({ i, nodes }) => {
-          document.querySelectorAll(".react-flow__node").forEach((r, j) => {
-            r.style.opacity = String(
-              Math.max(0, Math.min(1, (i / 65) * nodes - j)),
-            );
+        ({ i, nodes, endpoints }) => {
+          const opacity = new Map();
+          document.querySelectorAll(".react-flow__node").forEach((node, j) => {
+            const value = Math.max(0, Math.min(1, (i / 65) * nodes - j));
+            opacity.set(node.getAttribute("data-id"), value);
+            node.style.opacity = String(value);
           });
-          document.querySelectorAll(".react-flow__edge").forEach((r, j, a) => {
-            r.style.opacity = String(
-              Math.max(0, Math.min(1, (i / 65) * a.length - j)),
+          document.querySelectorAll(".react-flow__edge").forEach((edge) => {
+            const pair = endpoints[edge.getAttribute("data-id")];
+            edge.style.opacity = String(
+              pair
+                ? Math.min(
+                    opacity.get(pair.source) || 0,
+                    opacity.get(pair.target) || 0,
+                  )
+                : 0,
             );
           });
         },
-        { i, nodes },
+        { i, nodes, endpoints },
       );
       await shot(52 + i * 0.25, "Actual knowledge graph growth");
     }

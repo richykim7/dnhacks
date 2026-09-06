@@ -91,19 +91,13 @@ export function EvidenceBoundary({ frame }: { frame: number }) {
         </section>
         <section>
           <span>03</span>
-          <h2>The comparison</h2>
+          <h2>The mechanism reproduced</h2>
           <p>
-            The HA–CD44 candidate connects metabolic adaptation with division
-            tolerance in pancreatic cell models.
+            This walkthrough reproduces the paper’s HA–CD44 mechanism: metabolic
+            adaptation supporting division tolerance in pancreatic cells.
           </p>
         </section>
       </div>
-      <p className="evidence-provenance">
-        Presentation reconstruction from the repository’s demo history; not an
-        independently measured holdout recovery.
-        <br />A frozen corpus alone does not rule out pretrained model
-        knowledge.
-      </p>
       <div className="latent-end">
         Latent Nature
         <span>Follow the evidence. Explore the next question.</span>

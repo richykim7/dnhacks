@@ -59,8 +59,8 @@ the evidence-boundary explanation.
 
 The named target DOI is absent from the frozen manifest and the seeded project's
 paper index. The local runtime explicitly identifies the investigation as an
-authored presentation reconstruction. The video preserves that distinction and
-does not call it an independently measured holdout recovery. This is an attribution
+authored presentation reconstruction. The final 03 panel describes the walkthrough reproducing the paper’s mechanism;
+it does not call it an independently measured holdout recovery. This is an attribution
 and presentation correction, not a new scientific run.
 
 The article is © The Author(s) 2026, CC BY-NC-ND 4.0:
@@ -91,3 +91,15 @@ other snapshots and total 170-second duration. It refuses changed field geometry
 It retains the previous manifest as manifest-before-typing.json; run
 node scripts/check-typing.mjs from video/ to verify every prefix, every 30 fps
 character step, exact window boundaries, and unchanged surrounding pixels.
+
+## Graph and ending refinement
+
+Graph edges appear only after both endpoint nodes are visible. CAPTURE_FROM=graph
+updates only the graph interval, using a connected traversal from centrosome
+amplification and preserving typing captures, other scenes and cursor paths.
+The refinement records all 66 reveal states and verifies zero orphan edges, with
+all original edges restored at the end.
+
+The small ending disclaimer was removed on request. Section 03 now reads
+“The mechanism reproduced” and explicitly connects the walkthrough with the
+paper’s HA–CD44 mechanism. The source-data provenance remains documented above.
