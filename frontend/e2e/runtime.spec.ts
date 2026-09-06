@@ -237,7 +237,8 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   const scenes=[{sequence:10,recorded_at:1,actor:'agent',note:'Locate target',recipe},
     {sequence:11,recorded_at:1.2,actor:'agent',note:'Inspect pocket',recipe:{...recipe,revision:2,shot:'pocket',clip:true}}];
   const timeline=[...scenes.map(s=>({...s,kind:'scene.changed'})),
-    {sequence:12,recorded_at:1.4,actor:'agent',kind:'scene.vision',note:'Inspected scene pixels',recipe:scenes[1].recipe,details:{observation:'Check the visible ligand against canonical geometry.'}}];
+    {sequence:12,recorded_at:1.4,actor:'agent',kind:'scene.vision',note:'Inspected scene pixels',recipe:scenes[1].recipe,details:{observation:'Check the visible ligand against canonical geometry.'}},
+    {sequence:13,recorded_at:1.6,actor:'agent',kind:'scene.measurement',note:'Measure two atoms',recipe:scenes[1].recipe,details:{atom_ids:[geometry.atoms[0].id,geometry.atoms[1].id],pose:'reference',bundle:null,value:1.4,units:'Å'}}];
   let writes=0;
   await page.route('**/inhibitor/**',route=>{if(route.request().method()==='POST')writes++;return route.fulfill({json:{jobs:[],bundles:[],scenes,timeline}})});
   await page.route('**/geometry/**', route => {
@@ -248,7 +249,8 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   await page.getByRole('button', {name:'Inspect Inspect the experimental fold'}).click();
   await page.getByRole('tablist', {name:'Researcher detail'}).getByRole('tab', {name:'Experiments'}).click();
   await page.getByRole('button', {name:'Open inhibitor workbench'}).click();
-  await expect(page.getByRole('dialog', {name:'Inhibitor workbench'})).toBeVisible();
+  // The lazy Three/R3F module may compile cold during the full browser gate.
+  await expect(page.getByRole('dialog', {name:'Inhibitor workbench'})).toBeVisible({timeout:20_000});
   await expect(page.locator('.pocket-stage canvas')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.sceneReview));
   await page.evaluate(() => window.sceneReview!.ready());
@@ -267,22 +269,41 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   expect(await page.evaluate(()=>window.inhibitorScene!.recipe())).toEqual(ownView);
   await page.getByRole('button',{name:'Previous action',exact:true}).click();
   await expect(page.getByLabel('Interaction mode')).toHaveValue('replay');
-  await page.getByText('Activity & evidence · 3 recorded operations', {exact:true}).click();
+  await page.getByText('Activity & evidence · 4 recorded operations', {exact:true}).click();
   await page.getByRole('button',{name:/Inspected scene pixels/}).click();
   await expect(page.getByText('Check the visible ligand against canonical geometry.')).toBeVisible();
-  // At 8× the last operation lasts only 0.5s. Real-time locator dispatch can
-  // arrive after completion, when this same toggle has become Play again.
+  // Freeze before transport assertions so locator dispatch cannot run past the action.
   await page.clock.pauseAt(new Date(clockStart.getTime()+300_000));
   await page.getByRole('button',{name:'Play',exact:true}).click();
   await expect(page.getByRole('button',{name:'Pause',exact:true})).toBeVisible();
   await page.clock.runFor(160);
-  await expect(page.locator('.pocket-clock')).toHaveText('6 / 9s');
+  await expect(page.locator('.pocket-clock')).toHaveText('17 / 32s');
   await page.getByRole('button',{name:'Pause',exact:true}).click();
   await expect(page.getByRole('button',{name:'Play',exact:true})).toBeVisible();
   const paused=await page.getByLabel('Agent scene action').inputValue();
-  await page.clock.runFor(1000); // would exceed the end of the recording if still playing
+  await page.clock.fastForward(3000); // would exceed the end of the recording if still playing
   await expect(page.getByLabel('Agent scene action')).toHaveValue(paused);
-  await expect(page.locator('.pocket-clock')).toHaveText('6 / 9s');
+  await expect(page.locator('.pocket-clock')).toHaveText('17 / 32s');
+  await page.getByRole('button',{name:/Measure two atoms/}).click();
+  await page.getByRole('button',{name:'Play',exact:true}).click();
+  const canvas=page.locator('.pocket-stage canvas').first();
+  await page.clock.runFor(300);
+  const first=Number(await canvas.getAttribute('data-annotation-progress'));
+  const firstCamera=await canvas.getAttribute('data-camera-position');
+  expect(first).toBeGreaterThan(0); expect(first).toBeLessThan(1);
+  await page.clock.runFor(300);
+  expect(Number(await canvas.getAttribute('data-annotation-progress'))).toBeGreaterThan(first);
+  expect(await canvas.getAttribute('data-camera-position')).not.toBe(firstCamera);
+  await expect(page.locator('.pocket-episode strong')).toHaveText('Construct the measurement');
+  const box=(await canvas.boundingBox())!;
+  await page.mouse.move(box.x+30,box.y+box.height/2);
+  await page.mouse.down();
+  await expect(page.getByLabel('Interaction mode')).toHaveValue('explore');
+  await page.mouse.move(box.x+90,box.y+box.height/2+20,{steps:4});
+  await page.mouse.up();
+  const takenCamera=await page.evaluate(()=>window.inhibitorScene!.recipe()!.camera);
+  await page.clock.runFor(1000);
+  expect(await page.evaluate(()=>window.inhibitorScene!.recipe()!.camera)).toEqual(takenCamera);
   await page.clock.resume();
   expect(writes).toBe(0);
   await page.screenshot({path:test.info().outputPath('dn-inhibitor-desktop.png')});

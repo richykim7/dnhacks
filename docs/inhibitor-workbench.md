@@ -122,10 +122,9 @@ hardware-specific measurement; they are not claims established by the small
 The transport below the molecule replays actual source-scoped operation receipts,
 including docking, captures, image review and measurement, rather than treating
 camera bookmarks as a trajectory. The slider tracks presentation seconds; idle
-gaps are shortened to 2.4–6 second holds per operation. Pause, seek, step backward
+gaps use 6–10 second animated operations, with a separate original-recorded-timing option. Pause, seek, step backward
 or forward and change speed from 0.5–8×. Expand **Activity & evidence** to read
-observations and jump to an operation. Camera transitions interpolate the view;
-ligand poses remain discrete scientific outputs. Reduced-motion users get immediate
+observations and jump to an operation. Every supported operation has an approach, reveal/construction, and inspection phase. Camera motion and annotations are sampled continuously; ligand poses remain discrete scientific outputs. Reduced-motion users get immediate
 camera changes. Sparse histories remain sparse; no extra actions are fabricated.
 
 Choose **Explore myself** to restore your own view after watching. Drag to orbit,
@@ -142,3 +141,32 @@ the scientific error in the panel, and running jobs show their current stage.
 Reusing a protocol is a new computational attempt, not independent biological
 replication. A fresh standalone demo has operator-generated results; it does not
 claim an agent authored a workflow until an agent actually records its operations.
+
+
+## Animated operations and node embedding
+
+[Watch the recorded action-animation review](inhibitor-review/action-motion.md).
+
+Follow agent is the initial mode. Each real receipt drives a deterministic visual
+sequence: structure/pocket approach and proximity tracing; recorded preparation
+change highlights; the declared docking-region outline and presentation scan;
+real first-ranked pose overlays; a ruler drawn between the selected atoms; or
+capture framing with the actual recorded image. The activity note remains the
+agent's original note. These sequences describe inspection work, not molecular
+dynamics or an invented optimizer trajectory. Added/removed atom markers and pose
+overlays come from the completed bundle; a pending job cannot reveal future poses.
+
+The animation clock supports seeking within an operation and 0.5–8× playback.
+Result loading pauses playback and the start of a live Follow sequence.
+Animated presentation compresses waits into 6–10 second sequences; Original
+recorded timing retains receipt intervals and settles a completed visual sequence
+while a long wait continues. Reduced motion uses the final view immediately.
+Pointer-down takes control immediately; returning to Follow starts from the
+currently displayed camera. Capture-pinned scene revisions remain exact static
+views for scientific image inspection.
+
+`InhibitorWorkbench` accepts optional `embedded={true}` alongside its existing
+artifact, scoped geometry URL, owner, experiment ID and close callback. Embedded
+mode mounts in place without a portal or body-scroll lock and keeps detailed
+controls in an overlay. The node workspace should mount one selected inhibitor
+artifact, keyed by its immutable hash; it owns the adjacent real activity feed.
