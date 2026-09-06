@@ -134,6 +134,9 @@ Rules:
    boundaries; decisions/corrections; completed versus planned work; exact worktree/branch/commit/PR;
    dirty files and ownership; tests/results and known failures; running processes/ports/commands;
    relevant files; blockers; and the next concrete safe steps. Separate observations from assumptions.
+   Leave out Board conversation with other agents: who posted what, who mentioned whom, replies you gave.
+   That context is distracting on resume (Rich, 2026-09-05) and the Board log already holds it; record
+   only decisions or facts that came out of it, stated as facts, without the exchange that produced them.
 5. Re-read the saved file, verify paths/status, and post a concise board `update` for unfinished work
    (or `done` only when the task actually landed). Saving a checkpoint does not mean implementation
    is complete and does not authorize backlog work. Tell the user the absolute checkpoint path.
