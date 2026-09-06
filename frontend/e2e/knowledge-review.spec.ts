@@ -99,7 +99,48 @@ test("complete knowledge graph default focus and fit-all visual review", async (
     console.log(
       `Preview: ${graph.nodes.length - leaves.size} entities, ${visibleEdges.length} claims; hidden ${leaves.size} entities, ${graph.edges.length - visibleEdges.length} claims`,
     );
-    await page.getByLabel("Hide single-claim nodes").uncheck();
+    const threshold = page.getByRole("slider", {
+      name: "Minimum connected claims",
+      exact: true,
+    });
+    await threshold.focus();
+    await threshold.press("Home");
+    await threshold.press("ArrowRight");
+    await threshold.press("ArrowRight");
+    await expect(threshold).toHaveValue("3");
+    const hiddenAtThree = new Set(
+      [...incident].filter(([, ids]) => ids.size < 3).map(([id]) => id),
+    );
+    const edgesAtThree = graph.edges.filter(
+      (e: any) => !hiddenAtThree.has(e.source) && !hiddenAtThree.has(e.target),
+    );
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as any).knowledgeReview
+              .nodes()
+              .filter((n: any) => !n.hidden).length,
+        ),
+      )
+      .toBe(graph.nodes.length - hiddenAtThree.size);
+    await page.getByRole("button", { name: "Fit all", exact: true }).click();
+    await page.waitForTimeout(600);
+    await expect(page.locator(".react-flow__node")).toHaveCount(
+      graph.nodes.length - hiddenAtThree.size,
+    );
+    await expect(page.locator(".react-flow__edge")).toHaveCount(
+      edgesAtThree.length,
+    );
+    await page.screenshot({
+      path: test.info().outputPath("knowledge-slider.png"),
+    });
+    console.log(
+      `Minimum3: ${graph.nodes.length - hiddenAtThree.size} entities, ${edgesAtThree.length} claims`,
+    );
+    await page
+      .getByRole("spinbutton", { name: "Minimum connected claims value" })
+      .fill("1");
     await page.getByRole("button", { name: "Fit all", exact: true }).click();
     await expect(page.locator(".react-flow__node")).toHaveCount(
       graph.nodes.length,
@@ -109,7 +150,9 @@ test("complete knowledge graph default focus and fit-all visual review", async (
     );
     return;
   }
-  await page.getByLabel("Hide single-claim nodes").uncheck();
+  await page
+    .getByRole("spinbutton", { name: "Minimum connected claims value" })
+    .fill("1");
   const defaultTransform = await view.getAttribute("style");
   await page.screenshot({ path: test.info().outputPath("knowledge.png") });
   await page.getByRole("button", { name: "Fit all", exact: true }).click();

@@ -996,7 +996,47 @@ a.curie {
   contain-intrinsic-size: auto 140px;
 }
 
-.evidence-page .legend-item.disputed-key { color: var(--muted); }
-.evidence-page .leaf-filter { white-space: nowrap; cursor: pointer; }
-.evidence-page .leaf-filter input { accent-color: var(--accent); }
-.evidence-page .visible-count { display: block; margin-top: 4px; color: var(--fg); }
+.evidence-page .legend-item.disputed-key {
+  color: var(--muted);
+}
+.evidence-page .visible-count {
+  display: block;
+  margin-top: 4px;
+  color: var(--fg);
+}
+
+.degree-filter {
+  display: grid;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.degree-filter label {
+  font-size: 11px;
+  color: var(--muted);
+}
+.degree-filter > div {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.degree-filter input[type="range"] {
+  width: 140px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+}
+.degree-filter input[type="number"] {
+  width: 58px;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+.degree-empty {
+  position: absolute;
+  inset: 40% 0 auto;
+  text-align: center;
+  z-index: 4;
+}
+.degree-empty p {
+  margin-bottom: 12px;
+  color: var(--muted);
+}
