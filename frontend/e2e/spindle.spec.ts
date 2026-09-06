@@ -70,7 +70,10 @@ function fixture(): SpindleBundle {
             };
           }),
         );
-        return { time: t * 5, poles, filaments };
+        return { time: t * 5, poles, filaments, cortical_motors: [
+          { id: "M1", position: [12, 0, 0] as Vec3, filament: "C1-f0", force_pn: [.1, .2, .3] as Vec3, abscissa_um: 1 },
+          { id: "M2", position: [0, 9, 0] as Vec3, filament: null, force_pn: null, abscissa_um: null },
+        ] };
       }),
     })),
   };
@@ -223,6 +226,8 @@ test("spindle controller freezes comparison cameras and restores context", async
   expect(state.comparison.physical_time_s).toBe(50);
   expect(state.camera.position).toEqual(state.comparison.camera.position);
   expect(state.poles[0].id).toBe("C1");
+  expect(state.cortical_motors[0].force_pn).toEqual([.1, .2, .3]);
+  await expect(scene.locator(".spindle-caption")).toContainText("2 cortical motors · 1 bound");
   await stage.screenshot({ path: test.info().outputPath("spindle-scenes-comparison.png") });
   await scene
     .locator("canvas").nth(1)

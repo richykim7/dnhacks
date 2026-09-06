@@ -1,5 +1,7 @@
 export type Vec3 = [number, number, number];
+export type CorticalMotor = { id: string; position: Vec3; force_pn: Vec3 | null; filament: string | null; abscissa_um: number | null };
 export type SpindleFrame = {
+  cortical_motors?: CorticalMotor[];
   time: number;
   poles: { id: string; position: Vec3 }[];
   filaments: { id: string; pole: string; points: Vec3[] }[];
@@ -63,6 +65,17 @@ export function validateBundle(value: unknown): SpindleBundle {
       )
         throw Error("Invalid sampled frame");
       previous = f.time;
+      if (f.cortical_motors != null) {
+        if (!Array.isArray(f.cortical_motors) || f.cortical_motors.length > 1000) throw Error("Invalid motor field");
+        const motorIds = new Set<string>();
+        for (const m of f.cortical_motors) {
+          if (!m.id || motorIds.has(m.id) || !vector(m.position)) throw Error("Invalid cortical motor");
+          motorIds.add(m.id);
+          if (m.filament == null) {
+            if (m.force_pn !== null || m.abscissa_um !== null) throw Error("Unbound motor has bound measurements");
+          } else if (!f.filaments.some(x => x.id === m.filament) || !vector(m.force_pn!) || !Number.isFinite(m.abscissa_um)) throw Error("Invalid bound motor");
+        }
+      }
       const ids = new Set(f.poles.map((p) => p.id));
       if (ids.size !== f.poles.length) throw Error("Duplicate pole identity");
       for (const p of f.poles)

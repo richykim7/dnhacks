@@ -1,0 +1,1376 @@
+{
+  "scope": {
+    "project_id": "spindle-development",
+    "run_id": "spindle-development",
+    "experiment_id": "native-motor-fields-2"
+  },
+  "receipt": {
+    "receipt": "be30865ecfcc41d2bfe28f7a31fbd609",
+    "spec_ref": "cf00728b43dfe79b904c3fc16a74b7a9f0379e57674f1f3ec65ba671ec69dad7",
+    "state": "queued",
+    "experiment_id": "native-motor-fields-2"
+  },
+  "protocol": {
+    "analysis_plan": {
+      "dwell_s": 0.2,
+      "sensitivity_thresholds_um": [
+        0.5,
+        2
+      ],
+      "threshold_um": 1
+    },
+    "conditions": [
+      {
+        "cortical_motors": 0,
+        "crosslink_motors": 0,
+        "fibers_per_aster": 32,
+        "initial_positions_um": [
+          [
+            -2,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            0
+          ]
+        ],
+        "localization": "uniform",
+        "name": "control"
+      },
+      {
+        "cortical_motors": 64,
+        "crosslink_motors": 0,
+        "fibers_per_aster": 32,
+        "initial_positions_um": [
+          [
+            -2,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            0
+          ]
+        ],
+        "localization": "positive_x_crescent",
+        "name": "cortical"
+      }
+    ],
+    "dimensionality": 3,
+    "model_id": "cytosim-3d-aster-v1",
+    "parameters": {
+      "aster_stiffness_pn_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 500
+      },
+      "catastrophe_s_inv": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.1
+      },
+      "confine_stiffness_pn_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 100
+      },
+      "core_radius_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.25
+      },
+      "crosslink_diffusion_um2_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0
+      },
+      "crosslink_length_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0
+      },
+      "duration_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 1
+      },
+      "fiber_rigidity_pn_um2": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 20
+      },
+      "growth_force_pn": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 1.67
+      },
+      "growth_um_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.5
+      },
+      "initial_length_um": {
+        "value": 4,
+        "status": "assumed",
+        "source": "Explicit engineering stress probe for native motor binding/export; not a biological estimate"
+      },
+      "motor_binding_s_inv": {
+        "value": 50,
+        "status": "assumed",
+        "source": "Explicit engineering stress probe for native motor binding/export; not a biological estimate"
+      },
+      "motor_range_um": {
+        "value": 0.3,
+        "status": "assumed",
+        "source": "Explicit engineering stress probe for native motor binding/export; not a biological estimate"
+      },
+      "motor_speed_um_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": -1
+      },
+      "motor_stall_pn": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 5
+      },
+      "motor_stiffness_pn_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 100
+      },
+      "motor_unbinding_force_pn": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 2
+      },
+      "motor_unbinding_s_inv": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.5
+      },
+      "nucleation_s_inv": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 1
+      },
+      "rescue_s_inv": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0
+      },
+      "sampling_interval_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.1
+      },
+      "segmentation_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.5
+      },
+      "shrink_um_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.85
+      },
+      "thermal_energy_pn_um": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.0042
+      },
+      "time_step_s": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.001
+      },
+      "viscosity_pn_s_um2": {
+        "source": "upstream cym/aster_dynamic.cym engineering fixture; explicit testing assumption",
+        "status": "assumed",
+        "value": 0.01
+      }
+    },
+    "radius_um": [
+      5,
+      5,
+      5
+    ],
+    "schema": "spindle_protocol.v1",
+    "scientific_status": "provisional_uncalibrated",
+    "seeds": [
+      41
+    ],
+    "solver_commit": "0780e265cb6a2bb3536c6f89d2143ba9bb016ff0",
+    "source_ids": [
+      "https://gitlab.com/f-nedelec/cytosim"
+    ],
+    "units": {
+      "force": "pN",
+      "length": "um",
+      "time": "s"
+    }
+  },
+  "bundle_sha256": "8d91d7ff0045dcb406cc49ccdf5ad8dfff37d394a4039d4c746d001ff6a0f3f4",
+  "bound_counts": [
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      2,
+      2,
+      1,
+      1,
+      1,
+      2,
+      3,
+      1,
+      3
+    ]
+  ],
+  "capture": {
+    "scene": {
+      "scene_id": "9a0d4f8d807efbaa07ea9ca8896f293115caee26ca742910dbd19e7078e40e59",
+      "recipe_sha256": "13c77ddcf0592290166ca9d82b69ad28c1b9cbefc081d7b48626227a039c964a",
+      "sequence": 44,
+      "view": {
+        "shot": "oblique",
+        "treatment": "luminous",
+        "selected": null,
+        "camera": {
+          "position": [
+            9.6,
+            6,
+            16.6
+          ],
+          "target": [
+            0,
+            0,
+            0
+          ]
+        },
+        "run": 1,
+        "frame": 10,
+        "trails": true,
+        "compare": 0
+      }
+    },
+    "capture": {
+      "capture_id": "37c3995e76e196ba64d090ffd618345118be99f21c093c2c8001db2d0ab11606",
+      "image_sha256": "78eb5c6b60e4df0e0a7247348df586afb499644a5c442ba1547393bac786c4c9",
+      "recipe_sha256": "13c77ddcf0592290166ca9d82b69ad28c1b9cbefc081d7b48626227a039c964a",
+      "sequence": 45,
+      "state": {
+        "frame": 10,
+        "run": 1,
+        "selected": null,
+        "shot": "oblique",
+        "treatment": "luminous",
+        "trails": true,
+        "revision": 1,
+        "camera": {
+          "position": [
+            9.600000000000001,
+            6,
+            16.600000000000005
+          ],
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "fov": 40,
+          "near": 0.1,
+          "far": 300,
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "quaternion": [
+            -0.14587942748968785,
+            0.2561944302717382,
+            0.03914471877057543,
+            0.9547519560207212
+          ],
+          "projection": "PerspectiveCamera"
+        },
+        "compare": 0,
+        "viewport": {
+          "width": 1558,
+          "height": 660,
+          "dpr": 1
+        },
+        "renderer": "Three.js 180 / WebGL2",
+        "physical_to_scene": {
+          "units": "um",
+          "scale": 1,
+          "interpolation": "none"
+        },
+        "physical_time_s": 1,
+        "poles": [
+          {
+            "id": "C2",
+            "position": [
+              0.9279826879501343,
+              0.049822717905044556,
+              0.040716592222452164
+            ]
+          },
+          {
+            "id": "C1",
+            "position": [
+              -0.6612474918365479,
+              0.044027891010046005,
+              -0.012449933215975761
+            ]
+          }
+        ],
+        "cortical_motors": [
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M1",
+            "position": [
+              3.834196090698242,
+              0,
+              3.209196090698242
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M2",
+            "position": [
+              3.910100221633911,
+              0.6533966064453125,
+              3.046996593475342
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M3",
+            "position": [
+              3.5949206352233887,
+              -1.3421844244003296,
+              3.205477476119995
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M4",
+            "position": [
+              3.994810104370117,
+              1.1292177438735962,
+              2.7868189811706543
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M5",
+            "position": [
+              4.3352179527282715,
+              -0.2568129897117615,
+              2.477888584136963
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M6",
+            "position": [
+              4.29092264175415,
+              -0.8764414191246033,
+              2.4124326705932617
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M7",
+            "position": [
+              3.8026938438415527,
+              1.917822003364563,
+              2.6194424629211426
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M8",
+            "position": [
+              4.025691986083984,
+              -1.772627592086792,
+              2.3773088455200195
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M9",
+            "position": [
+              4.52432107925415,
+              0.6432881951332092,
+              2.0289645195007324
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M10",
+            "position": [
+              4.551470756530762,
+              0.7451214790344238,
+              1.9310379028320312
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M11",
+            "position": [
+              4.0526652336120605,
+              -2.069148302078247,
+              2.072324514389038
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M12",
+            "position": [
+              3.920788049697876,
+              2.3358144760131836,
+              2.042398691177368
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M13",
+            "position": [
+              4.590765953063965,
+              -1.0824912786483765,
+              1.6592410802841187
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M14",
+            "position": [
+              4.739352226257324,
+              -0.46208828687667847,
+              1.5247995853424072
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M15",
+            "position": [
+              4.303351402282715,
+              1.9894191026687622,
+              1.5885149240493774
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M16",
+            "position": [
+              3.72510027885437,
+              -2.8512983322143555,
+              1.730238676071167
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M17",
+            "position": [
+              4.567495346069336,
+              1.5429713726043701,
+              1.3256033658981323
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M18",
+            "position": [
+              4.8614373207092285,
+              0.09470617771148682,
+              1.1651004552841187
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M19",
+            "position": [
+              4.531367301940918,
+              -1.764190435409546,
+              1.1637630462646484
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M20",
+            "position": [
+              3.609919548034668,
+              3.1841683387756348,
+              1.3526097536087036
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M21",
+            "position": [
+              4.469207763671875,
+              -2.0039641857147217,
+              1.0051417350769043
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M22",
+            "position": [
+              4.9196014404296875,
+              0.3200567662715912,
+              0.833718478679657
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M23",
+            "position": [
+              4.722090244293213,
+              1.4437015056610107,
+              0.7858675122261047
+            ]
+          },
+          {
+            "abscissa_um": 4.3358001708984375,
+            "filament": "F47",
+            "force_pn": [
+              0.9068476459046959,
+              -0.683663804214163,
+              -0.06380116291934135
+            ],
+            "id": "M24",
+            "position": [
+              3.8916525840759277,
+              -3.0211105346679688,
+              0.8531882762908936
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M25",
+            "position": [
+              4.306002616882324,
+              2.4485578536987305,
+              0.680372953414917
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M26",
+            "position": [
+              4.915322780609131,
+              -0.7568139433860779,
+              0.5165606737136841
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M27",
+            "position": [
+              4.866058349609375,
+              -1.061385154724121,
+              0.4415149390697479
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M28",
+            "position": [
+              4.15665864944458,
+              2.746516704559326,
+              0.4228907823562622
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M29",
+            "position": [
+              4.087208271026611,
+              -2.860565423965454,
+              0.33450397849082947
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M30",
+            "position": [
+              4.850881099700928,
+              1.1951663494110107,
+              0.20131650567054749
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M31",
+            "position": [
+              4.957200527191162,
+              0.6420206427574158,
+              0.11819926649332047
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M32",
+            "position": [
+              4.388581275939941,
+              -2.3954901695251465,
+              0.04450470209121704
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M33",
+            "position": [
+              3.823211193084717,
+              3.221869945526123,
+              -0.05108598247170448
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M34",
+            "position": [
+              4.7298970222473145,
+              -1.6163934469223022,
+              -0.12387954443693161
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M35",
+            "position": [
+              4.991918087005615,
+              -0.2061149924993515,
+              -0.19562871754169464
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M36",
+            "position": [
+              4.575758457183838,
+              1.9932785034179688,
+              -0.29878926277160645
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M37",
+            "position": [
+              3.5440616607666016,
+              -3.4919369220733643,
+              -0.495988130569458
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M38",
+            "position": [
+              4.557804584503174,
+              2.0010550022125244,
+              -0.4713754951953888
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M39",
+            "position": [
+              4.9686198234558105,
+              -0.22732776403427124,
+              -0.5110197067260742
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M40",
+            "position": [
+              4.709527969360352,
+              -1.5599253177642822,
+              -0.622076690196991
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M41",
+            "position": [
+              3.8284361362457275,
+              3.096919059753418,
+              -0.8672764301300049
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M42",
+            "position": [
+              4.342513561248779,
+              -2.3264360427856445,
+              -0.8545598387718201
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M43",
+            "position": [
+              4.887535572052002,
+              0.6385590434074402,
+              -0.8391882181167603
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M44",
+            "position": [
+              4.783107280731201,
+              1.1134765148162842,
+              -0.9391776323318481
+            ]
+          },
+          {
+            "abscissa_um": 4.271904468536377,
+            "filament": "F41",
+            "force_pn": [
+              4.397612582844346,
+              -2.554944860123287,
+              -0.7828421012477271
+            ],
+            "id": "M45",
+            "position": [
+              4.06201696395874,
+              -2.656135320663452,
+              -1.2020659446716309
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M46",
+            "position": [
+              4.09549617767334,
+              2.5629959106445312,
+              -1.287618637084961
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M47",
+            "position": [
+              4.750738620758057,
+              -1.0045031309127808,
+              -1.192248821258545
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M48",
+            "position": [
+              4.790652275085449,
+              -0.6725502014160156,
+              -1.2638545036315918
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M49",
+            "position": [
+              4.232647895812988,
+              2.1830921173095703,
+              -1.5227614641189575
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M50",
+            "position": [
+              3.833691358566284,
+              -2.6689488887786865,
+              -1.7831214666366577
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M51",
+            "position": [
+              4.562345027923584,
+              1.2946370840072632,
+              -1.5839579105377197
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M52",
+            "position": [
+              4.725986003875732,
+              0.2593553960323334,
+              -1.6117669343948364
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M53",
+            "position": [
+              4.326805114746094,
+              -1.6892306804656982,
+              -1.8507448434829712
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M54",
+            "position": [
+              3.582932233810425,
+              2.5822863578796387,
+              -2.344012498855591
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M55",
+            "position": [
+              4.328837871551514,
+              -1.462475299835205,
+              -2.030351400375366
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M56",
+            "position": [
+              4.579654216766357,
+              0.09460146725177765,
+              -2.0044500827789307
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M57",
+            "position": [
+              4.324219703674316,
+              1.1844496726989746,
+              -2.2131881713867188
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M58",
+            "position": [
+              3.6801507472991943,
+              -2.03235125541687,
+              -2.7066657543182373
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M59",
+            "position": [
+              4.058780193328857,
+              1.4218651056289673,
+              -2.550412178039551
+            ]
+          },
+          {
+            "abscissa_um": 4.192673683166504,
+            "filament": "F34",
+            "force_pn": [
+              4.713215122954928,
+              -0.38256102578439477,
+              -3.1265102216337937
+            ],
+            "id": "M60",
+            "position": [
+              4.327707290649414,
+              -0.33118927478790283,
+              -2.4821889400482178
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M61",
+            "position": [
+              4.176796913146973,
+              -0.670848548412323,
+              -2.6653945446014404
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M62",
+            "position": [
+              3.7409398555755615,
+              1.2315673828125,
+              -3.0803589820861816
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M63",
+            "position": [
+              3.750943422317505,
+              -0.9174104928970337,
+              -3.1762843132019043
+            ]
+          },
+          {
+            "abscissa_um": null,
+            "filament": null,
+            "force_pn": null,
+            "id": "M64",
+            "position": [
+              3.8113317489624023,
+              0.22554805874824524,
+              -3.2284483909606934
+            ]
+          }
+        ],
+        "segments": 544,
+        "frame_render_ms": 0.5,
+        "bundle_sha256": "8d91d7ff0045dcb406cc49ccdf5ad8dfff37d394a4039d4c746d001ff6a0f3f4",
+        "comparison": {
+          "camera": {
+            "position": [
+              9.600000000000001,
+              6,
+              16.600000000000005
+            ],
+            "target": [
+              0,
+              0,
+              0
+            ],
+            "fov": 40,
+            "near": 0.1,
+            "far": 300,
+            "up": [
+              0,
+              1,
+              0
+            ],
+            "quaternion": [
+              -0.14587942748968785,
+              0.2561944302717382,
+              0.03914471877057543,
+              0.9547519560207212
+            ],
+            "projection": "PerspectiveCamera"
+          },
+          "viewport": {
+            "width": 778,
+            "height": 660,
+            "dpr": 1
+          },
+          "renderer": "Three.js 180 / WebGL2",
+          "physical_to_scene": {
+            "units": "um",
+            "scale": 1,
+            "interpolation": "none"
+          },
+          "physical_time_s": 1,
+          "poles": [
+            {
+              "id": "C1",
+              "position": [
+                -0.6665088534355164,
+                0.039502907544374466,
+                -0.050022706389427185
+              ]
+            },
+            {
+              "id": "C2",
+              "position": [
+                0.8491237163543701,
+                0.14346228539943695,
+                0.09317366033792496
+              ]
+            }
+          ],
+          "cortical_motors": [],
+          "segments": 558,
+          "frame_render_ms": 0.6000001430511475
+        },
+        "browser": "153.0.8010.12",
+        "served_assets": [
+          {
+            "url": "http://127.0.0.1:5185/@react-refresh",
+            "sha256": "fe633113388e056842f0b8df96ea422fcd97761329b79d39fddd71d1fee2f8c7"
+          },
+          {
+            "url": "http://127.0.0.1:5185/@vite/client",
+            "sha256": "c68763a21107945b28cddc808c646b8618d08602b14a72123a1369fca57edc96"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@dagrejs_dagre.js?v=b9733a38",
+            "sha256": "ba24b006db03e45e223568e100d040d60268eacd48c04a79d88b2a587457ebd6"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=b9733a38",
+            "sha256": "303bf52b5679e260ba1eb7695191bd183db3d9014c9d95ad3d5b5da935670d2f"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@radix-ui_react-slot.js?v=b9733a38",
+            "sha256": "e95254cceb1c3a4afe7f1d93cdee1442edb743b247c506ccd661e60fdeb570cb"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=b9733a38",
+            "sha256": "325083be9121ac500df2504fd14671367f85e5cce6dabb87bace7f087204d549"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@react-three_fiber.js?v=b9733a38",
+            "sha256": "d42e9f0ef4119e9687b6bbcbca9d07100d0bb7f1c57149d582cb52d7f9d3f7f7"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/@xyflow_react.js?v=b9733a38",
+            "sha256": "cbe0041174dd1302dcdc878e86102390a07640396a687f05e632eb590dc163eb"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-5J2Q2FQS.js?v=b9733a38",
+            "sha256": "6edeeef7b6fc9dfc294870d67886f4d5ad2f9c68edf04d7c92ea11f718dcc894"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-7IUVF2PG.js?v=b9733a38",
+            "sha256": "1b6e186dc17bd1bbe394bc61b4e26c69c53cdbe788b50a69f1a57ad10157aa33"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-A3W4J62T.js?v=b9733a38",
+            "sha256": "fb9c53809f1e622e19e4255576310a7a6456da93fe01eb7f43915b6215ea10ee"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-IKHJ3LZN.js?v=b9733a38",
+            "sha256": "60d29fb3d6940e8e9fdda27133d951322038ec5cb140eb9e245e03fa62413f0e"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-IOETYALQ.js?v=b9733a38",
+            "sha256": "64a26e351cfd6371f93003864a7dba2beb8bf0e529dccc7f99a84812b19db605"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-MRJA4UBN.js?v=b9733a38",
+            "sha256": "947448ae597fcc8662ff1211f3a13db1d48cc39dadfaf73bb751a8bf13f630cb"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-NGNPUD5H.js?v=b9733a38",
+            "sha256": "f0f3554d678631a25abc06ab52f8146921503511d128c3637c01ae756224b46e"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-O3JQTBRN.js?v=b9733a38",
+            "sha256": "3aeb93490c03d78d419c32672445dfad82c7dd68df732a5b8ffa754f05b19eb2"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-OEDLMEXZ.js?v=b9733a38",
+            "sha256": "b799627fc5ee980db022c6af32691cde66d8eb479ea7291a9949d735eccd0b4a"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-T22HSH4J.js?v=b9733a38",
+            "sha256": "b65ad00974cad157307b672c022c6c1704719cb90662a10fe54862a8aa8c1ea0"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-U7P2NEEE.js?v=b9733a38",
+            "sha256": "43389e3772ba47861f225b161fca8dfde50b6caa258aaf5a0a0c5d2160ca7fb6"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-XKAMT3SU.js?v=b9733a38",
+            "sha256": "9da880b0162d178840334c6e81056b3ccd0a909aae772b0394a01b3b203d9b6b"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/chunk-XL5ANHBC.js?v=b9733a38",
+            "sha256": "4ac4ffe5ea998b67485a090a3bc70a7c088729bb3bc78c6921699a5ac31ac195"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/class-variance-authority.js?v=b9733a38",
+            "sha256": "04c23d4827b54ce595e2efe06f5a8c7aedf24eb37415bcfcf21bb52a68b7d88e"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/clsx.js?v=b9733a38",
+            "sha256": "df33f2093278aa9aeff2c2c188edd846c4b0c012e2af896ae1ccb16d052e3a8a"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/d3-force.js?v=b9733a38",
+            "sha256": "094059fb0cbfe5c56cc50d3e80afdd06a6d1a44aeb14fdc5082bbce2782d87f1"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/lucide-react.js?v=b9733a38",
+            "sha256": "c5d57e3e43584aa7163dbfd4f3c1f2013b3407f28e3698db608b6431a9d14bac"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/motion_react.js?v=b9733a38",
+            "sha256": "3b6fd09c372ecfc31d2325e56350ba36d03a4e334ae9d5d3cdfe0d896e96a40b"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=b9733a38",
+            "sha256": "d081cf02ef4fb94f96fe3868e5f43f01173339fc770664db1986e3ae413c2560"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/react-dom_client.js?v=b9733a38",
+            "sha256": "d9eb1861dd227626f1dfa317c88c95d5e2838d624e312e72bd9207bafb36b650"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/react.js?v=b9733a38",
+            "sha256": "4a10249e99eb5de6f71feb9be674f153dffd1f7769486520ccbea99afff26f18"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/tailwind-merge.js?v=b9733a38",
+            "sha256": "8d4dd4c2d49c8657afd2741aee769dc53de74ca9cfddc9ffdec660f60c20038c"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/three_examples_jsm_controls_OrbitControls__js.js?v=b9733a38",
+            "sha256": "6117b71ec6a0785d95f8291f108812d1248655514a23e021912f5d2cc2729894"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/.vite/deps/three.js?v=b9733a38",
+            "sha256": "38a0eb61d948ecd3cba74049bdbd371509b390b25c92603d4043f68abfe2bac5"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/@fontsource-variable/ibm-plex-sans/index.css",
+            "sha256": "69aced71df936e4ce67ded7cb26181400479bf473ecb71ad576ce45ae8a840cc"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/@fontsource/ibm-plex-mono/400.css",
+            "sha256": "9e75b9166d296ac2beaa97a9b71c6c8ca8d1d8abb6bfc44233f663e45f2ec31a"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/@xyflow/react/dist/style.css",
+            "sha256": "3dce8af8481ad5a1eb3f5d95c0dee621f620616043bfd657b1ed5ee6552ff32d"
+          },
+          {
+            "url": "http://127.0.0.1:5185/node_modules/vite/dist/client/env.mjs",
+            "sha256": "989a1a6b55bdf57842aa46c52fefdce50a16fbfdfbf643e682ac82ad73023401"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/App.tsx?t=1788686385209",
+            "sha256": "67327867e7539e0464640543ba8b671825ddc58cc0d0dd1ff610f8d15a4fac26"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/common.tsx",
+            "sha256": "559b3e345d012fe6b5e581b4f17bf31167bd0d3c330df114b5cef0264c393769"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/Investigation.tsx?t=1788686385209",
+            "sha256": "bc685f94727f9f0b932c3f88ec17c61d6679c1577d571d71f2669dac07e2f209"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/Knowledge.tsx",
+            "sha256": "e9e5ff1791ae6101e95f533e5fd615435a6134752f9730c841bf51c1dd64987a"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/Library.tsx",
+            "sha256": "c86ac2d0c6a0adf77ed71e8b0854328c51aba161df06bff0244accdd8b02f8a3"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/ResearchProcess.tsx",
+            "sha256": "b599a508c4f65b9614d1fdf1823cf2e13031bfc2ae384e795815f637c603b242"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/RuntimeDetail.tsx?t=1788686385209",
+            "sha256": "663e9ffae1625e5e533981006692d3f6bcacdb9c5d638712061763bbd9412ac1"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/spindle/spindle.css?t=1788685704913",
+            "sha256": "0e1d50c95814d8efe9ca0b68237c2ec9f4a781370a973adcd01bd2b57f093f97"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/spindle/SpindleMetrics.tsx?t=1788685704950",
+            "sha256": "022e4a09dad532ef2dee976f61bec57e8e4cf8011ad9dd03e36e74f31a7382b1"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/spindle/SpindleObservatory.tsx?t=1788686385209",
+            "sha256": "50b5b43d49b89d1475b1624469c98698d75981109e35d2aecc9b6e3320074259"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/spindle/SpindleScene.tsx?t=1788685974913",
+            "sha256": "8a5221697c1b47a19077eb6db877c62c6c046c513a6a4febc1dbd759ee8fcc32"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/spindle/types.ts?t=1788685974916",
+            "sha256": "caf28600872063bef08fed1486906c8ee8168838f0acfed2eec0a67fe2c5565f"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/ui/animated-tabs.tsx",
+            "sha256": "ee945e50aae38b9c00522ad75f89a1e36495ce22dc9603534362d7ce2356868e"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/components/ui/button.tsx",
+            "sha256": "479b16cdc4c43ec394746f246367aa9b8ecf6e5003ebfb888196c37cee6d9c6f"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/evidence.css",
+            "sha256": "5310aa2ffb492bbd95346839dc8c84696db50236fe0266de45dcc1da35c58574"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/lib/api.ts",
+            "sha256": "0f49b977f7d788d5e5187a886e829fc02a522a694918add3a9dcc68d6735ab2e"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/lib/evidence.ts",
+            "sha256": "e9e9d49190b754fd92e3c4fdfaca8227a4a12d469ab6c743a36c6e6a062ca5a9"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/lib/runtime.ts",
+            "sha256": "f112b77c59ae6f36f6c6ecf0f62816937e71b257616afb3aeaa629dc8856030f"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/lib/utils.ts",
+            "sha256": "24a50e196c9f61fe5ce263cc3f0ba6c01408e58cae5b21db089ed979701980b9"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/main.tsx?t=1788686385211",
+            "sha256": "9f99fc6be628d25c1d746111519b4980de483d6f1cedd7bdb1fdcd4cd6673ceb"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/runtime.css",
+            "sha256": "6408f7ae499ca8913e2ae8a22c1b416c3c0d7496c2cf24f960d8be1f3db3c70f"
+          },
+          {
+            "url": "http://127.0.0.1:5185/src/styles.css?t=1788686385211",
+            "sha256": "e4105c03f6c5c569dede1cc23f18ee10360418df34686fd252d4201d64107ff8"
+          }
+        ],
+        "adapter_sha256": "3c12b8c0466daf67850e8f9b0ec152bd892057fe44eecc2e69475db2a86c521c"
+      }
+    }
+  },
+  "erratum": {
+    "affected": "Native cortical protocols generated before the placement correction in this milestone",
+    "defect": "placement=off bypassed translation; motors remained at origin",
+    "consequence": "Do not use those runs as cortical-localization comparisons",
+    "correction": "placement=anywhere applies explicit coordinates; exported native positions checked at every frame within1e-5um"
+  },
+  "additional_runtime_vision": {
+    "status": "unavailable",
+    "reason": "Configured provider returned session limit; no visual observation was produced",
+    "developer_pixel_inspection": "Actual corrected comparison was opened through view_image"
+  }
+}

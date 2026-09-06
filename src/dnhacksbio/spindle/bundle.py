@@ -72,4 +72,19 @@ def validate(raw: bytes) -> dict:
                     raise ValueError('Trajectory exceeds display budget')
                 for p in vertices:
                     vector(p, planar=b['dimensionality'] == 2)
+            motors=frame.get('cortical_motors',[])
+            if not isinstance(motors,list) or len(motors)>1000:raise ValueError('Invalid cortical motor count')
+            motor_ids=set()
+            for motor in motors:
+                if not isinstance(motor,dict) or set(motor)!={'id','position','force_pn','filament','abscissa_um'}:
+                    raise ValueError('Invalid cortical motor fields')
+                if not isinstance(motor['id'],str) or not motor['id'] or motor['id'] in motor_ids:
+                    raise ValueError('Invalid cortical motor identity')
+                motor_ids.add(motor['id']);vector(motor['position'],planar=b['dimensionality']==2)
+                if motor['filament'] is None:
+                    if motor['force_pn'] is not None or motor['abscissa_um'] is not None:raise ValueError('Unbound motor has invented bound measurements')
+                else:
+                    if motor['filament'] not in fiber_ids:raise ValueError('Unknown motor-bound filament')
+                    vector(motor['force_pn'],planar=b['dimensionality']==2)
+                    if type(motor['abscissa_um']) not in (int,float) or not math.isfinite(motor['abscissa_um']):raise ValueError('Invalid motor abscissa')
     return b
