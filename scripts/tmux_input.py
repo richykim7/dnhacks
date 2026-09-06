@@ -211,8 +211,12 @@ def dismiss_waiting(client: Tmux, pane: str, *, dry: bool = False) -> str:
         return "dismissed" if waiting_popup(client.screen(pane)) is None else "still-open"
 
 
-def send_board_message(session: str, text: str, *, socket: str | None = None) -> bool:
-    """Defer on uncertain/menu states; keep the per-pane lock through submission."""
+def send_board_message(session: str, text: str, *, socket: str | None = None, before_send=None) -> bool:
+    """Defer on uncertain/menu states; keep the per-pane lock through submission.
+
+    Call before_send after guards, immediately before the first terminal write,
+    so durable callers can distinguish safe deferral from a partial send.
+    """
     # Control characters in a Board post must not become terminal input.
     text = " ".join(text.splitlines())
     if any(ord(c) < 32 or ord(c) == 127 for c in text):
@@ -233,6 +237,8 @@ def send_board_message(session: str, text: str, *, socket: str | None = None) ->
             # Positive empty-composer evidence; unknown layouts are deferred.
             if before.x != 2 or composer not in ("›", "❯", "› Ask Codex to do anything"):
                 return False
+            if before_send is not None:
+                before_send()
             client.run("send-keys", "-t", before.pane, "-l", "--", text)
             time.sleep(0.15)
             after = client.screen(before.pane)
