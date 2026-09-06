@@ -1,6 +1,9 @@
 # Centrosome clustering: the spindle observatory
 
-Status: proposed design and implementation plan, 2026-09-06; no simulator or UI is implemented here.
+Status: implementation in progress, 2026-09-06. The trajectory viewer and clustering analysis
+landed in PR68; the pinned Cytosim CPU worker and archive adapter are implemented.
+See [implemented scope and remaining work](../../docs/spindle-simulator.md). Calibration,
+full runtime visual review, and final visual/performance acceptance are not complete.
 Follow the [shared studio contract](README.md) for ownership, artifacts, capture and review.
 The visual ambition is a luminous kinetic sculpture: a complete spindle suspended in a glasslike
 cell, with microtubule fans sweeping through depth and centrosomes moving like small pearl stars.
