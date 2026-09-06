@@ -1,0 +1,694 @@
+{
+  "schema": 1,
+  "diagnostic_only": true,
+  "source": "GSE212041; GEO processed TPM; GRCh38/GENCODE v35; RSEM 1.3.0",
+  "protocol_sha256": "1d6f6fcf8a664599a3952a8cb051f926c79cf47a647f12d8c551a1e07a91e034",
+  "protocol": {
+    "autoencoder": {
+      "hidden": 512,
+      "components": 128,
+      "epochs": 100,
+      "mask_fraction": 0.15,
+      "seed": 20260905,
+      "device": "cuda",
+      "dtype": "float32"
+    },
+    "pca_components": 64,
+    "bettor": {
+      "batch_pairs": 4,
+      "hidden": [
+        64,
+        64
+      ],
+      "max_epochs": 100,
+      "patience": 10,
+      "lr": 0.0005,
+      "weight_decay": 0.01
+    },
+    "primary_seed": 20260906,
+    "alpha": 0.05,
+    "scalar": "IFIT3",
+    "permutation_draws": 9999,
+    "null_repetitions": 200,
+    "sensitivity_seeds": [
+      20261000,
+      20261001,
+      20261002,
+      20261003,
+      20261004,
+      20261005,
+      20261006,
+      20261007,
+      20261008,
+      20261009
+    ]
+  },
+  "splits": {
+    "train": {
+      "n": 149,
+      "groups": {
+        "COVID+": 119,
+        "COVID- symptomatic": 30
+      },
+      "sha256": "9b58ca6232e0106b7fd1e58768e6f65ce00c5c0b521a2b749c231b6ff6999113"
+    },
+    "development": {
+      "n": 74,
+      "groups": {
+        "COVID+": 59,
+        "COVID- symptomatic": 15
+      },
+      "sha256": "6da318f4b0e8b053646966d86b89a2abd069ce19ca928ccf463c02f193349894"
+    },
+    "evaluation": {
+      "n": 151,
+      "groups": {
+        "COVID+": 121,
+        "COVID- symptomatic": 30
+      },
+      "sha256": "eabf41c5cc2634c87ba70bdbb67b9a01e38fd5b7a61c2466278f2d4469637f10"
+    }
+  },
+  "artifacts": {
+    "pca": "db96cbb8533316cc50474d085e086f458daf3e026d86dabb0515b8da34594c55",
+    "autoencoder": "498c67906fbba59a7d78ff6d4b1133c7d0485825fdd367f1b74c334d62a52d59"
+  },
+  "primary": {
+    "seed": 20260906,
+    "pairs": 30,
+    "methods": {
+      "pca": {
+        "e_value": 85.75579611817608,
+        "log_wealth_path": [
+          0.0,
+          1.5151133425797394,
+          1.2134203979554437,
+          3.0980327082866195,
+          2.4128718770122433,
+          4.944603874204421,
+          4.451503676976612
+        ],
+        "final_reject": true,
+        "ever_crossed": true
+      },
+      "autoencoder": {
+        "e_value": 3652.806359631861,
+        "log_wealth_path": [
+          0.0,
+          1.3695237434994953,
+          0.14457068166826992,
+          2.88702743629955,
+          4.091028371214001,
+          6.829318831585722,
+          8.203251016803325
+        ],
+        "final_reject": true,
+        "ever_crossed": true
+      },
+      "scalar": {
+        "e_value": 5964.414045287497,
+        "log_wealth_path": [
+          0.0,
+          2.4606201604769806,
+          2.2188462844845738,
+          4.970765912378968,
+          6.15248287740137,
+          7.489993851665847,
+          8.69356609756736
+        ],
+        "final_reject": true,
+        "ever_crossed": true
+      }
+    },
+    "permutation": {
+      "p_value": 0.0001,
+      "calibrated_e": 99.0,
+      "statistic": "squared mean distance in frozen standardized genes"
+    }
+  },
+  "sensitivity": [
+    {
+      "seed": 20261000,
+      "pairs": 30,
+      "methods": {
+        "pca": {
+          "e_value": 2.341613049291626,
+          "log_wealth_path": [
+            0.0,
+            1.1259572563940101,
+            -3.6168008095343356,
+            -5.539943887492419,
+            -2.8985977109127172,
+            -0.42743206479683593,
+            0.8508400291898957
+          ],
+          "final_reject": false,
+          "ever_crossed": false
+        },
+        "autoencoder": {
+          "e_value": 3823.9334726810007,
+          "log_wealth_path": [
+            0.0,
+            0.5502291960738415,
+            0.975443583925939,
+            2.420845662350721,
+            4.558770128999404,
+            6.863411328334404,
+            8.249034876708503
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "scalar": {
+          "e_value": 0.11862790170315175,
+          "log_wealth_path": [
+            0.0,
+            2.727722517508804,
+            -3.2924571044878252,
+            -8.56977375185627,
+            -6.255544305935663,
+            -3.5173871095817786,
+            -2.1317635612076797
+          ],
+          "final_reject": false,
+          "ever_crossed": false
+        }
+      }
+    },
+    {
+      "seed": 20261001,
+      "pairs": 30,
+      "methods": {
+        "pca": {
+          "e_value": 4.623016625619833,
+          "log_wealth_path": [
+            0.0,
+            2.551828858334623,
+            5.018488245079374,
+            5.928375022221083,
+            4.03505422034776,
+            6.790528515492328,
+            1.531047441283384
+          ],
+          "final_reject": false,
+          "ever_crossed": true
+        },
+        "autoencoder": {
+          "e_value": 1191.476659494146,
+          "log_wealth_path": [
+            0.0,
+            2.759630652407422,
+            5.52244827751397,
+            7.04439834835111,
+            9.353179593805892,
+            12.021277910047889,
+            7.082948707168702
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "scalar": {
+          "e_value": 976285.329139522,
+          "log_wealth_path": [
+            0.0,
+            2.704380570664745,
+            5.352232386488394,
+            7.72187158888263,
+            9.634932854992442,
+            12.40588661972637,
+            13.79151016810047
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        }
+      }
+    },
+    {
+      "seed": 20261002,
+      "pairs": 30,
+      "methods": {
+        "pca": {
+          "e_value": 2.482572995245347e-05,
+          "log_wealth_path": [
+            0.0,
+            -3.4848894033097917,
+            -10.504508209046215,
+            -15.745177783855109,
+            -12.982690854998305,
+            -11.984534796162807,
+            -10.603629944539707
+          ],
+          "final_reject": false,
+          "ever_crossed": false
+        },
+        "autoencoder": {
+          "e_value": 6.0763847975993945,
+          "log_wealth_path": [
+            0.0,
+            1.2544091676954987,
+            -0.39848662360872433,
+            -1.9858973221747842,
+            -0.5253784302792877,
+            0.4187863650979313,
+            1.8044099134720304
+          ],
+          "final_reject": false,
+          "ever_crossed": false
+        },
+        "scalar": {
+          "e_value": 813.5073199272227,
+          "log_wealth_path": [
+            0.0,
+            0.4589795320669282,
+            1.037081872202387,
+            2.9883374664478444,
+            5.1083288142907435,
+            5.438165295869392,
+            6.701354924685264
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        }
+      }
+    },
+    {
+      "seed": 20261003,
+      "pairs": 30,
+      "methods": {
+        "pca": {
+          "e_value": 4.618994792277408,
+          "log_wealth_path": [
+            0.0,
+            0.040529874179936365,
+            -1.7583063086147765,
+            0.763745075802579,
+            -1.8972891058395969,
+            0.14620398833601156,
+            1.5301771039911123
+          ],
+          "final_reject": false,
+          "ever_crossed": false
+        },
+        "autoencoder": {
+          "e_value": 56337.58206725306,
+          "log_wealth_path": [
+            0.0,
+            0.7228178771391116,
+            2.0521518937806587,
+            4.389076569763648,
+            6.859836004269763,
+            9.553493575331142,
+            10.939117123705241
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "scalar": {
+          "e_value": 2193.851087293037,
+          "log_wealth_path": [
+            0.0,
+            0.13711332505655394,
+            2.1673717268172283,
+            4.5518866874294375,
+            3.7463093588178897,
+            6.368720694356384,
+            7.693413765830278
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        }
+      }
+    },
+    {
+      "seed": 20261004,
+      "pairs": 30,
+      "methods": {
+        "pca": {
+          "e_value": 58.22217228588034,
+          "log_wealth_path": [
+            0.0,
+            2.410644319043576,
+            2.849226155236067,
+            -0.3352312222292402,
+            0.6096067742358735,
+            2.6816854824825156,
+            4.064266249299194
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "autoencoder": {
+          "e_value": 1506.2933074068064,
+          "log_wealth_path": [
+            0.0,
+            2.548799055044333,
+            5.3156475963285335,
+            4.3845383823198425,
+            3.213116606223218,
+            5.93178360025689,
+            7.317407148630989
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "scalar": {
+          "e_value": 1996.538318479922,
+          "log_wealth_path": [
+            0.0,
+            2.7387768174746103,
+            5.286344230204744,
+            6.155508607827168,
+            7.625056386895222,
+            6.229004356074112,
+            7.599170119146505
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        }
+      }
+    },
+    {
+      "seed": 20261005,
+      "pairs": 30,
+      "methods": {
+        "pca": {
+          "e_value": 371326.9467112041,
+          "log_wealth_path": [
+            0.0,
+            2.083346424362902,
+            4.82431282995838,
+            5.944040921505691,
+            8.710824095975504,
+            11.472631884418501,
+            12.824838211491421
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "autoencoder": {
+          "e_value": 331430.3860568364,
+          "log_wealth_path": [
+            0.0,
+            0.5909152586788657,
+            3.3239741903432463,
+            5.923564627395351,
+            8.684710806288313,
+            11.455217113660588,
+            12.71117306974368
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "scalar": {
+          "e_value": 381.1583120117492,
+          "log_wealth_path": [
+            0.0,
+            1.7218963105061373,
+            4.264356900767449,
+            -0.964396002484353,
+            1.8023215554611198,
+            4.557591257540487,
+            5.943214805914586
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        }
+      }
+    },
+    {
+      "seed": 20261006,
+      "pairs": 30,
+      "methods": {
+        "pca": {
+          "e_value": 131088.6861873786,
+          "log_wealth_path": [
+            0.0,
+            1.002408550235145,
+            3.6979171711322514,
+            5.296362746325032,
+            7.735151343278934,
+            10.503415316617442,
+            11.783629366923146
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "autoencoder": {
+          "e_value": 24442.724354132893,
+          "log_wealth_path": [
+            0.0,
+            0.8518591978316707,
+            2.3776344140745715,
+            3.707025023253792,
+            6.276642365969256,
+            8.755176198556269,
+            10.104087878191455
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "scalar": {
+          "e_value": 18598.198279626595,
+          "log_wealth_path": [
+            0.0,
+            2.143857091767034,
+            4.320726473013334,
+            4.16534033908348,
+            6.74633949001893,
+            9.290708049559491,
+            9.83081998832267
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        }
+      }
+    },
+    {
+      "seed": 20261007,
+      "pairs": 30,
+      "methods": {
+        "pca": {
+          "e_value": 80.10861367211906,
+          "log_wealth_path": [
+            0.0,
+            2.7432967744255023,
+            5.1659992352204,
+            6.504171784725621,
+            1.2531514533716201,
+            3.812190332234816,
+            4.383383384773568
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "autoencoder": {
+          "e_value": 224.55058170037861,
+          "log_wealth_path": [
+            0.0,
+            2.3663472240426175,
+            4.930246943972441,
+            7.458217195515376,
+            5.214152981756434,
+            7.969433936898699,
+            5.41410099004644
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "scalar": {
+          "e_value": 309.42303333012944,
+          "log_wealth_path": [
+            0.0,
+            2.7346754149335344,
+            5.481425906616471,
+            3.575729830302979,
+            3.793585362808132,
+            5.5114403737659545,
+            5.734709380520388
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        }
+      }
+    },
+    {
+      "seed": 20261008,
+      "pairs": 30,
+      "methods": {
+        "pca": {
+          "e_value": 0.25517119867594645,
+          "log_wealth_path": [
+            0.0,
+            -0.5639091448681127,
+            -1.6871535840868837,
+            1.0031764803446022,
+            -4.602219586012176,
+            -2.7514441401074023,
+            -1.3658205917333033
+          ],
+          "final_reject": false,
+          "ever_crossed": false
+        },
+        "autoencoder": {
+          "e_value": 72.60993930166772,
+          "log_wealth_path": [
+            0.0,
+            0.5131510958968709,
+            0.056699470021316145,
+            2.6176650771222043,
+            0.9504639953005722,
+            2.9006623170619044,
+            4.285101817441768
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "scalar": {
+          "e_value": 6.817392908371589,
+          "log_wealth_path": [
+            0.0,
+            1.9795997320913252,
+            -3.2513123082118667,
+            -0.4923106709472722,
+            -2.235106654124861,
+            0.5339494241096538,
+            1.919477127271228
+          ],
+          "final_reject": false,
+          "ever_crossed": false
+        }
+      }
+    },
+    {
+      "seed": 20261009,
+      "pairs": 30,
+      "methods": {
+        "pca": {
+          "e_value": 1722.8455706440977,
+          "log_wealth_path": [
+            0.0,
+            -1.9251954053980982,
+            0.30506187457059,
+            3.029536008291302,
+            5.327366121398572,
+            6.074696409756067,
+            7.451732604330061
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "autoencoder": {
+          "e_value": 28133.126637463556,
+          "log_wealth_path": [
+            0.0,
+            2.515184679808676,
+            4.888656048085661,
+            7.101990741864991,
+            6.714397708212592,
+            8.967599911012671,
+            10.24470304487936
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        },
+        "scalar": {
+          "e_value": 481445.02414070134,
+          "log_wealth_path": [
+            0.0,
+            2.3351643089778658,
+            4.3995113628080365,
+            7.090924445282624,
+            9.011159830097577,
+            11.698923779088158,
+            13.084547327462257
+          ],
+          "final_reject": true,
+          "ever_crossed": true
+        }
+      }
+    }
+  ],
+  "orientation_null": {
+    "pca": {
+      "repetitions": 200,
+      "final_rejections": 0,
+      "crossing_rejections": 4,
+      "final_ci95": [
+        1.734723475976807e-18,
+        0.018845326377266575
+      ],
+      "crossing_ci95": [
+        0.0078044264163494685,
+        0.050287086905826436
+      ],
+      "quantiles": [
+        3.892252376539398e-45,
+        7.610730265422189e-23,
+        4.975642715419297e-13,
+        5.019915792846386e-08,
+        1.7209082230329768e-05
+      ]
+    },
+    "autoencoder": {
+      "repetitions": 200,
+      "final_rejections": 0,
+      "crossing_rejections": 5,
+      "final_ci95": [
+        1.734723475976807e-18,
+        0.018845326377266575
+      ],
+      "crossing_ci95": [
+        0.010724719651761264,
+        0.05717834040664198
+      ],
+      "quantiles": [
+        1.5093615620559363e-55,
+        1.1397407251019749e-20,
+        1.3284929335711799e-09,
+        0.0004141767773485689,
+        0.029038003825959374
+      ]
+    },
+    "scalar": {
+      "repetitions": 200,
+      "final_rejections": 0,
+      "crossing_rejections": 0,
+      "final_ci95": [
+        1.734723475976807e-18,
+        0.018845326377266575
+      ],
+      "crossing_ci95": [
+        1.734723475976807e-18,
+        0.018845326377266575
+      ],
+      "quantiles": [
+        9.005839783212883e-15,
+        0.03794111458687072,
+        0.4579543399998339,
+        1.9251220939033462,
+        6.018991580318015
+      ]
+    }
+  },
+  "device": "cpu",
+  "software": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "torch": "2.10.0+cu128"
+  },
+  "execution": {
+    "device": "cpu",
+    "dtype": "float64",
+    "cuda_version": "12.8",
+    "device_name": "CPU"
+  },
+  "seconds": 302.2281094889986,
+  "limitations": [
+    "One observational cohort and a small negative group; no causal or clinical prediction claim.",
+    "Primary seed and settings frozen before evaluation; other orders are sensitivity analyses, not independent power trials.",
+    "Orientation null tests fair artificial signs conditional on fixed pairs; it does not assert COVID labels are randomized.",
+    "No evidence selection or merger across methods/orders; final wealth is distinct from maximum wealth.",
+    "Evaluation units excluded from gene selection, scaling and representation training; development split used only for device timing.",
+    "Different latent widths: PCA64 and AE128; this comparison cannot isolate architecture alone."
+  ]
+}

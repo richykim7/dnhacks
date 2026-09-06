@@ -1,5 +1,9 @@
 # Initial learned e-value validation
 
+Later iteration: [real-expression/GPU results and wealth report](real-expression/README.md);
+[expanded synthetic alternatives](expanded-alternatives.json). The initial pilot below is retained
+as a historical measurement.
+
 This is an initial **synthetic** evaluation of the standalone diagnostic implementation, with
 configuration frozen after a separate small pilot. It provides no real-cohort power claim and no
 investigation-wide error guarantee. Existing experiment verification is unchanged.
@@ -84,3 +88,47 @@ Select a real evaluation cohort and comparison, establish its independent-unit s
 and identify disjoint encoder training/development cohorts before making biological power claims.
 Benchmark the actual cohort size before committing to full PCA/SVD and autoencoder training budgets.
 Verification decisions, RESULT contracts and UI integration remain separate reviewed work.
+
+## Expanded frozen-configuration evaluation
+
+The [10,000-run null summary](expanded-null.json) combines four compatible, disjoint seed streams
+(9000000–9009999), with identical encoder artifact hashes and software. Each repetition has 96
+pairs and the original 16/16, maximum-20-epoch synthetic bettor; 999 permutation draws. These
+settings were fixed from the initial implementation, not selected from this evaluation. Both
+encoders train on the original separate 256-row synthetic cohort. Each worker uses one CPU thread;
+four workers took approximately 22.3 minutes wall time (88.8 aggregate worker-minutes).
+
+| Method | Final rejections | Ever crossings | Crossing rate (pointwise Wilson 95% interval) |
+| --- | ---: | ---: | --- |
+| identity | 13/10,000 | 166/10,000 | 1.66% (1.43%–1.93%) |
+| pca | 14/10,000 | 171/10,000 | 1.71% (1.47%–1.98%) |
+| autoencoder | 20/10,000 | 112/10,000 | 1.12% (0.93%–1.35%) |
+| scalar | 36/10,000 | 141/10,000 | 1.41% (1.20%–1.66%) |
+| fixed_projection | 19/10,000 | 165/10,000 | 1.65% (1.42%–1.92%) |
+| permutation_p | 513/10,000 | 513/10,000 | 5.13% (4.71%–5.58%) |
+| permutation_calibrated_e | 24/10,000 | 24/10,000 | 0.24% (0.16%–0.36%) |
+| INVALID_label_memorization | 10000/10,000 | 10000/10,000 | 100.00% (99.96%–100.00%) |
+
+The learned-encoder final rejection rate was 0.20%; anytime crossing rate 1.12%. The ordinary
+permutation rate 5.13% is compatible with 5% at this simulation precision. The invalid memorizing
+control rejects every null run. These measurements diagnose this implementation/distribution;
+they do not prove validity over all distributions or estimate heavy-tailed wealth expectations.
+Quantiles remain per-shard; they are not averaged into invalid pooled quantiles.
+
+The [expanded alternatives](expanded-alternatives.json) use 100 repetitions each, starting from
+seed 12000000 and the harness's recorded scenario offsets. Null and final alternative summaries
+use the same CPU software and frozen encoder configuration. Software: Python 3.12.3, NumPy 2.5.2,
+Torch 2.14.0+cu130 (CPU execution). The real-data/GPU study separately records Torch 2.10.0+cu128.
+
+Reproduce each shard with the command below, changing the seed to 9002500, 9005000 and 9007500 and
+using separate output/artifact directories. Run at most four one-thread workers for this budget.
+
+```sh
+uv run --extra evalue python scripts/evalue_harness.py --repetitions 2500 --epochs 20 --permutations 999 --seed 9000000 --scenarios null --summary-only --output data/processed/evalue-final/null-0.json --artifacts data/processed/evalue-final/encoders-0
+uv run --extra evalue python scripts/evalue_harness.py --merge data/processed/evalue-final/null-0.json data/processed/evalue-final/null-1.json data/processed/evalue-final/null-2.json data/processed/evalue-final/null-3.json --output research/learned-evalue-validation/expanded-null.json
+uv run --extra evalue python scripts/evalue_harness.py --repetitions 100 --epochs 20 --permutations 999 --seed 12000000 --scenarios mean_shift variance_shift discarded_signal --summary-only --output data/processed/evalue-final/alternatives.json --artifacts data/processed/evalue-final/alternative-encoders
+```
+
+The merger rejects overlapping seed streams, mismatched configurations/software and differing
+frozen artifacts. The first replay per scenario is retained in each local source report; tracked
+summaries retain counts, intervals, source hashes, seeds, software and configuration.
