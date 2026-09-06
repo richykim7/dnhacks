@@ -1,5 +1,22 @@
 # Research workspace review
 
+## Review — DNHacks judge presentation
+
+- Created [editable PowerPoint, PDF preview, speaker notes and reusable layout kit](../presentation/README.md)
+  with an 11-slide core story and six Q&A slides. Every criterion and weight is mapped explicitly.
+- Extended the existing IBM Plex, charcoal, warm-white and green design. Distinguished real corpus
+  metadata and measured standalone statistics from synthetic interface data and future plans.
+- Researched official DTX/event sources, PubMed, SEER and current research-agent prior art. Chose Open
+  Category as a proposed framing and retained DN Research as a working name; neither is a team decision.
+- Reconciled the old forecasting pitch and historical evaluation-pilot statements. The ordinary
+  falsifier screens reported fields; no independent reproduction or new biological discovery is claimed.
+- Source validation: build, six UI unit tests, 19 browser tests after an unchanged serial retry, and
+  270 tracked Python tests passed with 18 optional-dependency/opt-in skips. The initial parallel browser
+  run hit one 30-second geometry timeout. Wider ignored/local tests were not copied into this worktree.
+- Reviewed rendered slides and notes; delivery checks and limitations are in
+  [presentation/validation.md](../presentation/validation.md). Scientific demo, final team name and
+  pilot measurements remain future additions. No scientific model runs, training or outreach performed.
+
 ## Review — policy lab proofs and experiments
 
 - Delivered the [formal model and complete proofs](research/policy-lab/report.md), [primary-paper audit](research/policy-lab/literature.md), [independent adversarial review](research/policy-lab/adversarial-review.md), [executable prototype](../research_spikes/policy_lab/README.md), and [standalone demo/figure](research/policy-lab/demo.html).

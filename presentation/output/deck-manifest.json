@@ -1,0 +1,38 @@
+{
+  "source_snapshot": "1e83cfb158dd1c9d35894e05006bd9482a566233",
+  "built_on": "2026-09-06",
+  "main_slides": 17,
+  "core_slides": 11,
+  "core_seconds": 315,
+  "layout_kit_slides": 4,
+  "fonts": [
+    "IBM Plex Sans",
+    "IBM Plex Mono"
+  ],
+  "sources": {
+    "pubmed": [
+      "NIH / NLM \u00b7 About PubMed",
+      "https://pubmed.ncbi.nlm.nih.gov/about/"
+    ],
+    "seer": [
+      "NCI SEER \u00b7 Pancreatic Cancer Stat Facts",
+      "https://seer.cancer.gov/statfacts/html/pancreas.html"
+    ],
+    "dtx": [
+      "DTX Ventures \u00b7 Vision",
+      "https://www.dtxventures.com/vision"
+    ],
+    "event": [
+      "DNHacks \u00b7 Official event and category descriptions",
+      "https://dnhacks.org/"
+    ],
+    "elicit": [
+      "Elicit \u00b7 Introducing Elicit Research Agent",
+      "https://elicit.com/blog/introducing-elicit-research-agent"
+    ],
+    "deepmind": [
+      "Google DeepMind \u00b7 Co-scientist",
+      "https://deepmind.google/blog/co-scientist-a-multi-agent-ai-partner-to-accelerate-research/"
+    ]
+  }
+}
