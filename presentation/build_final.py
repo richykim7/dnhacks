@@ -394,79 +394,95 @@ def slide_06(p):
 def slide_07(p):
     s = page(p, 'Backtest / frozen corpus')
     heading(s, 'Freeze the literature, then rerun\nthe loop against the past.', size=32)
-    kicker(s, 'The only honest way to ask whether the aim is real: give it what was known, and see whether it '
-              'reaches what came next.', y=2.44, size=18)
-    entries7 = [('Corpus frozen at a dated boundary',
-              'Every paper, dataset and claim the agent can touch predates it. Corpus and data hashes are recorded with the run ID.'),
-             ('Retrieval is scoped and logged',
-              'Tool calls are recorded with their scope, so an out-of-boundary read appears in the audit instead of disappearing.'),
-             ('The matching paper is withheld',
-              'Held outside the evidence store entirely, not merely down-ranked.')]
+    kicker(s, 'The only honest way to ask whether the aim is real: give it what was known in 2025, and see whether it '
+              'reaches what was published in 2026.', y=2.44, size=18)
+    entries7 = [('Literature frozen at 31 December 2025',
+                 '160 open-access papers, 3,493 claims. Every paper dated by its earliest Europe PMC or preprint record, so a late preprint cannot slip in.'),
+                ('The data is frozen too',
+                 'DepMap 24Q4 gene-effect matrix, 1,178 cell lines by 17,916 genes, released December 2024, before the target preprint existed.'),
+                ('The answer is absent, not hidden',
+                 'No pre-2026 paper links the gene to the centriole. It was verified absent, not down-ranked.')]
     items(s, .62, 3.10, 5.86, entries7, tsize=18, bsize=14, gap=.26)
-    text(s, 'THE COLLECTION, AS FROZEN', .62, 6.18, 6.0, .26, 10.5, GREEN, True, MONO)
-    text(s, '100 open-access papers, 2007–2025 · boundary 2026-01-25 · 7,212,281 characters · 89 JATS XML, 11 HTML · '
-            'SHA-256 per file and manifest.', .62, 6.46, 6.1, .5, 12, MUTED)
-    rect(s, 6.96, 3.16, 5.78, 2.80, PANEL, LINE)
-    text(s, 'WHERE THE GPU GOES', 7.22, 3.32, 5.2, .26, 10.5, AMBER, True, MONO)
-    text(s, 'ONE NVIDIA L40S · 3.41s FIT', 7.22, 3.62, 5.3, .44, 22, PAPER, True)
-    text(s, '19,000 → 512 → 128 masked encoder · 15% masking · 100 epochs · float32 · fixed seed. The only training '
-            'run inside the loop.', 7.22, 4.16, 5.24, .8, 14, MUTED)
-    text(s, 'Trained once behind the boundary, then frozen. The bettor, the permutation calibration and the null '
-            'audit are cheap and replayable on CPU, so a candidate costs logged actions rather than a new model.',
-         7.22, 5.02, 5.24, .9, 14, PAPER)
-    text(s, 'A frozen corpus bounds the evidence, never what a pretrained model already knew. This is a controlled '
-            'recovery test; post-cutoff registration is the next one.', 7.06, 6.14, 5.6, .6, 13.5, AMBER)
+    rect(s, 6.96, 3.10, 5.78, 2.88, PANEL, LINE)
+    text(s, 'TWO CONTROLS ON WHAT IT COULD KNOW', 7.22, 3.28, 5.2, .26, 10.5, AMBER, True, MONO)
+    text(s, 'RECALLED: NO', 7.22, 3.58, 5.3, .44, 22, PAPER, True)
+    text(s, 'The bare model, no corpus and no tools, describes the gene only through PKA and NF-κB signalling and '
+            'will not confirm a centriole role. The same harness recalls a pre-cutoff control finding.',
+         7.22, 4.08, 5.24, .9, 14, MUTED)
+    text(s, 'And the goal named a region, never a gene: find a gene annotated for an unrelated role whose partners '
+            'are enriched in the inner scaffold.', 7.22, 5.14, 5.24, .7, 14, PAPER)
+    text(s, 'A frozen corpus bounds the evidence, never what a pretrained model already knew. That is why the recall '
+            'ablation is on this slide.', 7.06, 6.20, 5.6, .5, 13, AMBER)
     note(s, 'Freeze the literature, then rerun the loop against the past.',
-         'Here is how we test whether the aim is real rather than plausible. We freeze the literature at a dated '
-         'boundary and run the ordinary loop against the past. Everything the agent can touch predates the cutoff, '
-         'retrieval is scoped and logged so an out-of-boundary read shows up in the audit, and the matching later '
-         'paper is held outside the evidence store entirely. One GPU fit sits inside the boundary and is then frozen; '
-         'everything downstream is cheap and replayable on CPU, which is what makes rerunning the backtest affordable. '
-         'And the honest caveat, said out loud: a frozen corpus bounds the evidence, never what a pretrained model '
-         'already knew.', 35,
-         'Curated PDAC collection of 100 full-text papers with an inclusive 2026-01-25 curation boundary and a '
-         'self-hashing manifest. The encoder fit is the recorded L40S run. This is a controlled recovery test; '
-         'post-cutoff registration and held-out cohorts are the next test.',
-         'Fill the run ID, corpus hash and audit counts from the audited backtest run before presenting.',
+         'Here is how we test whether the aim is real rather than plausible. We froze a literature corpus at the end '
+         'of 2025, dating every paper by its earliest record so that no late preprint slips in, and we froze the '
+         'dependency data at a December 2024 release. The finding we were hunting for was verified absent from the '
+         'corpus: no pre-2026 paper connects that gene to the centriole. Then two controls on what the model itself '
+         'could know. The bare model, with no corpus and no tools, will not confirm the role, while the same harness '
+         'recalls a pre-cutoff control finding perfectly. And the goal we gave the agent named a structural region, '
+         'never a gene. A frozen corpus bounds the evidence and never the pretraining, which is exactly why the '
+         'ablation is on the slide rather than in a footnote.', 35,
+         'Corpus and freeze from MANIFEST.json: target AKIP1 to centriole inner scaffold, freeze 2025-12-31, 160 '
+         'papers, 3,493 claims, 45 reference seeds; the write-up quotes 3,478 claims for the same build, so cite the '
+         'manifest. DepMap 24Q4, 1,178 lines by 17,916 genes. Recall ablations: ablation_akip1_recall.py returns '
+         'recalled: no; ablation_gametolog_recall.py returns recalled: yes on a pre-cutoff finding. The tier-2 '
+         'external novelty and date check was OFF in this pass.',
+         'Rerun the tier-2 novelty check and record it beside the ablations before presenting to a technical judge.',
          'Reliability, Evaluation & Trustworthiness (25); Technical Execution (50)',
          ['ARCHITECTURE.md', 'demo/pdac/README.md'])
 
 
-def slide_08(p, run):
+def slide_08(p, run=None):
     s = page(p, 'Backtest / the result')
-    heading(s, 'A candidate the frozen corpus could not have told it.', y=1.02, size=32)
-    counts = [(run['proposed'], 'candidates proposed'), (run['passed'], 'passed the soundness floor'),
-              (run['gate'], 'reached the human gate'), (run['matched'], 'matched a later paper')]
+    heading(s, 'It proposed a centriole component the corpus did not contain.', y=1.02, size=30)
+    counts = [('83', 'experiments run'), ('2', 'submitted to verification'),
+              ('2', 'passed the soundness floor'), ('1', 'survived the rigor audit')]
     for j, (v, t2) in enumerate(counts):
         x = .62 + j * 3.09
-        text(s, v, x, 2.00, 2.9, .84, 38, GREEN if j < 3 else AMBER, True)
-        text(s, t2, x, 2.88, 2.94, .48, 15, MUTED)
-    line(s, .6, 3.46, 12.73, 3.46, LINE)
-    text(s, 'THE SURVIVING CANDIDATE', .62, 3.60, 5.9, .26, 10.5, GREEN, True, MONO)
-    text(s, run['candidate'], .62, 3.90, 5.9, .8, 19, PAPER, True)
-    text(s, 'CHECKS PASSED', .62, 4.80, 5.9, .26, 10.5, MUTED, True, MONO)
-    text(s, '≥8 independent units · permutation p never exactly zero · direction declared before the result · '
-            'leave-one-group-out held', .62, 5.10, 5.86, .8, 14, PAPER)
-    text(s, run['provenance'], .62, 5.90, 5.9, .5, 12, MUTED, font=MONO)
-    rect(s, 6.96, 3.60, 5.78, 2.60, PANEL, LINE)
-    text(s, run['journal'], 7.22, 3.78, 5.24, .26, 10.5, AMBER, True, MONO)
-    text(s, run['paper'], 7.22, 4.10, 5.24, .8, 17, PAPER, True)
-    text(s, run['authors'], 7.22, 5.02, 5.24, .3, 12, MUTED, font=MONO)
-    text(s, run['match'], 7.22, 5.38, 5.24, .7, 14, PAPER)
-    text(s, 'Sound numbers are not truth. What this shows is aim: a graph plus a strict gate pointed compute at real, '
-            'findable science.', .62, 6.44, 12.1, .4, 14.5, AMBER)
-    label(s, run['status'], y=6.76)
-    note(s, 'A candidate the frozen corpus could not have told it.',
-         'Of the candidates proposed inside the boundary, this many survived the soundness floor and this many reached '
-         'a person at the gate. Here is one. The paper on the right was published after our cutoff by a group that '
-         'never saw our system, and it was held outside the evidence store for the whole run. The claim we are making '
-         'is narrow and worth stating precisely: not that the engine knew the future, but that the graph plus the '
-         'floor pointed compute at a question real science went on to answer.', 35,
-         'Every count on this slide must come from the audited run record before it is shown. Placeholder values are '
-         'labelled as such on the slide itself. A frozen corpus does not exclude pretraining memory.',
-         'Replace the placeholders with the audited run: run ID, action index, branch, reviewer name and the paper DOI.',
-         'Reliability, Evaluation & Trustworthiness (25); Technical Execution (50)',
-         ['ARCHITECTURE.md', 'demo/pdac/README.md'])
+        text(s, v, x, 1.94, 2.9, .8, 36, GREEN if j < 3 else AMBER, True)
+        text(s, t2, x, 2.78, 2.94, .46, 14.5, MUTED)
+    line(s, .6, 3.34, 12.73, 3.34, LINE)
+    text(s, 'THE SURVIVING CANDIDATE', .62, 3.48, 5.9, .26, 10.5, GREEN, True, MONO)
+    text(s, 'AKIP1 is a component of the centriole inner scaffold', .62, 3.76, 5.9, .8, 21, PAPER, True)
+    text(s, '3 of 6 inner-scaffold seed genes sit in its top-25 co-essential partners. Empirical p = 6.7e-4 against '
+            '3,000 random genes, 1,178 cell lines, and it held across wider seed sets and a stricter top-15 cutoff.',
+         .62, 4.66, 5.86, .8, 14, PAPER)
+    text(s, 'DETERMINISTIC CROSS-CHECK, OUTSIDE THE ENGINE', .62, 5.72, 5.9, .26, 10.5, MUTED, True, MONO)
+    text(s, 'Rank #1 of ~17,900 non-module genes · p = 6.2e-10', .62, 6.00, 5.9, .34, 16, GREEN, True)
+    text(s, 'ENTRY 61 · RUN akip1main · NO GENE NAMED IN THE GOAL', .62, 6.36, 5.9, .28, 10.5, MUTED, font=MONO)
+    rect(s, 6.96, 3.48, 5.78, 2.52, PANEL, LINE)
+    text(s, 'bioRxiv · PUBLISHED 7 JUNE 2026', 7.22, 3.64, 5.24, .26, 10.5, AMBER, True, MONO)
+    text(s, 'AKIP1 is an inner scaffold component required for centriole integrity', 7.22, 3.94, 5.24, .8, 17, PAPER, True)
+    text(s, 'doi:10.64898/2026.06.03.729831', 7.22, 4.86, 5.24, .3, 12, MUTED, font=MONO)
+    text(s, 'Corpus frozen 2025-12-31  →  model cutoff January 2026  →  preprint 2026-06-07. The paper was published '
+            'after both, by a group that never saw the engine.', 7.22, 5.22, 5.24, .7, 13.5, PAPER)
+    text(s, 'The other submission was wrong, and the floor did not catch it. FNTB passed the falsifier and a manual '
+            'rank-based audit killed it at 0 of 25 (p = 1.0). The floor validates the statistic the agent reports; it '
+            'does not re-derive the enrichment. The human gate did not run in this pass.',
+         .62, 6.56, 12.1, .46, 12.5, AMBER)
+    note(s, 'It proposed a centriole component the corpus did not contain.',
+         'From that frozen evidence the engine ran eighty-three experiments and submitted two. Both passed the '
+         'soundness floor. One of them was wrong, and I want to give you that one first: FNTB scored on mean '
+         'correlation against a loose centrosome set, passed the falsifier, and was killed by a manual rank-based '
+         'audit at zero of twenty-five partners. That is a real gap, and it is the one we are fixing next: the floor '
+         'validates the statistic the agent reports, it does not re-derive the enrichment. The surviving candidate is '
+         'AKIP1, a gene the literature annotates for signalling, proposed as a structural component of the centriole '
+         'inner scaffold. Three of six seed genes sit in its top twenty-five co-essential partners at an empirical p '
+         'of six-point-seven times ten to the minus four, and it held when we widened the seed set and tightened the '
+         'cutoff. A deterministic cross-check outside the engine puts it first of roughly seventeen thousand nine '
+         'hundred genes. The preprint on the right was published in June 2026, after our corpus freeze and after the '
+         'reasoning model’s own cutoff. Sound numbers are not truth, and no person has reviewed this at the gate yet. '
+         'What it shows is aim.', 45,
+         'All figures from AKIP1_rediscovery_result.json, MANIFEST.json and WRITEUP.md in the akip1 corpus directory: '
+         'effect 3 of 6 seeds, effect_size 358.32, p_null 6.664e-4, n_units 1178, robust true, explore_entry 61, run '
+         'akip1main. Target DOI 10.64898/2026.06.03.729831, preprint 2026-06-07. Deterministic check against a '
+         '10-gene inner-scaffold set: rank 1 of ~17,900, 4 of 25, p 6.2e-10. Known gaps, all stated on the slide or '
+         'in the write-up: the falsifier does not re-derive rank-based enrichment, the tier-2 novelty check was off, '
+         'the promotion gate and human review did not run, and the exclusion list of known centriole genes was leaky, '
+         'so the engine repeatedly resurfaced genuine centriole genes before the final phase.',
+         'Run the human gate on this candidate and record the reviewer note, then update the fourth count.',
+         'Reliability, Evaluation & Trustworthiness (25); Technical Execution (50); Novelty and Importance of AI (25)',
+         ['ARCHITECTURE.md', 'skills/co_essentiality/SKILL.md'])
 
 
 def slide_09(p):
@@ -479,7 +495,7 @@ def slide_09(p):
           ('“Sound numbers are not true biology.”',
            'Agreed, and designed in. Nothing enters the master graph without a named person and a written note.'),
           ('“A frozen corpus is not a clean test.”',
-           'Correct. It bounds the evidence, never pretraining memory. It shows aim and rigour, not clairvoyance.'),
+           'Correct, so we ablate: the bare model with no corpus will not confirm the finding, and recalls a pre-cutoff control.'),
           ('“Your e-value is a fancy p-value.”',
            'It stays valid at any stopping time, so the agent may peek after every batch. A p-value does not.'),
           ('“Then the learned bettor must win.”',
