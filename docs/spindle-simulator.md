@@ -223,3 +223,24 @@ The runtime can now export bounded, scoped WebM movies from exact saved frames;
 see [movie delivery and measured rendering](spindle-movie.md). GPU draw time is
 reported separately from full frame-update, screenshot and encoding costs. The
 reference interactive frame-rate target is not yet certified.
+
+## Full scientific data and bounded display
+
+Larger native ensembles retain every scientific frame in lossless float64 chunks
+and compute metrics before display sampling. The separate JSON display keeps all
+conditions/seeds and every entity/coordinate within selected frames, always including
+first and last samples. Its explicit source-frame mapping and full-trajectory hash
+are recorded in the display artifact, and the viewer identifies the sampled count; no filament thinning or interpolation is introduced.
+A native regression reconstructs the complete source hash from the archived chunks.
+If even the endpoints exceed display limits, the job reports that limit explicitly.
+Zero-temperature native runs use an explicit absolute solver tolerance of 1e-6;
+finite-temperature runs retain the existing upstream tolerance behavior.
+
+The [source audit and 192-run numerical assessment](spindle-validation.md) records
+an inconclusive total-filament-length convergence result. No biological calibration
+or held-out PDAC accuracy is claimed.
+
+Clustered pole labels use deterministic screen placement and leader lines to the
+unchanged measured coordinates. Mobile comparisons show one full-size cell at a
+time with Selected run / Comparison run controls; both views retain the shared
+physical time and camera. Desktop comparisons remain side by side.

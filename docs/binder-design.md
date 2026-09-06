@@ -255,10 +255,13 @@ viewports with explicit source hashes, one shared camera and physical scale. A s
 both candidate hash and residue ID and rejects an identity from the opposite viewport. Native comparison
 rows preserve collected byte hashes rather than replacing them with a canonical-JSON hash.
 
-Two scissored views use one actual perspective camera and orbit controller. Both views fit the union
+Two scissored views use one actual camera and orbit controller. Both views fit the union
 of the displayed candidates, use the same material legend and preserve target alignment. Picking
 changes the inspector and contact table to the selected candidate. A separate accessible table shows
 contact/clash trade-offs and Pareto status among these two candidates, without an affinity score.
-Rewinding before the second artifact removes its view. Orthographic comparison remains pending.
+Rewinding before the second artifact removes its view. The projection selector supports perspective
+and orthographic cameras. Orthographic recipes save vertical frustum height in Å and zoom, preserving
+constant scale through capture and saved-pixel picking. Changing projection remounts the camera;
+orthographic explicit-pose updates are immediate. Perspective pose transitions remain animated.
 See the [inspected paired comparison](binder-review/comparison-review.md) for source hashes,
 native capture/pick evidence, responsive views and remaining performance limits.

@@ -38,7 +38,9 @@ If the seam is hidden, call `binder.set_scene_view` with the latest recipe hash,
 Use `binder.pick` with capture ID, matching recipe hash and image pixel `x,y` to identify a residue.
 Check suspected contacts against the exact coordinate table before reporting a scientific finding.
 Supported view fields are preset, pearl/copper style, exact selected residue ID and explicit perspective
-camera. Unsupported camera modes fail explicitly. Scene tools do not mutate source coordinates.
+or orthographic camera. Orthographic cameras require `projection:"OrthographicCamera"`, position,
+target and `height` (vertical frustum span in Å); optional `zoom` defaults to one. Captures preserve
+height and zoom for exact replay. Unsupported camera modes fail explicitly. Scene tools do not mutate source coordinates.
 The UI records these agent actions with adjustable replay speed; a user's independent exploration
 does not replace your saved recipe. Do not interpret replay duration as physical simulation time.
 

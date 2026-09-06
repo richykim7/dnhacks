@@ -1,9 +1,10 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { useEffect, useLayoutEffect, useMemo, useRef, useCallback } from "react";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import * as T from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { layoutPoleLabels } from "./labels";
 import type { SpindleBundle, SpindleRecipe, Vec3 } from "./types";
-function PoleLabel({ id, selected }: { id: string; selected: boolean }) {
+function PoleLabel({ id, selected, register, pick }: { id: string; selected: boolean; register: (sprite:T.Sprite|null)=>void; pick: ()=>void }) {
   const texture = useMemo(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 256;
@@ -22,10 +23,38 @@ function PoleLabel({ id, selected }: { id: string; selected: boolean }) {
   }, [id, selected]);
   useEffect(() => () => texture.dispose(), [texture]);
   return (
-    <sprite position={[0.9, 0.8, 0]} scale={[0.14, 0.044, 1]} renderOrder={10}>
+    <sprite ref={register} frustumCulled={false} renderOrder={10} onClick={e=>{e.stopPropagation();pick();}}>
       <spriteMaterial map={texture} transparent depthTest={false} sizeAttenuation={false} />
     </sprite>
   );
+}
+function PoleLabels({poles, selected, pick}: {poles: {id:string;position:Vec3}[];selected:string|null;pick:(id:string)=>void}) {
+  const {camera, size, scene} = useThree();
+  const sprites = useRef(new Map<string,T.Sprite>());
+  const lines = useMemo(()=>new T.BufferGeometry().setAttribute("position",new T.BufferAttribute(new Float32Array(poles.length*6),3)),[poles.length]);
+  useEffect(()=>()=>lines.dispose(),[lines]);
+  const update = useCallback(()=>{
+    camera.updateMatrixWorld();
+    const projected=poles.map(p=>{const v=new T.Vector3(...p.position).project(camera);return {id:p.id,x:(v.x+1)*size.width/2,y:(1-v.y)*size.height/2,z:v.z};});
+    const labels=layoutPoleLabels(projected,size.width,size.height);
+    const positions=lines.getAttribute("position") as T.BufferAttribute;
+    const scale=40*2*Math.tan((camera as T.PerspectiveCamera).fov*Math.PI/360)/size.height;
+    labels.forEach((label,i)=>{
+      const p=poles.find(p=>p.id===label.id)!;
+      const source=projected.find(p=>p.id===label.id)!;
+      const target=new T.Vector3(label.x/size.width*2-1,1-label.y/size.height*2,source.z).unproject(camera);
+      const sprite=sprites.current.get(p.id);
+      if(sprite){sprite.position.copy(target);sprite.scale.set(scale*3.2,scale,1);sprite.updateMatrixWorld(true);}
+      positions.setXYZ(i*2,...p.position);positions.setXYZ(i*2+1,target.x,target.y,target.z);
+    });
+    positions.needsUpdate=true;
+  },[camera,size.width,size.height,poles,lines]);
+  useFrame(update);
+  useLayoutEffect(()=>{scene.userData.updateSpindleLabels=update;update();return()=>{if(scene.userData.updateSpindleLabels===update)delete scene.userData.updateSpindleLabels;};},[scene,update]);
+  return <group>
+    <lineSegments geometry={lines} frustumCulled={false} renderOrder={9}><lineBasicMaterial color="#91a6b3" transparent opacity={.6} depthTest={false} /></lineSegments>
+    {poles.map(p=><PoleLabel key={p.id} id={p.id} selected={selected===p.id} pick={()=>pick(p.id)} register={sprite=>{if(sprite)sprites.current.set(p.id,sprite);else sprites.current.delete(p.id);}} />)}
+  </group>;
 }
 export type RenderState = {
   camera: {
@@ -173,6 +202,7 @@ function Stage({
     void (async () => {
       await gl.compileAsync(scene, camera);
       if (cancelled) return;
+      scene.userData.updateSpindleLabels?.();
       const started = performance.now();
       gl.render(scene, camera);
       gl.getContext().finish();
@@ -271,6 +301,7 @@ function Stage({
       ))}
       <Filaments bundle={bundle} recipe={recipe} />
       <MotorField frame={frame} />
+      <PoleLabels poles={frame.poles} selected={recipe.selected} pick={pick} />
       <lineSegments geometry={trails}>
         <lineBasicMaterial color="#e7b878" transparent opacity={0.6} />
       </lineSegments>
@@ -300,7 +331,6 @@ function Stage({
               depthWrite={false}
             />
           </mesh>
-          <PoleLabel id={p.id} selected={p.id === recipe.selected} />
         </group>
       ))}
     </>
