@@ -1,9 +1,10 @@
 # Spindle observatory
 
-Implementation is in progress. The first milestone adds a selected-experiment
-Three.js viewer for immutable `filament_trajectory` artifacts and exploratory
-clustering analysis. It does not yet run Cytosim, provide calibrated mechanics,
-register an audited method, or deliver captures to a research vision agent.
+Implementation is in progress. The viewer renders selected-experiment immutable `filament_trajectory` artifacts.
+A scoped durable worker now executes a pinned Cytosim 3D aster model and exports
+raw trajectories, float64 chunks, display frames and prespecified clustering
+analysis. It does not yet provide calibrated mechanics, register an audited
+method, or deliver captures to a research vision agent.
 
 A `manifest.json` artifact entry uses `kind: filament_trajectory`, `format: json`,
 and ordinary artifact provenance. Category is `illustration` for illustrative
@@ -19,7 +20,8 @@ model_id, dimensionality 2 or 3, units `{length: um, time: s}`, cell `radius`
 frames. A frame contains physical time, poles (`id`, `position`) and filaments
 (`id`, owning `pole`, ordered `points`). Geometry must remain planar when marked
 2D. No interpolation invents coordinates between samples or across entity births.
-This bounded display format is not yet the planned lossless chunked solver archive.
+The bounded JSON display format is separate from the lossless exported-coordinate
+chunks and raw solver archive described below.
 
 Select the owning experiment in Investigations and expand the spindle scene.
 Choose a condition/seed, front/oblique/detail camera, filament treatment and
@@ -35,13 +37,136 @@ with prespecified sampled dwell, censoring, pairwise distances, final pole-count
 distributions, replicate dwell dispersion and threshold sensitivity. Single-pole
 collapse is distinct from bipolarity. Simulation seeds are the replicate unit;
 no biological sample count, p-value or verification submission is manufactured.
-Classifier parameters must be frozen before running comparisons; durable plan
-registration will be part of the job milestone.
+Classifier parameters are frozen into the content-addressed protocol before
+execution; changing them creates a different specification hash.
 
 Browser fixtures are explicitly illustrative and remain under `frontend/e2e`.
 The actual app does not offer fabricated example experiments. Run the spindle
 browser test with `SPINDLE_REVIEW_PASS=draft|revision|final` to save matching views
 under `/tmp/spindle-<pass>-*.png`. The development visual review is recorded in
-`docs/spindle-visual-review.md`. Remaining plan milestones include production
-scene/capture contracts, cancellable Cytosim execution, calibration/held-out
-assessment, a real runtime vision loop, performance and accessibility acceptance.
+`docs/spindle-visual-review.md`. Remaining plan milestones include production scene/capture contracts, independent
+mechanical convergence/interaction validation, calibration/held-out assessment,
+a real runtime vision loop, performance and accessibility acceptance.
+
+
+## Frozen numerical model
+
+`spindle.protocol.prepare_spindle_experiment` accepts a complete
+`spindle_protocol.v1` document. `PARAMETERS` in that module defines required
+parameters and numerical safety bounds, not plausible biological intervals.
+Every parameter includes value, source and assumed/measured/fitted status.
+The protocol records model/source versions, 3D um/s/pN units, explicit ellipsoid
+semiaxes, simulation seeds, control/perturbation initial positions, motor counts
+and localization, and clustering threshold/dwell/sensitivity choices. No PDAC
+parameter preset is bundled. The upstream-scale values in the regression tests
+are engineering fixtures only.
+
+The stock Cytosim objects are confined dynamic microtubules, aster solids,
+fixed cortical minus-end motors and symmetric minus-end motor crosslinkers.
+The worker passes the seed on the native command line before Cytosim initializes
+its random generator; setting it in the configuration alone is too late in this
+release. The crosslinkers are an explicitly provisional motor hypothesis; they do not
+encode the full CEP215–HSET mechanism. Chromosomes, segregation, viability,
+Eg5/KIF15 antagonism, dynamic dynein relocalization, drug concentrations and gene
+knockdowns are not represented. The model is distinct from paper 57's planar
+model. Initial aster geometry and the native random seed are matched when
+conditions share the declared initial state; stochastic trajectories can diverge.
+
+Cortical positions use equal-area directions on a sphere, mapped to ellipsoid
+semiaxes. `uniform` means uniform solid-angle sampling, **not** uniform ellipsoid
+surface-area density. `positive_x_crescent` maps those directions to the positive
+X cortex. Motor activity begins at the initial time. Raw configuration records
+all anchor positions. Conditions and seeds are not independently calibrated
+biological replicates. Source linking records provenance without proving that a
+parameter is identified or calibrated.
+
+## CPU build
+
+The tested source commit is `0780e265cb6a2bb3536c6f89d2143ba9bb016ff0` from
+[the authors' repository](https://gitlab.com/f-nedelec/cytosim).
+Their [build documentation](https://gitlab.com/f-nedelec/cytosim/-/blob/master/doc/compile/index.md)
+describes BLAS/LAPACK and terminal library prerequisites. Pin that commit, apply
+`src/dnhacksbio/spindle/cytosim-report-precision.patch`, then build:
+
+```sh
+cmake -S <cytosim-source> -B <build-dir> -DDIMENSION=3 -DMAKE_PLAY=OFF -DMAKE_PYSIM=OFF -DMAKE_TESTS=OFF
+cmake --build <build-dir> --target sim report --parallel 2
+```
+
+The export-only patch sets precision on the actual output stream; upstream's
+`precision=17` otherwise left that stream at its default precision. It changes
+no force or integration code. Record binary SHA-256 hashes, source commit,
+dimensionality, compiler/flags and patch hash in an operator-owned build manifest.
+The executed pilot record is `docs/spindle-build-pilot.json`. It proves a 3D build
+and small engineering export, not model convergence or biological calibration.
+Local development extracted missing system-library packages under `/tmp` and
+supplied CMake library locations; it installed no global packages and used no GPU.
+
+## Job operations
+
+`uv run python scripts/spindle_tool.py request.json` reads a JSON object with
+`action`, `args`, and (for durable operations) a `store` directory. Operations:
+
+- `prepare_spindle_experiment`: `args.protocol`; returns frozen `spec_ref` and
+  bounded step/frame/replicate estimate. Wall time is explicitly unmeasured.
+- `run_spindle_experiment`: complete protocol, scope containing project_id,
+  run_id and experiment_id, idempotency_key, and budget containing integer
+  wall_seconds (1–1800) and artifact_bytes (1024–209715200). Returns a queued
+  receipt. Identical retries reuse it; changed science/budget under the same key
+  is rejected.
+- `status`: receipt, scope and optional event cursor `after`. Returns state,
+  timestamp, cancellation state, progress and immutable artifact references.
+- `cancel`: receipt and scope. Queued jobs cancel immediately; the active worker
+  checks cancellation while supervising its process group and before publication.
+- `analyze_spindle_ensemble`: receipt, scope, and `analysis_plan_ref` (SHA-256 of
+  canonical sorted compact JSON for the frozen analysis plan). Requires a complete
+  ensemble and refuses an unregistered analysis change.
+- `export_artifact`: receipt, scope and new output directory; writes the runtime
+  artifact manifest plus display JSON for the existing experiment collector.
+
+The explicit operator worker is separate from submission:
+
+```sh
+uv run python scripts/spindle_tool.py worker-request.json --worker --sim /absolute/build/bin/sim --report /absolute/build/bin/report --build-manifest build-manifest.json
+```
+
+Its request has `store` and `args` containing receipt and scope. The manifest must
+match the actual executable bytes and declared pinned 3D commit. Binary paths
+and build approval are operator configuration, never numerical-protocol fields.
+This does not install the worker into the existing experiment execution environment.
+It runs at most one job per store, enforces wall time and disk-output limits,
+records accepted frames only after validating exports, terminates the whole child
+process group on cancellation/timeout and preserves bounded partial files.
+An interrupted worker is not automatically rerun: an operator verifies the old
+process is gone, then calls `SpindleStore.interrupt(receipt, scope, reason)`.
+A new idempotency key starts an explicit fresh run. Store timestamps distinguish
+recorded state from worker liveness; `running` alone is not proof of a live process.
+
+## Archives and verification
+
+Completed and failed jobs have scoped immutable `archive.json` records linking
+protocol, build, configuration, stdout/stderr and file hashes. Raw `objects.cmo`
+and `properties.cmp` are retained byte-for-byte. Reports retain exported stable
+IDs and explicit native filament-to-aster ownership. The importer verifies every
+expected frame and native physical clock; missing frames never yield invented
+completion. `trajectory.json` is a bounded browser stream. `chunks/index.json`
+indexes per-frame little-endian float64 positions, offsets and entity IDs, exact
+checksums/bounds and sampled filament presence. These chunks are lossless relative
+to exported coordinates; no claim is made that the upstream binary format stores
+more precision than it actually does. Metrics are exported as JSON and CSV.
+
+The worker rejects incomplete ensembles for analysis/export. Failure and resource
+exhaustion remain distinct from clustering failure. Numerical/biological validity
+is not inferred from a successful process exit. There are no generated p-values,
+biological sample counts, verification verdicts or automatic graph promotion.
+
+```sh
+uv run pytest tests/test_spindle.py
+SPINDLE_CYTOSIM_BIN=/absolute/build/bin uv run pytest tests/test_spindle.py
+```
+
+The second command enables a real two-condition native CPU execution test; without
+the operator build it skips explicitly. Tests cover protocol determinism, matched
+initial poles/filaments, physical clocks and 3D displacement, receipt ownership and
+idempotency, duplicate execution rejection, failure archives, active cancellation,
+timeout process-group termination and lossless/corrupt binary chunks.
