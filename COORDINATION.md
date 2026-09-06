@@ -85,7 +85,11 @@ changes. Fill in:
 - Both: `gh` logged in; `scripts/board.py`.
 - One machine only: `scripts/board_mirror.py --to <group chat id>` (board to
   Telegram and back, plus agent nudges). It relies on a local Telegram
-  harness; nobody else needs it.
+  harness; nobody else needs it. Fleet notifications have a five-second timeout;
+  Telegram and board commands have a 60-second timeout. A timeout kills the
+  helper process group, including its tmux child, so a stuck pane cannot freeze
+  the mirror. Failed nudges are logged and dropped; failed message sends retain
+  their cursor for retry on the next poll (an ambiguous send may be duplicated).
 - Every other machine: `python3 scripts/board_nudge.py` in a spare tmux
   window (gh + tmux only). It turns `@name` mentions into a typed nudge in
   that agent's pane when the pane is idle. Without it, your agents only see

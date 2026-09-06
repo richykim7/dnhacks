@@ -33,6 +33,7 @@ import datetime as dt
 import json
 import os
 import re
+import signal
 import subprocess
 import sys
 import time
@@ -46,8 +47,31 @@ LABEL = "board"
 
 # ---------------------------------------------------------------- helpers
 
+def run_command(cmd, *, input=None, timeout=60):
+    """Bound helpers and their children, including fleetctl's tmux client."""
+    with subprocess.Popen(cmd, text=True, stdin=subprocess.PIPE if input is not None else subprocess.DEVNULL,
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                          start_new_session=True) as process:
+        try:
+            stdout, stderr = process.communicate(input, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            # Killing only fleetctl leaves tmux alive holding the output pipes.
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.communicate()
+            raise
+        return subprocess.CompletedProcess(cmd, process.returncode, stdout, stderr)
+
+
 def sh(*cmd: str, check: bool = True, input: str | None = None) -> str:
-    p = subprocess.run(cmd, text=True, capture_output=True, input=input)
+    try:
+        p = run_command(cmd, input=input)
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        if not check:
+            return ""
+        raise SystemExit(f"command unavailable or timed out: {cmd[0]}") from exc
     if check and p.returncode != 0:
         sys.stderr.write(p.stderr)
         raise SystemExit(f"command failed ({p.returncode}): {' '.join(cmd)}")
