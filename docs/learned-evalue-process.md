@@ -384,3 +384,19 @@ validation; named cohorts/endpoints are proposals, not performed experiments or 
 The existing tools and private expression service were not changed. The trajectory document now
 targets child-branch stopping explicitly, with complete continuations for evaluation and root-grouped
 data splits; whole-investigation stopping is not the intended intervention.
+
+## Consolidated branch lifecycle and human review
+
+The [branch-monitoring plan](../plans/PLAN-branch-monitoring.md) consolidates the subsequent discussion.
+Research pauses at the action limit and the child must produce a validated report in a separate,
+tool-disabled reporting turn. A generated fallback summary does not satisfy this requirement.
+Report failures remain paused and operationally blocked. Explicit checkpoints replace ambiguous
+end-of-round `done`; parents authorize continuation/forks, and code executes approved forks.
+
+The existing candidate path was checked: an active node submits its own eligible experimental result
+without parent approval; automated checks precede human review. Pruning preserves findings and review
+jobs. Private expression receipts are not yet integrated into this path. The plan adds an operator-side
+review adapter and separates private human review from disclosure to discovery: score-derived decisions,
+notes and graph changes must not feed ongoing agents indirectly. No runtime or review behavior changed
+in this documentation task. Reporting, allocation and statistical calibration remain separately
+testable stages, with observation-only monitoring before active pruning.

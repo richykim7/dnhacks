@@ -3,6 +3,11 @@
 Assessment, 2026-09-05, with branch-level scope clarified against `fcf20648`. Proposal only: no monitor, training,
 pruning changes or new biological tools were implemented in this review.
 
+The subsequent [consolidated branch plan](../plans/PLAN-branch-monitoring.md) records the agreed
+runtime direction: explicit checkpoints, mandatory agent reports after work pauses, parent-authorized
+forks, and private human-review routing. It supersedes the earlier per-action/child-fork recommendations
+below; this document remains the source-method assessment and statistical caveat record.
+
 ## Plain-language purpose
 
 The current tree asks which sibling deserves more work. A trajectory monitor would additionally ask
@@ -49,7 +54,7 @@ The conditional FAR target is 4.5% with 99.5% calibration confidence; the paper'
 | --- | --- | --- |
 | `Explorer._act_fork` | Runs leaves for up to 18 steps, ranks siblings, keeps up to two, and resumes survivors in bounded rounds (96 total branch steps). | First study fixed initial leaves before recursive allocation. Later prevent a monitored stop from being silently resumed. |
 | `Explorer._judge_promise` | Produces relative `rank`, `keep`, `reason`; fallback favors submissions/experiments. | Retain as the allocation baseline. Its rank is not a probability of eventual success. Add a separate fixed prefix verifier if needed. |
-| `Explorer.step` / `run` | Journals completed actions, then constructs the next agent message. | Place a controller checkpoint after a completed action and before the next dispatch. Do not put monitor output in the observation. |
+| `Explorer.step` / `run` | Journals completed actions, then constructs the next agent message. | Add the agreed report/checkpoint lifecycle, with private monitoring at those checkpoints. Do not put monitor output in the observation. |
 | `runtime.py` and `lineage.py` | Preserve ordered events, run/attempt identity and root ancestry. | Identify prefixes, action counts, costs and root-grouped evaluation splits. Store monitor scores separately from agent-readable events. |
 | Branch continuation and SDK session persistence | One branch can resume across multiple `run()` calls. | Persist score history, monitor version and stopped status across attempts; never reset monitoring to obtain another chance. |
 
@@ -62,11 +67,11 @@ checkpoints inside children too, and explicit treatment of shared work and in-fl
 
 ```mermaid
 flowchart LR
-  A[Branch completes action] --> B[Controller reads allowed prefix]
+  A[Branch produces checkpoint report] --> B[Controller reads allowed prefix]
   B --> C[Fixed verifier scores progress]
   C --> D[Private calibrated monitor]
   D --> E{Stop threshold crossed?}
-  E -->|No| F[Allow next action under existing budget]
+  E -->|No| F[Parent decides next allocation]
   E -->|Yes| G[Controller ends branch]
   D -. operator only .-> H[Audit and evaluation]
 ```
@@ -79,7 +84,7 @@ The pilot should record proposed stops for individual children while letting eva
 Use complete investigations to group related observations and quantify uncertainty, and address the
 additional calibration assumptions explicitly instead of changing the stopping target.
 
-For example, children A, B and C pursue different mechanisms. Each completed child action extends
+For example, children A, B and C pursue different mechanisms. Each chosen child checkpoint extends
 only that child's monitor history. A calibrated alarm on B makes B ineligible for further work; A and C
 remain eligible under existing budget rules. A survivor resuming another round keeps its monitor history.
 The parent never fills a beam quota by reviving a monitored stop. Existing evidence and queued scoring
