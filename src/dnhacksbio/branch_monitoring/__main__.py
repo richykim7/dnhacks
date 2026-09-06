@@ -25,10 +25,16 @@ def write(path, data):
 def main():
     parser = argparse.ArgumentParser(description="Private observation-only subtree monitoring")
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("enroll", "label", "associate", "review"):
+    for name in ("enroll", "prepare", "associate", "review"):
         p = sub.add_parser(name)
         p.add_argument("--state", required=True)
         p.add_argument("--spec", required=True)
+        if name == "prepare": p.add_argument("--trace-dir", required=True)
+    p = sub.add_parser("label", help="Privately adjudicate actual terminal artifacts under the frozen policy")
+    p.add_argument("--state", required=True)
+    p.add_argument("--trace-dir", required=True)
+    p.add_argument("--episode-id", required=True)
+    p.add_argument("--watch", action="store_true")
     p = sub.add_parser("score")
     p.add_argument("--state", required=True)
     p.add_argument("--trace-dir", required=True)
@@ -58,10 +64,19 @@ def main():
     args = parser.parse_args()
     store = MonitorStore(args.state) if hasattr(args, "state") else None
     if args.command == "enroll": store.enroll(**read(args.spec))
+    elif args.command == "prepare":
+        from .outcomes import prepare
+        from .worker import ReadOnlyJournal
+        prepare(store, ReadOnlyJournal(args.trace_dir, create=False), args.trace_dir, **read(args.spec))
     elif args.command == "label":
-        spec = read(args.spec)
-        eid = spec.pop("episode_id")
-        store.close(eid, **spec)
+        from .outcomes import adjudicate
+        from .worker import ReadOnlyJournal
+        async def label():
+            while True:
+                result = await adjudicate(store, ReadOnlyJournal(args.trace_dir, create=False), args.trace_dir, args.episode_id)
+                if not args.watch or result["status"] == "closed": break
+                await asyncio.sleep(5)
+        asyncio.run(label())
     elif args.command == "associate":
         from .receipts import import_receipt
         import_receipt(store, **read(args.spec))
@@ -82,14 +97,14 @@ def main():
                 await asyncio.sleep(5)
         asyncio.run(run())
     elif args.command == "fit":
-        rows = [e for e in read(args.data) if e["partition"] == "fit"]
+        rows = [e for e in read(args.data) if e["partition"] == "fit" and e.get("training_eligible") is True]
         if not rows: parser.error("No fitting episodes")
         write(args.output, statistics.fit(rows, rows[0]["protocol_hash"]))
     elif args.command == "calibrate":
-        rows = [e for e in read(args.data) if e["partition"] == "calibration"]
+        rows = [e for e in read(args.data) if e["partition"] == "calibration" and e.get("training_eligible") is True]
         write(args.output, statistics.calibrate(read(args.model), rows, args.alpha, args.delta))
     elif args.command == "evaluate":
-        rows = [e for e in read(args.data) if e["partition"] == "test"]
+        rows = [e for e in read(args.data) if e["partition"] == "test" and e.get("training_eligible") is True]
         write(args.output, statistics.evaluate(read(args.model), read(args.calibration), rows))
     elif args.command == "serve":
         from .server import make_server

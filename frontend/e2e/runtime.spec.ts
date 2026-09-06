@@ -104,11 +104,15 @@ function history(): RuntimeEvent[] {
     recorded_at: Date.now() / 1000,
   }));
 }
-async function fixture(page: Page, invalid = false, reviewed = false) {
+async function fixture(page: Page, invalid = false, reviewed = false, inhibitor = false) {
   await mockApi(page);
   let terminalReads = 0,
     artifactReads = 0;
   const events = history();
+  if (inhibitor) {
+    const artifact = events.find(e => e.kind === 'artifact')!;
+    artifact.payload = {...artifact.payload, name:'3VQU.cif', format:'cif', provenance:{category:'experimental_reference',source_ids:['PDB:3VQU']}};
+  }
   if (reviewed) {
     for (const [kind, payload] of [
       ["experiment.reviewed", { verification: "CANDIDATE" }],
@@ -162,7 +166,7 @@ async function fixture(page: Page, invalid = false, reviewed = false) {
       artifactReads++;
       return route.fulfill({
         contentType: "text/plain",
-        body: invalid ? "not a structure" : pdb,
+        body: invalid ? "not a structure" : inhibitor ? readFileSync(new URL('./inhibitor/3vqu.cif', import.meta.url), 'utf8') : pdb,
       });
     }
     return route.fulfill({ status: 404, json: { error: "Not in fixture" } });
@@ -221,6 +225,29 @@ test("node execution, opt-in terminal, inline real geometry and replay boundary"
   await expect(page.locator(".detail-panel")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+test("inhibitor workbench opens from its owning experiment", async ({ page }) => {
+  test.setTimeout(60000);
+  await fixture(page, false, false, true);
+  const geometry = JSON.parse(readFileSync(new URL('./inhibitor/geometry.json', import.meta.url), 'utf8'));
+  await page.route('**/geometry/**', route => {
+    const operation = new URL(route.request().url()).searchParams.get('operation');
+    return route.fulfill({ json: operation === 'contacts' ? {contacts: []} : operation === 'preparation' ? {status:'blocked', reason:'Fixture: no preparation protocol', retained:{waters:0,alternate_atoms:0,hydrogens:0}} : geometry });
+  });
+  await page.goto('/?sceneReview=1');
+  await page.getByRole('button', {name:'Inspect Inspect the experimental fold'}).click();
+  await page.getByRole('tablist', {name:'Researcher detail'}).getByRole('tab', {name:'Experiments'}).click();
+  await page.getByRole('button', {name:'Open inhibitor workbench'}).click();
+  await expect(page.getByRole('dialog', {name:'Inhibitor workbench'})).toBeVisible();
+  await expect(page.locator('.pocket-stage canvas')).toBeVisible();
+  await page.waitForFunction(() => Boolean(window.sceneReview));
+  await page.evaluate(() => window.sceneReview!.ready());
+  await page.screenshot({path:'/tmp/dn-inhibitor-desktop.png'});
+  await page.setViewportSize({width:390,height:844});
+  await page.screenshot({path:'/tmp/dn-inhibitor-mobile.png'});
+  await page.getByRole('button', {name:'Return to experiment'}).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
 test("malformed experiment structure is an explicit error", async ({
   page,
 }) => {
