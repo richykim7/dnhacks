@@ -734,6 +734,7 @@ dev = [
     { name = "pytest" },
 ]
 ecosystem = [
+    { name = "h5py" },
     { name = "matplotlib" },
     { name = "scipy" },
 ]
@@ -772,6 +773,7 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.1" },
     { name = "gemmi", specifier = ">=0.7,<0.8" },
     { name = "gilda", specifier = ">=1.6.1" },
+    { name = "h5py", marker = "extra == 'ecosystem'", specifier = ">=3.12" },
     { name = "matplotlib", marker = "extra == 'ecosystem'", specifier = ">=3.9" },
     { name = "matplotlib", marker = "extra == 'litmap'", specifier = ">=3.11.0" },
     { name = "meeko", marker = "extra == 'inhibitor'", specifier = "==0.7.1" },

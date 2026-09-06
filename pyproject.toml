@@ -19,7 +19,7 @@ ecosystem = "dnhacksbio.ecosystem_experiments:main"
 protein-tool = "dnhacksbio.protein_tools:main"
 
 [project.optional-dependencies]
-ecosystem = ["scipy>=1.14", "matplotlib>=3.9"]
+ecosystem = ["scipy>=1.14", "matplotlib>=3.9", "h5py>=3.12"]
 inhibitor = ["rdkit==2025.9.1", "meeko==0.7.1", "vina==1.2.7", "pdbfixer==1.12.0", "openmm==8.4.0", "scipy>=1.14", "pillow>=11", "playwright>=1.55"]
 expression = ["decoupler==2.2.0", "pydeseq2==0.5.4"]
 evalue = [
