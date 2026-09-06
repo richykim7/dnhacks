@@ -1,0 +1,145 @@
+{
+  "schema": "ProteinDevelopmentAudit-v2",
+  "roles": {
+    "TRAIN": [
+      "BRCA",
+      "COAD"
+    ],
+    "VALIDATION": [
+      "LUAD"
+    ],
+    "DEV": [
+      "PDAC"
+    ]
+  },
+  "files": [
+    {
+      "cohort": "BRCA",
+      "kind": "proteomics",
+      "url": "https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/BRCA/BRCA_proteomics_gene_abundance_log2_reference_intensity_normalized_Tumor.txt",
+      "sha256": "e584331bc77a440af50692c7874b736b3d135d01d96ce95d66af18cc64009b21",
+      "bytes": 21398351
+    },
+    {
+      "cohort": "BRCA",
+      "kind": "meta",
+      "url": "https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/BRCA/BRCA_meta.txt",
+      "sha256": "16d00a3022fbafa9d29e74c0ee689ae63279911f04aeef2d21344ed51a0a5cb7",
+      "bytes": 7369
+    },
+    {
+      "cohort": "COAD",
+      "kind": "proteomics",
+      "url": "https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/COAD/COAD_proteomics_gene_abundance_log2_reference_intensity_normalized_Tumor.txt",
+      "sha256": "fa2dde5f9165acdf6320d28e01dbad24b735ede320f5fab4a6ceab6c15aa0580",
+      "bytes": 12293004
+    },
+    {
+      "cohort": "COAD",
+      "kind": "meta",
+      "url": "https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/COAD/COAD_meta.txt",
+      "sha256": "5242103f57fb5d919ab7e228dd36c97b669915d6bee88ae1e5a43c3aa270295e",
+      "bytes": 11672
+    },
+    {
+      "cohort": "LUAD",
+      "kind": "proteomics",
+      "url": "https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/LUAD/LUAD_proteomics_gene_abundance_log2_reference_intensity_normalized_Tumor.txt",
+      "sha256": "746900f54072198481207ea13f8a7ba14dcabd52345bace0bef7438120c03845",
+      "bytes": 20132337
+    },
+    {
+      "cohort": "LUAD",
+      "kind": "meta",
+      "url": "https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/LUAD/LUAD_meta.txt",
+      "sha256": "f9facf713af130ad097c56794f1fbc9107334e02ad9bf0df3958b40d68b6af10",
+      "bytes": 12232
+    },
+    {
+      "cohort": "PDAC",
+      "kind": "proteomics",
+      "url": "https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/PDAC/PDAC_proteomics_gene_abundance_log2_reference_intensity_normalized_Tumor.txt",
+      "sha256": "e1be4bed67bfdac6fff7b12487b8af9e0e2a0e93901039f5f9124e180f24f6bd",
+      "bytes": 16800925
+    },
+    {
+      "cohort": "PDAC",
+      "kind": "meta",
+      "url": "https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/PDAC/PDAC_meta.txt",
+      "sha256": "ce53f0acf92cbbbf165c8c27425c27b7b6de301c2e95279eaf124c37a2316d33",
+      "bytes": 11358
+    }
+  ],
+  "cohorts": {
+    "BRCA": {
+      "records": 122,
+      "exact_features_in_release": 12022,
+      "metadata_joined": 122,
+      "grades": {
+        "G1": 0,
+        "G2": 0,
+        "G3": 0,
+        "unknown": 122
+      },
+      "grade_pairs_ceiling": 0,
+      "raw_coverage": 0.8226973226680047,
+      "selected_coverage": 1.0,
+      "coverage_pass_donors": 122,
+      "untreated_eligibility": "unverified in downloaded metadata"
+    },
+    "COAD": {
+      "records": 97,
+      "exact_features_in_release": 9151,
+      "metadata_joined": 97,
+      "grades": {
+        "G1": 0,
+        "G2": 0,
+        "G3": 0,
+        "unknown": 97
+      },
+      "grade_pairs_ceiling": 0,
+      "raw_coverage": 0.7663249016782573,
+      "selected_coverage": 1.0,
+      "coverage_pass_donors": 97,
+      "untreated_eligibility": "unverified in downloaded metadata"
+    },
+    "LUAD": {
+      "records": 110,
+      "exact_features_in_release": 12433,
+      "metadata_joined": 110,
+      "grades": {
+        "G1": 7,
+        "G2": 58,
+        "G3": 39,
+        "unknown": 6
+      },
+      "grade_pairs_ceiling": 39,
+      "raw_coverage": 0.8308599548123395,
+      "selected_coverage": 0.9938136363636363,
+      "coverage_pass_donors": 110,
+      "untreated_eligibility": "unverified in downloaded metadata"
+    },
+    "PDAC": {
+      "records": 105,
+      "exact_features_in_release": 11404,
+      "metadata_joined": 105,
+      "grades": {
+        "G1": 6,
+        "G2": 72,
+        "G3": 26,
+        "unknown": 1
+      },
+      "grade_pairs_ceiling": 26,
+      "raw_coverage": 0.7805548596148386,
+      "selected_coverage": 0.9953952380952381,
+      "coverage_pass_donors": 105,
+      "untreated_eligibility": "unverified in downloaded metadata"
+    }
+  },
+  "selected_features": 2000,
+  "feature_sha256": "814b0ccdf5dc9c9cb8c7cb3d8209fdd80ab07a56dc3999ac8e1b0f395119ece3",
+  "donor_ids_disjoint": true,
+  "identity_limit": "case IDs joined, specimen/aliquot/run crosswalk not supplied",
+  "selection": "TRAIN coverage >= .8, descending coverage and exact feature ID, first 2000",
+  "confirmation": "unavailable; no confirmation numerical inputs accessed"
+}
