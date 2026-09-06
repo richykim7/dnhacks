@@ -250,10 +250,13 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   await page.getByRole('tablist', {name:'Researcher detail'}).getByRole('tab', {name:'Experiments'}).click();
   await page.getByRole('button', {name:'Open inhibitor workbench'}).click();
   // The lazy Three/R3F module may compile cold during the full browser gate.
-  await expect(page.getByRole('dialog', {name:'Inhibitor workbench'})).toBeVisible({timeout:20_000});
+  await expect(page.getByRole('region', {name:'Inhibitor workbench'})).toBeVisible({timeout:20_000});
+  await expect(page.locator('.node-scene .pocket-embedded')).toHaveCount(1);
+  await expect(page.locator('.node-scene .artifact-viewer')).toHaveCount(0);
   await expect(page.locator('.pocket-stage canvas')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.sceneReview));
   await page.evaluate(() => window.sceneReview!.ready());
+  await page.getByRole('button', {name:'Scene controls',exact:true}).click();
   await page.getByLabel('Playback speed').selectOption('8');
   await page.getByRole('button',{name:'Play',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>window.inhibitorScene!.recipe()!.revision)).toBe(2);
@@ -306,11 +309,14 @@ test("inhibitor workbench opens from its owning experiment", async ({ page }) =>
   expect(await page.evaluate(()=>window.inhibitorScene!.recipe()!.camera)).toEqual(takenCamera);
   await page.clock.resume();
   expect(writes).toBe(0);
+  await page.getByRole('button', {name:'Close controls',exact:true}).click();
+  await page.getByRole('button', {name:'Return to reference'}).scrollIntoViewIfNeeded();
   await page.screenshot({path:test.info().outputPath('dn-inhibitor-desktop.png')});
   await page.setViewportSize({width:390,height:844});
   await page.screenshot({path:test.info().outputPath('dn-inhibitor-mobile.png')});
-  await page.getByRole('button', {name:'Return to experiment'}).click();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', {name:'Return to reference'}).click();
+  await expect(page.getByRole('region', {name:'Inhibitor workbench'})).toHaveCount(0);
+  await expect(page.locator('.node-scene .artifact-viewer')).toHaveCount(1);
 });
 
 test("malformed experiment structure is an explicit error", async ({

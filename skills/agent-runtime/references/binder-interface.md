@@ -38,7 +38,9 @@ If the seam is hidden, call `binder.set_scene_view` with the latest recipe hash,
 Use `binder.pick` with capture ID, matching recipe hash and image pixel `x,y` to identify a residue.
 Check suspected contacts against the exact coordinate table before reporting a scientific finding.
 Supported view fields are preset, pearl/copper style, exact selected residue ID and explicit perspective
-camera. Unsupported camera modes fail explicitly. Scene tools do not mutate source coordinates.
+or orthographic camera. Orthographic cameras require `projection:"OrthographicCamera"`, position,
+target and `height` (vertical frustum span in Å); optional `zoom` defaults to one. Captures preserve
+height and zoom for exact replay. Unsupported camera modes fail explicitly. Scene tools do not mutate source coordinates.
 The UI records these agent actions with adjustable replay speed; a user's independent exploration
 does not replace your saved recipe. Do not interpret replay duration as physical simulation time.
 
@@ -58,3 +60,20 @@ operator reconciliation. `binder.attach_candidate` can attach reviewed partial b
 terminal outcome; supply the exact source hash, pinned target hash and mapping policy in
 `mapping_review`. This declaration does not excuse unreviewed chain renumbering. Preserve the
 original failure/cancellation and rejection annotation when collecting later artifacts.
+
+### Paired comparison contract
+
+Use `set_scene_view` on an existing primary recipe with
+`view: {preset: "candidate-compare", comparison_bundle_sha256: "SECOND_COLLECTED_HASH"}`.
+The second bundle must be available in the same experiment, with identical full target residue
+metadata, atom coordinates/identities and metric protocol. Formatting changes alone do not create
+a distinct candidate. `comparison_selected` identifies a residue in the second bundle; `selected`
+continues to identify a primary residue. Both requested representations must be available.
+Clear both comparison fields with `null` and choose another preset to leave paired mode.
+
+Paired captures record two equal horizontal viewports and their source identities, using the same
+camera and physical transform. A pick identifies the source under its saved pixel and returns both
+`bundle_sha256` and `residue_id`; residue aliases alone cannot distinguish candidates. Single-view
+picks also return their primary bundle hash. The native comparison table retains the actual collected
+byte hashes, even when its JSON formatting differs from canonical serialization. These are exploratory
+geometry comparisons, not evidence of affinity or independent biological replicates.

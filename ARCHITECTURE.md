@@ -230,6 +230,7 @@ The actions:
 | `run_experiments` | run several pieces of Python in parallel |
 | `inhibitor` | skill-gated, experiment-scoped bounded preparation/docking, scene vision and canonical measurements; exploratory artifacts only |
 | `spindle` | bounded provisional 3D filament jobs, collected numerical ensembles and separate scoped scene/capture/vision operations; requires spindle-interface guidance |
+| `tissue` | skill-gated conditional PhysiCell/BioFVM jobs, exact source-cell/field queries, immutable scene actions and actual PNG review; simulation sensitivity only |
 | `log` | record an idea, observation, dead end, open question or note with a promise score |
 | `submit` | send a self-judged experiment to verification |
 | `fork`, `checkpoint` | request parent allocation through a mandatory checkpoint report |
@@ -278,7 +279,10 @@ ambiguous launch failure. A revised decision/operator recovery is needed for blo
 
 Operational limits remain depth 6, 72 total descendant slots, six continuation rounds and 96 research
 actions per node. In addition, `explorer/budget.py` enforces a frozen shared action/operation-time
-contract across descendants and continuations. Research grants reserve reporting first; fork grants,
+contract across descendants and continuations. New investigations default to 2,880 research actions
+and 43,200 summed operation seconds (12 aggregate hours); existing frozen contracts retain their
+original allowances. The CLI `--budget-spec` can set an explicit contract before a run starts.
+Research grants reserve reporting first; fork grants,
 consumption and refunds share the controller transaction. Restart never refreshes the endpoint or
 refunds ambiguous operations. Async operation deadlines mark backend overrun/cancellation uncertainty
 as operational violations; summed operation wall time is not an OS CPU/GPU quota or calibrated horizon.
@@ -622,6 +626,9 @@ artifacts in a lazy-loaded Three.js/R3F Interface Foundry, within their owning e
 A persistent node workspace keeps one selected molecular/binder source beside the researcher activity
 and findings; source availability follows the exact event cursor. Binder cameras transition smoothly
 and yield immediately to manual orbit; reduced motion and saved captures remain deterministic.
+Paired candidates use two scissored views with one actual camera, matching target coordinates and
+metric protocol. Captures retain both source hashes; saved-pixel picks resolve the exact candidate
+and residue, and the inspector follows that source. Availability remains bounded by the event cursor.
 Receipt storage and an operator-side pinned BindCraft launch adapter are separate from statistical
 verification. No live design pilot, biological efficacy or performance acceptance
 is implied. Immutable scoped scene recipes and PNG captures support actual image observations,
@@ -648,15 +655,19 @@ cell inspection and paired conditions. Numerical sampling uses source coordinate
 CAF shape and membrane shading are illustrative. The skill-gated `tissue` research action shares
 the CLI's scoped model/job/scene operations. Immutable agent revisions support separate scene-action
 playback; rendered PNG bytes reach the model seam and unavailable vision cannot complete a review.
-The sourced sensitivity study and final performance acceptance remain active validation work.
+The sourced sensitivity study and actual-image reviews are recorded. Large scenes retain all source
+cells through adaptive drawing and mobile aggregation; software-rendered motion measurements miss
+the60/30fps targets, so hardware-accelerated throughput is not claimed.
 See [tumor–stroma](docs/tumor-stroma.md).
 
 ### Spindle experiment adapter
 
 `spindle/` validates source-linked numerical protocols and executes an operator-pinned
 3D Cytosim CPU build with durable scoped receipts, cancellation, budgets and raw
-archives. The registered `spindle` action publishes complete saved trajectories and
-ensemble metrics into their owning experiment. New scientific hypotheses use new
+archives. The registered `spindle` action archives complete scientific trajectories
+and publishes separately bounded display frames with full-ensemble metrics into
+their owning experiment. Temporal display sampling retains all entities in each
+selected frame and records the source hash and exact frame mapping. New scientific hypotheses use new
 experiment identities; scene revisions do not rerun mechanics. The inline spindle
 observatory preserves source coordinates and physical samples, displays pole IDs
 and comparison, and replays recorded scene actions separately from human exploration.

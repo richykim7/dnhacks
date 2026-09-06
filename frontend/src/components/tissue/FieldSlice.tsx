@@ -63,7 +63,8 @@ export default function FieldSlice({
       <small>
         Nearest voxel center z {plane.toFixed(1)} µm
         <br />
-        to requested z {z} µm · x → y ↑<br />
+        to requested z {Number.isInteger(z) ? z : z.toFixed(1)} µm · x → y ↑
+        <br />
         {min.toFixed(4)}–{max.toFixed(4)} mM
         <br />
         {clipped} saturated voxels · shared 0–{maximum} mM

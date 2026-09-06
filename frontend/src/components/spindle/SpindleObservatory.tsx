@@ -22,6 +22,13 @@ export default function SpindleObservatory({
   sha256?: string;
   sceneActions?: SceneAction[];
 }) {
+  const [small, setSmall] = useState(() => matchMedia("(max-width:600px)").matches);
+  const [mobileSide, setMobileSide] = useState(0);
+  const presentationRef=useRef({small,mobileSide});presentationRef.current={small,mobileSide};
+  useEffect(() => {
+    const query=matchMedia("(max-width:600px)"); const update=()=>setSmall(query.matches);
+    query.addEventListener("change",update);return()=>query.removeEventListener("change",update);
+  },[]);
   const [bundle, setBundle] = useState<SpindleBundle>(),
     [error, setError] = useState(""),
     [expanded, setExpanded] = useState(false),
@@ -139,6 +146,7 @@ export default function SpindleObservatory({
         ...actual.current,
         bundle_sha256: sha256,
         compare: stateRef.current.compare ?? null,
+        mobile_visible_run: presentationRef.current.small ? (presentationRef.current.mobileSide && stateRef.current.compare != null ? stateRef.current.compare : stateRef.current.run) : null,
         comparison:
           stateRef.current.compare == null ? null : otherActual.current,
         viewport:
@@ -289,6 +297,7 @@ export default function SpindleObservatory({
           {expanded ? "Close expanded view" : "Expand scene"}
         </button>
       </header>
+      {bundle.display_sampling && <p className="spindle-sampling">Display: {run.frames.length} of {bundle.display_sampling.source_frame_counts[recipe.run]} saved frames. Ensemble metrics use the full scientific trajectory.</p>}
       {sceneActions.length > 0 && (
         <div className="spindle-toolbar" aria-label="Recorded scene actions">
           <button onClick={() => setMode("follow")}>Follow agent</button>
@@ -332,12 +341,17 @@ export default function SpindleObservatory({
           </button>
         </p>
       )}
+      {small && otherRun && <div className="spindle-mobile-switch" aria-label="Mobile condition view">
+        <button aria-pressed={mobileSide===0} onClick={()=>setMobileSide(0)} aria-label="View selected run">Selected run</button>
+        <button aria-pressed={mobileSide===1} onClick={()=>setMobileSide(1)} aria-label="View comparison run">Comparison run</button>
+      </div>}
       <div
         className={`spindle-stage ${otherRun ? "spindle-comparison" : ""}`}
         ref={stage}
+        data-mobile-side={mobileSide}
         onContextMenu={(e) => e.preventDefault()}
       >
-        <div className="spindle-cell">
+        <div className="spindle-cell" aria-hidden={small && recipe.compare != null && mobileSide === 1}>
           <SpindleScene
             key={generation}
             bundle={bundle}
@@ -348,7 +362,7 @@ export default function SpindleObservatory({
           />
         </div>
         {otherRun && (
-          <div className="spindle-cell">
+          <div className="spindle-cell" aria-hidden={small && mobileSide === 0}>
             <SpindleScene
               key={`comparison-${generation}`}
               bundle={bundle}

@@ -7,6 +7,7 @@ export type SpindleFrame = {
   filaments: { id: string; pole: string; points: Vec3[] }[];
 };
 export type SpindleBundle = {
+  display_sampling?: { schema: "spindle_display_sampling.v1"; source_trajectory_sha256: string; source_frame_counts: number[]; source_frame_indices: number[][]; method: string };
   schema_version: 1;
   dimensionality: 2 | 3;
   category: "illustration" | "simulation";
@@ -102,6 +103,20 @@ export function validateBundle(value: unknown): SpindleBundle {
         }
       }
     }
+  }
+  const sampling = b.display_sampling;
+  if (sampling != null) {
+    if (sampling.schema !== "spindle_display_sampling.v1" || !/^[a-f0-9]{64}$/.test(sampling.source_trajectory_sha256)
+      || typeof sampling.method !== "string" || !Array.isArray(sampling.source_frame_counts)
+      || !Array.isArray(sampling.source_frame_indices) || sampling.source_frame_counts.length !== b.runs.length
+      || sampling.source_frame_indices.length !== b.runs.length) throw Error("Invalid display sampling manifest");
+    b.runs.forEach((run, r) => {
+      const count = sampling.source_frame_counts[r], indices = sampling.source_frame_indices[r];
+      if (!Number.isInteger(count) || count < 1 || count > 2000 || !Array.isArray(indices)
+        || indices.length !== run.frames.length || indices[0] !== 0 || indices.at(-1) !== count - 1
+        || indices.some((n, i) => !Number.isInteger(n) || n < 0 || n >= count || (i > 0 && n <= indices[i - 1])))
+        throw Error("Invalid source frame mapping");
+    });
   }
   return b;
 }
