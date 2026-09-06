@@ -995,3 +995,8 @@ a.curie {
   content-visibility: auto;
   contain-intrinsic-size: auto 140px;
 }
+
+.evidence-page .legend-item.disputed-key { color: var(--muted); }
+.evidence-page .leaf-filter { white-space: nowrap; cursor: pointer; }
+.evidence-page .leaf-filter input { accent-color: var(--accent); }
+.evidence-page .visible-count { display: block; margin-top: 4px; color: var(--fg); }

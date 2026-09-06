@@ -69,6 +69,47 @@ test("complete knowledge graph default focus and fit-all visual review", async (
   expect(graph.edges.length).toBe(graph.total_claims);
   await page.waitForTimeout(1200);
   const view = page.locator(".react-flow__viewport");
+  if (process.env.KNOWLEDGE_CONNECTED_PREVIEW) {
+    const incident = new Map<string, Set<string>>();
+    for (const e of graph.edges)
+      for (const id of new Set([e.source, e.target])) {
+        if (!incident.has(id as string)) incident.set(id as string, new Set());
+        incident.get(id as string)!.add(e.claim_id);
+      }
+    const leaves = new Set(
+      [...incident].filter(([, ids]) => ids.size === 1).map(([id]) => id),
+    );
+    const visibleEdges = graph.edges.filter(
+      (e: any) => !leaves.has(e.source) && !leaves.has(e.target),
+    );
+    await page.screenshot({
+      path: test.info().outputPath("knowledge-connected-default.png"),
+    });
+    await page.getByRole("button", { name: "Fit all", exact: true }).click();
+    await page.waitForTimeout(600);
+    await expect(page.locator(".react-flow__node")).toHaveCount(
+      graph.nodes.length - leaves.size,
+    );
+    await expect(page.locator(".react-flow__edge")).toHaveCount(
+      visibleEdges.length,
+    );
+    await page.screenshot({
+      path: test.info().outputPath("knowledge-connected.png"),
+    });
+    console.log(
+      `Preview: ${graph.nodes.length - leaves.size} entities, ${visibleEdges.length} claims; hidden ${leaves.size} entities, ${graph.edges.length - visibleEdges.length} claims`,
+    );
+    await page.getByLabel("Hide single-claim nodes").uncheck();
+    await page.getByRole("button", { name: "Fit all", exact: true }).click();
+    await expect(page.locator(".react-flow__node")).toHaveCount(
+      graph.nodes.length,
+    );
+    await expect(page.locator(".react-flow__edge")).toHaveCount(
+      graph.edges.length,
+    );
+    return;
+  }
+  await page.getByLabel("Hide single-claim nodes").uncheck();
   const defaultTransform = await view.getAttribute("style");
   await page.screenshot({ path: test.info().outputPath("knowledge.png") });
   await page.getByRole("button", { name: "Fit all", exact: true }).click();
