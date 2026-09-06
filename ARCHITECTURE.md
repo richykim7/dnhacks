@@ -402,8 +402,18 @@ there are too few. No statistical stop is enforced.
 submitted code/results, requires matching automated verification and privately applies the evidence
 rubric. Pending verification has a fixed adjudication deadline; incomplete/unavailable continuations
 are censored. Only workflow-qualified labels enter the operator training CLI. `--prepare-only` creates
-the runtime identity/budget without research, allowing enrollment before the first action. The initial
-verification adapter covers legacy submissions; private receipt methods need a validated adapter.
+the runtime identity/budget without research, allowing enrollment before the first action. Legacy
+submission verification remains supported. `receipt_outcomes.py` also supports registered pathway,
+Chronos dependency and biomarker/AUC receipts under `registered-receipts-v1`. The runner's
+`private_experiment` action records exact public requests with owned run/experiment identities;
+operator adapters reconcile these against frozen queue settings, scientific identities and immutable
+completion snapshots. They never infer ownership from printed receipts or rescore an experiment.
+Method-specific evidence and a prospective validity/family review feed the frozen rubric, without a
+universal e-value success threshold. Completed evidence routes to private human review automatically;
+review decisions are not training labels. Unsupported/unbound receipt workflows are censored.
+`experiment_transport.py` provides an opt-in immutable completion contract for these three registered
+queues; it records terminal status/result/config/time atomically and prevents terminal result rewrites.
+Other queue types retain their existing replay contracts. Existing completed jobs acquire no invented historical completion timestamp.
 
 A separate authenticated operator console displays recorded child histories and distinct experimental
 evidence; it adds no routes to the research API. Private review never writes ordinary agent feedback or
