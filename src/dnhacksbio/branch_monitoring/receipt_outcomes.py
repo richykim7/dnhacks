@@ -257,6 +257,7 @@ class ReceiptVerification:
                     raise ValueError("Missing canonical job")
                 canonical_payload = json.loads(job[1])
                 _equal(job[0], digest(canonical_payload))
+                _equal(canonical_payload, payload)
                 completion = c.execute("SELECT digest,status,result,config,completed_at FROM completions WHERE receipt=?", (alias[2],)).fetchone()
                 if not completion:
                     return {"status": "pending" if job[2] in {"queued", "running"} else "unavailable"}
@@ -267,14 +268,55 @@ class ReceiptVerification:
                 result = json.loads(completion[2])
                 if not validate_result(method, config, canonical_payload, key, result):
                     return {"status": "unavailable"}
-                # Alias administrative fields can differ only when the registered method deduplicates them.
-                alias_result = dict(result)
-                if "spec" in alias_result:
-                    alias_result["spec"] = payload["spec"]
-                if not validate_result(method, config, payload, key, alias_result):
-                    return {"status": "unavailable"}
             return {"status": "passed", "canonical_receipt": alias[2], "experiment_key": key,
                     "completed_at": completion[4], "result_hash": digest(result), "result": result,
                     "validity_review": source["validity_review"], "config_hash": frozen["config_hash"]}
         except (ValueError, KeyError, TypeError, IndexError, OSError, sqlite3.Error):
             return {"status": "unavailable", "error": "private_receipt_unavailable"}
+
+
+def associate(store, candidate, verified):
+    """One deterministic private review association, shared by live routing and final labeling."""
+    return store.associate_review(receipt=verified["canonical_receipt"], run_id=candidate["run_id"],
+        experiment_id=candidate["finding_id"], finding_id=candidate["finding_id"], method_id=candidate["method_id"],
+        null=verified["result"]["null"], validity_policy=canonical(verified["validity_review"]), evidence=verified["result"],
+        provenance={"association": "runner-request-and-queue-v1", "source_events": candidate["source_events"],
+                    "request_hash": digest(candidate["request"]),
+                    **{k: verified[k] for k in ("experiment_key", "result_hash", "config_hash", "completed_at")}},
+        disclosure_boundary=verified["validity_review"]["disclosure_boundary"])
+
+
+def route(store, journal, trace_dir, eid, *, now=None):
+    """Discover completed evidence during research without invoking an assessor or closing a label."""
+    import time
+    from .outcomes import workflow, read_control
+    now = time.time() if now is None else now
+    ep, w = store.episode(eid), workflow(store, eid)
+    policy = w["frozen"]["policy"]
+    if policy["verification_policy"] != POLICY:
+        raise ValueError("Live routing requires a registered receipt workflow")
+    if w["frozen"]["receipt_implementation_hash"] != implementation_hash():
+        raise ValueError("Frozen receipt implementation changed")
+    audit = read_control(trace_dir, ep["run_id"])
+    if audit["budget"]["contract"] != w["frozen"]["budget_contract"] or audit["budget"]["created_at"] != w["frozen"]["budget_created_at"]:
+        raise ValueError("Runtime budget identity changed")
+    terminal = audit["budget"]["terminal"]
+    endpoint = {"at": terminal["at"] if terminal else now, "through_sequence": journal.snapshot(ep["root_id"])["sequence"]}
+    deadline = min(now, terminal["at"] + policy["adjudication_seconds"]) if terminal else now
+    verifier = ReceiptVerification(policy["receipt_sources"], w["frozen"]["receipt_sources"], endpoint)
+    counts = dict(routed=0, pending=0, unavailable=0, duplicate=0)
+    try:
+        candidates = collect(journal, ep, endpoint, policy["receipt_sources"])
+        if len(candidates) > policy["max_candidates"]:
+            raise ValueError("Candidate limit exceeded")
+    except (ValueError, OSError, KeyError, TypeError, sqlite3.Error):
+        counts["unavailable"] = 1
+        return counts
+    for candidate in candidates:
+        verified = verifier(journal, ep, candidate, deadline)
+        if verified["status"] == "passed":
+            associate(store, candidate, verified)
+            counts["routed"] += 1
+        else:
+            counts[verified["status"]] += 1
+    return counts

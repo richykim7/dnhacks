@@ -102,7 +102,7 @@ def prepare(store, journal, trace_dir, *, outcome_policy, **spec):
     if b["terminal"] or b["spent"] or b["actions"] or b["active"]:
         raise ValueError("Cannot enroll an already used budget")
     relevant_events = [e for r in snap["runs"].values() if belongs(r["run_id"], spec["run_id"])
-                       for e in r["history"] if e["kind"] in {"tool.started", "model.started", "experiment.queued", "checkpoint.report"}]
+                       for e in r["history"] if e["kind"] in {"tool.started", "model.started", "experiment.queued", "checkpoint.report", "private_experiment.requested"}]
     if relevant_events or spec["start_sequence"] != snap["sequence"]:
         raise ValueError("Enrollment cursor must be current and precede all monitored work")
     proto = spec["protocol"]
@@ -281,9 +281,12 @@ async def adjudicate(store, journal, trace_dir, eid, *, complete_fn=None, verifi
     scientific_keys = set()
     for candidate in w["bundle"]:
         fid = candidate["finding_id"]
-        if fid in seen or candidate["fingerprint"] in seen or any(set(candidate["artifact_refs"]) <= refs for refs in baseline_artifacts):
+        private = "receipt" in candidate
+        if fid in seen or not private and candidate["fingerprint"] in seen or any(set(candidate["artifact_refs"]) <= refs for refs in baseline_artifacts):
             continue
-        seen.update((fid, candidate["fingerprint"]))
+        seen.add(fid)
+        if not private:
+            seen.add(candidate["fingerprint"])
         key = digest({"run": candidate["run_id"], "finding": fid})
         old = workflow(store, eid)["assessments"].get(key)
         if old:
@@ -304,13 +307,7 @@ async def adjudicate(store, journal, trace_dir, eid, *, complete_fn=None, verifi
             if verified["experiment_key"] in scientific_keys:
                 continue
             scientific_keys.add(verified["experiment_key"])
-            store.associate_review(receipt=verified["canonical_receipt"], run_id=candidate["run_id"],
-                experiment_id=fid, finding_id=fid, method_id=candidate["method_id"], null=verified["result"]["null"],
-                validity_policy=canonical(verified["validity_review"]), evidence=verified["result"],
-                provenance={"association": "runner-request-and-queue-v1", "source_events": candidate["source_events"],
-                            "request_hash": digest(candidate["request"]),
-                            **{k: verified[k] for k in ("experiment_key", "result_hash", "config_hash", "completed_at")}},
-                disclosure_boundary=verified["validity_review"]["disclosure_boundary"])
+            receipt_outcomes.associate(store, candidate, verified)
             candidate = {**candidate, "result": verified["result"],
                          "validity_review": verified["validity_review"],
                          "artifact_refs": candidate["artifact_refs"] + [verified["result_hash"], verified["config_hash"]]}

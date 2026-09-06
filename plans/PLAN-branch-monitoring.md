@@ -318,7 +318,7 @@ information even if the number itself were removed. During the frozen discovery/
 keep score-derived notes, acceptance/rejection, and resulting master-graph updates outside all relevant
 agent views, recall and parent/judge context. Record review privately now; disclose or refresh the
 discovery snapshot only at the predefined boundary. Ordinary feedback that uses no private confirmation
-information can retain its existing path. A separate private review store and explicit disclosure export implement this separation. Registered receipt routing is implemented through outcome adjudication; discovery-snapshot refresh remains pending. Same-user filesystem access also needs an actual service/account boundary.
+information can retain its existing path. A separate private review store and explicit disclosure export implement this separation. Registered receipt routing is implemented through outcome adjudication and the model-free live `route` worker; discovery-snapshot refresh remains pending. Same-user filesystem access also needs an actual service/account boundary.
 
 ## Implementation stages and acceptance criteria
 

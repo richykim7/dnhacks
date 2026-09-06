@@ -206,7 +206,7 @@ Disclosure produces only an explicitly authorized boundary-specific export. Neit
 nor its note updates ordinary recall, feedback or the master graph automatically. A future discovery
 snapshot refresh must consume this export under the declared boundary; the shared discovery graph is
 not silently changed. Registered receipt discovery and routing run automatically inside private outcome
-adjudication. Human review decisions remain separate from the frozen automated outcome label.
+adjudication and the standalone operator `route` worker. Human review decisions remain separate from the frozen automated outcome label.
 
 
 ## Registered private receipt outcomes
@@ -267,6 +267,18 @@ without a completion snapshot is unavailable, not retrospectively timestamped. N
 this schema normally. Upgrade existing queues only in an explicitly authorized service maintenance
 window; no service was upgraded or restarted by this implementation. Frozen-software queues can require
 new registrations after a code upgrade. Never rewrite their previous scientific results to make them fit.
+
+The operator can route completed evidence while research is still running:
+
+```sh
+python -m dnhacksbio.branch_monitoring route --state /operator/monitor --trace-dir /research-traces --episode-id study-episode --watch
+```
+
+This uses the same frozen ownership/method checks and creates only private review records. It neither
+calls a model nor closes an outcome, and repeated routing is idempotent. After the endpoint it retains
+the same production cutoff and adjudication deadline. `label` also routes evidence automatically, so
+running this extra worker is optional unless early human inspection is wanted. Human decisions and
+notes never enter the final assessor or prefix verifier, and do not modify research state.
 
 The adapter validates method provenance and fixed-p calibration arithmetic without rerunning any
 permutation or model. Valid evidence, its stated null, and the frozen validity/family review enter the
